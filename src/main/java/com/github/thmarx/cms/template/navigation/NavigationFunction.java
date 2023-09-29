@@ -5,35 +5,28 @@
 package com.github.thmarx.cms.template.navigation;
 
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.template.AbstractCurrentNodeFunction;
 import freemarker.template.SimpleNumber;
-import freemarker.template.SimpleObjectWrapper;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class NavigationFunction implements TemplateMethodModelEx {
+public class NavigationFunction extends AbstractCurrentNodeFunction implements TemplateMethodModelEx {
 
-	public final Path contentBase;
-	public final Path currentNode;
-	public final ContentParser parser;
-	
+	public NavigationFunction(Path contentBase, Path currentNode, ContentParser contentParser) {
+		super(contentBase, currentNode, contentParser);
+	}
+
 	@Override
 	public Object exec(List arguments) throws TemplateModelException {
 		if (arguments.size() == 0) {
@@ -93,46 +86,5 @@ public class NavigationFunction implements TemplateMethodModelEx {
 			nodeIndex = node.resolve("index.md");
 		}
 		return node.equals(currentNode) || currentNode.equals(nodeIndex);
-	}
-
-	private String getUrl(Path node) {
-		StringBuilder sb = new StringBuilder();
-
-		while (node != null && !node.equals(contentBase)) {
-			
-			var filename = node.getFileName().toString();
-			if (!filename.equals("index.md")) {
-				if (filename.endsWith(".md")) {
-					filename = filename.substring(0, filename.length() - 3);
-				}
-				sb.insert(0, filename);
-				sb.insert(0, "/");
-			}			
-			node = node.getParent();
-		}
-
-		var url = sb.toString();
-		
-		return "".equals(url) ? "/" : url;
-	}
-	
-	private Optional<String> getName (Path node) {
-		try {
-			//Path rel = contentBase.relativize(node);
-			if (Files.isDirectory(node)) {
-				node = node.resolve("index.md");
-			}
-			var md = parser.parse(node);
-			if (md.meta().containsKey("menu.title")) {
-				return Optional.of((String)md.meta().get("menu.title"));
-			}
-			if (md.meta().containsKey("title")) {
-				return Optional.of((String)md.meta().get("title"));
-			}
-		} catch (IOException ex) {
-			Logger.getLogger(NavigationFunction.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		
-		return Optional.empty();
 	}
 }

@@ -4,16 +4,11 @@
  */
 package com.github.thmarx.cms;
 
-import com.github.thmarx.cms.RenderContext;
-import com.github.thmarx.cms.ContentRenderer;
-import com.github.thmarx.cms.MarkdownRenderer;
-import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
-import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -27,10 +22,10 @@ public class ContentRendererNGTest {
 	
 	@BeforeClass
 	public void beforeClass () throws IOException {
-		TemplateEngine templates = new TemplateEngine(Path.of("templates/"), Path.of("content/"));
-		ContentParser parser = new ContentParser(Path.of("content/"));
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/")));
+		TemplateEngine templates = new TemplateEngine(Path.of("hosts/test/templates/"), Path.of("hosts/test/content/"), contentParser);
 		
-		contentRenderer = new ContentRenderer(parser, templates, new MarkdownRenderer());
+		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
 	}
 
 	@Test
@@ -46,7 +41,7 @@ public class ContentRendererNGTest {
                      </html>
                      """;
 		RenderContext context = new RenderContext("/info", Map.of());
-		var content = contentRenderer.render(Path.of("content/test.md"), context);
+		var content = contentRenderer.render(Path.of("hosts/test/content/test.md"), context);
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);
 	}
@@ -64,7 +59,7 @@ public class ContentRendererNGTest {
                      </html>
                      """;
 		RenderContext context = new RenderContext("/info", Map.of());
-		var content = contentRenderer.render(Path.of("content/products/test.md"), context);
+		var content = contentRenderer.render(Path.of("hosts/test/content/products/test.md"), context);
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);
 	}

@@ -13,11 +13,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
@@ -82,6 +79,16 @@ public class NodeListFunction extends AbstractCurrentNodeFunction {
 			int skipCount = (page - 1) * pageSize;
 
 			Files.list(startPath)
+					.sorted((path1, path2) -> {
+						var filename1 = path1.getFileName().toString();
+						var filename2 = path2.getFileName().toString();
+						if (filename1.equals("index.md")) {
+							return -1;
+						} else if (filename2.equals("index.md")) {
+							return 1;
+						}
+						return filename1.compareTo(filename2);
+					})
 					.filter(fileNameFilter)
 					.skip(skipCount)
 					.limit(pageSize)

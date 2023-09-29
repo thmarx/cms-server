@@ -4,11 +4,15 @@
  */
 package com.github.thmarx.cms;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,18 +26,35 @@ import java.util.stream.Stream;
  */
 public class ContentParser {
 	
-	final Path contentBase;
+	private final FileSystem fileSystem;
+	private final Cache<String, Content> contentCache;
 	
-	public ContentParser (final Path contentBase) {
-		this.contentBase = contentBase;
+	public ContentParser (final FileSystem fileSystem) {
+		this.fileSystem = fileSystem;
+		
+		contentCache = Caffeine.newBuilder()
+				.expireAfterWrite(Duration.ofMinutes(1))
+				.build();
 	}
 	
-	public Content parse (final String file) throws IOException {
-		return parse(contentBase.resolve(file));
-	}
+//	public Content parse (final String file) throws IOException {
+//		return parse(contentBase.resolve(file));
+//	}
 	
 	public Content parse (final Path contentFile) throws IOException {
-		var fileContent = Files.readAllLines(contentFile, StandardCharsets.UTF_8);
+		final String filename = contentFile.toAbsolutePath().toString();
+		var cached = contentCache.getIfPresent(filename);
+		if (cached != null) {
+			return cached;
+		}
+		var object = _parse(contentFile);
+		contentCache.put(filename, object);
+		return object;
+	}
+	
+	private Content _parse (final Path contentFile) throws IOException {
+		var fileContent = fileSystem.loadLines(contentFile);
+		
 		
 		StringBuilder content = new StringBuilder();
 		Map<String, Object> meta = new HashMap<>();

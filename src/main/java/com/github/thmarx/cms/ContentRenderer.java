@@ -7,8 +7,6 @@ package com.github.thmarx.cms;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 /**

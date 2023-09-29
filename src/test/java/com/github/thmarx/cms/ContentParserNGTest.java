@@ -23,14 +23,14 @@ public class ContentParserNGTest {
 
 	@Test
 	public void testSomeMethod() throws IOException {
-		var contentParser = new ContentParser(Path.of("content/"));
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/")));
 		
 		var expectedMD = """
                    
                    Und hier der Inhalt
                    """;
 		
-		var content = contentParser.parse(Path.of("content/test.md"));
+		var content = contentParser.parse(Path.of("hosts/test/content/test.md"));
 		
 		Assertions.assertThat(content.meta()).containsKeys("title", "tags", "template");
 		Assertions.assertThat(content.meta().get("title")).isEqualTo("Startseite");

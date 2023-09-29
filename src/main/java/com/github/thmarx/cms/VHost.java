@@ -28,6 +28,7 @@ public class VHost {
 
 	private ContentRenderer contentRenderer;
 	private ContentResolver contentResolver;
+	private ContentParser contentParser;
 
 	private Path contentBase;
 	private Path assetBase;
@@ -51,10 +52,11 @@ public class VHost {
 		assetBase = fileSystem.resolve("assets/");
 		templateBase = fileSystem.resolve("templates/");
 
-		TemplateEngine templates = new TemplateEngine(templateBase, contentBase);
-		ContentParser parser = new ContentParser(contentBase);
+		contentParser = new ContentParser(fileSystem);
+		TemplateEngine templates = new TemplateEngine(templateBase, contentBase, contentParser);
+		
 
-		contentRenderer = new ContentRenderer(parser, templates, new MarkdownRenderer());
+		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
 		contentResolver = new ContentResolver(contentBase, contentRenderer);
 	}
 

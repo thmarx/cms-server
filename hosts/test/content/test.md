@@ -1,6 +1,6 @@
-title: TestSeite
+title: Startseite
 template: test.ftl
 tags: [eins,zwei,drei]
 -----
 
-Das ist ein Produkt!
+Und hier der Inhalt

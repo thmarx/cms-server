@@ -22,12 +22,12 @@ public class TemplateEngine {
 	private final Configuration config;
 	
 	private final Path contentBase;
-	private final Path templateBase;
+	private final ContentParser contentParser;
 
-	public TemplateEngine(final Path templateBase, final Path contentBase) {
+	public TemplateEngine(final Path templateBase, final Path contentBase, final ContentParser contentParser) {
 		
-		this.templateBase = templateBase;
 		this.contentBase = contentBase;
+		this.contentParser = contentParser;
 		
 		config = new Configuration(Configuration.VERSION_2_3_32);
 		
@@ -48,8 +48,6 @@ public class TemplateEngine {
 	}
 
 	public String render(final String template, final TemplateEngine.Model model, final RenderContext context) throws IOException {
-		final ContentParser contentParser = new ContentParser(contentBase);
-
 		model.values.put("navigationFunction", new NavigationFunction(contentBase, model.contentFile, contentParser));
 		model.values.put("nodeList", new NodeListFunction(contentBase, model.contentFile, contentParser));
 		model.values.put("nodeListExcludeIndex", new NodeListFunction(contentBase, model.contentFile, contentParser, true));

@@ -4,7 +4,11 @@
  */
 package com.github.thmarx.cms;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -18,5 +22,13 @@ public class FileSystem {
 
 	public Path resolve(String path) {
 		return hostBaseDirectory.resolve(path);
+	}
+	
+	public String loadContent (final Path file) throws IOException {
+		return Files.readString(file, StandardCharsets.UTF_8);
+	}
+	
+	public List<String> loadLines (final Path file) throws IOException {
+		return Files.readAllLines(file, StandardCharsets.UTF_8);
 	}
 }
