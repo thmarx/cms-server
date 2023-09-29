@@ -9,7 +9,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
-		<exec.mainClass>de.marx_software.product.search.markdowntest.Server</exec.mainClass>
+		<exec.mainClass>com.github.thmarx.cms.Server</exec.mainClass>
 		<graalvm.version>23.0.1</graalvm.version>
 	</properties>
 	

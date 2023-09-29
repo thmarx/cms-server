@@ -5,9 +5,6 @@
 package com.github.thmarx.cms;
 
 import com.google.common.base.Strings;
-import com.sun.net.httpserver.HttpExchange;
-import com.vladsch.flexmark.util.data.MutableDataSet;
-import static com.github.thmarx.cms.Server.contentRenderer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

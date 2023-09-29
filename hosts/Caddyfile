@@ -1,0 +1,20 @@
+http://localhost:2000 {
+	reverse_proxy 127.0.0.1:1010 {
+		lb_policy ip_hash
+	}
+}
+
+http://localhost2:3000 {
+	reverse_proxy 127.0.0.1:1010 {
+		lb_policy ip_hash
+	}
+}
+
+http://local.dev:4000 {
+	reverse_proxy 127.0.0.1:1010 {
+		lb_policy ip_hash
+	}
+	log {
+    	output file local-dev.log
+  	}
+}
