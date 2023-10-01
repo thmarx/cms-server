@@ -6,6 +6,7 @@ package com.github.thmarx.cms;
 
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +23,8 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 
+		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+		
 		Properties properties = new Properties();
 		try (var inStream = new FileInputStream("application.properties")) {
 			properties.load(inStream);
@@ -50,6 +53,7 @@ public class Server {
 		Undertow server = Undertow.builder()
 				.addHttpListener(Integer.valueOf(properties.getProperty("server.port", "8080")), "0.0.0.0")
 				.setHandler(hostHandlers)
+				.setServerOption(UndertowOptions.URL_CHARSET, "UTF8")
 				.build();
 		server.start();
 

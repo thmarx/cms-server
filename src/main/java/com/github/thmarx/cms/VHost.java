@@ -4,6 +4,7 @@
  */
 package com.github.thmarx.cms;
 
+import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.template.TemplateEngine;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
@@ -30,6 +31,8 @@ public class VHost {
 	private ContentResolver contentResolver;
 	private ContentParser contentParser;
 
+	private ExtensionManager extensionManager;
+	
 	private Path contentBase;
 	private Path assetBase;
 	private Path templateBase;
@@ -52,8 +55,11 @@ public class VHost {
 		assetBase = fileSystem.resolve("assets/");
 		templateBase = fileSystem.resolve("templates/");
 
+		extensionManager = new ExtensionManager(fileSystem);
+		extensionManager.init();
+		
 		contentParser = new ContentParser(fileSystem);
-		TemplateEngine templates = new TemplateEngine(templateBase, contentBase, contentParser);
+		TemplateEngine templates = new TemplateEngine(templateBase, contentBase, contentParser, extensionManager);
 		
 
 		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
@@ -66,8 +72,14 @@ public class VHost {
 
 		ResourceHandler faviconHandler = new ResourceHandler(new FileResourceManager(assetBase.resolve("favicon.ico").toFile()));
 
-		return Handlers.path(new DefaultHttpHandler(contentResolver))
+		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver))
 				.addPrefixPath("/assets", staticResourceHandler)
 				.addExactPath("/favicon.ico", faviconHandler);
+		
+		extensionManager.getHttpHandlerExtensions().forEach(handler -> {
+			pathHandler.addExactPath(handler.path(), handler.handler());
+		});
+		
+		return pathHandler;
 	}
 }

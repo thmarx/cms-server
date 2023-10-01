@@ -2,6 +2,7 @@ package com.github.thmarx.cms.template;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.template.list.NodeListFunction;
 import com.github.thmarx.cms.template.navigation.NavigationFunction;
 import freemarker.cache.FileTemplateLoader;
@@ -24,10 +25,13 @@ public class TemplateEngine {
 	private final Path contentBase;
 	private final ContentParser contentParser;
 
-	public TemplateEngine(final Path templateBase, final Path contentBase, final ContentParser contentParser) {
+	private final ExtensionManager extensionManager;
+	
+	public TemplateEngine(final Path templateBase, final Path contentBase, final ContentParser contentParser, final ExtensionManager extensionManager) {
 		
 		this.contentBase = contentBase;
 		this.contentParser = contentParser;
+		this.extensionManager = extensionManager;
 		
 		config = new Configuration(Configuration.VERSION_2_3_32);
 		
@@ -45,6 +49,14 @@ public class TemplateEngine {
 		
 		config.setSharedVariable("indexOf", new IndexOfMethod());
 		config.setSharedVariable("upper", new UpperDirective());
+		
+		extensionManager.getTemplateDirectiveExtensions().forEach(directive -> {
+			config.setSharedVariable(directive.name(), directive.directive());
+		});
+		
+		extensionManager.getTemplateMethodExtensions().forEach(method -> {
+			config.setSharedVariable(method.name(), method.method());
+		});
 	}
 
 	public String render(final String template, final TemplateEngine.Model model, final RenderContext context) throws IOException {

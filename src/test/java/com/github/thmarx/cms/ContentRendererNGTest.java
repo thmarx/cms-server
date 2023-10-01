@@ -4,6 +4,7 @@
  */
 package com.github.thmarx.cms;
 
+import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -22,8 +23,9 @@ public class ContentRendererNGTest {
 	
 	@BeforeClass
 	public void beforeClass () throws IOException {
-		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/")));
-		TemplateEngine templates = new TemplateEngine(Path.of("hosts/test/templates/"), Path.of("hosts/test/content/"), contentParser);
+		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test/"));
+		var contentParser = new ContentParser(fileSystem);
+		TemplateEngine templates = new TemplateEngine(Path.of("hosts/test/templates/"), Path.of("hosts/test/content/"), contentParser, new ExtensionManager(fileSystem));
 		
 		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
 	}
