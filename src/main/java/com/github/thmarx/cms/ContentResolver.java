@@ -4,6 +4,8 @@
  */
 package com.github.thmarx.cms;
 
+import com.github.thmarx.cms.filesystem.FileSystem;
+import com.github.thmarx.cms.filesystem.MetaData;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +23,8 @@ public class ContentResolver {
 	private final Path contentBase;
 
 	private final ContentRenderer contentRenderer;
+	
+	private final FileSystem fileSystem;
 	
 	public Optional<String> getContent(final RenderContext context) {
 		String path;
@@ -45,6 +49,16 @@ public class ContentResolver {
 			}
 		}
 
+		var uri = contentBase.relativize(contentFile).toString();
+		final Optional<MetaData.Node> byUri = fileSystem.getMetaData().byUri(uri);
+		if (byUri.isPresent()) {
+			MetaData.Node node = byUri.get();
+			boolean isDraft = (boolean) node.data().getOrDefault("draft", false);
+			if (isDraft) {
+				return Optional.empty();
+			}
+		}
+		
 		try {
 			var content = contentRenderer.render(contentFile, context);
 			return Optional.of(content);

@@ -4,20 +4,17 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.template.TemplateEngine;
-import com.github.thmarx.cms.template.freemarker.list.NodeListFunction;
-import com.github.thmarx.cms.template.freemarker.navigation.NavigationFunction;
+import com.github.thmarx.cms.template.functions.list.NodeListFunction;
+import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import freemarker.cache.FileTemplateLoader;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Map;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import java.nio.file.Path;
-import java.util.HashMap;
-import lombok.RequiredArgsConstructor;
 
 public class FreemarkerTemplateEngine implements TemplateEngine {
 	
@@ -62,10 +59,10 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 
 	@Override
 	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException {
-		model.values.put("navigationFunction", new NavigationFunction(contentBase, model.contentFile, contentParser));
+		model.values.put("navigation", new NavigationFunction(contentBase, model.contentFile, contentParser));
 		model.values.put("nodeList", new NodeListFunction(contentBase, model.contentFile, contentParser));
 		model.values.put("nodeListExcludeIndex", new NodeListFunction(contentBase, model.contentFile, contentParser, true));
-		model.values.put("context", context);
+		model.values.put("renderContext", context);
 		
 		StringWriter out = new StringWriter();
 		try {

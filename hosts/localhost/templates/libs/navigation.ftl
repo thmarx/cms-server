@@ -1,5 +1,5 @@
 [#macro main]
-[#assign nodes = navigationFunction("/", 0)]
+[#assign nodes = navigation.list("/", 0)]
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container-fluid">

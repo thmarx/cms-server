@@ -4,7 +4,7 @@
  */
 package com.github.thmarx.cms.extensions;
 
-import com.github.thmarx.cms.FileSystem;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import freemarker.template.TemplateDirectiveModel;
 import freemarker.template.TemplateMethodModelEx;
 import io.undertow.server.HttpHandler;

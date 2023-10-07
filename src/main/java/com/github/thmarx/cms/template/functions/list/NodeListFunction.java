@@ -6,9 +6,6 @@ package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
-import freemarker.template.SimpleNumber;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateModelException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +43,10 @@ public class NodeListFunction extends AbstractCurrentNodeFunction {
 
 	public Page<Node> list(String start) {
 		return list(start, DEFAULT_PAGE, DEFAUTL_PAGE_SIZE);
+	}
+	
+	public Page<Node> list(String start, int page) {
+		return list(start, page, DEFAUTL_PAGE_SIZE);
 	}
 	
 	public Page<Node> list(String start, int page, int size) {

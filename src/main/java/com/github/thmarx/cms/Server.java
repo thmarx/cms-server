@@ -4,6 +4,7 @@
  */
 package com.github.thmarx.cms;
 
+import com.github.thmarx.cms.filesystem.FileSystem;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;

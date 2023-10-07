@@ -14,7 +14,7 @@
 
 <div>
 <h3>mit index</h3>
-[#assign page = nodeList("/products", 1)]
+[#assign page = nodeList.list("/products", 1)]
 [#list page.items as item]
 <div>
 	<h4>${item.name}</h4>
@@ -29,8 +29,8 @@
 <div>
 <h3>ohne index</h3>
 
-[#assign pageIndex = context.getQueryParameterAsInt("page", 1)]
-[#assign page = nodeListExcludeIndex("/products", pageIndex, 1)]
+[#assign pageIndex = renderContext.getQueryParameterAsInt("page", 1)]
+[#assign page = nodeListExcludeIndex.list("/products", pageIndex, 1)]
 [#list page.items as item]
 <div>
 	<h4>${item.name}</h4>

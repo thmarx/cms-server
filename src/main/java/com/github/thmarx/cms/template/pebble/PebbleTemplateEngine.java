@@ -52,6 +52,7 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		Map<String, Object> values = new HashMap<>(model.values);
 		
 		values.put("nodeList", new NodeListFunction(contentBase, model.contentFile, contentParser));
+		values.put("renderContext", context);
 		
 		compiledTemplate.evaluate(writer, values);
 

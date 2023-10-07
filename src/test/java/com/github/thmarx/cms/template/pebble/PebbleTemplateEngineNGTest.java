@@ -5,7 +5,7 @@
 package com.github.thmarx.cms.template.pebble;
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.FileSystem;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
