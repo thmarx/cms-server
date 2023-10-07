@@ -2,10 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.github.thmarx.cms.template.navigation;
+package com.github.thmarx.cms.template.freemarker.navigation;
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.template.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.template.freemarker.AbstractCurrentNodeFunction;
 import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateMethodModelEx;

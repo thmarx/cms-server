@@ -6,6 +6,9 @@ package com.github.thmarx.cms;
 
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
+import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
+import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -59,11 +62,20 @@ public class VHost {
 		extensionManager.init();
 		
 		contentParser = new ContentParser(fileSystem);
-		TemplateEngine templates = new TemplateEngine(templateBase, contentBase, contentParser, extensionManager);
+		TemplateEngine templates = resolveTemplateEngine();
 		
 
 		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
 		contentResolver = new ContentResolver(contentBase, contentRenderer);
+	}
+	
+	private TemplateEngine resolveTemplateEngine () {
+		var engine = this.properties.getProperty("template.engine", "freemarker");
+		return switch (engine) {
+			case "thymeleaf" -> new ThymeleafTemplateEngine(templateBase);
+			case "pebble" -> new PebbleTemplateEngine(templateBase, contentBase, contentParser);
+			default -> new FreemarkerTemplateEngine(templateBase, contentBase, contentParser, extensionManager);
+		};
 	}
 
 	public HttpHandler httpHandler() {

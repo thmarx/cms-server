@@ -2,10 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.github.thmarx.cms.template.list;
+package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.template.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateModelException;
@@ -44,19 +44,11 @@ public class NodeListFunction extends AbstractCurrentNodeFunction {
 		this.excludeIndexMd = excludeIndexMd;
 	}
 
-	@Override
-	public Object exec(List arguments) throws TemplateModelException {
-		String start = ((SimpleScalar) arguments.get(0)).getAsString();
-
-		int page = DEFAULT_PAGE;
-		int size = DEFAUTL_PAGE_SIZE;
-		if (arguments.size() > 1) {
-			page = ((SimpleNumber) arguments.get(1)).getAsNumber().intValue();
-		}
-		if (arguments.size() > 2) {
-			size = ((SimpleNumber) arguments.get(2)).getAsNumber().intValue();
-		}
-
+	public Page<Node> list(String start) {
+		return list(start, DEFAULT_PAGE, DEFAUTL_PAGE_SIZE);
+	}
+	
+	public Page<Node> list(String start, int page, int size) {
 		return getNodes(start, page, size);
 	}
 

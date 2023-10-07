@@ -2,10 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.github.thmarx.cms.template;
+package com.github.thmarx.cms.template.functions;
 
+import com.github.thmarx.cms.template.freemarker.*;
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.template.navigation.NavigationFunction;
+import com.github.thmarx.cms.template.freemarker.navigation.NavigationFunction;
 import freemarker.template.TemplateMethodModelEx;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public abstract class AbstractCurrentNodeFunction implements TemplateMethodModelEx {
+public abstract class AbstractCurrentNodeFunction {
 
 	protected final Path contentBase;
 	protected final Path currentNode;

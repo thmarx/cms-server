@@ -2,11 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.github.thmarx.cms.template.navigation;
+package com.github.thmarx.cms.template.functions.list;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 /**
  *
@@ -14,9 +13,10 @@ import lombok.Value;
  */
 @Data
 @RequiredArgsConstructor
-public class NavNode {
+public class Node {
+	
 	private final String name;
 	private final String path;
-	private int depth = 1;
-	private boolean current = false;
+	private final String content;
+	
 }

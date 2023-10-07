@@ -4,6 +4,7 @@
  */
 package com.github.thmarx.cms;
 
+import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
