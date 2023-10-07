@@ -6,6 +6,7 @@ package com.github.thmarx.cms;
 
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
+import com.github.thmarx.cms.utils.PathUtil;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,7 +50,7 @@ public class ContentResolver {
 			}
 		}
 
-		var uri = contentBase.relativize(contentFile).toString();
+		var uri = PathUtil.toUri(contentFile, contentBase);
 		final Optional<MetaData.Node> byUri = fileSystem.getMetaData().byUri(uri);
 		if (byUri.isPresent()) {
 			MetaData.Node node = byUri.get();

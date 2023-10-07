@@ -1,13 +1,14 @@
+const UTF_8 = Java.type("java.nio.charset.StandardCharsets").UTF_8
+const tryFromString = Java.type("io.undertow.util.HttpString").tryFromString
 
 import {getString} from 'libs/module.mjs';
 
-console.log("umlaute: öäüß");
-console.log("module: ", getString())
 
 extensions.registerHttpExtension(
 		"/test-ext",
 		(exchange) => {
-			exchange.getResponseSender().send("ich bin einen test extension!öäü");
+			exchange.getResponseHeaders().add(tryFromString("Content-Type"), "text/html; charset=utf-8");
+			exchange.getResponseSender().send("ich bin einen test extension!öäü", UTF_8);
 		}
 )
 

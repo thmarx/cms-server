@@ -29,6 +29,10 @@ public class MetaData {
 		}
 		return Optional.of(nodes.get(uri));
 	}
+
+	void remove(String uri) {
+		nodes.remove(uri);
+	}
 	
 	public static record Node (String uri, Map<String, Object> data){}
 }

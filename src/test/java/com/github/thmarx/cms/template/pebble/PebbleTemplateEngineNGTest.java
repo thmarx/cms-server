@@ -25,7 +25,7 @@ public class PebbleTemplateEngineNGTest {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test_pebble/"));
 		var contentParser = new ContentParser(fileSystem);
 		
-		templateEngine = new PebbleTemplateEngine(fileSystem.resolve("templates"), fileSystem.resolve("content"), contentParser);
+		templateEngine = new PebbleTemplateEngine(fileSystem, contentParser);
 	}
 
 	@Test

@@ -4,12 +4,10 @@
  */
 package com.github.thmarx.cms;
 
-import com.vladsch.flexmark.ext.xwiki.macros.MacroExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
-import com.github.thmarx.cms.markdown.FtlExtension;
 import java.util.List;
 
 /**
@@ -24,8 +22,6 @@ public class MarkdownRenderer {
 	
 	public MarkdownRenderer () {
 		options.set(Parser.EXTENSIONS, List.of(
-				MacroExtension.create(),
-				FtlExtension.create()
 		));
 		parser = Parser.builder(options).build();
         renderer = HtmlRenderer.builder(options).build();

@@ -4,8 +4,12 @@
  */
 package com.github.thmarx.cms.template.thymeleaf;
 
+import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.template.functions.list.NodeListFunction;
+import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.loader.FileLoader;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
@@ -14,7 +18,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import org.thymeleaf.Thymeleaf;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -28,9 +34,13 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 
 	private final org.thymeleaf.TemplateEngine engine;
 	private final Path templateBase;
+	private final FileSystem fileSystem;
+	private final ContentParser contentParser;
 
-	public ThymeleafTemplateEngine(final Path templateBase) {
-		this.templateBase = templateBase;
+	public ThymeleafTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
+		this.fileSystem = fileSystem;
+		this.templateBase = fileSystem.resolve("templates/");
+		this.contentParser = contentParser;
 		
 		var templateResolver = new FileTemplateResolver();
 		templateResolver.setTemplateMode(TemplateMode.HTML);
@@ -44,6 +54,13 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 	public String render(String template, TemplateEngine.Model model, RenderContext context) throws IOException {
 
 		Writer writer = new StringWriter();
+		
+		Map<String, Object> values = new HashMap<>(model.values);
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
+		model.values.put("nodeList", new NodeListFunction(fileSystem, model.contentFile, contentParser));
+		model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
+		values.put("renderContext", context);
+		
 		engine.process(template, new Context(Locale.getDefault(), model.values), writer);
 		return writer.toString();
 	}

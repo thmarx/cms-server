@@ -7,6 +7,7 @@ package com.github.thmarx.cms;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HttpString;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class DefaultHttpHandler implements HttpHandler {
 			content = contentResolver.getContent(context);
 			exchange.setStatusCode(404);
 		}
+		exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "text/html; charset=utf-8");
 		exchange.getResponseSender().send(content.get(), StandardCharsets.UTF_8);
 	}
 

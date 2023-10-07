@@ -49,7 +49,7 @@ public class VHost {
 	
 	public void init() throws IOException {
 		
-		fileSystem.buildMetaData();
+		fileSystem.init();
 		
 		var props = fileSystem.resolve("host.properties");
 		properties = new Properties();
@@ -80,9 +80,9 @@ public class VHost {
 	private TemplateEngine resolveTemplateEngine () {
 		var engine = this.properties.getProperty("template.engine", "freemarker");
 		return switch (engine) {
-			case "thymeleaf" -> new ThymeleafTemplateEngine(templateBase);
-			case "pebble" -> new PebbleTemplateEngine(templateBase, contentBase, contentParser);
-			default -> new FreemarkerTemplateEngine(templateBase, contentBase, contentParser, extensionManager);
+			case "thymeleaf" -> new ThymeleafTemplateEngine(fileSystem, contentParser);
+			case "pebble" -> new PebbleTemplateEngine(fileSystem, contentParser);
+			default -> new FreemarkerTemplateEngine(fileSystem, contentParser, extensionManager);
 		};
 	}
 

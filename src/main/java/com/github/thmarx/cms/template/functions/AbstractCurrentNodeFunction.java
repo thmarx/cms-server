@@ -6,6 +6,7 @@ package com.github.thmarx.cms.template.functions;
 
 import com.github.thmarx.cms.template.freemarker.*;
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.freemarker.navigation.NavigationFunction;
 import freemarker.template.TemplateMethodModelEx;
 import java.io.IOException;
@@ -23,14 +24,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public abstract class AbstractCurrentNodeFunction {
 
-	protected final Path contentBase;
+	protected final FileSystem fileSystem;
 	protected final Path currentNode;
 	protected final ContentParser contentParser;
 
 	protected String getUrl(Path node) {
 		StringBuilder sb = new StringBuilder();
 
-		while (node != null && !node.equals(contentBase)) {
+		while (node != null && !node.equals(fileSystem.resolve("content/"))) {
 
 			var filename = node.getFileName().toString();
 			if (!filename.equals("index.md")) {

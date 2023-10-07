@@ -5,17 +5,17 @@
 package com.github.thmarx.cms.template.functions.navigation;
 
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.filesystem.FileSystem;
+import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
-import freemarker.template.SimpleNumber;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
+import com.github.thmarx.cms.utils.PathUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -24,22 +24,22 @@ import java.util.List;
 public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private static final int DEFAULT_DEPTH = 0;
-	
-	public NavigationFunction(Path contentBase, Path currentNode, ContentParser contentParser) {
-		super(contentBase, currentNode, contentParser);
+
+	public NavigationFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser) {
+		super(fileSystem, currentNode, contentParser);
 	}
 
-	public List<NavNode> list (final String start) {
+	public List<NavNode> list(final String start) {
 		return getNodes(start, DEFAULT_DEPTH);
 	}
-	
-	public List<NavNode> list (final String start, final int depth) {
+
+	public List<NavNode> list(final String start, final int depth) {
 		return getNodes(start, depth);
 	}
 
 	private List<NavNode> getNodes(final String start, final int depth) {
 		if (start.startsWith("/")) {
-			return getNodesFromBase(contentBase, start.substring(1), depth);
+			return getNodesFromBase(fileSystem.resolve("content/"), start.substring(1), depth);
 		} else if (start.equals(".")) {
 			return getNodesFromBase(currentNode.getParent(), "", depth);
 		} else if (start.startsWith("./")) {
@@ -50,23 +50,36 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		try {
+			final Path contentBase = fileSystem.resolve("content/");
 			List<NavNode> nodes = new ArrayList<>();
 			var startPath = base.resolve(start);
-			Files.list(startPath).forEach(path -> {
-				var filename = path.getFileName().toString();
-				if (filename.startsWith("_")) {
-					return;
-				}
-				if (filename.endsWith(".md")) {
-					filename = filename.substring(0, filename.length() - 3);
-				}
-				var name = getName(path);
-				final NavNode node = new NavNode(name.isPresent() ? name.get() : filename, getUrl(path));
-				if (isCurrentNode(path)) {
-					node.setCurrent(true);
-				}
-				nodes.add(node);
-			});
+			Files.list(startPath)
+					.filter(path -> {
+						var uri = PathUtil.toUri(path, contentBase);
+
+						final Optional<MetaData.Node> byUri = fileSystem.getMetaData().byUri(uri);
+						if (byUri.isPresent()) {
+							MetaData.Node node = byUri.get();
+							return !(boolean) node.data().getOrDefault("draft", false);
+						}
+						
+						return true;
+					})
+					.forEach(path -> {
+						var filename = path.getFileName().toString();
+						if (filename.startsWith("_")) {
+							return;
+						}
+						if (filename.endsWith(".md")) {
+							filename = filename.substring(0, filename.length() - 3);
+						}
+						var name = getName(path);
+						final NavNode node = new NavNode(name.isPresent() ? name.get() : filename, getUrl(path));
+						if (isCurrentNode(path)) {
+							node.setCurrent(true);
+						}
+						nodes.add(node);
+					});
 			return nodes;
 		} catch (IOException ex) {
 			ex.printStackTrace();

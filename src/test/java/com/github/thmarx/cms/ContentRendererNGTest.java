@@ -27,7 +27,7 @@ public class ContentRendererNGTest {
 	public void beforeClass () throws IOException {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test/"));
 		var contentParser = new ContentParser(fileSystem);
-		TemplateEngine templates = new FreemarkerTemplateEngine(Path.of("hosts/test/templates/"), Path.of("hosts/test/content/"), contentParser, new ExtensionManager(fileSystem));
+		TemplateEngine templates = new FreemarkerTemplateEngine(fileSystem, contentParser, new ExtensionManager(fileSystem));
 		
 		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
 	}

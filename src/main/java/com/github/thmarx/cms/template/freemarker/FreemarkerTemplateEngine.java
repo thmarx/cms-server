@@ -3,6 +3,7 @@ package com.github.thmarx.cms.template.freemarker;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.extensions.ExtensionManager;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunction;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
@@ -25,16 +26,17 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 
 	private final ExtensionManager extensionManager;
 	
-	public FreemarkerTemplateEngine(final Path templateBase, final Path contentBase, final ContentParser contentParser, final ExtensionManager extensionManager) {
-		
-		this.contentBase = contentBase;
+	final FileSystem fileSystem;
+	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, final ExtensionManager extensionManager) {
+		this.fileSystem = fileSystem;
+		this.contentBase = fileSystem.resolve("content/");
 		this.contentParser = contentParser;
 		this.extensionManager = extensionManager;
 		
 		config = new Configuration(Configuration.VERSION_2_3_32);
 		
 		try {
-			config.setTemplateLoader(new FileTemplateLoader(templateBase.toFile()));
+			config.setTemplateLoader(new FileTemplateLoader(fileSystem.resolve("templates/").toFile()));
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -59,9 +61,9 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 
 	@Override
 	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException {
-		model.values.put("navigation", new NavigationFunction(contentBase, model.contentFile, contentParser));
-		model.values.put("nodeList", new NodeListFunction(contentBase, model.contentFile, contentParser));
-		model.values.put("nodeListExcludeIndex", new NodeListFunction(contentBase, model.contentFile, contentParser, true));
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
+		model.values.put("nodeList", new NodeListFunction(fileSystem, model.contentFile, contentParser));
+		model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
 		model.values.put("renderContext", context);
 		
 		StringWriter out = new StringWriter();

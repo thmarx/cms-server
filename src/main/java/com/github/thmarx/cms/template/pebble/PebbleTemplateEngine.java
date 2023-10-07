@@ -6,8 +6,10 @@ package com.github.thmarx.cms.template.pebble;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunction;
+import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.loader.FileLoader;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
@@ -30,9 +32,12 @@ public class PebbleTemplateEngine implements TemplateEngine {
 	final Path contentBase; 
 	final ContentParser contentParser;
 
-	public PebbleTemplateEngine(final Path templateBase, final Path contentBase, final ContentParser contentParser) {
-		this.templateBase = templateBase;
-		this.contentBase = contentBase;
+	final FileSystem fileSystem;
+	
+	public PebbleTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
+		this.fileSystem = fileSystem;
+		this.templateBase = fileSystem.resolve("templates/");
+		this.contentBase = fileSystem.resolve("content/");
 		this.contentParser = contentParser;
 		var loader = new FileLoader();
 		loader.setPrefix(this.templateBase.toString() + File.separatorChar);
@@ -50,8 +55,9 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		PebbleTemplate compiledTemplate = engine.getTemplate(template);
 
 		Map<String, Object> values = new HashMap<>(model.values);
-		
-		values.put("nodeList", new NodeListFunction(contentBase, model.contentFile, contentParser));
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
+		model.values.put("nodeList", new NodeListFunction(fileSystem, model.contentFile, contentParser));
+		model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
 		values.put("renderContext", context);
 		
 		compiledTemplate.evaluate(writer, values);

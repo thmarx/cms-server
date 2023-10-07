@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.HostAccess;
@@ -26,6 +27,7 @@ import org.graalvm.polyglot.io.IOAccess;
  * @author t.marx
  */
 @RequiredArgsConstructor
+@Slf4j
 public class ExtensionManager implements AutoCloseable {
 
 	private final FileSystem fileSystem;
@@ -66,6 +68,14 @@ public class ExtensionManager implements AutoCloseable {
 							.build())
 					.engine(engine).build();
 
+			try {
+				var init = ExtensionManager.class.getResource("init.js");
+				context.eval(Source.newBuilder("js", init).build());
+			} catch (IOException ex) {
+				log.error("error loading init script", ex);
+				throw new RuntimeException(ex);
+			}
+
 			var extPath = fileSystem.resolve("extensions/");
 			if (Files.exists(extPath)) {
 				Files.list(extPath)
@@ -81,7 +91,7 @@ public class ExtensionManager implements AutoCloseable {
 										.build();
 								context.eval(source);
 							} catch (IOException ex) {
-								ex.printStackTrace();
+								log.error("", ex);
 							}
 						});
 			}

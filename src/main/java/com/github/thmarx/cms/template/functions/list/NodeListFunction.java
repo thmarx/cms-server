@@ -5,6 +5,7 @@
 package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,12 +33,12 @@ public class NodeListFunction extends AbstractCurrentNodeFunction {
 		return !filename.startsWith("_");
 	};
 
-	public NodeListFunction(Path contentBase, Path currentNode, ContentParser contentParser) {
-		super(contentBase, currentNode, contentParser);
+	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser) {
+		super(fileSystem, currentNode, contentParser);
 	}
 
-	public NodeListFunction(Path contentBase, Path currentNode, ContentParser contentParser, boolean excludeIndexMd) {
-		this(contentBase, currentNode, contentParser);
+	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, boolean excludeIndexMd) {
+		this(fileSystem, currentNode, contentParser);
 		this.excludeIndexMd = excludeIndexMd;
 	}
 
@@ -55,7 +56,7 @@ public class NodeListFunction extends AbstractCurrentNodeFunction {
 
 	private Page getNodes(final String start, final int page, final int pageSize) {
 		if (start.startsWith("/")) {
-			return getNodesFromBase(contentBase, start.substring(1), page, pageSize);
+			return getNodesFromBase(fileSystem.resolve("content/"), start.substring(1), page, pageSize);
 		} else if (start.equals(".")) {
 			return getNodesFromBase(currentNode.getParent(), "", page, pageSize);
 		} else if (start.startsWith("./")) {

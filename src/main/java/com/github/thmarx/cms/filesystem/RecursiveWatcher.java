@@ -152,7 +152,7 @@ public class RecursiveWatcher {
 				walkTreeAndSetWatches();
 				unregisterStaleWatches();
 			}
-		}, 1000);
+		}, 10000);
 	}
 	
 	private synchronized void walkTreeAndSetWatches() {
