@@ -19,6 +19,14 @@ public class MetaData {
 	
 	private ConcurrentMap<String, Node> nodes = new ConcurrentHashMap<>();
 	
+	void clear () {
+		nodes.clear();
+	}
+	
+	ConcurrentMap<String, Node> nodes () {
+		return new ConcurrentHashMap<>(nodes);
+	}
+	
 	public void add(Node node) {
 		nodes.put(node.uri, node);
 	}
@@ -28,6 +36,16 @@ public class MetaData {
 			return Optional.empty();
 		}
 		return Optional.of(nodes.get(uri));
+	}
+	
+	public boolean isVisible (final String uri) {
+		
+		if (nodes.containsKey(uri)) {
+			Node node = nodes.get(uri);
+			return !(boolean) node.data().getOrDefault("draft", false);
+		}
+		
+		return false;
 	}
 
 	void remove(String uri) {

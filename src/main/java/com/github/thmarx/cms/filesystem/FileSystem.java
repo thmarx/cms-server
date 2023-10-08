@@ -6,6 +6,7 @@ package com.github.thmarx.cms.filesystem;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.utils.PathUtil;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.Flow;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +38,7 @@ public class FileSystem {
 
 	final ContentParser contentParser = new ContentParser(this);
 	private Path contentBase;
-	
+
 	@Getter
 	private final MetaData metaData = new MetaData();
 
@@ -51,16 +53,36 @@ public class FileSystem {
 	public List<String> loadLines(final Path file) throws IOException {
 		return Files.readAllLines(file, StandardCharsets.UTF_8);
 	}
+	
+	public List<String> listContent (final Path base, final String start) {
+		final Path contentBase = resolve("content/");
+		var startPath = base.resolve(start);
+		
+		return metaData.nodes().entrySet().stream().filter(entry -> {
+			var key = entry.getKey();
+			
+			var ePath = contentBase.resolve(key);
+			
+			var filename = ePath.toString().replace(startPath.toString(), "");
+			
+			if (filename.startsWith(File.separator)) {
+				filename = filename.substring(1);
+			}
+			
+			return -1 == filename.indexOf(File.separatorChar) && metaData.isVisible(key);
+		}).map(entry -> entry.getKey()).collect(Collectors.toList());
+	}
 
 	private void addOrUpdateMetaData(Path file) throws IOException {
 		Map<String, Object> fileMeta = contentParser.parseMeta(file);
-		
+
 		var uri = PathUtil.toUri(file, contentBase);
-		
+
 		metaData.add(new MetaData.Node(uri, fileMeta));
 	}
 
 	public void init() throws IOException {
+		log.debug("init filesystem");
 
 		this.contentBase = resolve("content/");
 		this.watcher = new RecursiveWatcher(contentBase);
@@ -75,18 +97,25 @@ public class FileSystem {
 
 			@Override
 			public void onNext(FileEvent item) {
-				if (FileEvent.Type.DELETED.equals(item.type())) {
-					
-					var uri = PathUtil.toUri(item.file().toPath(), contentBase);
-					
-					metaData.remove(uri);
-				} else {
-					try {
-						addOrUpdateMetaData(item.file().toPath());
-					} catch (IOException ex) {
-						Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
+				try {
+
+					if (item.file().isDirectory()) {
+						swapMetaData();
+					} else {
+						if (FileEvent.Type.DELETED.equals(item.type())) {
+
+							var uri = PathUtil.toUri(item.file().toPath(), contentBase);
+
+							metaData.remove(uri);
+						} else {
+							addOrUpdateMetaData(item.file().toPath());
+
+						}
 					}
+				} catch (IOException ex) {
+					log.error("", ex);
 				}
+
 				this.subscription.request(1);
 			}
 
@@ -97,15 +126,22 @@ public class FileSystem {
 			@Override
 			public void onComplete() {
 			}
+
 		});
 
 		reInitFolder(contentBase);
-		
+
 		watcher.start();
 	}
-	
-	private void reInitFolder (final Path folder) throws IOException {
-		
+
+	private void swapMetaData() throws IOException {
+		log.debug("rebuild metadata");
+		metaData.clear();
+		reInitFolder(contentBase);
+	}
+
+	private void reInitFolder(final Path folder) throws IOException {
+
 		long before = System.currentTimeMillis();
 		Files.walkFileTree(folder, new FileVisitor<Path>() {
 			@Override
@@ -131,9 +167,9 @@ public class FileSystem {
 				return FileVisitResult.CONTINUE;
 			}
 		});
-		
+
 		long after = System.currentTimeMillis();
-		
-		log.debug("loading metadata took " + (after-before) + "ms");
+
+		log.debug("loading metadata took " + (after - before) + "ms");
 	}
 }

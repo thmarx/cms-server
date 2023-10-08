@@ -30,16 +30,14 @@ import java.util.TimerTask;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The recursive file watcher monitors a folder (and its sub-folders).
  */
+@Slf4j
 public class RecursiveWatcher {
 
-	private static final Logger logger = Logger.getLogger(RecursiveWatcher.class.getSimpleName());
-	
 	private Path root;
 	
 	private AtomicBoolean running;
@@ -59,11 +57,11 @@ public class RecursiveWatcher {
 		
 		this.watchService = null;
 		this.watchThread = null;
-		this.watchPathKeyMap = new HashMap<Path, WatchKey>();
+		this.watchPathKeyMap = new HashMap<>();
 		
 		this.timer = null;
 		
-		this.publisher = new SubmissionPublisher<FileEvent>();
+		this.publisher = new SubmissionPublisher<>();
 	}
 	
 	public SubmissionPublisher<FileEvent> getPublisher() {
@@ -148,7 +146,7 @@ public class RecursiveWatcher {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				logger.log(Level.INFO, "File system actions (on watched folders) settled. Updating watches ...");
+				log.debug("File system actions (on watched folders) settled. Updating watches ...");
 				walkTreeAndSetWatches();
 				unregisterStaleWatches();
 			}
@@ -156,7 +154,7 @@ public class RecursiveWatcher {
 	}
 	
 	private synchronized void walkTreeAndSetWatches() {
-		logger.log(Level.INFO, "Registering new folders at watch service ...");
+		log.debug("Registering new folders at watch service ...");
 		
 		try {
 			Files.walkFileTree(root, new FileVisitor<Path>() {
@@ -187,8 +185,8 @@ public class RecursiveWatcher {
 	}
 	
 	private synchronized void unregisterStaleWatches() {
-		Set<Path> paths = new HashSet<Path>(watchPathKeyMap.keySet());
-		Set<Path> stalePaths = new HashSet<Path>();
+		Set<Path> paths = new HashSet<>(watchPathKeyMap.keySet());
+		Set<Path> stalePaths = new HashSet<>();
 		
 		for (Path path : paths) {
 			if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
@@ -196,8 +194,8 @@ public class RecursiveWatcher {
 			}
 		}
 		
-		if (stalePaths.size() > 0) {
-			logger.log(Level.INFO, "Cancelling stale path watches ...");
+		if (!stalePaths.isEmpty()) {
+			log.debug("Cancelling stale path watches ...");
 			
 			for (Path stalePath : stalePaths) {
 				unregisterWatch(stalePath);
@@ -207,7 +205,7 @@ public class RecursiveWatcher {
 	
 	private synchronized void registerWatch(Path dir) {
 		if (!watchPathKeyMap.containsKey(dir)) {
-			logger.log(Level.INFO, "- Registering " + dir);
+			log.debug("- Registering " + dir);
 			
 			try {
 				WatchKey watchKey = dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY, OVERFLOW);
@@ -222,7 +220,7 @@ public class RecursiveWatcher {
 		WatchKey watchKey = watchPathKeyMap.get(dir);
 		
 		if (watchKey != null) {
-			logger.log(Level.INFO, "- Cancelling " + dir);
+			log.debug("- Cancelling " + dir);
 			
 			watchKey.cancel();
 			watchPathKeyMap.remove(dir);

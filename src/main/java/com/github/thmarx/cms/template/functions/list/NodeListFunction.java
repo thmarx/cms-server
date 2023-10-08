@@ -7,6 +7,7 @@ package com.github.thmarx.cms.template.functions.list;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.utils.PathUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,6 +85,11 @@ public class NodeListFunction extends AbstractCurrentNodeFunction {
 						return filename1.compareTo(filename2);
 					})
 					.filter(fileNameFilter)
+					.filter(path -> {
+						var uri = PathUtil.toUri(path, fileSystem.resolve("content/"));
+
+						return fileSystem.getMetaData().isVisible(uri);
+					})
 					.skip(skipCount)
 					.limit(pageSize)
 					.forEach(path -> {

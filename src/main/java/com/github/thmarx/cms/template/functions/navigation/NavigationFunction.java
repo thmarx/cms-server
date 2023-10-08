@@ -38,11 +38,11 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 	}
 
 	private List<NavNode> getNodes(final String start, final int depth) {
-		if (start.startsWith("/")) {
+		if (start.startsWith("/")) { // root
 			return getNodesFromBase(fileSystem.resolve("content/"), start.substring(1), depth);
-		} else if (start.equals(".")) {
+		} else if (start.equals(".")) { // current
 			return getNodesFromBase(currentNode.getParent(), "", depth);
-		} else if (start.startsWith("./")) {
+		} else if (start.startsWith("./")) { // subfolder of current
 			return getNodesFromBase(currentNode.getParent(), start.substring(2), depth);
 		}
 		return Collections.emptyList();
@@ -50,6 +50,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		try {
+			List<String> navnodes = fileSystem.listContent(base, start);
 			final Path contentBase = fileSystem.resolve("content/");
 			List<NavNode> nodes = new ArrayList<>();
 			var startPath = base.resolve(start);
@@ -57,13 +58,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 					.filter(path -> {
 						var uri = PathUtil.toUri(path, contentBase);
 
-						final Optional<MetaData.Node> byUri = fileSystem.getMetaData().byUri(uri);
-						if (byUri.isPresent()) {
-							MetaData.Node node = byUri.get();
-							return !(boolean) node.data().getOrDefault("draft", false);
-						}
-						
-						return true;
+						return fileSystem.getMetaData().isVisible(uri);
 					})
 					.forEach(path -> {
 						var filename = path.getFileName().toString();

@@ -51,13 +51,8 @@ public class ContentResolver {
 		}
 
 		var uri = PathUtil.toUri(contentFile, contentBase);
-		final Optional<MetaData.Node> byUri = fileSystem.getMetaData().byUri(uri);
-		if (byUri.isPresent()) {
-			MetaData.Node node = byUri.get();
-			boolean isDraft = (boolean) node.data().getOrDefault("draft", false);
-			if (isDraft) {
-				return Optional.empty();
-			}
+		if (!fileSystem.getMetaData().isVisible(uri)) {
+			return Optional.empty();
 		}
 		
 		try {
