@@ -127,9 +127,12 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>3.6.0</version>
 				<configuration>
-					<descriptors>
+					<!--descriptors>
 						<descriptor>src/assembly/executable.xml</descriptor>
-					</descriptors>
+					</descriptors-->
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
