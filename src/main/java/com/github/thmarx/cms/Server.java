@@ -15,18 +15,20 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
+@Slf4j
 public class Server {
 
 	public static void main(String[] args) throws Exception {
 
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
-		
+
 		Properties properties = new Properties();
 		try (var inStream = new FileInputStream("application.properties")) {
 			properties.load(inStream);
@@ -45,12 +47,21 @@ public class Server {
 				}
 			}
 		});
-		
+
 		var hostHandlers = Handlers.virtualHost();
 		vhosts.forEach(host -> {
-			System.out.println("add virtual host : " + host.getHostname());
+			log.debug("add virtual host : " + host.getHostname());
 			hostHandlers.addHost(host.getHostname(), host.httpHandler());
 		});
+
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			log.debug("shutting down");
+
+			vhosts.forEach(host -> {
+				log.debug("shutting down vhost : " + host.getHostname());
+				host.shutdown();
+			});
+		}));
 
 		Undertow server = Undertow.builder()
 				.addHttpListener(Integer.valueOf(properties.getProperty("server.port", "8080")), "0.0.0.0")

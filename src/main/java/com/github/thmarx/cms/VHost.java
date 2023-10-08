@@ -20,14 +20,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
+@Slf4j
 public class VHost {
 
 	private final FileSystem fileSystem;
@@ -46,6 +50,15 @@ public class VHost {
 	private String hostname;
 	
 	private Properties properties;
+	
+	public void shutdown ()  {
+		try {
+			fileSystem.shutdown();
+			extensionManager.close();
+		} catch (Exception ex) {
+			log.error("", ex);
+		}
+	}
 	
 	public void init() throws IOException {
 		

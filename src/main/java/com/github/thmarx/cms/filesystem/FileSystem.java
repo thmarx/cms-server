@@ -42,6 +42,10 @@ public class FileSystem {
 	@Getter
 	private final MetaData metaData = new MetaData();
 
+	public void shutdown () {
+		watcher.stop();
+	}
+	
 	public Path resolve(String path) {
 		return hostBaseDirectory.resolve(path);
 	}
