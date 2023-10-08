@@ -20,12 +20,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
+@Slf4j
 public class FileSystem {
 
 	private final Path hostBaseDirectory;
@@ -103,6 +105,8 @@ public class FileSystem {
 	}
 	
 	private void reInitFolder (final Path folder) throws IOException {
+		
+		long before = System.currentTimeMillis();
 		Files.walkFileTree(folder, new FileVisitor<Path>() {
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
@@ -127,5 +131,9 @@ public class FileSystem {
 				return FileVisitResult.CONTINUE;
 			}
 		});
+		
+		long after = System.currentTimeMillis();
+		
+		log.debug("loading metadata took " + (after-before) + "ms");
 	}
 }

@@ -9,10 +9,16 @@ import freemarker.template.TemplateDirectiveModel;
 import freemarker.template.TemplateMethodModelEx;
 import io.undertow.server.HttpHandler;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +60,23 @@ public class ExtensionManager implements AutoCloseable {
 		templateMethodExtensions.add(new TemplateMethodExtension(path, method));
 	}
 
+	private ClassLoader getClassLoader() throws IOException {
+		Path libs = fileSystem.resolve("libs/");
+		List<URL> urls = new ArrayList<>();
+		if (Files.exists(libs)) {
+			Files.list(libs)
+					.filter(path -> path.getFileName().toString().endsWith(".jar"))
+					.forEach(path -> {
+						try {
+							urls.add(path.toUri().toURL());
+						} catch (MalformedURLException ex) {
+							log.error("", ex);
+						}
+					});
+		}
+		return new URLClassLoader(urls.toArray(URL[]::new), ClassLoader.getSystemClassLoader());
+	}
+
 	public void init() throws IOException {
 		if (engine == null) {
 			engine = Engine.newBuilder("js")
@@ -63,6 +86,7 @@ public class ExtensionManager implements AutoCloseable {
 					.allowAllAccess(true)
 					.allowHostClassLookup(className -> true)
 					.allowHostAccess(HostAccess.ALL)
+					.hostClassLoader(getClassLoader())
 					.allowIO(IOAccess.newBuilder()
 							.fileSystem(new ExtensionFileSystem(fileSystem.resolve("extensions/")))
 							.build())

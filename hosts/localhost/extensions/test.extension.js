@@ -3,6 +3,9 @@ const tryFromString = Java.type("io.undertow.util.HttpString").tryFromString
 
 import {getString} from 'libs/module.mjs';
 
+import {log} from 'system/logging.mjs';
+
+log("Hallo Leute")
 
 extensions.registerHttpExtension(
 		"/test-ext",

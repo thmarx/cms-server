@@ -5,6 +5,7 @@
 package com.github.thmarx.cms.extensions;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +39,9 @@ public class ExtensionFileSystem implements FileSystem {
 
 	@Override
 	public Path parsePath(String path) {
+		if (path.startsWith("system/")) {
+			return Path.of(path);
+		}
 		return extensionPath.resolve(path);
 	}
 
@@ -57,11 +61,10 @@ public class ExtensionFileSystem implements FileSystem {
 
 	@Override
 	public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-		/*
-		var contents = Files.readString(path, StandardCharsets.UTF_8);
-		var bytes = contents.getBytes(StandardCharsets.UTF_8);
-		return new SeekableInMemoryByteChannel(bytes);
-		*/
+		if (path.startsWith("system/")) {
+			InputStream resourceAsStream = ExtensionFileSystem.class.getResourceAsStream(path.toString());
+			return new SeekableInMemoryByteChannel(resourceAsStream.readAllBytes());
+		}
 		return Files.newByteChannel(path, options, attrs);
 	}
 
