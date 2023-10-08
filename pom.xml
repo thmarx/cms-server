@@ -63,6 +63,11 @@
 			<artifactId>graal-sdk</artifactId>
 			<version>23.1.0</version>
 		</dependency>
+		<!--dependency>
+			<groupId>org.graalvm.js</groupId>
+			<artifactId>js</artifactId>
+			<version>23.0.1</version>
+		</dependency-->
 		<dependency>
 			<groupId>org.graalvm.js</groupId>
 			<artifactId>js-language</artifactId>
