@@ -25,6 +25,7 @@ public class Server {
 	public static void main(String[] args) throws Exception {
 
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+		//System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 		
 		Properties properties = new Properties();
 		try (var inStream = new FileInputStream("application.properties")) {

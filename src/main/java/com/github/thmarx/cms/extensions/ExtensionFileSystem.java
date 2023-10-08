@@ -62,8 +62,14 @@ public class ExtensionFileSystem implements FileSystem {
 	@Override
 	public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
 		if (path.startsWith("system/")) {
-			InputStream resourceAsStream = ExtensionFileSystem.class.getResourceAsStream(path.toString());
-			return new SeekableInMemoryByteChannel(resourceAsStream.readAllBytes());
+			var localPath = path.toString().replaceAll("\\\\", "/");
+			InputStream resourceAsStream = ExtensionFileSystem.class.getResourceAsStream(localPath);
+			
+			byte[] content = new byte[0];
+			if (resourceAsStream != null) {
+				content = resourceAsStream.readAllBytes();
+			}
+			return new SeekableInMemoryByteChannel(content);
 		}
 		return Files.newByteChannel(path, options, attrs);
 	}
