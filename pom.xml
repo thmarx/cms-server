@@ -61,12 +61,12 @@
 		<dependency>
 			<groupId>org.graalvm.sdk</groupId>
 			<artifactId>graal-sdk</artifactId>
-			<version>23.0.1</version>
+			<version>23.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.graalvm.js</groupId>
-			<artifactId>js</artifactId>
-			<version>23.0.1</version>
+			<artifactId>js-language</artifactId>
+			<version>23.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
