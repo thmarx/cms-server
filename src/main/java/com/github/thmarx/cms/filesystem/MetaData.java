@@ -111,6 +111,16 @@ public class MetaData {
 
 	void remove(String uri) {
 		nodes.remove(uri);
+		
+		var folder = getFolder(uri);
+		String pattern = Pattern.quote("/");
+		var parts = uri.split(pattern);
+		var name = parts[parts.length - 1];
+		if (folder.isPresent()) {
+			folder.get().children.remove(name);
+		} else {
+			tree.remove(name);
+		}
 	}
 
 	public static record Node(String uri, String name, Map<String, Object> data, boolean isDirectory, Map<String, Node> children) {
