@@ -19,7 +19,6 @@
 		<h3>
 			${x}
 		</h3>
-		${indexOf("met", x)}
 	</div>
 	<p>
 		[@upper]

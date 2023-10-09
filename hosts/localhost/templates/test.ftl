@@ -5,13 +5,8 @@
 	</head>
 	<body>
 		${content}
+		My Name is ${myName.get()}
 
-		${myName()} is Thorsten!
-
-		<div>
-			[@repeat]
-				Hallo Leute
-			[/@repeat]
-		</div>
+		${getHello.apply("Thorsten")}
 	</body>
 </html>

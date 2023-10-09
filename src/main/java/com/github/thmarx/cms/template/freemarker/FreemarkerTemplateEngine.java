@@ -15,8 +15,11 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateModelException;
 import java.nio.file.Path;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class FreemarkerTemplateEngine implements TemplateEngine {
 	
 	private final Configuration config;
@@ -47,15 +50,24 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 		config.setWrapUncheckedExceptions(true);
 		config.setFallbackOnNullLoopVariable(false);
 		
+		
 		config.setSharedVariable("indexOf", new IndexOfMethod());
 		config.setSharedVariable("upper", new UpperDirective());
 		
-		extensionManager.getTemplateDirectiveExtensions().forEach(directive -> {
-			config.setSharedVariable(directive.name(), directive.directive());
+		extensionManager.getRegisterTemplateSupplier().forEach(service -> {
+			try {
+				config.setSharedVariable(service.name(), service.supplier());
+			} catch (TemplateModelException ex) {
+				log.error(null, ex);
+			}
 		});
 		
-		extensionManager.getTemplateMethodExtensions().forEach(method -> {
-			config.setSharedVariable(method.name(), method.method());
+		extensionManager.getRegisterTemplateFunctions().forEach(service -> {
+			try {
+				config.setSharedVariable(service.name(), service.function());
+			} catch (TemplateModelException ex) {
+				log.error(null, ex);
+			}
 		});
 	}
 

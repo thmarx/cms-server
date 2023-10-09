@@ -1,0 +1,1 @@
+export const Object = Java.extend(Java.type("java.lang.Object"))

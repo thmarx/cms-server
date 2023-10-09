@@ -4,12 +4,10 @@
  */
 package com.github.thmarx.cms.extensions;
 
-import freemarker.template.TemplateMethodModelEx;
+import java.util.function.Supplier;
 
 /**
  *
  * @author t.marx
  */
-public record TemplateMethodExtension(String name, TemplateMethodModelEx method) {
-
-}
+public record TemplateSupplierExtension (String name, Supplier<?> supplier) {}

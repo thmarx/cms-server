@@ -4,10 +4,11 @@
  */
 package com.github.thmarx.cms.extensions;
 
-import freemarker.template.TemplateDirectiveModel;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  *
  * @author t.marx
  */
-public record TemplateDirectiveExtension (String name, TemplateDirectiveModel directive) {}
+public record TemplateFunctionExtension (String name, Function<?,?> function) {}

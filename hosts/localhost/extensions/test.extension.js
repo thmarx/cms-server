@@ -15,25 +15,14 @@ extensions.registerHttpExtension(
 		}
 )
 
-extensions.registerTemplateMethodExtensions(
+
+
+extensions.registerTemplateSupplier(
 		"myName",
-		(args) => {
-			return `${getString()}myName: `
-		}
+		() => "Thorsten"
 )
 
-extensions.registerTemplateDirectiveExtensions(
-		"repeat",
-		(env, params, loopvars, body) => {
-			let out = env.getOut()
-			for (let i = 0; i < 4; i++) {
-				if (i !== 0) {
-					out.write("<hr/>")
-					out.write(getString())
-					out.write("<hr/>")
-				}
-				
-				body.render(env.getOut())
-			}
-		}
+extensions.registerTemplateFunction(
+		"getHello",
+		(name) => "Hello " + name + "!"
 )
