@@ -14,9 +14,11 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Flow;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -42,10 +44,10 @@ public class FileSystem {
 	@Getter
 	private final MetaData metaData = new MetaData();
 
-	public void shutdown () {
+	public void shutdown() {
 		watcher.stop();
 	}
-	
+
 	public Path resolve(String path) {
 		return hostBaseDirectory.resolve(path);
 	}
@@ -57,24 +59,33 @@ public class FileSystem {
 	public List<String> loadLines(final Path file) throws IOException {
 		return Files.readAllLines(file, StandardCharsets.UTF_8);
 	}
-	
-	public List<String> listContent (final Path base, final String start) {
-		final Path contentBase = resolve("content/");
+
+	public List<MetaData.Node> listContent(final Path base, final String start) {
 		var startPath = base.resolve(start);
-		
-		return metaData.nodes().entrySet().stream().filter(entry -> {
-			var key = entry.getKey();
-			
-			var ePath = contentBase.resolve(key);
-			
-			var filename = ePath.toString().replace(startPath.toString(), "");
-			
-			if (filename.startsWith(File.separator)) {
-				filename = filename.substring(1);
-			}
-			
-			return -1 == filename.indexOf(File.separatorChar) && metaData.isVisible(key);
-		}).map(entry -> entry.getKey()).collect(Collectors.toList());
+
+		String folder = PathUtil.toPath(startPath, contentBase).toString();
+
+		List<MetaData.Node> nodes = new ArrayList<>();
+
+		if ("".equals(folder)) {
+			metaData.tree().values()
+					.stream()
+					.filter(node -> !node.isHidden())
+					.filter(node -> metaData.isVisible(node.uri()))
+					.forEach((node) -> {
+						nodes.add(node);
+					});
+		} else {
+			metaData.tree().get(folder).children().values()
+					.stream()
+					.filter(node -> !node.isHidden())
+					.filter(node -> metaData.isVisible(node.uri()))
+					.forEach((node) -> {
+						nodes.add(node);
+					});
+		}
+
+		return nodes;
 	}
 
 	private void addOrUpdateMetaData(Path file) throws IOException {
@@ -82,7 +93,7 @@ public class FileSystem {
 
 		var uri = PathUtil.toUri(file, contentBase);
 
-		metaData.add(new MetaData.Node(uri, fileMeta));
+		metaData.addFile(uri, fileMeta);
 	}
 
 	public void init() throws IOException {
@@ -150,6 +161,9 @@ public class FileSystem {
 		Files.walkFileTree(folder, new FileVisitor<Path>() {
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				var uri = PathUtil.toPath(dir, contentBase);
+
+				metaData.createDirectory(uri);
 				return FileVisitResult.CONTINUE;
 			}
 

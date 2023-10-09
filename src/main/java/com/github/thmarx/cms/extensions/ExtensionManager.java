@@ -92,13 +92,6 @@ public class ExtensionManager implements AutoCloseable {
 							.build())
 					.engine(engine).build();
 
-			try {
-				var init = ExtensionManager.class.getResource("init.js");
-				context.eval(Source.newBuilder("js", init).build());
-			} catch (IOException ex) {
-				log.error("error loading init script", ex);
-				throw new RuntimeException(ex);
-			}
 
 			var extPath = fileSystem.resolve("extensions/");
 			if (Files.exists(extPath)) {

@@ -8,19 +8,17 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
-import com.github.thmarx.cms.utils.PathUtil;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
+@Slf4j
 public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private static final int DEFAULT_DEPTH = 0;
@@ -50,34 +48,21 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		try {
-			List<String> navnodes = fileSystem.listContent(base, start);
+			final List<MetaData.Node> navnodes = fileSystem.listContent(base, start);
+			final List<NavNode> nodes = new ArrayList<>();
 			final Path contentBase = fileSystem.resolve("content/");
-			List<NavNode> nodes = new ArrayList<>();
-			var startPath = base.resolve(start);
-			Files.list(startPath)
-					.filter(path -> {
-						var uri = PathUtil.toUri(path, contentBase);
-
-						return fileSystem.getMetaData().isVisible(uri);
-					})
-					.forEach(path -> {
-						var filename = path.getFileName().toString();
-						if (filename.startsWith("_")) {
-							return;
-						}
-						if (filename.endsWith(".md")) {
-							filename = filename.substring(0, filename.length() - 3);
-						}
-						var name = getName(path);
-						final NavNode node = new NavNode(name.isPresent() ? name.get() : filename, getUrl(path));
-						if (isCurrentNode(path)) {
-							node.setCurrent(true);
-						}
-						nodes.add(node);
-					});
+			navnodes.forEach((node) -> {
+				var name = getName(node);
+				var path = contentBase.resolve(node.uri());
+				final NavNode navNode = new NavNode(name, getUrl(path));
+				if (isCurrentNode(path)) {
+					navNode.setCurrent(true);
+				}
+				nodes.add(navNode);
+			});
 			return nodes;
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		} catch (Exception ex) {
+			log.error(null, ex);
 		}
 		return Collections.emptyList();
 	}

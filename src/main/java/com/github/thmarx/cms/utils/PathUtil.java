@@ -24,6 +24,13 @@ import java.nio.file.Path;
  */
 public class PathUtil {
 	
+	public static String toPath (final Path contentFile, final Path contentBase) {
+		Path relativize = contentBase.relativize(contentFile);
+		var uri = relativize.toString();
+		uri = uri.replaceAll("\\\\", "/");
+		return uri;
+	}
+	
 	public static String toUri (final Path contentFile, final Path contentBase) {
 		Path relativize = contentBase.relativize(contentFile);
 		if (Files.isDirectory(contentFile)) {

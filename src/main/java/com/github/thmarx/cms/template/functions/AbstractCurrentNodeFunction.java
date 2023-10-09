@@ -4,11 +4,10 @@
  */
 package com.github.thmarx.cms.template.functions;
 
-import com.github.thmarx.cms.template.freemarker.*;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.template.freemarker.navigation.NavigationFunction;
-import freemarker.template.TemplateMethodModelEx;
+import com.github.thmarx.cms.filesystem.MetaData;
+import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,12 +15,14 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
+@Slf4j
 public abstract class AbstractCurrentNodeFunction {
 
 	protected final FileSystem fileSystem;
@@ -59,23 +60,19 @@ public abstract class AbstractCurrentNodeFunction {
 
 			return Optional.of(md);
 		} catch (IOException ex) {
-			Logger.getLogger(NavigationFunction.class.getName()).log(Level.SEVERE, null, ex);
+			log.error(null, ex);
 		}
 		return Optional.empty();
 	}
 
-	protected Optional<String> getName(Path node) {
-		var md = parse(node);
-		if (md.isEmpty()) {
-			return Optional.empty();
+	protected String getName(MetaData.Node node) {
+		if (node.data().containsKey("menu.title")) {
+			return (String) node.data().get("menu.title");
 		}
-		if (md.get().meta().containsKey("menu.title")) {
-			return Optional.of((String) md.get().meta().get("menu.title"));
-		}
-		if (md.get().meta().containsKey("title")) {
-			return Optional.of((String) md.get().meta().get("title"));
+		if (node.data().containsKey("title")) {
+			return (String) node.data().get("title");
 		}
 
-		return Optional.empty();
+		return node.name();
 	}
 }
