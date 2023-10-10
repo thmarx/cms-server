@@ -42,14 +42,12 @@ public class FileSystem {
 	private final MetaData metaData = new MetaData();
 
 	public boolean isVisible (final String uri) {
-		
-		var filename = Path.of(uri).getFileName().toString();
-		// Sections are not visible
-		if (Constants.SECTION_PATTERN.matcher(filename).matches()) {
+		var node = metaData.byUri(uri);
+		if (node.isEmpty()) {
 			return false;
 		}
-		
-		return metaData.isVisible(uri);
+		var n = node.get();
+		return n.isPublished() && !n.isHidden() && !n.isSection();
 	}
 	
 	public void shutdown() {
@@ -79,7 +77,8 @@ public class FileSystem {
 			metaData.tree().values()
 					.stream()
 					.filter(node -> !node.isHidden())
-					.filter(node -> isVisible(node.uri()))
+					.filter(node -> node.isPublished())
+					.filter(node -> !node.isSection())
 					.forEach((node) -> {
 						nodes.add(node);
 					});
@@ -87,7 +86,8 @@ public class FileSystem {
 			metaData.tree().get(folder).children().values()
 					.stream()
 					.filter(node -> !node.isHidden())
-					.filter(node -> isVisible(node.uri()))
+					.filter(node -> node.isPublished())
+					.filter(node -> !node.isSection())
 					.forEach((node) -> {
 						nodes.add(node);
 					});
@@ -109,7 +109,7 @@ public class FileSystem {
 			metaData.tree().values()
 					.stream()
 					.filter(node -> !node.isHidden())
-					.filter(node -> !node.isDraft())
+					.filter(node -> node.isPublished())
 					.filter(node -> node.isSection())
 					.filter(node -> isSectionOf.matcher(node.name()).matches())
 					.forEach((node) -> {
@@ -119,7 +119,7 @@ public class FileSystem {
 			metaData.tree().get(folder).children().values()
 					.stream()
 					.filter(node -> !node.isHidden())
-					.filter(node -> !node.isDraft())
+					.filter(node -> node.isPublished())
 					.filter(node -> node.isSection())
 					.filter(node -> isSectionOf.matcher(node.name()).matches())
 					.forEach((node) -> {

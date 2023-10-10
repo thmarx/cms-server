@@ -6,6 +6,7 @@ package com.github.thmarx.cms.filesystem;
 
 import com.github.thmarx.cms.Constants;
 import com.google.common.base.Strings;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -93,20 +94,6 @@ public class MetaData {
 		return Optional.of(nodes.get(uri));
 	}
 
-	public boolean isVisible(final String uri) {
-
-		var check_uri = uri;
-		if (!check_uri.endsWith(".md")) {
-			check_uri += "/index.md";
-		}
-		if (nodes.containsKey(check_uri)) {
-			Node node = nodes.get(check_uri);
-			return !(boolean) node.data().getOrDefault("draft", false);
-		}
-
-		return false;
-	}
-
 	void remove(String uri) {
 		nodes.remove(uri);
 		
@@ -137,6 +124,12 @@ public class MetaData {
 		
 		public boolean isDraft () {
 			return (boolean) data().getOrDefault("draft", false);
+		}
+		
+		public boolean isPublished () {
+		var localDate = (LocalDate)data.getOrDefault("published", LocalDate.now());
+			var now = LocalDate.now();
+			return !isDraft() && (localDate.isBefore(now) || localDate.isEqual(now));
 		}
 		
 		public boolean isSection () {

@@ -1,6 +1,6 @@
 title: Zweier Eintrag
 template: blog-entry.ftl
-date: 2023-10-11
+published: 2023-10-10
 -----
 
 Das ist der zweite Blog Beitrag!

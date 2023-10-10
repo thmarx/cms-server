@@ -21,7 +21,7 @@ public class DateUtil {
 	
 	public static boolean isDate (final String dateString) {
 		try {
-			formatter.parse(dateString);
+			formatter.parse(dateString.trim());
 			return true;
 		} catch (Exception e) {
 			return false;

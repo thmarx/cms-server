@@ -13,7 +13,7 @@
 		${content}
 		<div>
 			<h3>Beiträge</h3>
-			[#assign page = nodeList.from("/blog").index(false).sort("date").reverse(true).page(1).list()]
+			[#assign page = nodeList.from("/blog").index(false).sort("published").reverse(true).page(1).list()]
 			[#list page.items as item]
 			<div>
 				<h4>${item.name}</h4>
