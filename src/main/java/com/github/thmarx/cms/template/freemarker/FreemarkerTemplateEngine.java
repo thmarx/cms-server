@@ -5,7 +5,7 @@ import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
-import com.github.thmarx.cms.template.functions.list.NodeListFunction;
+import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import freemarker.cache.FileTemplateLoader;
 import java.io.IOException;
@@ -74,8 +74,8 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 	@Override
 	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException {
 		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
-		model.values.put("nodeList", new NodeListFunction(fileSystem, model.contentFile, contentParser));
-		model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
+		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser));
+		//model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
 		model.values.put("renderContext", context);
 		
 		StringWriter out = new StringWriter();

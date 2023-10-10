@@ -22,7 +22,7 @@
 				<li class="page-item  [#if index == page.page ] active [/#if]  "
 					[#if index == page.page ] aria-current="page" [/#if]
 					>
-					<button class="page-link">${page.page}</button>
+					<button class="page-link">${page.page} / ${page.total}</button>
 				</li>
 			[/#list]
 			[#assign nextPage = "#"]

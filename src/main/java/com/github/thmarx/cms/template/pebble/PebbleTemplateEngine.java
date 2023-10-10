@@ -8,7 +8,7 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
-import com.github.thmarx.cms.template.functions.list.NodeListFunction;
+import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.loader.FileLoader;
@@ -56,8 +56,7 @@ public class PebbleTemplateEngine implements TemplateEngine {
 
 		Map<String, Object> values = new HashMap<>(model.values);
 		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
-		model.values.put("nodeList", new NodeListFunction(fileSystem, model.contentFile, contentParser));
-		model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
+		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser));
 		values.put("renderContext", context);
 		
 		compiledTemplate.evaluate(writer, values);
