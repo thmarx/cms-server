@@ -4,11 +4,9 @@
  */
 package com.github.thmarx.cms.filesystem;
 
+import com.github.thmarx.cms.Constants;
 import com.google.common.base.Strings;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -135,6 +133,14 @@ public class MetaData {
 		
 		public boolean isHidden () {
 			return name.startsWith(".");
+		}
+		
+		public boolean isDraft () {
+			return (boolean) data().getOrDefault("draft", false);
+		}
+		
+		public boolean isSection () {
+			return Constants.SECTION_PATTERN.matcher(name).matches();
 		}
 	}
 }

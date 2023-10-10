@@ -4,9 +4,9 @@
  */
 package com.github.thmarx.cms.filesystem;
 
+import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.utils.PathUtil;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -18,10 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Flow;
-import java.util.function.BiConsumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,10 +37,21 @@ public class FileSystem {
 
 	final ContentParser contentParser = new ContentParser(this);
 	private Path contentBase;
-
+	
 	@Getter
 	private final MetaData metaData = new MetaData();
 
+	public boolean isVisible (final String uri) {
+		
+		var filename = Path.of(uri).getFileName().toString();
+		// Sections are not visible
+		if (Constants.SECTION_PATTERN.matcher(filename).matches()) {
+			return false;
+		}
+		
+		return metaData.isVisible(uri);
+	}
+	
 	public void shutdown() {
 		watcher.stop();
 	}
@@ -71,7 +79,7 @@ public class FileSystem {
 			metaData.tree().values()
 					.stream()
 					.filter(node -> !node.isHidden())
-					.filter(node -> metaData.isVisible(node.uri()))
+					.filter(node -> isVisible(node.uri()))
 					.forEach((node) -> {
 						nodes.add(node);
 					});
@@ -79,7 +87,7 @@ public class FileSystem {
 			metaData.tree().get(folder).children().values()
 					.stream()
 					.filter(node -> !node.isHidden())
-					.filter(node -> metaData.isVisible(node.uri()))
+					.filter(node -> isVisible(node.uri()))
 					.forEach((node) -> {
 						nodes.add(node);
 					});
@@ -88,6 +96,40 @@ public class FileSystem {
 		return nodes;
 	}
 
+	public List<MetaData.Node> listSections(final Path contentFile) {
+		String folder = PathUtil.toPath(contentFile, contentBase).toString();
+		String filename = contentFile.getFileName().toString();
+		filename = filename.substring(0, filename.length()-3);
+		
+		List<MetaData.Node> nodes = new ArrayList<>();
+
+		final Pattern isSectionOf = Constants.SECTION_OF_PATTERN.apply(filename);
+		
+		if ("".equals(folder)) {
+			metaData.tree().values()
+					.stream()
+					.filter(node -> !node.isHidden())
+					.filter(node -> !node.isDraft())
+					.filter(node -> node.isSection())
+					.filter(node -> isSectionOf.matcher(node.name()).matches())
+					.forEach((node) -> {
+						nodes.add(node);
+					});
+		} else {
+			metaData.tree().get(folder).children().values()
+					.stream()
+					.filter(node -> !node.isHidden())
+					.filter(node -> !node.isDraft())
+					.filter(node -> node.isSection())
+					.filter(node -> isSectionOf.matcher(node.name()).matches())
+					.forEach((node) -> {
+						nodes.add(node);
+					});
+		}
+
+		return nodes;
+	}
+	
 	private void addOrUpdateMetaData(Path file) throws IOException {
 		Map<String, Object> fileMeta = contentParser.parseMeta(file);
 

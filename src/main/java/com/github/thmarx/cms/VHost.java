@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,7 +84,7 @@ public class VHost {
 		TemplateEngine templates = resolveTemplateEngine();
 		
 
-		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
+		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer(), fileSystem);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
 	}
 	

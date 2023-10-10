@@ -25,6 +25,12 @@
 		hallo leute
 		[/@upper]
 	</p>
+	<div>
+		<h2>Absätze</h2>
+		[#if sections['card']?? ]
+			${sections['card'].content()}
+		[/#if]
+	</div>
 </body>
 
 </html>

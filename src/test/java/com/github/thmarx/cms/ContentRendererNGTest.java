@@ -29,7 +29,7 @@ public class ContentRendererNGTest {
 		var contentParser = new ContentParser(fileSystem);
 		TemplateEngine templates = new FreemarkerTemplateEngine(fileSystem, contentParser, new ExtensionManager(fileSystem));
 		
-		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer());
+		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer(), fileSystem);
 	}
 
 	@Test

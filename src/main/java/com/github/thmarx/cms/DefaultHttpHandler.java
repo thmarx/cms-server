@@ -30,7 +30,7 @@ public class DefaultHttpHandler implements HttpHandler {
 		RenderContext context = new RenderContext(exchange.getRelativePath(), exchange.getQueryParameters());
 		Optional<String> content = contentResolver.getContent(context);
 		if (!content.isPresent()) {
-			context = new RenderContext("/_technical/404", exchange.getQueryParameters());
+			context = new RenderContext("/.technical/404", exchange.getQueryParameters());
 			content = contentResolver.getContent(context);
 			exchange.setStatusCode(404);
 		}

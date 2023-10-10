@@ -11,14 +11,18 @@ import com.google.common.base.Strings;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
+@Slf4j
 public class ContentResolver {
 
 	private final Path contentBase;
@@ -49,17 +53,22 @@ public class ContentResolver {
 				return Optional.empty();
 			}
 		}
-
+		
 		var uri = PathUtil.toUri(contentFile, contentBase);
-		if (!fileSystem.getMetaData().isVisible(uri)) {
+		if (!fileSystem.isVisible(uri)) {
 			return Optional.empty();
 		}
 		
 		try {
-			var content = contentRenderer.render(contentFile, context);
+			
+			List<MetaData.Node> sections = fileSystem.listSections(contentFile);
+			
+			Map<String, ContentRenderer.Section> renderedSections = contentRenderer.renderSections(sections, context);
+			
+			var content = contentRenderer.render(contentFile, context, renderedSections);
 			return Optional.of(content);
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			log.error(null, ex);
 			return Optional.empty();
 		}
 	}
