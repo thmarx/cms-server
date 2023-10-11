@@ -48,7 +48,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		try {
-			final List<MetaData.Node> navnodes = fileSystem.listContent(base, start);
+			final List<MetaData.MetaNode> navnodes = fileSystem.listContent(base, start);
 			final List<NavNode> nodes = new ArrayList<>();
 			final Path contentBase = fileSystem.resolve("content/");
 			navnodes.forEach((node) -> {

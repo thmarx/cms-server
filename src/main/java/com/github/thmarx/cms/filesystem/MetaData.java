@@ -7,6 +7,7 @@ package com.github.thmarx.cms.filesystem;
 import com.github.thmarx.cms.Constants;
 import com.google.common.base.Strings;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -22,19 +23,19 @@ import java.util.stream.Stream;
  */
 public class MetaData {
 
-	private ConcurrentMap<String, Node> nodes = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, MetaNode> nodes = new ConcurrentHashMap<>();
 
-	private ConcurrentMap<String, Node> tree = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, MetaNode> tree = new ConcurrentHashMap<>();
 
 	void clear() {
 		nodes.clear();
 	}
 
-	ConcurrentMap<String, Node> nodes() {
+	ConcurrentMap<String, MetaNode> nodes() {
 		return new ConcurrentHashMap<>(nodes);
 	}
 
-	ConcurrentMap<String, Node> tree() {
+	ConcurrentMap<String, MetaNode> tree() {
 		return new ConcurrentHashMap<>(tree);
 	}
 
@@ -42,23 +43,35 @@ public class MetaData {
 		if (Strings.isNullOrEmpty(uri)) {
 			return;
 		}
-		String pattern = Pattern.quote("/");
-		var parts = uri.split(pattern);
-		Node n = new Node(uri, parts[parts.length - 1], Map.of(), true);
+		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
+		MetaNode n = new MetaNode(uri, parts[parts.length - 1], Map.of(), true);
 
-		var folder = getFolder(uri);
-		if (folder.isPresent()) {
-			folder.get().children.put(n.name(), n);
+		Optional<MetaNode> parentFolder;
+		if (parts.length == 1) {
+			parentFolder = getFolder(uri);
+		} else {
+			var parentPath = Arrays.copyOfRange(parts, 0, parts.length-1);
+			var parentUri = String.join("/", parentPath);
+			parentFolder = getFolder(parentUri);
+		}
+		
+		
+		
+		if (parentFolder.isPresent()) {
+			parentFolder.get().children.put(n.name(), n);
 		} else {
 			tree.put(n.name(), n);
 		}
 	}
 
-	private Optional<Node> getFolder(String uri) {
-		String pattern = Pattern.quote("/");
-		var parts = uri.split(pattern);
+	public Optional<MetaNode> findFolder(String uri) {
+		return getFolder(uri);
+	}
+	
+	private Optional<MetaNode> getFolder(String uri) {
+		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
 
-		final AtomicReference<Node> folder = new AtomicReference<>(null);
+		final AtomicReference<MetaNode> folder = new AtomicReference<>(null);
 		Stream.of(parts).forEach(part -> {
 			if (part.endsWith(".md")) {
 				return;
@@ -73,9 +86,9 @@ public class MetaData {
 	}
 
 	public void addFile(final String uri, final Map<String, Object> data) {
-		String pattern = Pattern.quote("/");
-		var parts = uri.split(pattern);
-		final Node node = new Node(uri, parts[parts.length - 1], data);
+		
+		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
+		final MetaNode node = new MetaNode(uri, parts[parts.length - 1], data);
 
 		nodes.put(uri, node);
 
@@ -87,7 +100,7 @@ public class MetaData {
 		}
 	}
 
-	public Optional<Node> byUri(final String uri) {
+	public Optional<MetaNode> byUri(final String uri) {
 		if (!nodes.containsKey(uri)) {
 			return Optional.empty();
 		}
@@ -98,8 +111,7 @@ public class MetaData {
 		nodes.remove(uri);
 		
 		var folder = getFolder(uri);
-		String pattern = Pattern.quote("/");
-		var parts = uri.split(pattern);
+		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
 		var name = parts[parts.length - 1];
 		if (folder.isPresent()) {
 			folder.get().children.remove(name);
@@ -108,14 +120,14 @@ public class MetaData {
 		}
 	}
 
-	public static record Node(String uri, String name, Map<String, Object> data, boolean isDirectory, Map<String, Node> children) {
+	public static record MetaNode(String uri, String name, Map<String, Object> data, boolean isDirectory, Map<String, MetaNode> children) {
 
-		public Node(String uri, String name, Map<String, Object> data, boolean isDirectory) {
-			this(uri, name, data, isDirectory, new HashMap<String, Node>());
+		public MetaNode(String uri, String name, Map<String, Object> data, boolean isDirectory) {
+			this(uri, name, data, isDirectory, new HashMap<String, MetaNode>());
 		}
 
-		public Node(String uri, String name, Map<String, Object> data) {
-			this(uri, name, data, false, new HashMap<String, Node>());
+		public MetaNode(String uri, String name, Map<String, Object> data) {
+			this(uri, name, data, false, new HashMap<String, MetaNode>());
 		}
 		
 		public boolean isHidden () {

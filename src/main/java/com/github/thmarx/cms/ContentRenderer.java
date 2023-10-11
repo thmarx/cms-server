@@ -44,7 +44,7 @@ public class ContentRenderer {
 		return templates.render((String)content.meta().get("template"), model, context);
 	}
 	
-	public Map<String, Section> renderSections (final List<MetaData.Node> sectionNodes, final RenderContext context) throws IOException {
+	public Map<String, Section> renderSections (final List<MetaData.MetaNode> sectionNodes, final RenderContext context) throws IOException {
 		
 		if (sectionNodes.isEmpty()) {
 			return Collections.emptyMap();

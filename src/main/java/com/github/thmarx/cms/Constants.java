@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
  */
 public abstract class Constants {
 	
+	public static final String SPLIT_PATH_PATTERN = Pattern.quote("/");
+	
 	public static final Pattern SECTION_PATTERN = Pattern.compile("\\w+[a-zA-Z0-9-]*\\.(?<section>[a-zA-Z0-9]+[a-zA-Z0-9-]*)\\.md");
 	
 	public static final Function<String, Pattern> SECTION_OF_PATTERN = (fileName) -> {

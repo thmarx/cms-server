@@ -65,7 +65,7 @@ public abstract class AbstractCurrentNodeFunction {
 		return Optional.empty();
 	}
 
-	protected String getName(MetaData.Node node) {
+	protected String getName(MetaData.MetaNode node) {
 		if (node.data().containsKey("menu.title")) {
 			return (String) node.data().get("menu.title");
 		}

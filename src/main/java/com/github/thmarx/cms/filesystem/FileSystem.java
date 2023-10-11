@@ -17,6 +17,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Flow;
 import java.util.regex.Pattern;
 import lombok.Getter;
@@ -37,11 +39,11 @@ public class FileSystem {
 
 	final ContentParser contentParser = new ContentParser(this);
 	private Path contentBase;
-	
+
 	@Getter
 	private final MetaData metaData = new MetaData();
 
-	public boolean isVisible (final String uri) {
+	public boolean isVisible(final String uri) {
 		var node = metaData.byUri(uri);
 		if (node.isEmpty()) {
 			return false;
@@ -49,7 +51,7 @@ public class FileSystem {
 		var n = node.get();
 		return n.isPublished() && !n.isHidden() && !n.isSection();
 	}
-	
+
 	public void shutdown() {
 		watcher.stop();
 	}
@@ -66,12 +68,37 @@ public class FileSystem {
 		return Files.readAllLines(file, StandardCharsets.UTF_8);
 	}
 
-	public List<MetaData.Node> listContent(final Path base, final String start) {
+	public List<MetaData.MetaNode> listDirectories(final Path base, final String start) {
+		var startPath = base.resolve(start);
+		String folder = PathUtil.toPath(startPath, contentBase).toString();
+
+		List<MetaData.MetaNode> nodes = new ArrayList<>();
+
+		if ("".equals(folder)) {
+			metaData.tree().values()
+					.stream()
+					.filter(node -> node.isDirectory())
+					.forEach((node) -> {
+						nodes.add(node);
+					});
+		} else {
+			metaData.tree().get(folder).children().values()
+					.stream()
+					.filter(node -> node.isDirectory())
+					.forEach((node) -> {
+						nodes.add(node);
+					});
+		}
+
+		return nodes;
+	}
+
+	public List<MetaData.MetaNode> listContent(final Path base, final String start) {
 		var startPath = base.resolve(start);
 
 		String folder = PathUtil.toPath(startPath, contentBase).toString();
 
-		List<MetaData.Node> nodes = new ArrayList<>();
+		List<MetaData.MetaNode> nodes = new ArrayList<>();
 
 		if ("".equals(folder)) {
 			metaData.tree().values()
@@ -83,28 +110,31 @@ public class FileSystem {
 						nodes.add(node);
 					});
 		} else {
-			metaData.tree().get(folder).children().values()
-					.stream()
-					.filter(node -> !node.isHidden())
-					.filter(node -> node.isPublished())
-					.filter(node -> !node.isSection())
-					.forEach((node) -> {
-						nodes.add(node);
-					});
+			Optional<MetaData.MetaNode> findFolder = metaData.findFolder(folder);
+			if (findFolder.isPresent()) {
+				findFolder.get().children().values()
+						.stream()
+						.filter(node -> !node.isHidden())
+						.filter(node -> node.isPublished())
+						.filter(node -> !node.isSection())
+						.forEach((node) -> {
+							nodes.add(node);
+						});
+			}
 		}
 
 		return nodes;
 	}
 
-	public List<MetaData.Node> listSections(final Path contentFile) {
+	public List<MetaData.MetaNode> listSections(final Path contentFile) {
 		String folder = PathUtil.toPath(contentFile, contentBase).toString();
 		String filename = contentFile.getFileName().toString();
-		filename = filename.substring(0, filename.length()-3);
-		
-		List<MetaData.Node> nodes = new ArrayList<>();
+		filename = filename.substring(0, filename.length() - 3);
+
+		List<MetaData.MetaNode> nodes = new ArrayList<>();
 
 		final Pattern isSectionOf = Constants.SECTION_OF_PATTERN.apply(filename);
-		
+
 		if ("".equals(folder)) {
 			metaData.tree().values()
 					.stream()
@@ -129,7 +159,7 @@ public class FileSystem {
 
 		return nodes;
 	}
-	
+
 	private void addOrUpdateMetaData(Path file) throws IOException {
 		Map<String, Object> fileMeta = contentParser.parseMeta(file);
 

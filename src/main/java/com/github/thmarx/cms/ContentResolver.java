@@ -61,7 +61,7 @@ public class ContentResolver {
 		
 		try {
 			
-			List<MetaData.Node> sections = fileSystem.listSections(contentFile);
+			List<MetaData.MetaNode> sections = fileSystem.listSections(contentFile);
 			
 			Map<String, ContentRenderer.Section> renderedSections = contentRenderer.renderSections(sections, context);
 			

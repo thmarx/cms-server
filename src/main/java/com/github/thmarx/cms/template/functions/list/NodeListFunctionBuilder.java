@@ -36,7 +36,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 
 	final NodeListFunction nodeListFunctionNoIndex;
 
-	private final Comparator<MetaData.Node> nameComparator = (node1, node2) -> {
+	public final Comparator<MetaData.MetaNode> nameComparator = (node1, node2) -> {
 		var filename1 = getName(node1);
 		var filename2 = getName(node2);
 		if (filename1.equals("index.md")) {
@@ -89,7 +89,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 			function = nodeListFunctionNoIndex;
 		}
 
-		Comparator<MetaData.Node> comparator = getComparator();
+		Comparator<MetaData.MetaNode> comparator = getComparator();
 		if (reverse) {
 			comparator = comparator.reversed();
 		}
@@ -97,14 +97,14 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return function.list(from, page, size, comparator);
 	}
 
-	private Comparator<MetaData.Node> getComparator() {
+	private Comparator<MetaData.MetaNode> getComparator() {
 		if (sort == null || "name".equals("sort")) {
 			return nameComparator;
 		} else {
 
-			return Comparator.comparing(new Function<MetaData.Node, Object>() {
+			return Comparator.comparing(new Function<MetaData.MetaNode, Object>() {
 				@Override
-				public Object apply(MetaData.Node node) {
+				public Object apply(MetaData.MetaNode node) {
 					return node.data().get(sort);
 				}
 			}, Comparator.nullsLast((key1, key2) -> {
