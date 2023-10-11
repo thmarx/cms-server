@@ -229,6 +229,7 @@ public class FileSystem {
 		log.debug("rebuild metadata");
 		metaData.clear();
 		reInitFolder(contentBase);
+		contentParser.clearCache();
 	}
 
 	private void reInitFolder(final Path folder) throws IOException {

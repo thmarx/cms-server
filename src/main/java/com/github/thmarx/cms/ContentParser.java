@@ -32,9 +32,16 @@ public class ContentParser {
 	public ContentParser(final FileSystem fileSystem) {
 		this.fileSystem = fileSystem;
 
-		contentCache = Caffeine.newBuilder()
-				.expireAfterWrite(Duration.ofMinutes(1))
-				.build();
+		var builder = Caffeine.newBuilder()
+				.expireAfterWrite(Duration.ofMinutes(1));
+		if (Server.DEV_MODE) {
+			builder.maximumSize(0);
+		}
+		contentCache = builder.build();
+	}
+
+	public void clearCache() {
+		contentCache.invalidateAll();
 	}
 
 //	public Content parse (final String file) throws IOException {

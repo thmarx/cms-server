@@ -24,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Server {
 
+	public static boolean DEV_MODE = false;
+	
 	public static void main(String[] args) throws Exception {
 
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
@@ -33,6 +35,7 @@ public class Server {
 		try (var inStream = new FileInputStream("application.properties")) {
 			properties.load(inStream);
 		}
+		DEV_MODE = Boolean.parseBoolean(properties.getProperty("dev", "false"));
 
 		List<VHost> vhosts = new ArrayList<>();
 		Files.list(Path.of("hosts")).forEach((hostPath) -> {
