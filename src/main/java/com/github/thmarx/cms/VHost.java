@@ -13,6 +13,7 @@ import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import com.github.thmarx.cms.utils.DateUtil;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
@@ -108,7 +109,7 @@ public class VHost {
 				.addExactPath("/favicon.ico", faviconHandler);
 		
 		extensionManager.getHttpHandlerExtensions().forEach(handler -> {
-			pathHandler.addExactPath(handler.path(), handler.handler());
+			pathHandler.addExactPath(handler.path(), new BlockingHandler(handler.handler()));
 		});
 		
 		return pathHandler;

@@ -53,9 +53,6 @@ public class ExtensionManager implements AutoCloseable {
 	}
 
 	public void registerTemplateSupplier(final String path, final Supplier<?> supplier) {
-//		registerTemplateSupplier.add(new TemplateSupplierExtension(path, () -> {
-//			return supplier.get();
-//		}));
 		registerTemplateSupplier.add(new TemplateSupplierExtension(path, supplier));
 	}
 
