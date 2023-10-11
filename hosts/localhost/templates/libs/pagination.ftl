@@ -1,4 +1,5 @@
 [#macro pagination page path]
+	[#assign pageIndex = renderContext.getQueryParameterAsInt("page", 1)]
 	<nav aria-label="Page navigation">
 		<ul class="pagination justify-content-center">
 			<li class="page-item [#if page.page lte 1 ]disabled[/#if] ">
@@ -18,11 +19,10 @@
 				</a>
 			</li>
 			[#list [1..page.total] as i]
-				[#assign index = i?counter]
-				<li class="page-item  [#if index == page.page ] active [/#if]  "
+				<li class="page-item  [#if pageIndex == page.page ] active [/#if]  "
 					[#if index == page.page ] aria-current="page" [/#if]
 					>
-					<button class="page-link">${page.page} / ${page.total}</button>
+					<button class="page-link">${page.page} / ${page.total} / ${index}</button>
 				</li>
 			[/#list]
 			[#assign nextPage = "#"]

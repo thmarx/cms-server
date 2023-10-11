@@ -146,15 +146,19 @@ public class FileSystem {
 						nodes.add(node);
 					});
 		} else {
-			metaData.tree().get(folder).children().values()
-					.stream()
-					.filter(node -> !node.isHidden())
-					.filter(node -> node.isPublished())
-					.filter(node -> node.isSection())
-					.filter(node -> isSectionOf.matcher(node.name()).matches())
-					.forEach((node) -> {
-						nodes.add(node);
-					});
+			Optional<MetaData.MetaNode> findFolder = metaData.findFolder(folder);
+			if (findFolder.isPresent()) {
+				findFolder.get().children().values()
+						.stream()
+						.filter(node -> !node.isHidden())
+						.filter(node -> node.isPublished())
+						.filter(node -> node.isSection())
+						.filter(node -> isSectionOf.matcher(node.name()).matches())
+						.forEach((node) -> {
+							nodes.add(node);
+						});
+			}
+
 		}
 
 		return nodes;
