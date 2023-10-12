@@ -4,6 +4,7 @@
  */
 package com.github.thmarx.cms.template.pebble;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.Server;
@@ -12,6 +13,8 @@ import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.cache.tag.CaffeineTagCache;
+import io.pebbletemplates.pebble.cache.template.CaffeineTemplateCache;
 import io.pebbletemplates.pebble.loader.FileLoader;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.io.File;
@@ -19,6 +22,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +53,21 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		if (Server.DEV_MODE) {
 			builder.templateCache(null);
 			builder.tagCache(null);
+			builder.cacheActive(false);
+		} else {
+			var templateCache = new CaffeineTemplateCache(
+					Caffeine.newBuilder()
+							.expireAfterWrite(Duration.ofMinutes(1))
+							.build()
+			);
+			builder.templateCache(templateCache);
+			var tagCache = new CaffeineTagCache(
+					Caffeine.newBuilder()
+							.expireAfterWrite(Duration.ofMinutes(1))
+							.build()
+			);
+			builder.tagCache(tagCache);
+			builder.cacheActive(true);
 		}
 		
 		engine = builder

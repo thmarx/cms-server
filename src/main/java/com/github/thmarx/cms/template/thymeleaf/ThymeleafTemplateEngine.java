@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
@@ -45,6 +46,9 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 		templateResolver.setSuffix(".html");
 		if (Server.DEV_MODE) {
 			templateResolver.setCacheable(false);
+		} else {
+			templateResolver.setCacheable(true);
+			templateResolver.setCacheTTLMs(TimeUnit.MINUTES.toMillis(1));
 		}
 		
 		engine = new org.thymeleaf.TemplateEngine();

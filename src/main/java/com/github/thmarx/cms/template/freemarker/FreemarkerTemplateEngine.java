@@ -18,7 +18,6 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
-import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -26,17 +25,13 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 	
 	private final Configuration config;
 	
-	private final Path contentBase;
 	private final ContentParser contentParser;
 
-	private final ExtensionManager extensionManager;
 	
 	final FileSystem fileSystem;
 	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, final ExtensionManager extensionManager) {
 		this.fileSystem = fileSystem;
-		this.contentBase = fileSystem.resolve("content/");
 		this.contentParser = contentParser;
-		this.extensionManager = extensionManager;
 		
 		config = new Configuration(Configuration.VERSION_2_3_32);
 		
@@ -52,8 +47,15 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 		config.setWrapUncheckedExceptions(true);
 		config.setFallbackOnNullLoopVariable(false);
 		
+		
 		if (Server.DEV_MODE) {
 			config.setCacheStorage(new NullCacheStorage());
+			config.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+		} else {
+			config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+			config.setLogTemplateExceptions(false);
+			config.setWrapUncheckedExceptions(true);
+			config.setFallbackOnNullLoopVariable(false);
 		}
 		
 		config.setSharedVariable("indexOf", new IndexOfMethod());
