@@ -6,6 +6,7 @@ package com.github.thmarx.cms;
 
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.eventbus.EventBus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,7 +25,7 @@ public class ContentParserNGTest {
 
 	@Test
 	public void testSomeMethod() throws IOException {
-		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/")));
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new EventBus()));
 		
 		var expectedMD = """
                    

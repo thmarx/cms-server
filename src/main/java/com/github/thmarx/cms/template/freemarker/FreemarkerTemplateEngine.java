@@ -2,12 +2,14 @@ package com.github.thmarx.cms.template.freemarker;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.Server;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.NullCacheStorage;
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -50,6 +52,9 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 		config.setWrapUncheckedExceptions(true);
 		config.setFallbackOnNullLoopVariable(false);
 		
+		if (Server.DEV_MODE) {
+			config.setCacheStorage(new NullCacheStorage());
+		}
 		
 		config.setSharedVariable("indexOf", new IndexOfMethod());
 		config.setSharedVariable("upper", new UpperDirective());
@@ -90,6 +95,11 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 		} finally {
 			out.close();
 		}
+	}
+
+	@Override
+	public void invalidateCache() {
+		config.clearTemplateCache();
 	}
 	
 	

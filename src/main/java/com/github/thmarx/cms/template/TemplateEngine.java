@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
  * @author thmar
  */
 public interface TemplateEngine {
+	
+	public void invalidateCache();
 
 	String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException;
 	

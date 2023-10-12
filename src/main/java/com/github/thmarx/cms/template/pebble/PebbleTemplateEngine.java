@@ -6,6 +6,7 @@ package com.github.thmarx.cms.template.pebble;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.Server;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
@@ -42,8 +43,15 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		var loader = new FileLoader();
 		loader.setPrefix(this.templateBase.toString() + File.separatorChar);
 		loader.setSuffix(".html");
-		engine = new PebbleEngine.Builder()
-				.loader(loader)
+		final PebbleEngine.Builder builder = new PebbleEngine.Builder()
+				.loader(loader);
+		
+		if (Server.DEV_MODE) {
+			builder.templateCache(null);
+			builder.tagCache(null);
+		}
+		
+		engine = builder
 				.build();
 	}
 
@@ -63,6 +71,11 @@ public class PebbleTemplateEngine implements TemplateEngine {
 
 		return writer.toString();
 
+	}
+
+	@Override
+	public void invalidateCache() {
+		engine.getTemplateCache().invalidateAll();
 	}
 
 }

@@ -43,7 +43,9 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 		templateResolver.setTemplateMode(TemplateMode.HTML);
 		templateResolver.setPrefix(this.templateBase.toString() + File.separatorChar);
 		templateResolver.setSuffix(".html");
-		templateResolver.setCacheable(!Server.DEV_MODE);
+		if (Server.DEV_MODE) {
+			templateResolver.setCacheable(false);
+		}
 		
 		engine = new org.thymeleaf.TemplateEngine();
 		engine.setTemplateResolver(templateResolver);
@@ -61,6 +63,11 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 		
 		engine.process(template, new Context(Locale.getDefault(), model.values), writer);
 		return writer.toString();
+	}
+
+	@Override
+	public void invalidateCache() {
+		engine.getCacheManager().clearAllCaches();
 	}
 
 }

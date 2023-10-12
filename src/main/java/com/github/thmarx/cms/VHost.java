@@ -4,6 +4,10 @@
  */
 package com.github.thmarx.cms;
 
+import com.github.thmarx.cms.eventbus.Event;
+import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.eventbus.EventListener;
+import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.template.TemplateEngine;
@@ -22,14 +26,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
 @Slf4j
 public class VHost {
 
@@ -48,7 +50,15 @@ public class VHost {
 	@Getter
 	private String hostname;
 	
+	@Getter
+	private final EventBus eventBus;
+	
 	private Properties properties;
+
+	public VHost(final Path hostBase) {
+		this.eventBus = new EventBus();
+		this.fileSystem = new FileSystem(hostBase, eventBus);
+	}
 	
 	public void shutdown ()  {
 		try {
@@ -87,6 +97,11 @@ public class VHost {
 
 		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer(), fileSystem);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
+		
+		eventBus.register(ContentChangedEvent.class, (EventListener<ContentChangedEvent>) (ContentChangedEvent event) -> {
+			log.debug("invalidate ContentParser cache");
+			contentParser.clearCache();
+		});
 	}
 	
 	private TemplateEngine resolveTemplateEngine () {

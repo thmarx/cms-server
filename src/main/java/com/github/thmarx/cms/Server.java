@@ -42,7 +42,7 @@ public class Server {
 			var props = hostPath.resolve("host.properties");
 			if (Files.exists(props)) {
 				try {
-					VHost host = new VHost(new FileSystem(hostPath));
+					VHost host = new VHost(hostPath);
 					host.init();
 					vhosts.add(host);
 				} catch (IOException ex) {

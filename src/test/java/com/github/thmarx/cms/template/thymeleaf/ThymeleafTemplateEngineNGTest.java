@@ -5,6 +5,7 @@
 package com.github.thmarx.cms.template.thymeleaf;
 
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class ThymeleafTemplateEngineNGTest {
 
 	@BeforeClass
 	public void setup() {
-		var fileSystem = new FileSystem(Path.of("./hosts/test_thymeleaf"));
+		var fileSystem = new FileSystem(Path.of("./hosts/test_thymeleaf"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
 
 		templateEngine = new ThymeleafTemplateEngine(fileSystem, contentParser);

@@ -6,6 +6,8 @@ package com.github.thmarx.cms.filesystem;
 
 import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.utils.PathUtil;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.Flow;
 import java.util.regex.Pattern;
 import lombok.Getter;
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FileSystem {
 
 	private final Path hostBaseDirectory;
+	private final EventBus eventBus;
 
 	private RecursiveWatcher watcher;
 
@@ -229,7 +231,7 @@ public class FileSystem {
 		log.debug("rebuild metadata");
 		metaData.clear();
 		reInitFolder(contentBase);
-		contentParser.clearCache();
+		eventBus.publish(new ContentChangedEvent());
 	}
 
 	private void reInitFolder(final Path folder) throws IOException {

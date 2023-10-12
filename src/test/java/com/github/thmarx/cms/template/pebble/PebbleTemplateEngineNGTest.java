@@ -5,6 +5,7 @@
 package com.github.thmarx.cms.template.pebble;
 
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class PebbleTemplateEngineNGTest {
 	TemplateEngine templateEngine;
 	@BeforeClass
 	public void setup () {
-		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test_pebble/"));
+		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test_pebble/"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
 		
 		templateEngine = new PebbleTemplateEngine(fileSystem, contentParser);

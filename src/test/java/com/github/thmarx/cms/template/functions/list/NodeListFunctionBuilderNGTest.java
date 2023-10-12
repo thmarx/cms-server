@@ -5,6 +5,7 @@
 package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -24,7 +25,7 @@ public class NodeListFunctionBuilderNGTest {
 	
 	@BeforeClass
 	void setup () throws IOException {
-		fileSystem = new FileSystem(Path.of("hosts/test"));
+		fileSystem = new FileSystem(Path.of("hosts/test"), new EventBus());
 		fileSystem.init();
 		ContentParser parser = new ContentParser(fileSystem);
 		nodeList = new NodeListFunctionBuilder(fileSystem, fileSystem.resolve("content/").resolve("index.md"), parser);
