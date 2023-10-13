@@ -61,11 +61,11 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 		Writer writer = new StringWriter();
 		
 		Map<String, Object> values = new HashMap<>(model.values);
-		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
-		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser));
+		values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
+		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser));
 		values.put("renderContext", context);
 		
-		engine.process(template, new Context(Locale.getDefault(), model.values), writer);
+		engine.process(template, new Context(Locale.getDefault(), values), writer);
 		return writer.toString();
 	}
 

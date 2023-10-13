@@ -6,7 +6,6 @@ package com.github.thmarx.cms;
 
 import java.util.regex.Matcher;
 import org.assertj.core.api.Assertions;
-import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
 /**

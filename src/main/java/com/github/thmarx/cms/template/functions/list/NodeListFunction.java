@@ -9,7 +9,7 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
-import com.github.thmarx.cms.utils.NameUtil;
+import com.github.thmarx.cms.utils.NodeUtil;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,7 +99,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 					.limit(size)
 					.forEach(node -> {
 						var temp_path = contentBase.resolve(node.uri());
-						var name = NameUtil.getName(node);
+						var name = NodeUtil.getName(node);
 						var md = parse(temp_path);
 						final Node navNode = new Node(name, getUrl(temp_path), md.get().content());
 						navNodes.add(navNode);
@@ -152,7 +152,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 					.limit(pageSize)
 					.forEach(node -> {
 						var path = contentBase.resolve(node.uri());
-						var name = NameUtil.getName(node);
+						var name = NodeUtil.getName(node);
 						var md = parse(path);
 						final Node navNode = new Node(name, getUrl(path), md.get().content());
 						nodes.add(navNode);

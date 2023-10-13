@@ -8,7 +8,7 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
-import com.github.thmarx.cms.utils.NameUtil;
+import com.github.thmarx.cms.utils.NodeUtil;
 import com.github.thmarx.cms.utils.PathUtil;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -50,13 +50,29 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		try {
-			final List<MetaData.MetaNode> navnodes = fileSystem.listContent(base, start);
+			final List<MetaData.MetaNode> navNodes = fileSystem.listContent(base, start);
+			
+			navNodes.sort((node1, node2) -> {
+				var order1 = NodeUtil.getMenuOrder(node1);
+				var order2 = NodeUtil.getMenuOrder(node2);
+				
+				int compare = Float.compare(order1, order2);
+				
+				if (compare == 0) {
+					var name1 = NodeUtil.getName(node1);
+					var name2 = NodeUtil.getName(node2);
+					
+					return name1.compareTo(name2);
+				}
+				
+				return compare;	
+			});
+			
+			
 			final List<NavNode> nodes = new ArrayList<>();
 			final Path contentBase = fileSystem.resolve("content/");
-			navnodes.forEach((node) -> {
-				var uri = PathUtil.toFile(contentBase.resolve(node.uri()), contentBase);
-				var mNode = fileSystem.getMetaData().byUri(uri);
-				var name = NameUtil.getName(mNode.get());
+			navNodes.forEach((node) -> {
+				var name = NodeUtil.getName(node);
 				var path = contentBase.resolve(node.uri());
 				final NavNode navNode = new NavNode(name, getUrl(path));
 				if (isCurrentNode(path)) {

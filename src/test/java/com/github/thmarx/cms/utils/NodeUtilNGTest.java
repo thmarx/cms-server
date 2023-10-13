@@ -13,16 +13,16 @@ import org.testng.annotations.Test;
  *
  * @author t.marx
  */
-public class NameUtilNGTest {
+public class NodeUtilNGTest {
 
-	public NameUtilNGTest() {
+	public NodeUtilNGTest() {
 	}
 
 	@Test
 	public void getName_returns_default_name() {
 		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of());
 
-		var name = NameUtil.getName(node);
+		var name = NodeUtil.getName(node);
 
 		Assertions.assertThat(name).isNotBlank().isEqualTo("index");
 	}
@@ -33,7 +33,7 @@ public class NameUtilNGTest {
 				"title", "The Title"
 		));
 
-		var name = NameUtil.getName(node);
+		var name = NodeUtil.getName(node);
 
 		Assertions.assertThat(name).isNotBlank().isEqualTo("The Title");
 	}
@@ -46,7 +46,7 @@ public class NameUtilNGTest {
 				)
 		));
 		
-		var name = NameUtil.getName(node);
+		var name = NodeUtil.getName(node);
 
 		Assertions.assertThat(name).isNotBlank().isEqualTo("The Title");
 	}
@@ -60,8 +60,35 @@ public class NameUtilNGTest {
 				)
 		));
 		
-		var name = NameUtil.getName(node);
+		var name = NodeUtil.getName(node);
 
 		Assertions.assertThat(name).isNotBlank().isEqualTo("Menu title");
+	}
+	
+	@Test
+	public void getMenuOrder() {
+		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of(
+				"menu", Map.of(
+						"order", 1.5
+				)
+		));
+		var order = NodeUtil.getMenuOrder(node);
+		Assertions.assertThat(order).isEqualTo(1.5f);
+	}
+	
+	@Test
+	public void getDefaultMenuOrder() {
+		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of(
+				"menu", Map.of()
+		));
+		var order = NodeUtil.getMenuOrder(node);
+		Assertions.assertThat(order).isEqualTo(0);
+	}
+	
+	@Test
+	public void getDefaultMenuOrderNoMenuMap() {
+		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of());
+		var order = NodeUtil.getMenuOrder(node);
+		Assertions.assertThat(order).isEqualTo(0);
 	}
 }

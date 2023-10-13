@@ -110,6 +110,8 @@ public class FileSystem {
 		List<MetaData.MetaNode> nodes = new ArrayList<>();
 
 		if ("".equals(folder)) {
+			return metaData.listChildren("");
+			/*
 			metaData.tree().values()
 					.stream()
 					.filter(node -> !node.isHidden())
@@ -118,6 +120,7 @@ public class FileSystem {
 					.forEach((node) -> {
 						nodes.add(node);
 					});
+			*/
 		} else {
 			Optional<MetaData.MetaNode> findFolder = metaData.findFolder(folder);
 			if (findFolder.isPresent()) {

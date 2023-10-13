@@ -9,8 +9,11 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.eventbus.EventBus;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Date;
 import java.util.List;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.assertj.core.api.InstanceOfAssertFactory;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -47,9 +50,26 @@ public class ContentParserNGTest {
 		
 		var content = contentParser.parse(Path.of("hosts/test/content/test.md"));
 		
-		System.out.println(content.meta().get("date"));
-		System.out.println(content.meta().get("date").getClass());
-		System.out.println(content.meta().get("datetime"));
-		System.out.println(content.meta().get("datetime").getClass());
+		Assertions.assertThat(content.meta().get("date")).isNotNull().isInstanceOf(Date.class);
+		Assertions.assertThat((Date)content.meta().get("date"))
+				.isAfter("2023-12-01")
+				.isBefore("2023-12-03");
+		
+		Assertions.assertThat(content.meta().get("datetime")).isNotNull().isInstanceOf(Date.class);
+		Assertions.assertThat((Date)content.meta().get("datetime"))
+				.isAfter("2023-12-02T12:10:12")
+				.isBefore("2023-12-02T15:10:12");
+		
+	}
+	
+	@Test
+	public void test_tags() throws IOException {
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new EventBus()));
+		
+		var content = contentParser.parse(Path.of("hosts/test/content/tags.md"));
+		
+		Assertions.assertThat(content.meta()).containsKey("tags");
+		Assertions.assertThat(content.meta().get("tags")).isInstanceOf(List.class);
+		Assertions.assertThat(content.meta().get("tags")).asList().containsExactly("eins", "zwei", "drei");
 	}
 }

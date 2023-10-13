@@ -8,14 +8,17 @@ import com.github.thmarx.cms.Constants;
 import com.google.common.base.Strings;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -66,6 +69,37 @@ public class MetaData {
 		}
 	}
 
+	public List<MetaNode> listChildren (String uri) {
+		if ("".equals(uri)) {
+			List<MetaNode> nodes = new ArrayList<>();
+			tree.values().stream()
+					.filter(node -> !node.isHidden())
+					.map(node -> {
+						if (node.isDirectory) {
+							var tempNode = node.children.entrySet().stream().filter((entry) -> 
+									entry.getKey().equals("index.md")
+							).findFirst();
+							if (tempNode.isPresent()) {
+								return tempNode.get().getValue();
+							}
+							return null;
+						} else {
+							return node;
+						}
+					})
+					.filter(node -> node != null)
+					.map(MetaNode.class::cast)
+					.filter(node -> !node.isHidden())
+					.filter(node -> node.isPublished())
+					.filter(node -> !node.isSection())
+					.forEach(nodes::add);
+			
+			return nodes;
+		} else {
+			return List.of();
+		}
+	}
+	
 	public Optional<MetaNode> findFolder(String uri) {
 		return getFolder(uri);
 	}

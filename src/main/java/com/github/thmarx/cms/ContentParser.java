@@ -14,12 +14,16 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntUnaryOperator;
+import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
 
 /**
  *
  * @author t.marx
  */
+@Slf4j
 public class ContentParser {
 
 	private final FileSystem fileSystem;
@@ -78,18 +82,29 @@ public class ContentParser {
 		StringBuilder contentBuilder = new StringBuilder();
 		StringBuilder metaBuilder = new StringBuilder();
 
-		AtomicBoolean inMeta = new AtomicBoolean(true);
-		fileContent.forEach((line) -> {
-			if (line.startsWith("-----")) {
-				inMeta.set(false);
+		AtomicBoolean inFrontMatter = new AtomicBoolean(false);
+		AtomicInteger counter = new AtomicInteger(0);
+		fileContent.stream().map(String::trim).forEach((line) -> {
+			if (line.trim().equals("---")) {
+				counter.incrementAndGet();
+			}
+			if (inFrontMatter.get() == false && line.trim().equals("---")) {
+				inFrontMatter.set(true);
+                return;
+			} else if (inFrontMatter.get() && line.trim().equals("---")) {
+				inFrontMatter.set(false);
                 return;
 			}
-			if (inMeta.get()) {
+			if (inFrontMatter.get()) {
 				metaBuilder.append(line).append("\r\n");
 			} else {
 				contentBuilder.append(line).append("\r\n");
 			}
 		});
+		if (counter.get() != 2) {
+			log.error("error reading content file, wrong format");
+			throw new RuntimeException("error reading content file, wrong format");
+		}
 		
 		return new ContentRecord(contentBuilder.toString(), metaBuilder.toString());
 	}
