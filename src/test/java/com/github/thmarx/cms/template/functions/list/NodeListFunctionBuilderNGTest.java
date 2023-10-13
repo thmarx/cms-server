@@ -42,6 +42,29 @@ public class NodeListFunctionBuilderNGTest {
 	}
 	
 	@Test
+	public void test_blog_entry_sorted() {
+		Page<Node> page = nodeList.from("/blog/*")
+				.page(1).size(10)
+				.sort("published")
+				.list();
+		Assertions.assertThat(page.getItems()).hasSize(2);
+		Assertions.assertThat(page.getItems().get(0).getName()).isEqualTo("September");
+		Assertions.assertThat(page.getItems().get(1).getName()).isEqualTo("Oktober");
+	}
+	
+	@Test
+	public void test_blog_entry_sorted_reverse() {
+		Page<Node> page = nodeList.from("/blog/*")
+				.page(1).size(10)
+				.sort("published")
+				.reverse(true)
+				.list();
+		Assertions.assertThat(page.getItems()).hasSize(2);
+		Assertions.assertThat(page.getItems().get(0).getName()).isEqualTo("Oktober");
+		Assertions.assertThat(page.getItems().get(1).getName()).isEqualTo("September");
+	}
+	
+	@Test
 	public void test_prodcuts_with_index() {
 		Page<Node> page = nodeList.from("/products").page(1).size(10).index(true).list();
 		Assertions.assertThat(page.getItems()).hasSize(2);

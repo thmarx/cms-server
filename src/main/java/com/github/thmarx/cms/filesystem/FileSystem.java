@@ -8,6 +8,7 @@ import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
+import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.utils.PathUtil;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +38,8 @@ public class FileSystem {
 	private final Path hostBaseDirectory;
 	private final EventBus eventBus;
 
-	private RecursiveWatcher watcher;
+	private RecursiveWatcher contentWatcher;
+    private RecursiveWatcher templateWatcher;
 
 	final ContentParser contentParser = new ContentParser(this);
 	private Path contentBase;
@@ -55,7 +57,12 @@ public class FileSystem {
 	}
 
 	public void shutdown() {
-		watcher.stop();
+		if (contentWatcher != null) {
+            contentWatcher.stop();
+        }
+        if (templateWatcher != null) {  
+            templateWatcher.stop();
+        }
 	}
 
 	public Path resolve(String path) {
@@ -167,9 +174,10 @@ public class FileSystem {
 	}
 
 	private void addOrUpdateMetaData(Path file) throws IOException {
+        log.debug("update meta data for {}", file.toString() );
 		Map<String, Object> fileMeta = contentParser.parseMeta(file);
 
-		var uri = PathUtil.toUri(file, contentBase);
+		var uri = PathUtil.toFile(file, contentBase);
 
 		metaData.addFile(uri, fileMeta);
 	}
@@ -178,16 +186,9 @@ public class FileSystem {
 		log.debug("init filesystem");
 
 		this.contentBase = resolve("content/");
-		this.watcher = new RecursiveWatcher(contentBase);
-		watcher.getPublisher().subscribe(new Flow.Subscriber<FileEvent>() {
-			Flow.Subscription subscription;
-
-			@Override
-			public void onSubscribe(Flow.Subscription subscription) {
-				this.subscription = subscription;
-				this.subscription.request(1);
-			}
-
+		log.debug("init watcher for content changes");
+		this.contentWatcher = new RecursiveWatcher(contentBase);
+		contentWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber(){
 			@Override
 			public void onNext(FileEvent item) {
 				try {
@@ -197,12 +198,11 @@ public class FileSystem {
 					} else {
 						if (FileEvent.Type.DELETED.equals(item.type())) {
 
-							var uri = PathUtil.toUri(item.file().toPath(), contentBase);
+							var uri = PathUtil.toFile(item.file().toPath(), contentBase);
 
 							metaData.remove(uri);
 						} else {
 							addOrUpdateMetaData(item.file().toPath());
-
 						}
 					}
 				} catch (IOException ex) {
@@ -211,27 +211,28 @@ public class FileSystem {
 
 				this.subscription.request(1);
 			}
-
-			@Override
-			public void onError(Throwable throwable) {
-			}
-
-			@Override
-			public void onComplete() {
-			}
-
 		});
 
 		reInitFolder(contentBase);
 
-		watcher.start();
+		contentWatcher.start();
+        
+		log.debug("init watcher for template changes");
+        templateWatcher = new RecursiveWatcher(resolve("templates/"));
+        templateWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
+            @Override
+            public void onNext(FileEvent item) {
+                eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
+            }
+        });
+		templateWatcher.start();
 	}
 
 	private void swapMetaData() throws IOException {
 		log.debug("rebuild metadata");
 		metaData.clear();
 		reInitFolder(contentBase);
-		eventBus.publish(new ContentChangedEvent());
+		eventBus.publish(new ContentChangedEvent(contentBase));
 	}
 
 	private void reInitFolder(final Path folder) throws IOException {

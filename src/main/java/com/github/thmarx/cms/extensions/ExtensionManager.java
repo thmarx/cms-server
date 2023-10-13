@@ -79,6 +79,7 @@ public class ExtensionManager implements AutoCloseable {
 
 	public void init() throws IOException {
 		if (engine == null) {
+            log.debug("init extensions");
 			engine = Engine.newBuilder("js")
 					.option("engine.WarnInterpreterOnly", "false")
 					.build();
@@ -94,10 +95,12 @@ public class ExtensionManager implements AutoCloseable {
 
 			var extPath = fileSystem.resolve("extensions/");
 			if (Files.exists(extPath)) {
+                log.debug("try to find extensions");
 				Files.list(extPath)
 						.filter(path -> !Files.isDirectory(path) && path.getFileName().toString().endsWith(".js"))
 						.forEach(extFile -> {
 							try {
+                                log.debug("load extension {}", extFile.getFileName().toString());
 								context.getBindings("js").putMember("extensions", this);
 								Source source = Source.newBuilder(
 										"js",

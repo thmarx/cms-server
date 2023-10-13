@@ -54,7 +54,7 @@ public class ContentResolver {
 			}
 		}
 		
-		var uri = PathUtil.toUri(contentFile, contentBase);
+		var uri = PathUtil.toFile(contentFile, contentBase);
 		if (!fileSystem.isVisible(uri)) {
 			return Optional.empty();
 		}

@@ -7,4 +7,4 @@ import java.nio.file.Path;
  *
  * @author t.marx
  */
-public record ContentChangedEvent (Path contentPath) implements Event {}
+public record TemplateChangedEvent (Path templatePath) implements Event {}

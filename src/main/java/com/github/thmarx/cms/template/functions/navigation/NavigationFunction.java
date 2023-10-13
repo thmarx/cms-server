@@ -8,6 +8,7 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.utils.NameUtil;
 import com.github.thmarx.cms.utils.PathUtil;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -53,9 +54,9 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 			final List<NavNode> nodes = new ArrayList<>();
 			final Path contentBase = fileSystem.resolve("content/");
 			navnodes.forEach((node) -> {
-				var uri = PathUtil.toUri(contentBase.resolve(node.uri()), contentBase);
+				var uri = PathUtil.toFile(contentBase.resolve(node.uri()), contentBase);
 				var mNode = fileSystem.getMetaData().byUri(uri);
-				var name = getName(mNode.get());
+				var name = NameUtil.getName(mNode.get());
 				var path = contentBase.resolve(node.uri());
 				final NavNode navNode = new NavNode(name, getUrl(path));
 				if (isCurrentNode(path)) {

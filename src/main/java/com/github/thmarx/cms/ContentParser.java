@@ -7,18 +7,14 @@ package com.github.thmarx.cms;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.thmarx.cms.utils.BooleanUtil;
-import com.github.thmarx.cms.utils.DateUtil;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.AbstractMap;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  *
@@ -29,6 +25,8 @@ public class ContentParser {
 	private final FileSystem fileSystem;
 	private final Cache<String, Content> contentCache;
 
+	private final Yaml yaml = new Yaml();
+	
 	public ContentParser(final FileSystem fileSystem) {
 		this.fileSystem = fileSystem;
 
@@ -44,9 +42,6 @@ public class ContentParser {
 		contentCache.invalidateAll();
 	}
 
-//	public Content parse (final String file) throws IOException {
-//		return parse(contentBase.resolve(file));
-//	}
 	public Content parse(final Path contentFile) throws IOException {
 		final String filename = contentFile.toAbsolutePath().toString();
 		var cached = contentCache.getIfPresent(filename);
@@ -59,82 +54,47 @@ public class ContentParser {
 	}
 
 	private Content _parse(final Path contentFile) throws IOException {
-		var fileContent = fileSystem.loadLines(contentFile);
+		ContentRecord readContent = readContent(contentFile);
 
-		StringBuilder content = new StringBuilder();
-		Map<String, Object> meta = new HashMap<>();
-
-		AtomicBoolean inMeta = new AtomicBoolean(true);
-		fileContent.forEach((line) -> {
-			if (line.startsWith("-----")) {
-				inMeta.set(false);
-				return;
-			}
-			if (inMeta.get()) {
-				if (Strings.isNullOrEmpty(line)) {
-					return;
-				}
-				var entry = createEntry(line);
-				meta.put(entry.getKey(), entry.getValue());
-			} else {
-				content.append(line).append(System.lineSeparator());
-			}
-		});
-
-		return new Content(content.toString(), meta);
+		return new Content(readContent.content(), _parseMeta(readContent));
 	}
+    
+    private Map<String, Object> _parseMeta (ContentRecord content) {
+        if (Strings.isNullOrEmpty(content.meta.trim())) {
+            return Collections.emptyMap();
+        }
+        return yaml.load(content.meta());
+    }
 
 	public Map<String, Object> parseMeta(final Path contentFile) throws IOException {
+		ContentRecord readContent = readContent(contentFile);
+
+		return _parseMeta(readContent);
+	}
+
+	private ContentRecord readContent(final Path contentFile) throws IOException {
 		var fileContent = fileSystem.loadLines(contentFile);
 
-		Map<String, Object> meta = new HashMap<>();
+		StringBuilder contentBuilder = new StringBuilder();
+		StringBuilder metaBuilder = new StringBuilder();
 
 		AtomicBoolean inMeta = new AtomicBoolean(true);
 		fileContent.forEach((line) -> {
 			if (line.startsWith("-----")) {
 				inMeta.set(false);
-				return;
+                return;
 			}
 			if (inMeta.get()) {
-				if (Strings.isNullOrEmpty(line)) {
-					return;
-				}
-				var entry = createEntry(line);
-				meta.put(entry.getKey(), entry.getValue());
+				metaBuilder.append(line).append("\r\n");
+			} else {
+				contentBuilder.append(line).append("\r\n");
 			}
 		});
-
-		return meta;
+		
+		return new ContentRecord(contentBuilder.toString(), metaBuilder.toString());
 	}
 
-	private Map.Entry<String, Object> createEntry(final String line) {
-		var parts = line.split(":");
-		final String key = parts[0];
-		final String value = parts[1];
-		if (isArray(value)) {
-			var arrayValues = value.substring(1, value.length() - 1);
-			var list = Stream.of(arrayValues.split(","))
-					.map(String::trim)
-					.map((val) -> val.replace("[", ""))
-					.map((val) -> val.replace("]", ""))
-					.collect(Collectors.toList());
-			return new AbstractMap.SimpleEntry<>(key, list);
-		} else if (DateUtil.isDate(value)) {
-			return new AbstractMap.SimpleEntry<>(key, DateUtil.toDate(value));
-		} else if (BooleanUtil.isBoolean(value)) {
-			return new AbstractMap.SimpleEntry<>(key, BooleanUtil.toBoolean(value));
-		} else {
-			return new AbstractMap.SimpleEntry<>(key, value.trim());
-		}
-	}
+	private record ContentRecord(String content, String meta) {}
 
-	private boolean isArray(final String value) {
-		var trimmed = value.trim();
-		return trimmed.startsWith("[") && trimmed.endsWith("]");
-
-	}
-
-	public record Content(String content, Map<String, Object> meta) {
-
-	}
+	public record Content(String content, Map<String, Object> meta) {}
 }

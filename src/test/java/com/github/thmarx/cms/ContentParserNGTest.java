@@ -41,4 +41,15 @@ public class ContentParserNGTest {
 		Assertions.assertThat(content.content()).isEqualToIgnoringWhitespace(expectedMD);
 	}
 	
+	@Test
+	public void test_date() throws IOException {
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new EventBus()));
+		
+		var content = contentParser.parse(Path.of("hosts/test/content/test.md"));
+		
+		System.out.println(content.meta().get("date"));
+		System.out.println(content.meta().get("date").getClass());
+		System.out.println(content.meta().get("datetime"));
+		System.out.println(content.meta().get("datetime").getClass());
+	}
 }

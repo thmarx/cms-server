@@ -17,7 +17,7 @@ public class EventBus {
 		listeners = ArrayListMultimap.create();
 	}
 	
-	public <T extends Event> void register (Class<T> eventClass, EventListener listener) {
+	public <T extends Event> void register (Class<T> eventClass, EventListener<T> listener) {
 		listeners.put(eventClass, listener);
 	}
 	

@@ -4,17 +4,17 @@
  */
 package com.github.thmarx.cms;
 
-import com.github.thmarx.cms.eventbus.Event;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
+import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
 import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
-import com.github.thmarx.cms.utils.DateUtil;
+import freemarker.template.utility.DateUtil;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.BlockingHandler;
@@ -40,7 +40,7 @@ public class VHost {
 	private ContentRenderer contentRenderer;
 	private ContentResolver contentResolver;
 	private ContentParser contentParser;
-
+    private TemplateEngine templateEngine;
 	private ExtensionManager extensionManager;
 	
 	private Path contentBase;
@@ -80,10 +80,6 @@ public class VHost {
 		}
 		hostname = properties.getProperty("hostname");
 		
-		if (properties.containsKey("date.format")) {
-			DateUtil.setDateFormat(properties.getProperty("date.format"));
-		}
-		
 		contentBase = fileSystem.resolve("content/");
 		assetBase = fileSystem.resolve("assets/");
 		templateBase = fileSystem.resolve("templates/");
@@ -92,15 +88,19 @@ public class VHost {
 		extensionManager.init();
 		
 		contentParser = new ContentParser(fileSystem);
-		TemplateEngine templates = resolveTemplateEngine();
+		templateEngine = resolveTemplateEngine();
 		
 
-		contentRenderer = new ContentRenderer(contentParser, templates, new MarkdownRenderer(), fileSystem);
+		contentRenderer = new ContentRenderer(contentParser, templateEngine, new MarkdownRenderer(), fileSystem);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
 		
 		eventBus.register(ContentChangedEvent.class, (EventListener<ContentChangedEvent>) (ContentChangedEvent event) -> {
-			log.debug("invalidate ContentParser cache");
+			log.debug("invalidate content cache");
 			contentParser.clearCache();
+		});
+        eventBus.register(TemplateChangedEvent.class, (EventListener<TemplateChangedEvent>) (TemplateChangedEvent event) -> {
+			log.debug("invalidate template cache");
+			templateEngine.invalidateCache();
 		});
 	}
 	

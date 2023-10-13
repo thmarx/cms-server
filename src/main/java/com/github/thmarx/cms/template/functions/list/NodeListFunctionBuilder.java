@@ -8,8 +8,8 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.utils.NameUtil;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
@@ -37,8 +37,8 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 	final NodeListFunction nodeListFunctionNoIndex;
 
 	public final Comparator<MetaData.MetaNode> nameComparator = (node1, node2) -> {
-		var filename1 = getName(node1);
-		var filename2 = getName(node2);
+		var filename1 = NameUtil.getName(node1);
+		var filename2 = NameUtil.getName(node2);
 		if (filename1.equals("index.md")) {
 			return -1;
 		} else if (filename2.equals("index.md")) {

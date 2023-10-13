@@ -4,7 +4,6 @@
  */
 package com.github.thmarx.cms;
 
-import com.github.thmarx.cms.filesystem.FileSystem;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
@@ -29,7 +28,7 @@ public class Server {
 	public static void main(String[] args) throws Exception {
 
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
-		System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
+		//System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
 		Properties properties = new Properties();
 		try (var inStream = new FileInputStream("application.properties")) {

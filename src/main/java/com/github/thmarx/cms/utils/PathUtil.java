@@ -35,7 +35,7 @@ public class PathUtil {
 		return uri;
 	}
 	
-	public static String toUri (final Path contentFile, final Path contentBase) {
+	public static String toFile (final Path contentFile, final Path contentBase) {
 		Path relativize = contentBase.relativize(contentFile);
 		if (Files.isDirectory(contentFile)) {
 			relativize = relativize.resolve("index.md");
