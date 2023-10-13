@@ -4,6 +4,7 @@
  */
 package com.github.thmarx.cms.utils;
 
+import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.filesystem.MetaData;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
@@ -82,13 +83,13 @@ public class NodeUtilNGTest {
 				"menu", Map.of()
 		));
 		var order = NodeUtil.getMenuOrder(node);
-		Assertions.assertThat(order).isEqualTo(0);
+		Assertions.assertThat(order).isEqualTo(Constants.DEFAULT_MENU_ORDER);
 	}
 	
 	@Test
 	public void getDefaultMenuOrderNoMenuMap() {
 		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of());
 		var order = NodeUtil.getMenuOrder(node);
-		Assertions.assertThat(order).isEqualTo(0);
+		Assertions.assertThat(order).isEqualTo(Constants.DEFAULT_MENU_ORDER);
 	}
 }

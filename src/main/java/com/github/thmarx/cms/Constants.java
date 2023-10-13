@@ -17,5 +17,5 @@ public abstract class Constants {
 		return Pattern.compile("%s\\.([a-zA-Z0-9]+[a-zA-Z0-9-]*)\\.md".formatted(fileName));
 	};
 	
-	public static final float DEFAULT_MENU_ORDER = 0;
+	public static final float DEFAULT_MENU_ORDER = 1000f;
 }
