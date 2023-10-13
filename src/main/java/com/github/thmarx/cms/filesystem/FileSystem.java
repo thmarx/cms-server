@@ -111,31 +111,10 @@ public class FileSystem {
 
 		if ("".equals(folder)) {
 			return metaData.listChildren("");
-			/*
-			metaData.tree().values()
-					.stream()
-					.filter(node -> !node.isHidden())
-					.filter(node -> node.isPublished())
-					.filter(node -> !node.isSection())
-					.forEach((node) -> {
-						nodes.add(node);
-					});
-			*/
 		} else {
-			Optional<MetaData.MetaNode> findFolder = metaData.findFolder(folder);
-			if (findFolder.isPresent()) {
-				findFolder.get().children().values()
-						.stream()
-						.filter(node -> !node.isHidden())
-						.filter(node -> node.isPublished())
-						.filter(node -> !node.isSection())
-						.forEach((node) -> {
-							nodes.add(node);
-						});
-			}
+			return metaData.listChildren(folder);
 		}
 
-		return nodes;
 	}
 
 	public List<MetaData.MetaNode> listSections(final Path contentFile) {

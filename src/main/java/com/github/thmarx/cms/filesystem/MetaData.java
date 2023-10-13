@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -55,13 +57,11 @@ public class MetaData {
 		if (parts.length == 1) {
 			parentFolder = getFolder(uri);
 		} else {
-			var parentPath = Arrays.copyOfRange(parts, 0, parts.length-1);
+			var parentPath = Arrays.copyOfRange(parts, 0, parts.length - 1);
 			var parentUri = String.join("/", parentPath);
 			parentFolder = getFolder(parentUri);
 		}
-		
-		
-		
+
 		if (parentFolder.isPresent()) {
 			parentFolder.get().children.put(n.name(), n);
 		} else {
@@ -69,15 +69,14 @@ public class MetaData {
 		}
 	}
 
-	public List<MetaNode> listChildren (String uri) {
+	public List<MetaNode> listChildren(String uri) {
 		if ("".equals(uri)) {
-			List<MetaNode> nodes = new ArrayList<>();
-			tree.values().stream()
+			return tree.values().stream()
 					.filter(node -> !node.isHidden())
 					.map(node -> {
 						if (node.isDirectory) {
-							var tempNode = node.children.entrySet().stream().filter((entry) -> 
-									entry.getKey().equals("index.md")
+							var tempNode = node.children.entrySet().stream().filter((entry)
+									-> entry.getKey().equals("index.md")
 							).findFirst();
 							if (tempNode.isPresent()) {
 								return tempNode.get().getValue();
@@ -88,22 +87,44 @@ public class MetaData {
 						}
 					})
 					.filter(node -> node != null)
-					.map(MetaNode.class::cast)
 					.filter(node -> !node.isHidden())
 					.filter(node -> node.isPublished())
 					.filter(node -> !node.isSection())
-					.forEach(nodes::add);
-			
-			return nodes;
+					.collect(Collectors.toList());
+
 		} else {
-			return List.of();
+			Optional<MetaData.MetaNode> findFolder = findFolder(uri);
+			if (findFolder.isPresent()) {
+				return findFolder.get().children().values()
+						.stream()
+						.filter(node -> !node.isHidden())
+						.map(node -> {
+							if (node.isDirectory) {
+								var tempNode = node.children.entrySet().stream().filter((entry)
+										-> entry.getKey().equals("index.md")
+								).findFirst();
+								if (tempNode.isPresent()) {
+									return tempNode.get().getValue();
+								}
+								return null;
+							} else {
+								return node;
+							}
+						})
+						.filter(node -> node != null)
+						.filter(node -> !node.isHidden())
+						.filter(node -> node.isPublished())
+						.filter(node -> !node.isSection())
+						.collect(Collectors.toList());
+			}
 		}
+		return Collections.emptyList();
 	}
-	
+
 	public Optional<MetaNode> findFolder(String uri) {
 		return getFolder(uri);
 	}
-	
+
 	private Optional<MetaNode> getFolder(String uri) {
 		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
 
@@ -122,7 +143,7 @@ public class MetaData {
 	}
 
 	public void addFile(final String uri, final Map<String, Object> data) {
-		
+
 		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
 		final MetaNode node = new MetaNode(uri, parts[parts.length - 1], data);
 
@@ -145,7 +166,7 @@ public class MetaData {
 
 	void remove(String uri) {
 		nodes.remove(uri);
-		
+
 		var folder = getFolder(uri);
 		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
 		var name = parts[parts.length - 1];
@@ -165,22 +186,22 @@ public class MetaData {
 		public MetaNode(String uri, String name, Map<String, Object> data) {
 			this(uri, name, data, false, new HashMap<String, MetaNode>());
 		}
-		
-		public boolean isHidden () {
+
+		public boolean isHidden() {
 			return name.startsWith(".");
 		}
-		
-		public boolean isDraft () {
+
+		public boolean isDraft() {
 			return (boolean) data().getOrDefault("draft", false);
 		}
-		
-		public boolean isPublished () {
-			var localDate = (Date)data.getOrDefault("published", Date.from(Instant.now()));
+
+		public boolean isPublished() {
+			var localDate = (Date) data.getOrDefault("published", Date.from(Instant.now()));
 			var now = Date.from(Instant.now());
 			return !isDraft() && (localDate.before(now) || localDate.equals(now));
 		}
-		
-		public boolean isSection () {
+
+		public boolean isSection() {
 			return Constants.SECTION_PATTERN.matcher(name).matches();
 		}
 	}
