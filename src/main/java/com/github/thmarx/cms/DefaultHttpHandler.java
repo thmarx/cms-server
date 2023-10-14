@@ -4,38 +4,45 @@
  */
 package com.github.thmarx.cms;
 
-
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
+@Slf4j
 public class DefaultHttpHandler implements HttpHandler {
 
 	private final ContentResolver contentResolver;
-	
+
 	@Override
 	public void handleRequest(HttpServerExchange exchange) throws Exception {
 		if (exchange.isInIoThread()) {
 			exchange.dispatch(this);
 			return;
 		}
-		RenderContext context = new RenderContext(exchange.getRelativePath(), exchange.getQueryParameters());
-		Optional<String> content = contentResolver.getContent(context);
-		if (!content.isPresent()) {
-			context = new RenderContext("/.technical/404", exchange.getQueryParameters());
-			content = contentResolver.getContent(context);
-			exchange.setStatusCode(404);
+		try {
+			RenderContext context = new RenderContext(exchange.getRelativePath(), exchange.getQueryParameters());
+			Optional<String> content = contentResolver.getContent(context);
+			if (!content.isPresent()) {
+				context = new RenderContext("/.technical/404", exchange.getQueryParameters());
+				content = contentResolver.getContent(context);
+				exchange.setStatusCode(404);
+			}
+			exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "text/html; charset=utf-8");
+			exchange.getResponseSender().send(content.get(), StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			log.error("", e);
+			exchange.setStatusCode(500);
+			exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "text/html; charset=utf-8");
 		}
-		exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "text/html; charset=utf-8");
-		exchange.getResponseSender().send(content.get(), StandardCharsets.UTF_8);
 	}
 
 }

@@ -1,11 +1,18 @@
 ---
-title: Code Formatting
+title: Content
 template: start
 menu: 
-    title: Code
-    order: 100
+    title: Content editing
+    order: 10
 ---
 
+## Content files
+
+### Meta data
+
+### Markdown
+
+#### Formatting code
 ```java
 System.out.println("Hello World");
 ```

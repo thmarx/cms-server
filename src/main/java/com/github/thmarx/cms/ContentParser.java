@@ -84,7 +84,7 @@ public class ContentParser {
 
 		AtomicBoolean inFrontMatter = new AtomicBoolean(false);
 		AtomicInteger counter = new AtomicInteger(0);
-		fileContent.stream().map(String::trim).forEach((line) -> {
+		fileContent.stream().forEach((line) -> {
 			if (line.trim().equals("---")) {
 				counter.incrementAndGet();
 			}

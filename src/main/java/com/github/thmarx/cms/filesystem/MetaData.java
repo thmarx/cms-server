@@ -32,6 +32,7 @@ public class MetaData {
 
 	void clear() {
 		nodes.clear();
+		tree.clear();
 	}
 
 	ConcurrentMap<String, MetaNode> nodes() {

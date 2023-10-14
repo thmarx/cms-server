@@ -70,7 +70,7 @@ public class ContentResolver {
 			
 			var content = contentRenderer.render(contentFile, context, renderedSections);
 			return Optional.of(content);
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			log.error(null, ex);
 			return Optional.empty();
 		}

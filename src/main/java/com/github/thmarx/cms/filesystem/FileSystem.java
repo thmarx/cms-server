@@ -156,6 +156,9 @@ public class FileSystem {
 	}
 
 	private void addOrUpdateMetaData(Path file) throws IOException {
+		if (!Files.exists(file)) {
+			return;
+		}
         log.debug("update meta data for {}", file.toString() );
 		Map<String, Object> fileMeta = contentParser.parseMeta(file);
 
@@ -175,17 +178,10 @@ public class FileSystem {
 			public void onNext(FileEvent item) {
 				try {
 
-					if (item.file().isDirectory()) {
+					if (item.file().isDirectory() || FileEvent.Type.DELETED.equals(item.type())) {
 						swapMetaData();
 					} else {
-						if (FileEvent.Type.DELETED.equals(item.type())) {
-
-							var uri = PathUtil.toFile(item.file().toPath(), contentBase);
-
-							metaData.remove(uri);
-						} else {
-							addOrUpdateMetaData(item.file().toPath());
-						}
+						addOrUpdateMetaData(item.file().toPath());
 					}
 				} catch (IOException ex) {
 					log.error("", ex);
