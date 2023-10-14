@@ -1,24 +1,39 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
-	<head th:include="libs/header :: header">
-		<title></title>
-	</head>
-	<body>
-		
-		<nav th:replace="libs/header :: navigation"></nav>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
-		<div class="container">
-			<div class="row" th:utext="${content}"></div>
-			<div class="row" th:with='page = ${nodeList.from("/blog/*").sort("published").reverse(true).page(1).size(10).list()}'>
-				<th:block th:each="entry : ${page.items}" data-test="e">
-					<h2 th:text="${entry.name}"></h2>
-					<u th:text="${#dates.format(entry.meta['published'], 'dd-MM-yyyy HH:mm')}"></u>
-					<a th:href="${entry.path}">goto</a>
+<head th:include="libs/header :: header">
+	<title></title>
+</head>
+
+<body>
+
+	<nav th:replace="libs/header :: navigation"></nav>
+
+	<div class="container" th:with="pageNumber = ${renderContext.getQueryParameter('page', '1')}">
+		<div class="row" th:utext="${content}"></div>
+		<div class="row"
+			th:with='page = ${nodeList.from("/blog/*").sort("published").reverse(true).page(pageNumber).size(1).list()}'>
+			<th:block th:each="entry : ${page.items}" data-test="e">
+				<h2 th:text="${entry.name}"></h2>
+				<u th:text="${#dates.format(entry.meta['published'], 'dd-MM-yyyy HH:mm')}"></u>
+				<a th:href="${entry.path}">goto</a>
 			</th:block>
+			<div class="center">
+				<nav aria-label="blog pagination" >
+					<ul class="pagination">
+					  <li class="page-item " th:classappend="${page.page == 1 ? 'disabled' : ''}">
+						<a class="page-link" th:href="'/blog?page=' + ${page.page-1}" tabindex="-1">Previous</a>
+					  </li>
+					  <li class="page-item" th:classappend="${page.page == page.total ? 'disabled' : ''}">
+						<a class="page-link" th:href="'/blog?page=' + ${page.page+1}">Next</a>
+					  </li>
+					</ul>
+				  </nav>
 			</div>
 		</div>
-		
-		
-	</body>
+	</div>
+
+
+</body>
+
 </html>
