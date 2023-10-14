@@ -45,8 +45,8 @@ public class NodeListFunctionBuilderNGTest {
 				.sort("published")
 				.list();
 		Assertions.assertThat(page.getItems()).hasSize(2);
-		Assertions.assertThat(page.getItems().get(0).getName()).isEqualTo("September");
-		Assertions.assertThat(page.getItems().get(1).getName()).isEqualTo("Oktober");
+		Assertions.assertThat(page.getItems().get(0).name()).isEqualTo("September");
+		Assertions.assertThat(page.getItems().get(1).name()).isEqualTo("Oktober");
 	}
 	
 	@Test
@@ -57,8 +57,8 @@ public class NodeListFunctionBuilderNGTest {
 				.reverse(true)
 				.list();
 		Assertions.assertThat(page.getItems()).hasSize(2);
-		Assertions.assertThat(page.getItems().get(0).getName()).isEqualTo("Oktober");
-		Assertions.assertThat(page.getItems().get(1).getName()).isEqualTo("September");
+		Assertions.assertThat(page.getItems().get(0).name()).isEqualTo("Oktober");
+		Assertions.assertThat(page.getItems().get(1).name()).isEqualTo("September");
 	}
 	
 	@Test
@@ -77,7 +77,7 @@ public class NodeListFunctionBuilderNGTest {
 	@Test
 	void list_root () {
 		Page<Node> page = nodeList.from("/nodelist").page(1).size(10).list();
-		var nodeUris = page.getItems().stream().map(Node::getPath).collect(Collectors.toList());
+		var nodeUris = page.getItems().stream().map(Node::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
 				.containsExactlyInAnyOrder(
 						"/nodelist", 
@@ -89,7 +89,7 @@ public class NodeListFunctionBuilderNGTest {
 	@Test
 	void list_folder1 () {
 		Page<Node> page = nodeList.from("/nodelist/folder1").page(1).size(10).list();
-		var nodeUris = page.getItems().stream().map(Node::getPath).collect(Collectors.toList());
+		var nodeUris = page.getItems().stream().map(Node::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
 				.containsExactlyInAnyOrder(
 						"/nodelist/folder1", 
@@ -100,7 +100,7 @@ public class NodeListFunctionBuilderNGTest {
 	@Test
 	void list_asterix () {
 		Page<Node> page = nodeList.from("/nodelist/*").page(1).size(10).list();
-		var nodeUris = page.getItems().stream().map(Node::getPath).collect(Collectors.toList());
+		var nodeUris = page.getItems().stream().map(Node::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
 				.containsExactlyInAnyOrder(
 						"/nodelist/folder1", 

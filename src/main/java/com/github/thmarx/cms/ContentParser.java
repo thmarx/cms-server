@@ -82,29 +82,28 @@ public class ContentParser {
 		StringBuilder contentBuilder = new StringBuilder();
 		StringBuilder metaBuilder = new StringBuilder();
 
-		AtomicBoolean inFrontMatter = new AtomicBoolean(false);
+		AtomicBoolean inFrontMatter = new AtomicBoolean(true);
 		AtomicInteger counter = new AtomicInteger(0);
 		fileContent.stream().forEach((line) -> {
 			if (line.trim().equals("---")) {
 				counter.incrementAndGet();
-			}
-			if (inFrontMatter.get() == false && line.trim().equals("---")) {
-				inFrontMatter.set(true);
-                return;
-			} else if (inFrontMatter.get() && line.trim().equals("---")) {
-				inFrontMatter.set(false);
-                return;
-			}
+				if (counter.get() == 2) {
+					inFrontMatter.set(false);
+				}
+				return;
+			}			
 			if (inFrontMatter.get()) {
 				metaBuilder.append(line).append("\r\n");
 			} else {
 				contentBuilder.append(line).append("\r\n");
 			}
 		});
+		/*
 		if (counter.get() != 2) {
 			log.error("error reading content file, wrong format");
 			throw new RuntimeException("error reading content file, wrong format");
 		}
+		*/
 		
 		return new ContentRecord(contentBuilder.toString(), metaBuilder.toString());
 	}
