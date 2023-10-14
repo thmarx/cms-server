@@ -1,6 +1,6 @@
 ---
 title: Our Blog
-template: start
+template: blog
 menu:
     title: The Blog
     order: 100

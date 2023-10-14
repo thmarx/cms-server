@@ -1,0 +1,24 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+	<head th:include="libs/header :: header">
+		<title></title>
+	</head>
+	<body>
+		
+		<nav th:replace="libs/header :: navigation"></nav>
+
+		<div class="container">
+			<div class="row" th:utext="${content}"></div>
+			<div class="row" th:with='page = ${nodeList.from("/blog/*").sort("published").reverse(true).page(1).size(10).list()}'>
+				<th:block th:each="entry : ${page.items}" data-test="e">
+					<h2 th:text="${entry.name}"></h2>
+					<u th:text="${#dates.format(entry.meta['published'], 'dd-MM-yyyy HH:mm')}"></u>
+					<a th:href="${entry.path}">goto</a>
+			</th:block>
+			</div>
+		</div>
+		
+		
+	</body>
+</html>
