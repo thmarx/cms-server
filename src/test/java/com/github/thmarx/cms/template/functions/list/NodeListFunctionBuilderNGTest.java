@@ -1,13 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/EmptyTestNGTest.java to edit this template
- */
 package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.template.functions.navigation.NavNode;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Collectors;

@@ -4,6 +4,7 @@
  */
 package com.github.thmarx.cms.template.functions.list;
 
+import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -11,11 +12,5 @@ import lombok.RequiredArgsConstructor;
  *
  * @author t.marx
  */
-@Data
-@RequiredArgsConstructor
-public class Node {
-	private final String name;
-	private final String path;
-	private final String content;
-	
-}
+
+public record Node (String name, String path, String content, Map<String, Object> meta) {}

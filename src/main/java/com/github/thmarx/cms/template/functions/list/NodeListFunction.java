@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.Constants;
@@ -101,12 +97,12 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 						var temp_path = contentBase.resolve(node.uri());
 						var name = NodeUtil.getName(node);
 						var md = parse(temp_path);
-						final Node navNode = new Node(name, getUrl(temp_path), md.get().content());
+						final Node navNode = new Node(name, getUrl(temp_path), md.get().content(), node.data());
 						navNodes.add(navNode);
 					});
 
 			int totalPages = (int) Math.ceil((float) total / size);
-			return new Page<Node>(size, totalPages, page, navNodes);
+			return new Page<Node>(navNodes.size(), totalPages, page, navNodes);
 
 		} else {
 			return getNodesFromBase(baseNode, path, page, size, comparator);
@@ -154,7 +150,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 						var path = contentBase.resolve(node.uri());
 						var name = NodeUtil.getName(node);
 						var md = parse(path);
-						final Node navNode = new Node(name, getUrl(path), md.get().content());
+						final Node navNode = new Node(name, getUrl(path), md.get().content(), node.data());
 						nodes.add(navNode);
 					});
 

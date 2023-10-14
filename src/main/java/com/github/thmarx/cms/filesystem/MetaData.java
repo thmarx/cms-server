@@ -7,8 +7,6 @@ package com.github.thmarx.cms.filesystem;
 import com.github.thmarx.cms.Constants;
 import com.google.common.base.Strings;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -19,8 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -192,11 +188,11 @@ public class MetaData {
 		}
 
 		public boolean isDraft() {
-			return (boolean) data().getOrDefault("draft", false);
+			return (boolean) data().getOrDefault(Constants.MetaFields.DRAFT, false);
 		}
 
 		public boolean isPublished() {
-			var localDate = (Date) data.getOrDefault("published", Date.from(Instant.now()));
+			var localDate = (Date) data.getOrDefault(Constants.MetaFields.PUBLISHED, Date.from(Instant.now()));
 			var now = Date.from(Instant.now());
 			return !isDraft() && (localDate.before(now) || localDate.equals(now));
 		}

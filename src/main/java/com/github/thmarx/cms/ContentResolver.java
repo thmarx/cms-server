@@ -44,7 +44,10 @@ public class ContentResolver {
 		Path contentFile = null;
 		if (Files.exists(contentPath) && Files.isDirectory(contentPath)) {
 			// use index.md
-			contentFile = contentPath.resolve("index.md");
+			var tempFile = contentPath.resolve("index.md");
+			if (Files.exists(tempFile)) {
+				contentFile = tempFile;
+			}
 		} else {
 			var temp = contentBase.resolve(path + ".md");
 			if (Files.exists(temp)) {
