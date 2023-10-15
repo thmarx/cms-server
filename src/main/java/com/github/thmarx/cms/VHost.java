@@ -104,10 +104,10 @@ public class VHost {
 		extensionManager.init();
 		
 		contentParser = new ContentParser(fileSystem);
-		templateEngine = resolveTemplateEngine();
 		markdownRenderer = new MarkdownRenderer();
 		
-
+		templateEngine = resolveTemplateEngine();
+		
 		contentRenderer = new ContentRenderer(contentParser, templateEngine, markdownRenderer, fileSystem);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
 		
