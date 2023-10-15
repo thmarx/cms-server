@@ -1,3 +1,2 @@
-export function log (line) {
-	console.log("log: " , line)
-}
+export const getLogger = Java.type("org.apache.logging.log4j.LogManager").getLogger
+
