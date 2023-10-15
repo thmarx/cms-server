@@ -1,7 +1,28 @@
 package com.github.thmarx.cms.template.functions.list;
 
+/*-
+ * #%L
+ * cms-server
+ * %%
+ * Copyright (C) 2023 Marx-Software
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
@@ -36,12 +57,12 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		return true;
 	};
 
-	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser) {
-		super(fileSystem, currentNode, contentParser);
+	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
+		super(fileSystem, currentNode, contentParser, markdownRenderer);
 	}
 
-	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, boolean excludeIndexMd) {
-		this(fileSystem, currentNode, contentParser);
+	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer, boolean excludeIndexMd) {
+		this(fileSystem, currentNode, contentParser, markdownRenderer);
 		this.excludeIndexMd = excludeIndexMd;
 	}
 

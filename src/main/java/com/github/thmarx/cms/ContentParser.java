@@ -1,8 +1,24 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.github.thmarx.cms;
+
+/*-
+ * #%L
+ * cms-server
+ * %%
+ * Copyright (C) 2023 Marx-Software
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -15,7 +31,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntUnaryOperator;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
 
@@ -98,12 +113,6 @@ public class ContentParser {
 				contentBuilder.append(line).append("\r\n");
 			}
 		});
-		/*
-		if (counter.get() != 2) {
-			log.error("error reading content file, wrong format");
-			throw new RuntimeException("error reading content file, wrong format");
-		}
-		*/
 		
 		return new ContentRecord(contentBuilder.toString(), metaBuilder.toString());
 	}

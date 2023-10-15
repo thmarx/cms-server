@@ -1,6 +1,27 @@
 package com.github.thmarx.cms.template.freemarker;
 
+/*-
+ * #%L
+ * cms-server
+ * %%
+ * Copyright (C) 2023 Marx-Software
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.Server;
 import com.github.thmarx.cms.extensions.ExtensionManager;
@@ -22,19 +43,24 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FreemarkerTemplateEngine implements TemplateEngine {
-	
+
 	private final Configuration config;
-	
+
 	private final ContentParser contentParser;
 
+	final MarkdownRenderer markdownRenderer;
 	
 	final FileSystem fileSystem;
-	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, final ExtensionManager extensionManager) {
+
+	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, final ExtensionManager extensionManager,
+			final MarkdownRenderer markdownRenderer
+	) {
 		this.fileSystem = fileSystem;
 		this.contentParser = contentParser;
-		
+		this.markdownRenderer = markdownRenderer;
+
 		config = new Configuration(Configuration.VERSION_2_3_32);
-		
+
 		try {
 			config.setTemplateLoader(new FileTemplateLoader(fileSystem.resolve("templates/").toFile()));
 		} catch (IOException ex) {
@@ -46,8 +72,7 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 		config.setLogTemplateExceptions(false);
 		config.setWrapUncheckedExceptions(true);
 		config.setFallbackOnNullLoopVariable(false);
-		
-		
+
 		if (Server.DEV_MODE) {
 			config.setCacheStorage(new NullCacheStorage());
 			config.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
@@ -57,10 +82,10 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 			config.setWrapUncheckedExceptions(true);
 			config.setFallbackOnNullLoopVariable(false);
 		}
-		
+
 		config.setSharedVariable("indexOf", new IndexOfMethod());
 		config.setSharedVariable("upper", new UpperDirective());
-		
+
 		extensionManager.getRegisterTemplateSupplier().forEach(service -> {
 			try {
 				config.setSharedVariable(service.name(), service.supplier());
@@ -68,7 +93,7 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 				log.error(null, ex);
 			}
 		});
-		
+
 		extensionManager.getRegisterTemplateFunctions().forEach(service -> {
 			try {
 				config.setSharedVariable(service.name(), service.function());
@@ -80,15 +105,15 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 
 	@Override
 	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException {
-		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser));
-		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser));
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
+		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
 		//model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
 		model.values.put("renderContext", context);
-		
+
 		StringWriter out = new StringWriter();
 		try {
 			Template loadedTemplate = config.getTemplate(template);
-			
+
 			loadedTemplate.process(model.values, out);
 
 			return out.toString();
@@ -103,6 +128,5 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 	public void invalidateCache() {
 		config.clearTemplateCache();
 	}
-	
-	
+
 }

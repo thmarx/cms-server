@@ -1,10 +1,27 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.github.thmarx.cms.template.functions.list;
 
+/*-
+ * #%L
+ * cms-server
+ * %%
+ * Copyright (C) 2023 Marx-Software
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
@@ -47,10 +64,10 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return filename1.compareTo(filename2);
 	};
 
-	public NodeListFunctionBuilder(FileSystem fileSystem, Path currentNode, ContentParser contentParser) {
-		super(fileSystem, currentNode, contentParser);
-		this.nodeListFunction = new NodeListFunction(fileSystem, currentNode, contentParser);
-		this.nodeListFunctionNoIndex = new NodeListFunction(fileSystem, currentNode, contentParser, true);
+	public NodeListFunctionBuilder(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
+		super(fileSystem, currentNode, contentParser, markdownRenderer);
+		this.nodeListFunction = new NodeListFunction(fileSystem, currentNode, contentParser, markdownRenderer);
+		this.nodeListFunctionNoIndex = new NodeListFunction(fileSystem, currentNode, contentParser, markdownRenderer, true);
 	}
 
 	public NodeListFunctionBuilder from(String from) {

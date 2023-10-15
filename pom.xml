@@ -11,6 +11,10 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<exec.mainClass>com.github.thmarx.cms.Server</exec.mainClass>
 	</properties>
+	<inceptionYear>2023</inceptionYear>
+	<organization>
+		<name>Marx-Software</name>
+	</organization>
 	
 	<dependencies>
 		<dependency>
@@ -167,6 +171,32 @@
 						<goals>
 							<goal>single</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.2.0</version>
+				<configuration>
+					<verbose>false</verbose>
+					<licenseName>apache_v2</licenseName>
+				</configuration>
+				<executions>
+					<execution>
+						<id>first</id>
+						<goals>
+							<goal>update-file-header</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<licenseName>apache_v2</licenseName>
+							<roots>
+								<root>src/main/java</root>
+								<root>src/resources</root>
+								<root>src/test</root>
+							</roots>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
