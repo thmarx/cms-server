@@ -25,6 +25,7 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.Server;
+import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
@@ -53,15 +54,18 @@ public class PebbleTemplateEngine implements TemplateEngine {
 	private final Path templateBase;
 	final Path contentBase; 
 	final ContentParser contentParser;
+	final ExtensionManager extensionManager;
 	final MarkdownRenderer markdownRenderer;
 
 	final FileSystem fileSystem;
 	
-	public PebbleTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, final MarkdownRenderer markdownRenderer) {
+	public PebbleTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, 
+			final ExtensionManager extensionManager, final MarkdownRenderer markdownRenderer) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
 		this.contentBase = fileSystem.resolve("content/");
 		this.contentParser = contentParser;
+		this.extensionManager = extensionManager;
 		this.markdownRenderer = markdownRenderer;
 		var loader = new FileLoader();
 		loader.setPrefix(this.templateBase.toString() + File.separatorChar);
@@ -104,6 +108,14 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
 		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
 		values.put("renderContext", context);
+		
+		extensionManager.getRegisterTemplateSupplier().forEach(service -> {
+			values.put(service.name(), service.supplier());
+		});
+
+		extensionManager.getRegisterTemplateFunctions().forEach(service -> {
+			values.put(service.name(), service.function());
+		});
 		
 		compiledTemplate.evaluate(writer, values);
 

@@ -125,7 +125,7 @@ public class VHost {
 		var engine = this.properties.getProperty("template.engine", "freemarker");
 		return switch (engine) {
 			case "thymeleaf" -> new ThymeleafTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
-			case "pebble" -> new PebbleTemplateEngine(fileSystem, contentParser, markdownRenderer);
+			case "pebble" -> new PebbleTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
 			default -> new FreemarkerTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
 		};
 	}
