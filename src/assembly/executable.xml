@@ -17,7 +17,7 @@
 		<fileSet>
 			<directory>${project.basedir}/hosts</directory>
 			<includes>
-				<include>localhost/*</include>
+				<include>demo/**/*</include>
 			</includes>
 		</fileSet>
 	</fileSets>
