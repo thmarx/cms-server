@@ -23,6 +23,7 @@ package com.github.thmarx.cms.template.thymeleaf;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class ThymeleafTemplateEngineNGTest {
 
 		MarkdownRenderer markdownRenderer = new MarkdownRenderer();
 		
-		templateEngine = new ThymeleafTemplateEngine(fileSystem, contentParser, markdownRenderer);
+		templateEngine = new ThymeleafTemplateEngine(fileSystem, contentParser, new ExtensionManager(fileSystem), markdownRenderer);
 	}
 
 	@Test

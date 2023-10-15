@@ -19,11 +19,11 @@ package com.github.thmarx.cms.template.thymeleaf;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.Server;
+import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
@@ -45,6 +46,7 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
  *
  * @author thmar
  */
+@Slf4j
 public class ThymeleafTemplateEngine implements TemplateEngine {
 
 	private final org.thymeleaf.TemplateEngine engine;
@@ -52,13 +54,16 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 	private final FileSystem fileSystem;
 	private final ContentParser contentParser;
 	final MarkdownRenderer markdownRenderer;
+	final ExtensionManager extensionManager;
 
-	public ThymeleafTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, final MarkdownRenderer markdownRenderer) {
+	public ThymeleafTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser,
+			final ExtensionManager extensionManager, final MarkdownRenderer markdownRenderer) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
 		this.contentParser = contentParser;
 		this.markdownRenderer = markdownRenderer;
-		
+		this.extensionManager = extensionManager;
+
 		var templateResolver = new FileTemplateResolver();
 		templateResolver.setTemplateMode(TemplateMode.HTML);
 		templateResolver.setPrefix(this.templateBase.toString() + File.separatorChar);
@@ -69,7 +74,7 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 			templateResolver.setCacheable(true);
 			templateResolver.setCacheTTLMs(TimeUnit.MINUTES.toMillis(1));
 		}
-		
+
 		engine = new org.thymeleaf.TemplateEngine();
 		engine.setTemplateResolver(templateResolver);
 	}
@@ -78,12 +83,20 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 	public String render(String template, TemplateEngine.Model model, RenderContext context) throws IOException {
 
 		Writer writer = new StringWriter();
-		
+
 		Map<String, Object> values = new HashMap<>(model.values);
 		values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
 		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
 		values.put("renderContext", context);
-		
+
+		extensionManager.getRegisterTemplateSupplier().forEach(service -> {
+			values.put(service.name(), service.supplier());
+		});
+
+		extensionManager.getRegisterTemplateFunctions().forEach(service -> {
+			values.put(service.name(), service.function());
+		});
+
 		engine.process(template, new Context(Locale.getDefault(), values), writer);
 		return writer.toString();
 	}

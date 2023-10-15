@@ -10,5 +10,11 @@
 
 		<div class="container" th:utext="${content}"></div>
 		
+		<div th:with="name = ${myName.get()}">
+			<p th:th:text="${name}"></p>
+		</div>
+		<div th:with="hello = ${getHello.apply('Thorsten')}">
+			<p th:text="${hello}"></p>
+		</div>
 	</body>
 </html>
