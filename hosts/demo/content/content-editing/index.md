@@ -8,9 +8,16 @@ menu:
 
 ## Content files
 
+### Restrictions
+
+You can not use the name _extensions_ for content in your hosts root folder. 
+This name is reserved for http extensions.
+
 ### Meta data
 
 ### Markdown
+
+
 
 #### Formatting code
 ```java
