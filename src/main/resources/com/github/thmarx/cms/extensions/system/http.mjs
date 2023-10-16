@@ -1,12 +1,12 @@
 const tryFromString = Java.type("io.undertow.util.HttpString").tryFromString
 
-export const METHODS = {
+const METHODS = {
 	GET : "GET",
 	POST : "POST",
 	PUT : "PUT",
 	UPDATE: "UPDATE"
 }
-export const http = {
+export const $http = {
 	get : (path, handler) => {
 		extensions.registerHttpExtension(METHODS.GET, path, handler)
 	},

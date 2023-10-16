@@ -1,5 +1,5 @@
 ---
-title: Extensions
+title: Extending
 template: start
 menu: 
     order: 90
@@ -12,18 +12,21 @@ Put your extension into the _host_**/extensions** folder.
 All files with the nameing convention _name_**.extension.js** are loaded ad system startup.
 
 ### Add custom http endpoint
+
+Attention: Keep in mind, that all http endpoint extensions are loaded unter the endpoint _/extensions_.
+What that means is, you can not put content under this url name.
+
 ```javascript
 import { UTF_8 } from 'system/charsets.mjs';
-import { header } from 'system/http.mjs';
+import { $http } from 'system/http.mjs';
 
-extensions.registerHttpExtension(
-	"/test-ext",
-	(exchange) => {
-		exchange.getResponseHeaders().add(header("Content-Type"), "text/html; charset=utf-8");
-		exchange.getResponseSender().send("I'm a test extension!", UTF_8);
-	}
-)
+$http.get("/test", (request, response) => {
+	response.addHeader("Content-Type", "text/html; charset=utf-8")
+	response.write("ich bin einen test extension!öäü", UTF_8)
+})
 ```
+
+The endpoint is available at http://your_host:your_port/extensions/test
 
 ### Modules
 To structure your extension code, you can create modules. 
@@ -55,4 +58,30 @@ exchange.getResponseSender().send("I'm a test extension!", UTF_8);
 import { getLogger } from 'system/logging.mjs';
 const logger = getLogger("extensions");
 logger.debug("debug log from test extension");
+```
+
+#### template
+```javascript
+import { $template } from 'system/template.mjs';
+
+$template.registerTemplateSupplier(
+	"myName",
+	() => "Thorsten"
+)
+
+$template.registerTemplateFunction(
+	"getHello",
+	(name) => "Hello " + name + "!"
+)
+```
+Use template extensions in template
+```html
+<div th:with="name = ${myName.get()}">
+	<p th:th:text="${name}"></p>
+	<!-- Thorsten -->
+</div>
+<div th:with="hello = ${getHello.apply('Thorsten')}">
+	<p th:text="${hello}"></p>
+	<!-- Hello Thorsten -->
+</div>
 ```
