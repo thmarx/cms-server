@@ -20,8 +20,8 @@ package com.github.thmarx.cms.extensions;
  * #L%
  */
 
+import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import io.undertow.server.HttpHandler;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,8 +62,8 @@ public class ExtensionManager implements AutoCloseable {
 	private final List<TemplateFunctionExtension> registerTemplateFunctions = new ArrayList<>();
 	private Context context;
 
-	public void registerHttpExtension(final String path, final HttpHandler handler) {
-		httpHandlerExtensions.add(new HttpHandlerExtension(path, handler));
+	public void registerHttpExtension(final String method, final String path, final ExtensionHttpHandler handler) {
+		httpHandlerExtensions.add(new HttpHandlerExtension(method, path, handler));
 	}
 
 	public void registerTemplateSupplier(final String path, final Supplier<?> supplier) {

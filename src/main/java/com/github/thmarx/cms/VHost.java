@@ -19,19 +19,20 @@ package com.github.thmarx.cms;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
+import com.github.thmarx.cms.extensions.http.ExtensionHttpHandlerWrapper;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
 import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.PathResourceManager;
@@ -55,28 +56,28 @@ public class VHost {
 	private ContentRenderer contentRenderer;
 	private ContentResolver contentResolver;
 	private ContentParser contentParser;
-    private TemplateEngine templateEngine;
+	private TemplateEngine templateEngine;
 	private ExtensionManager extensionManager;
 	private MarkdownRenderer markdownRenderer;
-	
+
 	private Path contentBase;
 	private Path assetBase;
 	private Path templateBase;
 
 	@Getter
 	private String hostname;
-	
+
 	@Getter
 	private final EventBus eventBus;
-	
+
 	private Properties properties;
 
 	public VHost(final Path hostBase) {
 		this.eventBus = new EventBus();
 		this.fileSystem = new FileSystem(hostBase, eventBus);
 	}
-	
-	public void shutdown ()  {
+
+	public void shutdown() {
 		try {
 			fileSystem.shutdown();
 			extensionManager.close();
@@ -84,49 +85,52 @@ public class VHost {
 			log.error("", ex);
 		}
 	}
-	
+
 	public void init() throws IOException {
-		
+
 		fileSystem.init();
-		
+
 		var props = fileSystem.resolve("host.properties");
 		properties = new Properties();
 		try (var reader = Files.newBufferedReader(props)) {
 			properties.load(reader);
 		}
 		hostname = properties.getProperty("hostname");
-		
+
 		contentBase = fileSystem.resolve("content/");
 		assetBase = fileSystem.resolve("assets/");
 		templateBase = fileSystem.resolve("templates/");
 
 		extensionManager = new ExtensionManager(fileSystem);
 		extensionManager.init();
-		
+
 		contentParser = new ContentParser(fileSystem);
 		markdownRenderer = new MarkdownRenderer();
-		
+
 		templateEngine = resolveTemplateEngine();
-		
+
 		contentRenderer = new ContentRenderer(contentParser, templateEngine, markdownRenderer, fileSystem);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
-		
+
 		eventBus.register(ContentChangedEvent.class, (EventListener<ContentChangedEvent>) (ContentChangedEvent event) -> {
 			log.debug("invalidate content cache");
 			contentParser.clearCache();
 		});
-        eventBus.register(TemplateChangedEvent.class, (EventListener<TemplateChangedEvent>) (TemplateChangedEvent event) -> {
+		eventBus.register(TemplateChangedEvent.class, (EventListener<TemplateChangedEvent>) (TemplateChangedEvent event) -> {
 			log.debug("invalidate template cache");
 			templateEngine.invalidateCache();
 		});
 	}
-	
-	private TemplateEngine resolveTemplateEngine () {
+
+	private TemplateEngine resolveTemplateEngine() {
 		var engine = this.properties.getProperty("template.engine", "freemarker");
 		return switch (engine) {
-			case "thymeleaf" -> new ThymeleafTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
-			case "pebble" -> new PebbleTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
-			default -> new FreemarkerTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
+			case "thymeleaf" ->
+				new ThymeleafTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
+			case "pebble" ->
+				new PebbleTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
+			default ->
+				new FreemarkerTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
 		};
 	}
 
@@ -139,11 +143,16 @@ public class VHost {
 		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver))
 				.addPrefixPath("/assets", staticResourceHandler)
 				.addExactPath("/favicon.ico", faviconHandler);
-		
+
+		RoutingHandler extensionHandler = Handlers.routing();
 		extensionManager.getHttpHandlerExtensions().forEach(handler -> {
-			pathHandler.addExactPath(handler.path(), new BlockingHandler(handler.handler()));
+			//pathHandler.addExactPath(handler.path(), new BlockingHandler(new ExtensionHttpHandlerWrapper(handler.handler())));
+			extensionHandler.add(handler.method(), handler.path(),
+					new BlockingHandler(new ExtensionHttpHandlerWrapper(handler.handler()))
+			);
 		});
-		
+		pathHandler.addPrefixPath("/extensions", extensionHandler);
+
 		return pathHandler;
 	}
 }

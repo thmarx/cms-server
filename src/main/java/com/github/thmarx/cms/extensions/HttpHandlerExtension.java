@@ -20,10 +20,10 @@ package com.github.thmarx.cms.extensions;
  * #L%
  */
 
-import io.undertow.server.HttpHandler;
+import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
 
 /**
  *
  * @author t.marx
  */
-public record HttpHandlerExtension (String path, HttpHandler handler) {}
+public record HttpHandlerExtension (String method, String path, ExtensionHttpHandler handler) {}
