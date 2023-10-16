@@ -6,5 +6,5 @@ package com.github.thmarx.cms.extensions.http;
  */
 public interface ExtensionHttpHandler {
 	
-	void execute (ExtensionHttpRequest request, ExtensionHttpResponse response);
+	void execute (Request request, Response response);
 }

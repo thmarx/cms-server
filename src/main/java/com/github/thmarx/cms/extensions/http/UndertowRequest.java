@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class UndertowRequest implements ExtensionHttpRequest {
+public class UndertowRequest implements Request {
 
 	private final HttpServerExchange exchange;
 

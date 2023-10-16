@@ -25,7 +25,7 @@ import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
-import com.github.thmarx.cms.extensions.http.ExtensionHttpHandlerWrapper;
+import com.github.thmarx.cms.extensions.http.UndertowHttpHandlerWrapper;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
@@ -148,7 +148,7 @@ public class VHost {
 		extensionManager.getHttpHandlerExtensions().forEach(handler -> {
 			//pathHandler.addExactPath(handler.path(), new BlockingHandler(new ExtensionHttpHandlerWrapper(handler.handler())));
 			extensionHandler.add(handler.method(), handler.path(),
-					new BlockingHandler(new ExtensionHttpHandlerWrapper(handler.handler()))
+					new BlockingHandler(new UndertowHttpHandlerWrapper(handler.handler()))
 			);
 		});
 		pathHandler.addPrefixPath("/extensions", extensionHandler);

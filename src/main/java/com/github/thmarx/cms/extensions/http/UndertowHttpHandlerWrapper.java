@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class ExtensionHttpHandlerWrapper implements HttpHandler {
+public class UndertowHttpHandlerWrapper implements HttpHandler {
 	
 	private final ExtensionHttpHandler handler;
 	

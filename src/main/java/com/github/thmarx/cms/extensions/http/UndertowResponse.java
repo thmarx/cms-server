@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class UndertowResponse implements ExtensionHttpResponse {
+public class UndertowResponse implements Response {
 	
 	private final HttpServerExchange exchange;
 
