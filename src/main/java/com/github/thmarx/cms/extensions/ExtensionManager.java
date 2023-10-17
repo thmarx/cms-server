@@ -40,6 +40,7 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Source;
+import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.io.IOAccess;
 
 /**
@@ -115,7 +116,9 @@ public class ExtensionManager implements AutoCloseable {
 						.forEach(extFile -> {
 							try {
                                 log.debug("load extension {}", extFile.getFileName().toString());
-								context.getBindings("js").putMember("extensions", this);
+								final Value bindings = context.getBindings("js");
+								bindings.putMember("extensions", this);
+								bindings.putMember("fileSystem", fileSystem);
 								Source source = Source.newBuilder(
 										"js",
 										Files.readString(extFile, StandardCharsets.UTF_8),

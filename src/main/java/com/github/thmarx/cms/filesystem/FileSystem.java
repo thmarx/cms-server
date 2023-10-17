@@ -27,6 +27,7 @@ import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.utils.PathUtil;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -85,11 +86,18 @@ public class FileSystem {
 	}
 
 	public String loadContent(final Path file) throws IOException {
-		return Files.readString(file, StandardCharsets.UTF_8);
+		return loadContent(file, StandardCharsets.UTF_8);
 	}
 
 	public List<String> loadLines(final Path file) throws IOException {
-		return Files.readAllLines(file, StandardCharsets.UTF_8);
+		return loadLines(file, StandardCharsets.UTF_8);
+	}
+	public String loadContent(final Path file, final Charset charset) throws IOException {
+		return Files.readString(file, charset);
+	}
+
+	public List<String> loadLines(final Path file, final Charset charset) throws IOException {
+		return Files.readAllLines(file, charset);
 	}
 
 	public List<MetaData.MetaNode> listDirectories(final Path base, final String start) {
