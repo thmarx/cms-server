@@ -22,12 +22,9 @@ package com.github.thmarx.cms.template.pebble;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
-import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.Server;
-import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
@@ -55,17 +52,15 @@ public class PebbleTemplateEngine implements TemplateEngine {
 	private final Path templateBase;
 	final Path contentBase; 
 	final ContentParser contentParser;
-	final MarkdownRenderer markdownRenderer;
 
 	final FileSystem fileSystem;
 	
-	public PebbleTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, 
-			final MarkdownRenderer markdownRenderer) {
+	public PebbleTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
 		this.contentBase = fileSystem.resolve("content/");
 		this.contentParser = contentParser;
-		this.markdownRenderer = markdownRenderer;
+		
 		var loader = new FileLoader();
 		loader.setPrefix(this.templateBase.toString() + File.separatorChar);
 		loader.setSuffix(".html");
@@ -97,22 +92,22 @@ public class PebbleTemplateEngine implements TemplateEngine {
 	}
 
 	@Override
-	public String render(String template, Model model, RenderContext context) throws IOException {
+	public String render(String template, Model model, RequestContext context) throws IOException {
 
 		Writer writer = new StringWriter();
 
 		PebbleTemplate compiledTemplate = engine.getTemplate(template);
 
 		Map<String, Object> values = new HashMap<>(model.values);
-		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
-		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
-		values.put("renderContext", context);
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		values.put("requestContext", context);
 		
-		context.extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
+		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
 			values.put(service.name(), service.supplier());
 		});
 
-		context.extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
+		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
 			values.put(service.name(), service.function());
 		});
 		

@@ -22,9 +22,8 @@ package com.github.thmarx.cms.markdown;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Engine;
-import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 
@@ -32,41 +31,36 @@ import org.graalvm.polyglot.Value;
  *
  * @author t.marx
  */
+@Slf4j
 public class MarkdMarkdownRenderer implements MarkdownRenderer {
 
 	public final Context context;
 	
-	public final Value _markedFunction;
+	public final Value markedFunction;
 	public final Source markedSource;
 	
-	public MarkdMarkdownRenderer (final Engine engine) throws IOException {
-		context = Context.newBuilder("js")
-				.engine(engine)
-				.allowHostAccess(HostAccess.ALL)
-				.build();
-		
-		var content = new String(MarkdMarkdownRenderer.class.getResourceAsStream("marked.min.js").readAllBytes(), StandardCharsets.UTF_8);
-		markedSource = Source.newBuilder("js", content, "marked.mjs").build();
-		context.eval(markedSource);
-		_markedFunction = context.eval("js", "(function (param) {return marked.parse(param);})");
+	public MarkdMarkdownRenderer (final Context context) {
+		try {
+			this.context = context;
+			
+			var content = new String(MarkdMarkdownRenderer.class.getResourceAsStream("marked.min.js").readAllBytes(), StandardCharsets.UTF_8);
+			markedSource = Source.newBuilder("js", content, "marked.mjs").build();
+			context.eval(markedSource);
+			markedFunction = context.eval("js", "(function (param) {return marked.parse(param);})");
+		} catch (IOException ex) {
+			log.error(null, ex);
+			throw new RuntimeException(ex);
+		}
 	}
 	
 	@Override
 	public String excerpt(String markdown, int length) {
-		try (var context = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).build()) {
-			context.eval(markedSource);
-			var markedFunction = context.eval("js", "(function (param) {return marked.parse(param);})");
-			return markedFunction.execute(markdown).asString();
-		}
+		return markedFunction.execute(markdown).asString();
 	}
 
 	@Override
 	public String render(String markdown) {
-		try (var context = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).build()) {
-			context.eval(markedSource);
-			var markedFunction = context.eval("js", "(function (param) {return marked.parse(param);})");
-			return markedFunction.execute(markdown).asString();
-		}
+		return markedFunction.execute(markdown).asString();
 	}
 	
 }

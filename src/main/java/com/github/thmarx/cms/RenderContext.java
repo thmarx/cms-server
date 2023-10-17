@@ -20,33 +20,16 @@ package com.github.thmarx.cms;
  * #L%
  */
 
-import java.util.Deque;
-import java.util.Map;
 import com.github.thmarx.cms.extensions.ExtensionHolder;
+import com.github.thmarx.cms.markdown.MarkdownRenderer;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
-public record RenderContext(String uri, Map<String, Deque<String>> queryParameters, ExtensionHolder extensionHolder) {
+ @Slf4j
+public record RenderContext(ExtensionHolder extensionHolder, MarkdownRenderer markdownRenderer) {
 	
-	public String getQueryParameter(String name, final String defaultValue) {
-		if (!queryParameters.containsKey(name)) {
-			return defaultValue;
-		}
-		
-		return queryParameters.get(name).getFirst();
-	}
-
-	public int getQueryParameterAsInt(String name, final int defaultValue) {
-		if (!queryParameters.containsKey(name)) {
-			return defaultValue;
-		}
-		try {
-			return Integer.parseInt(queryParameters.get(name).getFirst());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return defaultValue;
-	}
+	
 }

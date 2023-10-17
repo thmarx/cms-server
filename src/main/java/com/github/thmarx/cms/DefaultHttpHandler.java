@@ -19,15 +19,17 @@ package com.github.thmarx.cms;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.extensions.ExtensionManager;
+import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.graalvm.polyglot.Context;
 
 /**
  *
@@ -40,6 +42,8 @@ public class DefaultHttpHandler implements HttpHandler {
 	private final ContentResolver contentResolver;
 	private final ExtensionManager manager;
 
+	private final Function<Context, MarkdownRenderer> markdownRendererProvider;
+
 	@Override
 	public void handleRequest(HttpServerExchange exchange) throws Exception {
 		if (exchange.isInIoThread()) {
@@ -47,10 +51,12 @@ public class DefaultHttpHandler implements HttpHandler {
 			return;
 		}
 		try (var contextHolder = manager.newContext()) {
-			RenderContext context = new RenderContext(exchange.getRelativePath(), exchange.getQueryParameters(), contextHolder);
+			RequestContext context = new RequestContext(exchange.getRelativePath(), exchange.getQueryParameters(),
+					new RenderContext(contextHolder, markdownRendererProvider.apply(contextHolder.getContext())));
 			Optional<String> content = contentResolver.getContent(context);
 			if (!content.isPresent()) {
-				context = new RenderContext("/.technical/404", exchange.getQueryParameters(), contextHolder);
+				context = new RequestContext("/.technical/404", exchange.getQueryParameters(),
+						new RenderContext(contextHolder, markdownRendererProvider.apply(contextHolder.getContext())));
 				content = contentResolver.getContent(context);
 				exchange.setStatusCode(404);
 			}

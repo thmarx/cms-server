@@ -19,7 +19,6 @@ package com.github.thmarx.cms.extensions;
  * limitations under the License.
  * #L%
  */
-import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -30,8 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
-import java.util.function.Function;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -110,6 +107,7 @@ public class ExtensionManager implements AutoCloseable {
 				.allowAllAccess(true)
 				.allowHostClassLookup(className -> true)
 				.allowHostAccess(HostAccess.ALL)
+				.allowValueSharing(true)
 				.hostClassLoader(getClassLoader())
 				.allowIO(IOAccess.newBuilder()
 						.fileSystem(new ExtensionFileSystem(fileSystem.resolve("extensions/")))

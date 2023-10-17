@@ -19,13 +19,14 @@ package com.github.thmarx.cms;
  * limitations under the License.
  * #L%
  */
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
+import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
+import com.github.thmarx.cms.markdown.MarkdMarkdownRenderer;
 import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
@@ -38,11 +39,10 @@ import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.graalvm.polyglot.Context;
 
 /**
  *
@@ -58,7 +58,6 @@ public class VHost {
 	private ContentParser contentParser;
 	private TemplateEngine templateEngine;
 	private ExtensionManager extensionManager;
-	private MarkdownRenderer markdownRenderer;
 
 	private Path contentBase;
 	private Path assetBase;
@@ -70,7 +69,7 @@ public class VHost {
 	@Getter
 	private final EventBus eventBus;
 
-	private Properties properties;
+	private HostProperties properties;
 
 	public VHost(final Path hostBase) {
 		this.eventBus = new EventBus();
@@ -91,11 +90,9 @@ public class VHost {
 		fileSystem.init();
 
 		var props = fileSystem.resolve("host.properties");
-		properties = new Properties();
-		try (var reader = Files.newBufferedReader(props)) {
-			properties.load(reader);
-		}
-		hostname = properties.getProperty("hostname");
+		properties = new HostProperties().load(props);
+
+		hostname = properties.hostname();
 
 		contentBase = fileSystem.resolve("content/");
 		assetBase = fileSystem.resolve("assets/");
@@ -105,12 +102,10 @@ public class VHost {
 		extensionManager.init();
 
 		contentParser = new ContentParser(fileSystem);
-		markdownRenderer = new FlexMarkMarkdownRenderer();
-//		markdownRenderer = new MarkdMarkdownRenderer(extensionManager.getEngine());
 
 		templateEngine = resolveTemplateEngine();
 
-		contentRenderer = new ContentRenderer(contentParser, templateEngine, markdownRenderer, fileSystem);
+		contentRenderer = new ContentRenderer(contentParser, templateEngine, fileSystem);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
 
 		eventBus.register(ContentChangedEvent.class, (EventListener<ContentChangedEvent>) (ContentChangedEvent event) -> {
@@ -124,14 +119,26 @@ public class VHost {
 	}
 
 	private TemplateEngine resolveTemplateEngine() {
-		var engine = this.properties.getProperty("template.engine", "freemarker");
+		var engine = this.properties.templateEngine();
 		return switch (engine) {
 			case "thymeleaf" ->
-				new ThymeleafTemplateEngine(fileSystem, contentParser, markdownRenderer);
+				new ThymeleafTemplateEngine(fileSystem, contentParser);
 			case "pebble" ->
-				new PebbleTemplateEngine(fileSystem, contentParser, markdownRenderer);
+				new PebbleTemplateEngine(fileSystem, contentParser);
 			default ->
-				new FreemarkerTemplateEngine(fileSystem, contentParser, markdownRenderer);
+				new FreemarkerTemplateEngine(fileSystem, contentParser);
+		};
+	}
+
+	private MarkdownRenderer resolveMarkdownRenderer(final Context context) {
+		var engine = this.properties.markdownEngine();
+		return switch (engine) {
+			case "flexmark" ->
+				new FlexMarkMarkdownRenderer();
+			case "markd" ->
+				new MarkdMarkdownRenderer(context);
+			default ->
+				new FlexMarkMarkdownRenderer();
 		};
 	}
 
@@ -141,14 +148,16 @@ public class VHost {
 
 		ResourceHandler faviconHandler = new ResourceHandler(new FileResourceManager(assetBase.resolve("favicon.ico").toFile()));
 
-		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver, extensionManager))
+		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver, extensionManager, (context) -> {
+			return resolveMarkdownRenderer(context);
+		}))
 				.addPrefixPath("/assets", staticResourceHandler)
 				.addExactPath("/favicon.ico", faviconHandler);
 
 		RoutingHandler extensionHandler = Handlers.routing();
 		extensionHandler.get("/{name}", new ExtensionsHttpHandler(extensionManager, "get"));
 		extensionHandler.post("/{name}", new ExtensionsHttpHandler(extensionManager, "post"));
-		
+
 		pathHandler.addPrefixPath("/extensions", extensionHandler);
 
 		return pathHandler;

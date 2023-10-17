@@ -21,11 +21,9 @@ package com.github.thmarx.cms.template.freemarker;
  */
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.Server;
-import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
@@ -48,16 +46,11 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 
 	private final ContentParser contentParser;
 
-	final MarkdownRenderer markdownRenderer;
-	
 	final FileSystem fileSystem;
 
-	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser,
-			final MarkdownRenderer markdownRenderer
-	) {
+	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
 		this.fileSystem = fileSystem;
 		this.contentParser = contentParser;
-		this.markdownRenderer = markdownRenderer;
 
 		config = new Configuration(Configuration.VERSION_2_3_32);
 
@@ -88,12 +81,12 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 	}
 
 	@Override
-	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException {
-		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
-		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
-		model.values.put("renderContext", context);
+	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RequestContext context) throws IOException {
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		model.values.put("requestContext", context);
 
-		context.extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
+		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
 			try {
 				config.setSharedVariable(service.name(), service.supplier());
 			} catch (TemplateModelException ex) {
@@ -101,7 +94,7 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 			}
 		});
 
-		context.extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
+		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
 			try {
 				config.setSharedVariable(service.name(), service.function());
 			} catch (TemplateModelException ex) {

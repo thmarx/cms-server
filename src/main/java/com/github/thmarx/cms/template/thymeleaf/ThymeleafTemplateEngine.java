@@ -20,11 +20,9 @@ package com.github.thmarx.cms.template.thymeleaf;
  * #L%
  */
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.RenderContext;
+import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.Server;
-import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
@@ -53,14 +51,11 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 	private final Path templateBase;
 	private final FileSystem fileSystem;
 	private final ContentParser contentParser;
-	final MarkdownRenderer markdownRenderer;
 
-	public ThymeleafTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser,
-			final MarkdownRenderer markdownRenderer) {
+	public ThymeleafTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
 		this.contentParser = contentParser;
-		this.markdownRenderer = markdownRenderer;
 
 		var templateResolver = new FileTemplateResolver();
 		templateResolver.setTemplateMode(TemplateMode.HTML);
@@ -78,20 +73,20 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 	}
 
 	@Override
-	public String render(String template, TemplateEngine.Model model, RenderContext context) throws IOException {
+	public String render(String template, TemplateEngine.Model model, RequestContext context) throws IOException {
 
 		Writer writer = new StringWriter();
 
 		Map<String, Object> values = new HashMap<>(model.values);
-		values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
-		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
-		values.put("renderContext", context);
+		values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		values.put("requestContext", context);
 
-		context.extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
+		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
 			values.put(service.name(), service.supplier());
 		});
 
-		context.extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
+		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
 			values.put(service.name(), service.function());
 		});
 

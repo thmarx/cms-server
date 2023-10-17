@@ -24,9 +24,9 @@ import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.extensions.ExtensionHolder;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.template.TemplateEngineTest;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,19 +39,19 @@ import org.testng.annotations.Test;
  *
  * @author t.marx
  */
-public class ContentRendererNGTest {
+public class ContentRendererNGTest extends TemplateEngineTest {
 	
 	ContentRenderer contentRenderer;
+	private MarkdownRenderer markdownRenderer;
 	
 	@BeforeClass
 	public void beforeClass () throws IOException {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test/"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
-		MarkdownRenderer markdownRenderer = new FlexMarkMarkdownRenderer();
-		RenderContext renderContext = new RenderContext("", Map.of(), new ExtensionHolder(null));
-		TemplateEngine templates = new FreemarkerTemplateEngine(fileSystem, contentParser, markdownRenderer);
+		markdownRenderer = new FlexMarkMarkdownRenderer();
+		TemplateEngine templates = new FreemarkerTemplateEngine(fileSystem, contentParser);
 		
-		contentRenderer = new ContentRenderer(contentParser, templates, new FlexMarkMarkdownRenderer(), fileSystem);
+		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem);
 	}
 
 	@Test
@@ -66,8 +66,7 @@ public class ContentRendererNGTest {
 						</body>
                      </html>
                      """;
-		RenderContext context = new RenderContext("/info", Map.of(), new ExtensionHolder(null));
-		var content = contentRenderer.render(Path.of("hosts/test/content/test.md"), context);
+		var content = contentRenderer.render(Path.of("hosts/test/content/test.md"), requestContext());
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);
 	}
@@ -84,8 +83,7 @@ public class ContentRendererNGTest {
                      	</body>
                      </html>
                      """;
-		RenderContext context = new RenderContext("/info", Map.of(), new ExtensionHolder(null));
-		var content = contentRenderer.render(Path.of("hosts/test/content/products/test.md"), context);
+		var content = contentRenderer.render(Path.of("hosts/test/content/products/test.md"), requestContext());
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);
 	}

@@ -20,28 +20,19 @@ package com.github.thmarx.cms.template;
  * #L%
  */
 
-import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.RequestContext;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
+import com.github.thmarx.cms.extensions.ExtensionHolder;
+import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
- * @author thmar
+ * @author t.marx
  */
-public interface TemplateEngine {
+public abstract class TemplateEngineTest {
 	
-	public void invalidateCache();
-
-	String render(final String template, final FreemarkerTemplateEngine.Model model, final RequestContext context) throws IOException;
-	
-	@RequiredArgsConstructor
-	public static class Model {
-		public final Map<String, Object> values = new HashMap<>();
-		public final Path contentFile;
-	} 
+	protected RequestContext requestContext () {
+		return new RequestContext("", Map.of(), new RenderContext(new ExtensionHolder(null), new FlexMarkMarkdownRenderer()));
+	}
 }

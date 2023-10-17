@@ -46,7 +46,7 @@ public class ContentResolver {
 	
 	private final FileSystem fileSystem;
 	
-	public Optional<String> getContent(final RenderContext context) {
+	public Optional<String> getContent(final RequestContext context) {
 		String path;
 		if (Strings.isNullOrEmpty(context.uri())) {
 			path = "";

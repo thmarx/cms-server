@@ -25,9 +25,10 @@ import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.extensions.ExtensionHolder;
-import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
+import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.template.TemplateEngineTest;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -39,19 +40,20 @@ import org.testng.annotations.Test;
  *
  * @author thmar
  */
-public class ThymeleafTemplateEngineNGTest {
+public class ThymeleafTemplateEngineNGTest extends TemplateEngineTest {
 
 	TemplateEngine templateEngine;
 	private FileSystem fileSystem;
+	private MarkdownRenderer markdownRenderer;
 
 	@BeforeClass
 	public void setup() {
 		fileSystem = new FileSystem(Path.of("./hosts/test_thymeleaf"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
 
-		FlexMarkMarkdownRenderer markdownRenderer = new FlexMarkMarkdownRenderer();
+		markdownRenderer = new FlexMarkMarkdownRenderer();
 		
-		templateEngine = new ThymeleafTemplateEngine(fileSystem, contentParser, markdownRenderer);
+		templateEngine = new ThymeleafTemplateEngine(fileSystem, contentParser);
 	}
 
 	@Test
@@ -59,8 +61,7 @@ public class ThymeleafTemplateEngineNGTest {
 		var model = new TemplateEngine.Model(null);
 		model.values.put("title", "Hello World");
 		model.values.put("content", "The content!");
-		RenderContext renderContext = new RenderContext("", Map.of(), new ExtensionHolder(null));
-		var html = templateEngine.render("test", model, renderContext);
+		var html = templateEngine.render("test", model, requestContext());
 
 		var expected = """
                  <!DOCTYPE html>

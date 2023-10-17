@@ -22,7 +22,6 @@ package com.github.thmarx.cms;
 
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -44,24 +43,23 @@ public class ContentRenderer {
 
 	private final ContentParser contentParser;
 	private final TemplateEngine templates;
-	private final MarkdownRenderer markdownRenderer;
 	private final FileSystem fileSystem;
 	
-	public String render (final Path contentFile, final RenderContext context) throws IOException {
+	public String render (final Path contentFile, final RequestContext context) throws IOException {
 		return render(contentFile, context, Collections.emptyMap());
 	}
 	
-	public String render (final Path contentFile, final RenderContext context, Map<String, Section> sections) throws IOException {
+	public String render (final Path contentFile, final RequestContext context, Map<String, Section> sections) throws IOException {
 		var content = contentParser.parse(contentFile);
 		
 		TemplateEngine.Model model = new TemplateEngine.Model(contentFile);
 		model.values.putAll(content.meta());
-		model.values.put("content", markdownRenderer.render(content.content()));
+		model.values.put("content", context.renderContext().markdownRenderer().render(content.content()));
 		model.values.put("sections", sections);
 		return templates.render((String)content.meta().get("template"), model, context);
 	}
 	
-	public Map<String, Section> renderSections (final List<MetaData.MetaNode> sectionNodes, final RenderContext context) throws IOException {
+	public Map<String, Section> renderSections (final List<MetaData.MetaNode> sectionNodes, final RequestContext context) throws IOException {
 		
 		if (sectionNodes.isEmpty()) {
 			return Collections.emptyMap();
