@@ -19,7 +19,6 @@ package com.github.thmarx.cms.extensions;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
@@ -56,25 +55,7 @@ public class ExtensionManager implements AutoCloseable {
 	@Getter
 	private Engine engine;
 
-	@Getter
-	private final List<HttpHandlerExtension> httpHandlerExtensions = new ArrayList<>();
-	@Getter
-	private final List<TemplateSupplierExtension> registerTemplateSupplier = new ArrayList<>();
-	@Getter
-	private final List<TemplateFunctionExtension> registerTemplateFunctions = new ArrayList<>();
-	private Context context;
-
-	public void registerHttpExtension(final String method, final String path, final ExtensionHttpHandler handler) {
-		httpHandlerExtensions.add(new HttpHandlerExtension(method, path, handler));
-	}
-
-	public void registerTemplateSupplier(final String path, final Supplier<?> supplier) {
-		registerTemplateSupplier.add(new TemplateSupplierExtension(path, supplier));
-	}
-
-	public void registerTemplateFunction(final String path, final Function<?, ?> function) {
-		registerTemplateFunctions.add(new TemplateFunctionExtension(path, function));
-	}
+	List<Source> sources = new ArrayList<>();
 
 	private ClassLoader getClassLoader() throws IOException {
 		Path libs = fileSystem.resolve("libs/");
@@ -95,51 +76,60 @@ public class ExtensionManager implements AutoCloseable {
 
 	public void init() throws IOException {
 		if (engine == null) {
-            log.debug("init extensions");
+			log.debug("init extensions");
 			engine = Engine.newBuilder("js")
 					.option("engine.WarnInterpreterOnly", "false")
 					.build();
-			context = Context.newBuilder()
-					.allowAllAccess(true)
-					.allowHostClassLookup(className -> true)
-					.allowHostAccess(HostAccess.ALL)
-					.hostClassLoader(getClassLoader())
-					.allowIO(IOAccess.newBuilder()
-							.fileSystem(new ExtensionFileSystem(fileSystem.resolve("extensions/")))
-							.build())
-					.engine(engine).build();
 
 			var extPath = fileSystem.resolve("extensions/");
 			if (Files.exists(extPath)) {
-                log.debug("try to find extensions");
+				log.debug("try to find extensions");
 				Files.list(extPath)
 						.filter(path -> !Files.isDirectory(path) && path.getFileName().toString().endsWith(".js"))
 						.forEach(extFile -> {
 							try {
-                                log.debug("load extension {}", extFile.getFileName().toString());
-								final Value bindings = context.getBindings("js");
-								bindings.putMember("extensions", this);
-								bindings.putMember("fileSystem", fileSystem);
+								log.debug("load extension {}", extFile.getFileName().toString());
 								Source source = Source.newBuilder(
 										"js",
 										Files.readString(extFile, StandardCharsets.UTF_8),
 										extFile.getFileName().toString() + ".mjs")
 										.encoding(StandardCharsets.UTF_8)
 										.build();
-								context.eval(source);
+
+								sources.add(source);
 							} catch (IOException ex) {
 								log.error("", ex);
 							}
 						});
 			}
-
 		}
+	}
+
+	public ExtensionHolder newContext() throws IOException {
+		var context = Context.newBuilder()
+				.allowAllAccess(true)
+				.allowHostClassLookup(className -> true)
+				.allowHostAccess(HostAccess.ALL)
+				.hostClassLoader(getClassLoader())
+				.allowIO(IOAccess.newBuilder()
+						.fileSystem(new ExtensionFileSystem(fileSystem.resolve("extensions/")))
+						.build())
+				.engine(engine).build();
+
+		ExtensionHolder holder = new ExtensionHolder(context);
+
+		final Value bindings = context.getBindings("js");
+		bindings.putMember("extensions", holder);
+		bindings.putMember("fileSystem", fileSystem);
+
+		sources.forEach(context::eval);
+
+		return holder;
 	}
 
 	@Override
 	public void close() throws Exception {
 		if (engine != null) {
-			context.close(true);
 			engine.close(true);
 		}
 	}

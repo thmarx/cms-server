@@ -52,7 +52,7 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 	
 	final FileSystem fileSystem;
 
-	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, final ExtensionManager extensionManager,
+	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser,
 			final MarkdownRenderer markdownRenderer
 	) {
 		this.fileSystem = fileSystem;
@@ -85,8 +85,15 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 
 		config.setSharedVariable("indexOf", new IndexOfMethod());
 		config.setSharedVariable("upper", new UpperDirective());
+	}
 
-		extensionManager.getRegisterTemplateSupplier().forEach(service -> {
+	@Override
+	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException {
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
+		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
+		model.values.put("renderContext", context);
+
+		context.extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
 			try {
 				config.setSharedVariable(service.name(), service.supplier());
 			} catch (TemplateModelException ex) {
@@ -94,22 +101,14 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 			}
 		});
 
-		extensionManager.getRegisterTemplateFunctions().forEach(service -> {
+		context.extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
 			try {
 				config.setSharedVariable(service.name(), service.function());
 			} catch (TemplateModelException ex) {
 				log.error(null, ex);
 			}
 		});
-	}
-
-	@Override
-	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RenderContext context) throws IOException {
-		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, markdownRenderer));
-		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
-		//model.values.put("nodeListExcludeIndex", new NodeListFunction(fileSystem, model.contentFile, contentParser, true));
-		model.values.put("renderContext", context);
-
+		
 		StringWriter out = new StringWriter();
 		try {
 			Template loadedTemplate = config.getTemplate(template);

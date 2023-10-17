@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.github.thmarx.cms;
 
 /*-
@@ -21,24 +25,22 @@ package com.github.thmarx.cms;
  */
 
 import com.github.thmarx.cms.extensions.ExtensionManager;
+import com.github.thmarx.cms.extensions.HttpHandlerExtension;
+import com.github.thmarx.cms.extensions.http.UndertowHttpHandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HttpString;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
-@Slf4j
-public class DefaultHttpHandler implements HttpHandler {
+public class ExtensionsHttpHandler implements HttpHandler {
 
-	private final ContentResolver contentResolver;
-	private final ExtensionManager manager;
+	private final ExtensionManager extensionManager;
+	private final String method;
 
 	@Override
 	public void handleRequest(HttpServerExchange exchange) throws Exception {
@@ -46,20 +48,15 @@ public class DefaultHttpHandler implements HttpHandler {
 			exchange.dispatch(this);
 			return;
 		}
-		try (var contextHolder = manager.newContext()) {
-			RenderContext context = new RenderContext(exchange.getRelativePath(), exchange.getQueryParameters(), contextHolder);
-			Optional<String> content = contentResolver.getContent(context);
-			if (!content.isPresent()) {
-				context = new RenderContext("/.technical/404", exchange.getQueryParameters(), contextHolder);
-				content = contentResolver.getContent(context);
+		try (var context = extensionManager.newContext()) {
+			var path = exchange.getQueryParameters().get("name").getFirst();
+			Optional<HttpHandlerExtension> findHttpHandler = context.findHttpHandler(method, "/" + path);
+			if (findHttpHandler.isEmpty()) {
 				exchange.setStatusCode(404);
+				return;
 			}
-			exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "text/html; charset=utf-8");
-			exchange.getResponseSender().send(content.get(), StandardCharsets.UTF_8);
-		} catch (Exception e) {
-			log.error("", e);
-			exchange.setStatusCode(500);
-			exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "text/html; charset=utf-8");
+			new UndertowHttpHandlerWrapper(findHttpHandler.get().handler()).handleRequest(exchange);
+
 		}
 	}
 

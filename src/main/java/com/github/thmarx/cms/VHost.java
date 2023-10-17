@@ -26,8 +26,6 @@ import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
-import com.github.thmarx.cms.extensions.http.UndertowHttpHandlerWrapper;
-import com.github.thmarx.cms.markdown.MarkdMarkdownRenderer;
 import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
@@ -36,7 +34,6 @@ import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
-import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
@@ -130,11 +127,11 @@ public class VHost {
 		var engine = this.properties.getProperty("template.engine", "freemarker");
 		return switch (engine) {
 			case "thymeleaf" ->
-				new ThymeleafTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
+				new ThymeleafTemplateEngine(fileSystem, contentParser, markdownRenderer);
 			case "pebble" ->
-				new PebbleTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
+				new PebbleTemplateEngine(fileSystem, contentParser, markdownRenderer);
 			default ->
-				new FreemarkerTemplateEngine(fileSystem, contentParser, extensionManager, markdownRenderer);
+				new FreemarkerTemplateEngine(fileSystem, contentParser, markdownRenderer);
 		};
 	}
 
@@ -144,17 +141,14 @@ public class VHost {
 
 		ResourceHandler faviconHandler = new ResourceHandler(new FileResourceManager(assetBase.resolve("favicon.ico").toFile()));
 
-		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver))
+		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver, extensionManager))
 				.addPrefixPath("/assets", staticResourceHandler)
 				.addExactPath("/favicon.ico", faviconHandler);
 
 		RoutingHandler extensionHandler = Handlers.routing();
-		extensionManager.getHttpHandlerExtensions().forEach(handler -> {
-			//pathHandler.addExactPath(handler.path(), new BlockingHandler(new ExtensionHttpHandlerWrapper(handler.handler())));
-			extensionHandler.add(handler.method(), handler.path(),
-					new BlockingHandler(new UndertowHttpHandlerWrapper(handler.handler()))
-			);
-		});
+		extensionHandler.get("/{name}", new ExtensionsHttpHandler(extensionManager, "get"));
+		extensionHandler.post("/{name}", new ExtensionsHttpHandler(extensionManager, "post"));
+		
 		pathHandler.addPrefixPath("/extensions", extensionHandler);
 
 		return pathHandler;

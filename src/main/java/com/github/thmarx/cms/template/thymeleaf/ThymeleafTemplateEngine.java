@@ -20,7 +20,6 @@ package com.github.thmarx.cms.template.thymeleaf;
  * #L%
  */
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.Server;
 import com.github.thmarx.cms.extensions.ExtensionManager;
@@ -55,15 +54,13 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 	private final FileSystem fileSystem;
 	private final ContentParser contentParser;
 	final MarkdownRenderer markdownRenderer;
-	final ExtensionManager extensionManager;
 
 	public ThymeleafTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser,
-			final ExtensionManager extensionManager, final MarkdownRenderer markdownRenderer) {
+			final MarkdownRenderer markdownRenderer) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
 		this.contentParser = contentParser;
 		this.markdownRenderer = markdownRenderer;
-		this.extensionManager = extensionManager;
 
 		var templateResolver = new FileTemplateResolver();
 		templateResolver.setTemplateMode(TemplateMode.HTML);
@@ -90,11 +87,11 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
 		values.put("renderContext", context);
 
-		extensionManager.getRegisterTemplateSupplier().forEach(service -> {
+		context.extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
 			values.put(service.name(), service.supplier());
 		});
 
-		extensionManager.getRegisterTemplateFunctions().forEach(service -> {
+		context.extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
 			values.put(service.name(), service.function());
 		});
 

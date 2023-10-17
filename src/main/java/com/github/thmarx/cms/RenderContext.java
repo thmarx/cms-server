@@ -22,13 +22,14 @@ package com.github.thmarx.cms;
 
 import java.util.Deque;
 import java.util.Map;
+import com.github.thmarx.cms.extensions.ExtensionHolder;
 
 /**
  *
  * @author t.marx
  */
-public record RenderContext(String uri, Map<String, Deque<String>> queryParameters) {
-
+public record RenderContext(String uri, Map<String, Deque<String>> queryParameters, ExtensionHolder extensionHolder) {
+	
 	public String getQueryParameter(String name, final String defaultValue) {
 		if (!queryParameters.containsKey(name)) {
 			return defaultValue;

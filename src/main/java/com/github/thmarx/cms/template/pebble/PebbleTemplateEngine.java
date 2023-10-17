@@ -55,18 +55,16 @@ public class PebbleTemplateEngine implements TemplateEngine {
 	private final Path templateBase;
 	final Path contentBase; 
 	final ContentParser contentParser;
-	final ExtensionManager extensionManager;
 	final MarkdownRenderer markdownRenderer;
 
 	final FileSystem fileSystem;
 	
 	public PebbleTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser, 
-			final ExtensionManager extensionManager, final MarkdownRenderer markdownRenderer) {
+			final MarkdownRenderer markdownRenderer) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
 		this.contentBase = fileSystem.resolve("content/");
 		this.contentParser = contentParser;
-		this.extensionManager = extensionManager;
 		this.markdownRenderer = markdownRenderer;
 		var loader = new FileLoader();
 		loader.setPrefix(this.templateBase.toString() + File.separatorChar);
@@ -110,11 +108,11 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, markdownRenderer));
 		values.put("renderContext", context);
 		
-		extensionManager.getRegisterTemplateSupplier().forEach(service -> {
+		context.extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
 			values.put(service.name(), service.supplier());
 		});
 
-		extensionManager.getRegisterTemplateFunctions().forEach(service -> {
+		context.extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
 			values.put(service.name(), service.function());
 		});
 		

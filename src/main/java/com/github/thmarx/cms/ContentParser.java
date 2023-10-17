@@ -44,8 +44,6 @@ public class ContentParser {
 	private final FileSystem fileSystem;
 	private final Cache<String, Content> contentCache;
 
-	private final Yaml yaml = new Yaml();
-	
 	public ContentParser(final FileSystem fileSystem) {
 		this.fileSystem = fileSystem;
 
@@ -82,7 +80,12 @@ public class ContentParser {
         if (Strings.isNullOrEmpty(content.meta.trim())) {
             return Collections.emptyMap();
         }
-        return yaml.load(content.meta());
+		try {
+			return new Yaml().load(content.meta.trim());
+		} catch (Exception e) {
+			log.error("error parsing yaml: " + content.meta, e);
+			throw new RuntimeException(e);
+		}
     }
 
 	public Map<String, Object> parseMeta(final Path contentFile) throws IOException {

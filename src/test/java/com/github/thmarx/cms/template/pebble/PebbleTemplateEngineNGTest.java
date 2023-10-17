@@ -21,13 +21,16 @@ package com.github.thmarx.cms.template.pebble;
  */
 
 import com.github.thmarx.cms.ContentParser;
+import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.extensions.ExtensionHolder;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.template.TemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -44,7 +47,7 @@ public class PebbleTemplateEngineNGTest {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test_pebble/"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
 		FlexMarkMarkdownRenderer markdownRenderer = new FlexMarkMarkdownRenderer();
-		templateEngine = new PebbleTemplateEngine(fileSystem, contentParser, new ExtensionManager(fileSystem), markdownRenderer);
+		templateEngine = new PebbleTemplateEngine(fileSystem, contentParser, markdownRenderer);
 	}
 
 	@Test
@@ -52,7 +55,8 @@ public class PebbleTemplateEngineNGTest {
 		var model = new TemplateEngine.Model(null);
 		model.values.put("title", "Hello World");
 		model.values.put("content", "The content!");
-		var html = templateEngine.render("test", model, null);
+		RenderContext renderContext = new RenderContext("", Map.of(), new ExtensionHolder(null));
+		var html = templateEngine.render("test", model, renderContext);
 		
 		var expected = """
                  <html>
@@ -70,7 +74,8 @@ public class PebbleTemplateEngineNGTest {
 	public void node_list() throws IOException {
 		var model = new TemplateEngine.Model(null);
 		model.values.put("title", "Hello World");
-		var html = templateEngine.render("list", model, null);
+		RenderContext renderContext = new RenderContext("", Map.of(), new ExtensionHolder(null));
+		var html = templateEngine.render("list", model, renderContext);
 		
 		var expected = """
                  <html>

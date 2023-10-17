@@ -20,7 +20,6 @@ package com.github.thmarx.cms;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.markdown.MarkdownRenderer;
