@@ -85,3 +85,10 @@ Use template extensions in template
 	<!-- Hello Thorsten -->
 </div>
 ```
+
+#### files
+```javascript
+import { $files } from 'system/files.mjs';
+
+let content = $files.readContent("extras/products.json")
+```
