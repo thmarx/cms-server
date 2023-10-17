@@ -21,8 +21,8 @@ package com.github.thmarx.cms.template.functions;
  */
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.FileSystem;
+import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

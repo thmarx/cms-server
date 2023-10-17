@@ -22,9 +22,9 @@ package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
+import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.utils.NodeUtil;
 import java.nio.file.Path;

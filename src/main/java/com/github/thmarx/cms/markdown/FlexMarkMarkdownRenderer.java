@@ -1,4 +1,4 @@
-package com.github.thmarx.cms;
+package com.github.thmarx.cms.markdown;
 
 /*-
  * #%L
@@ -20,6 +20,7 @@ package com.github.thmarx.cms;
  * #L%
  */
 
+import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Node;
@@ -31,24 +32,27 @@ import java.util.List;
  *
  * @author t.marx
  */
-public class MarkdownRenderer {
+public class FlexMarkMarkdownRenderer implements MarkdownRenderer {
 
 	final MutableDataSet options = new MutableDataSet();
 	private final Parser parser;
 	private final HtmlRenderer renderer;
 	
-	public MarkdownRenderer () {
+	public FlexMarkMarkdownRenderer () {
 		options.set(Parser.EXTENSIONS, List.of(
+				TablesExtension.create()
 		));
 		parser = Parser.builder(options).build();
         renderer = HtmlRenderer.builder(options).build();
 	}
 	
+	@Override
 	public String render (final String markdown) {
 		Node document = parser.parse(markdown);
         return renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
 	}
 	
+	@Override
 	public String excerpt (final String markdown, final int length) {
 		Node document = parser.parse(markdown);
 		TextCollectingVisitor textCollectingVisitor = new TextCollectingVisitor();

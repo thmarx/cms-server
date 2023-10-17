@@ -19,6 +19,7 @@ package com.github.thmarx.cms;
  * limitations under the License.
  * #L%
  */
+import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
@@ -26,6 +27,8 @@ import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.extensions.http.UndertowHttpHandlerWrapper;
+import com.github.thmarx.cms.markdown.MarkdMarkdownRenderer;
+import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
@@ -105,7 +108,8 @@ public class VHost {
 		extensionManager.init();
 
 		contentParser = new ContentParser(fileSystem);
-		markdownRenderer = new MarkdownRenderer();
+		markdownRenderer = new FlexMarkMarkdownRenderer();
+//		markdownRenderer = new MarkdMarkdownRenderer(extensionManager.getEngine());
 
 		templateEngine = resolveTemplateEngine();
 

@@ -53,6 +53,7 @@ public class ExtensionManager implements AutoCloseable {
 
 	private final FileSystem fileSystem;
 
+	@Getter
 	private Engine engine;
 
 	@Getter

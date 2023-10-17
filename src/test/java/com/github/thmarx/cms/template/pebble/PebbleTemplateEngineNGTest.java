@@ -21,7 +21,7 @@ package com.github.thmarx.cms.template.pebble;
  */
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.MarkdownRenderer;
+import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
@@ -43,7 +43,7 @@ public class PebbleTemplateEngineNGTest {
 	public void setup () {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test_pebble/"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
-		MarkdownRenderer markdownRenderer = new MarkdownRenderer();
+		FlexMarkMarkdownRenderer markdownRenderer = new FlexMarkMarkdownRenderer();
 		templateEngine = new PebbleTemplateEngine(fileSystem, contentParser, new ExtensionManager(fileSystem), markdownRenderer);
 	}
 

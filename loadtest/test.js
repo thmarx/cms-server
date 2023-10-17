@@ -8,7 +8,7 @@ export let options = {
 		'http_req_duration{kind:img}': ["avg<=100"],
 		'http_reqs': ["rate>100"],
 	},
-    vus: 10,
+    vus: 2,
     duration: '30s',
 };
 

@@ -20,11 +20,12 @@ package com.github.thmarx.cms.template.thymeleaf;
  * #L%
  */
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.MarkdownRenderer;
+import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.Server;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileSystem;
+import com.github.thmarx.cms.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
