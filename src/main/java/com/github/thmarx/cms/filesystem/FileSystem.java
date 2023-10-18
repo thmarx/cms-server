@@ -19,7 +19,6 @@ package com.github.thmarx.cms.filesystem;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.eventbus.EventBus;
@@ -55,7 +54,7 @@ public class FileSystem {
 	private final EventBus eventBus;
 
 	private RecursiveWatcher contentWatcher;
-    private RecursiveWatcher templateWatcher;
+	private RecursiveWatcher templateWatcher;
 
 	final ContentParser contentParser = new ContentParser(this);
 	private Path contentBase;
@@ -74,11 +73,11 @@ public class FileSystem {
 
 	public void shutdown() {
 		if (contentWatcher != null) {
-            contentWatcher.stop();
-        }
-        if (templateWatcher != null) {  
-            templateWatcher.stop();
-        }
+			contentWatcher.stop();
+		}
+		if (templateWatcher != null) {
+			templateWatcher.stop();
+		}
 	}
 
 	public Path resolve(String path) {
@@ -92,6 +91,7 @@ public class FileSystem {
 	public List<String> loadLines(final Path file) throws IOException {
 		return loadLines(file, StandardCharsets.UTF_8);
 	}
+
 	public String loadContent(final Path file, final Charset charset) throws IOException {
 		return Files.readString(file, charset);
 	}
@@ -148,6 +148,7 @@ public class FileSystem {
 		List<MetaData.MetaNode> nodes = new ArrayList<>();
 
 		final Pattern isSectionOf = Constants.SECTION_OF_PATTERN.apply(filename);
+		final Pattern isOrderedSectionOf = Constants.SECTION_ORDERED_OF_PATTERN.apply(filename);
 
 		if ("".equals(folder)) {
 			metaData.tree().values()
@@ -155,7 +156,9 @@ public class FileSystem {
 					.filter(node -> !node.isHidden())
 					.filter(node -> node.isPublished())
 					.filter(node -> node.isSection())
-					.filter(node -> isSectionOf.matcher(node.name()).matches())
+					.filter(node -> { 
+						return isSectionOf.matcher(node.name()).matches() || isOrderedSectionOf.matcher(node.name()).matches();
+					})
 					.forEach((node) -> {
 						nodes.add(node);
 					});
@@ -167,7 +170,10 @@ public class FileSystem {
 						.filter(node -> !node.isHidden())
 						.filter(node -> node.isPublished())
 						.filter(node -> node.isSection())
-						.filter(node -> isSectionOf.matcher(node.name()).matches())
+						.filter(node
+								-> isSectionOf.matcher(node.name()).matches()
+						|| isOrderedSectionOf.matcher(node.name()).matches()
+						)
 						.forEach((node) -> {
 							nodes.add(node);
 						});
@@ -182,7 +188,7 @@ public class FileSystem {
 		if (!Files.exists(file)) {
 			return;
 		}
-        log.debug("update meta data for {}", file.toString() );
+		log.debug("update meta data for {}", file.toString());
 		Map<String, Object> fileMeta = contentParser.parseMeta(file);
 
 		var uri = PathUtil.toFile(file, contentBase);
@@ -196,7 +202,7 @@ public class FileSystem {
 		this.contentBase = resolve("content/");
 		log.debug("init watcher for content changes");
 		this.contentWatcher = new RecursiveWatcher(contentBase);
-		contentWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber(){
+		contentWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
 			@Override
 			public void onNext(FileEvent item) {
 				try {
@@ -217,15 +223,15 @@ public class FileSystem {
 		reInitFolder(contentBase);
 
 		contentWatcher.start();
-        
+
 		log.debug("init watcher for template changes");
-        templateWatcher = new RecursiveWatcher(resolve("templates/"));
-        templateWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
-            @Override
-            public void onNext(FileEvent item) {
-                eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
-            }
-        });
+		templateWatcher = new RecursiveWatcher(resolve("templates/"));
+		templateWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
+			@Override
+			public void onNext(FileEvent item) {
+				eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
+			}
+		});
 		templateWatcher.start();
 	}
 

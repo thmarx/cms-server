@@ -81,7 +81,7 @@ public class ContentResolver {
 			
 			List<MetaData.MetaNode> sections = fileSystem.listSections(contentFile);
 			
-			Map<String, ContentRenderer.Section> renderedSections = contentRenderer.renderSections(sections, context);
+			Map<String, List<ContentRenderer.Section>> renderedSections = contentRenderer.renderSections(sections, context);
 			
 			var content = contentRenderer.render(contentFile, context, renderedSections);
 			return Optional.of(content);

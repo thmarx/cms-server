@@ -215,7 +215,8 @@ public class MetaData {
 		}
 
 		public boolean isSection() {
-			return Constants.SECTION_PATTERN.matcher(name).matches();
+			return Constants.SECTION_PATTERN.matcher(name).matches()
+					|| Constants.SECTION_ORDERED_PATTERN.matcher(name).matches();
 		}
 	}
 }

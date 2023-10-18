@@ -42,5 +42,12 @@ public abstract class Constants {
 		return Pattern.compile("%s\\.([a-zA-Z0-9]+[a-zA-Z0-9-]*)\\.md".formatted(fileName));
 	};
 	
+	public static final Pattern SECTION_ORDERED_PATTERN = Pattern.compile("\\w+[a-zA-Z0-9-]*\\.(?<section>[a-zA-Z0-9]+[a-zA-Z0-9-]*)\\.(?<index>[0-9]+[0-9]*)\\.md");
+	
+	public static final Function<String, Pattern> SECTION_ORDERED_OF_PATTERN = (fileName) -> {
+		return Pattern.compile("%s\\.([a-zA-Z0-9]+[a-zA-Z0-9-]*)\\.[0-9]+[0-9]*\\.md".formatted(fileName));
+	};
+	
+	public static final int DEFAULT_SECTION_ORDERED_INDEX = 0;
 	public static final float DEFAULT_MENU_ORDER = 1000f;
 }

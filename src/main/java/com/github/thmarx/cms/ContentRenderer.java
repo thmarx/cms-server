@@ -23,8 +23,10 @@ package com.github.thmarx.cms;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.utils.SectionUtil;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +51,7 @@ public class ContentRenderer {
 		return render(contentFile, context, Collections.emptyMap());
 	}
 	
-	public String render (final Path contentFile, final RequestContext context, Map<String, Section> sections) throws IOException {
+	public String render (final Path contentFile, final RequestContext context, final Map<String, List<ContentRenderer.Section>> sections) throws IOException {
 		var content = contentParser.parse(contentFile);
 		
 		TemplateEngine.Model model = new TemplateEngine.Model(contentFile);
@@ -59,32 +61,41 @@ public class ContentRenderer {
 		return templates.render((String)content.meta().get("template"), model, context);
 	}
 	
-	public Map<String, Section> renderSections (final List<MetaData.MetaNode> sectionNodes, final RequestContext context) throws IOException {
+	public Map<String, List<Section>> renderSections (final List<MetaData.MetaNode> sectionNodes, final RequestContext context) throws IOException {
 		
 		if (sectionNodes.isEmpty()) {
 			return Collections.emptyMap();
 		}
 		
-		Map<String, Section> sections = new HashMap<>();
+		Map<String, List<Section>> sections = new HashMap<>();
 
 		final Path contentBase = fileSystem.resolve("content/");
 		sectionNodes.forEach(node -> {
 			try {
 				var sectionPath = contentBase.resolve(node.uri());
 				var content = render(sectionPath, context);
-				final Matcher matcher = Constants.SECTION_PATTERN.matcher(node.name());
-				matcher.matches();
-				var name = matcher.group("section");
+				var name = SectionUtil.getSectionName(node.name());
+				var index = SectionUtil.getSectionIndex(node.name());
 				
-				sections.put(name, new Section(name, content));
+				if (!sections.containsKey(name)) {
+					sections.put(name, new ArrayList<>());
+				}
+				
+				sections.get(name).add(new Section(name, index, content));
 			} catch (Exception ex) {
 				log.error("error render section", ex);
 			}
 			
 		});
 		
+		sections.values().forEach(list -> list.sort((s1, s2) -> Integer.compare(s1.index, s2.index)));
+		
 		return sections;
 	}
 
-	public static record Section (String name, String content) {}
+	public static record Section (String name, int index, String content) {
+		public Section (String name, String content) {
+			this(name, Constants.DEFAULT_SECTION_ORDERED_INDEX, content);
+		}
+	}
 }
