@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
+import org.jsoup.Jsoup;
 
 /**
  *
@@ -55,7 +56,14 @@ public class MarkdMarkdownRenderer implements MarkdownRenderer {
 	
 	@Override
 	public String excerpt(String markdown, int length) {
-		return markedFunction.execute(markdown).asString();
+		var content = markedFunction.execute(markdown).asString();
+		String text = Jsoup.parse(content).text();
+		
+		if (text.length() <= length) {
+			return text;
+		} else {
+			return text.substring(0, length);
+		}
 	}
 
 	@Override
