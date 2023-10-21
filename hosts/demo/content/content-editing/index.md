@@ -3,7 +3,7 @@ title: Content
 template: start
 menu: 
     title: Content editing
-    order: 10
+    position: 10
 ---
 
 ## Content files

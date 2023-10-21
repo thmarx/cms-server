@@ -3,7 +3,7 @@ title: Templates & Engines
 template: start
 menu: 
     title: Templating
-    order: 80
+    position: 80
 ---
 
 In cms kann pro Virtual Host die verwendete TemplateEngine konfiguriert werden.

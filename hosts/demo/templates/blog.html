@@ -26,20 +26,23 @@
 			</th:block>
 
 			<div>
-				<nav aria-label="blog pagination" >
+				<nav aria-label="blog pagination">
 					<ul class="pagination">
-					  <li class="page-item " th:classappend="${page.page == 1 ? 'disabled' : ''}">
-						<a class="page-link" th:href="'/blog?page=' + ${page.page-1}" tabindex="-1">Previous</a>
-					  </li>
-					  <li class="page-item" th:classappend="${page.page == page.total ? 'disabled' : ''}">
-						<a class="page-link" th:href="'/blog?page=' + ${page.page+1}">Next</a>
-					  </li>
+						<li class="page-item " th:classappend="${page.page == 1 ? 'disabled' : ''}">
+							<a class="page-link" th:href="'/blog?page=' + ${page.page-1}" tabindex="-1">Previous</a>
+						</li>
+						<li class="page-item" th:classappend="${page.page == page.total ? 'disabled' : ''}">
+							<a class="page-link" th:href="'/blog?page=' + ${page.page+1}">Next</a>
+						</li>
 					</ul>
-				  </nav>
+				</nav>
 			</div>
 		</div>
 	</div>
 
+	<script th:replace="libs/header :: footer_scripts">
+
+	</script>
 
 </body>
 

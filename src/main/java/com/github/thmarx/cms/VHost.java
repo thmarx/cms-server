@@ -35,11 +35,16 @@ import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
+import io.undertow.server.handlers.cache.CacheHandler;
+import io.undertow.server.handlers.cache.DirectBufferCache;
+import io.undertow.server.handlers.encoding.EncodingHandler;
+import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
@@ -145,13 +150,17 @@ public class VHost {
 	public HttpHandler httpHandler() {
 		final PathResourceManager resourceManager = new PathResourceManager(assetBase);
 		ResourceHandler staticResourceHandler = new ResourceHandler(resourceManager);
-
+		// TODO: think about some better strategy for ttl
+		staticResourceHandler.setCacheTime((int)TimeUnit.DAYS.toSeconds(1));
+		DirectBufferCache assetCache = new DirectBufferCache(100, 10, 1000);
+		CacheHandler cacheHandler = new CacheHandler(assetCache, new EncodingHandler.Builder().build(null).wrap(staticResourceHandler));
+		
 		ResourceHandler faviconHandler = new ResourceHandler(new FileResourceManager(assetBase.resolve("favicon.ico").toFile()));
-
+		
 		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver, extensionManager, (context) -> {
 			return resolveMarkdownRenderer(context);
 		}))
-				.addPrefixPath("/assets", staticResourceHandler)
+				.addPrefixPath("/assets", cacheHandler)
 				.addExactPath("/favicon.ico", faviconHandler);
 
 		RoutingHandler extensionHandler = Handlers.routing();

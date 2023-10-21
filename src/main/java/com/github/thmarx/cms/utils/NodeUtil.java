@@ -34,11 +34,11 @@ import ognl.OgnlException;
 public class NodeUtil {
 
 	private static Object menuTitleExpression;
-	private static Object menuOrderExpression;
+	private static Object menuPositionExpression;
 	static {
 		try {
 			menuTitleExpression = Ognl.parseExpression("data['menu']!=null ? data.menu['title'] : null");
-			menuOrderExpression = Ognl.parseExpression("data['menu']!=null ? data.menu['order'] : null");
+			menuPositionExpression = Ognl.parseExpression("data['menu']!=null ? data.menu['position'] : null");
 		} catch (OgnlException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -62,16 +62,16 @@ public class NodeUtil {
 		return node.name();
 	}
 	
-	public static float getMenuOrder (MetaData.MetaNode node) {
+	public static float getMenuPosition (MetaData.MetaNode node) {
 		try {
 			var context = Ognl.createDefaultContext(node);
-			Float menuOrder = (Float) Ognl.getValue(menuOrderExpression, context, node, Float.class);
-			if (menuOrder != null) {
-				return menuOrder;
+			Float menuPosition = (Float) Ognl.getValue(menuPositionExpression, context, node, Float.class);
+			if (menuPosition != null) {
+				return menuPosition;
 			}
 		} catch (OgnlException ex) {
-			log.error("error getting menu order", ex);
+			log.error("error getting menu position", ex);
 		}
-		return Constants.DEFAULT_MENU_ORDER;
+		return Constants.DEFAULT_MENU_POSITION;
 	}
 }

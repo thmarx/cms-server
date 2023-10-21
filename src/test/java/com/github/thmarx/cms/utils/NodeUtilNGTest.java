@@ -83,29 +83,29 @@ public class NodeUtilNGTest {
 	}
 	
 	@Test
-	public void getMenuOrder() {
+	public void getMenuPosition() {
 		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of(
 				"menu", Map.of(
-						"order", 1.5
+						"position", 1.5
 				)
 		));
-		var order = NodeUtil.getMenuOrder(node);
+		var order = NodeUtil.getMenuPosition(node);
 		Assertions.assertThat(order).isEqualTo(1.5f);
 	}
 	
 	@Test
-	public void getDefaultMenuOrder() {
+	public void getDefaultMenuPosition() {
 		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of(
 				"menu", Map.of()
 		));
-		var order = NodeUtil.getMenuOrder(node);
-		Assertions.assertThat(order).isEqualTo(Constants.DEFAULT_MENU_ORDER);
+		var position = NodeUtil.getMenuPosition(node);
+		Assertions.assertThat(position).isEqualTo(Constants.DEFAULT_MENU_POSITION);
 	}
 	
 	@Test
-	public void getDefaultMenuOrderNoMenuMap() {
+	public void getDefaultMenuPositionNoMenuMap() {
 		MetaData.MetaNode node = new MetaData.MetaNode("/", "index", Map.of());
-		var order = NodeUtil.getMenuOrder(node);
-		Assertions.assertThat(order).isEqualTo(Constants.DEFAULT_MENU_ORDER);
+		var position = NodeUtil.getMenuPosition(node);
+		Assertions.assertThat(position).isEqualTo(Constants.DEFAULT_MENU_POSITION);
 	}
 }

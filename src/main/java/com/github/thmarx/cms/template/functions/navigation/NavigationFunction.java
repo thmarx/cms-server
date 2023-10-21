@@ -69,10 +69,10 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 			final List<MetaData.MetaNode> navNodes = fileSystem.listContent(base, start);
 			
 			navNodes.sort((node1, node2) -> {
-				var order1 = NodeUtil.getMenuOrder(node1);
-				var order2 = NodeUtil.getMenuOrder(node2);
+				var position1 = NodeUtil.getMenuPosition(node1);
+				var position2 = NodeUtil.getMenuPosition(node2);
 				
-				int compare = Float.compare(order1, order2);
+				int compare = Float.compare(position1, position2);
 				
 				if (compare == 0) {
 					var name1 = NodeUtil.getName(node1);

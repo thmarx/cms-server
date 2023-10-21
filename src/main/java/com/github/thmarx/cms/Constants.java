@@ -49,5 +49,5 @@ public abstract class Constants {
 	};
 	
 	public static final int DEFAULT_SECTION_ORDERED_INDEX = 0;
-	public static final float DEFAULT_MENU_ORDER = 1000f;
+	public static final float DEFAULT_MENU_POSITION = 1000f;
 }
