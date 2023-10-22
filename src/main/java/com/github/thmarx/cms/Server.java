@@ -54,7 +54,7 @@ public class Server {
 
 		List<VHost> vhosts = new ArrayList<>();
 		Files.list(Path.of("hosts")).forEach((hostPath) -> {
-			var props = hostPath.resolve("host.properties");
+			var props = hostPath.resolve("site.yaml");
 			if (Files.exists(props)) {
 				try {
 					VHost host = new VHost(hostPath);

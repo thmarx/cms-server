@@ -94,7 +94,7 @@ public class VHost {
 
 		fileSystem.init();
 
-		var props = fileSystem.resolve("host.properties");
+		var props = fileSystem.resolve("site.yaml");
 		properties = new HostProperties().load(props);
 
 		hostname = properties.hostname();
@@ -151,16 +151,19 @@ public class VHost {
 		final PathResourceManager resourceManager = new PathResourceManager(assetBase);
 		ResourceHandler staticResourceHandler = new ResourceHandler(resourceManager);
 		// TODO: think about some better strategy for ttl
-		staticResourceHandler.setCacheTime((int)TimeUnit.DAYS.toSeconds(1));
-		DirectBufferCache assetCache = new DirectBufferCache(100, 10, 1000);
-		CacheHandler cacheHandler = new CacheHandler(assetCache, new EncodingHandler.Builder().build(null).wrap(staticResourceHandler));
+		if (!Server.DEV_MODE) {
+			staticResourceHandler.setCacheTime((int)TimeUnit.DAYS.toSeconds(1));
+		}
+		HttpHandler compressionHandler = new EncodingHandler.Builder().build(null).wrap(staticResourceHandler);
+		//DirectBufferCache assetCache = new DirectBufferCache(100, 10, 1000);
+		//CacheHandler cacheHandler = new CacheHandler(assetCache, new EncodingHandler.Builder().build(null).wrap(staticResourceHandler));
 		
 		ResourceHandler faviconHandler = new ResourceHandler(new FileResourceManager(assetBase.resolve("favicon.ico").toFile()));
 		
 		var pathHandler = Handlers.path(new DefaultHttpHandler(contentResolver, extensionManager, (context) -> {
 			return resolveMarkdownRenderer(context);
 		}))
-				.addPrefixPath("/assets", cacheHandler)
+				.addPrefixPath("/assets", compressionHandler)
 				.addExactPath("/favicon.ico", faviconHandler);
 
 		RoutingHandler extensionHandler = Handlers.routing();

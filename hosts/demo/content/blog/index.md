@@ -1,6 +1,6 @@
 ---
 title: Our Blog
-template: blog
+template: blog.html
 menu:
     title: The Blog
     position: 100

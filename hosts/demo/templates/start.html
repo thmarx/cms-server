@@ -1,12 +1,12 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-	<head th:include="libs/header :: header">
+	<head th:include="libs/header.html :: header">
 		<title></title>
 	</head>
 	<body>
 		
-		<nav th:replace="libs/header :: navigation"></nav>
+		<nav th:replace="libs/header.html :: navigation"></nav>
 
 		<div class="container" th:utext="${content}"></div>
 		
@@ -18,7 +18,7 @@
 		</div>
 	</body>
 
-	<script th:replace="libs/header :: footer_scripts">
+	<script th:replace="libs/header.html :: footer_scripts">
 		
 	</script>
 </html>

@@ -1,6 +1,6 @@
 ---
 title: Startseite
-template: start
+template: start.html
 ---
 
 Und hier der Inhalt

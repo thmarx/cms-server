@@ -25,10 +25,14 @@ package com.github.thmarx.cms;
  */
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  *
@@ -37,27 +41,30 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HostProperties {
 	
-	private Properties properties;
+	private Map<String, Object> properties;
 	
 	public HostProperties load (Path path) throws IOException {
 		if (this.properties != null) {
 			return this;
 		}
-		this.properties = new Properties();
-		try (var reader = Files.newBufferedReader(path)) {
-			properties.load(reader);
-		}
+		
+		this.properties = new Yaml().load(Files.readString(path, StandardCharsets.UTF_8));
+		
 		return this;
 	}
 	
 	public String hostname () {
-		return properties.getProperty("hostname");
+		return (String) properties.getOrDefault("hostname", "localhost");
+	}
+	
+	private Map<String, Object> getSubMap (final String name) {
+		return (Map<String, Object>) properties.getOrDefault(name, Collections.emptyMap());
 	}
 	
 	public String templateEngine () {
-		return properties.getProperty("template.engine", "freemarker");
+		return (String)getSubMap("template").getOrDefault("engine", "thymeleaf");
 	}
 	public String markdownEngine () {
-		return properties.getProperty("markdown.engine", "flexmark");
+		return (String)getSubMap("markdown").getOrDefault("engine", "flexmark");
 	}
 }

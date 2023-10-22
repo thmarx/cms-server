@@ -1,6 +1,6 @@
 ---
 title: Content
-template: start
+template: start.html
 menu: 
     title: Content editing
     position: 10

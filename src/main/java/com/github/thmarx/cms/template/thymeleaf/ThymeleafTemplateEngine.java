@@ -60,7 +60,7 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 		var templateResolver = new FileTemplateResolver();
 		templateResolver.setTemplateMode(TemplateMode.HTML);
 		templateResolver.setPrefix(this.templateBase.toString() + File.separatorChar);
-		templateResolver.setSuffix(".html");
+		//templateResolver.setSuffix(".html");
 		if (Server.DEV_MODE) {
 			templateResolver.setCacheable(false);
 		} else {

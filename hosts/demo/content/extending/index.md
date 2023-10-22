@@ -1,6 +1,6 @@
 ---
 title: Extending
-template: start
+template: start.html
 menu: 
     position: 90
 ---

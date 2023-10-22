@@ -63,7 +63,7 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		
 		var loader = new FileLoader();
 		loader.setPrefix(this.templateBase.toString() + File.separatorChar);
-		loader.setSuffix(".html");
+		//loader.setSuffix(".html");
 		final PebbleEngine.Builder builder = new PebbleEngine.Builder()
 				.loader(loader);
 		
@@ -71,6 +71,7 @@ public class PebbleTemplateEngine implements TemplateEngine {
 			builder.templateCache(null);
 			builder.tagCache(null);
 			builder.cacheActive(false);
+			builder.strictVariables(true);
 		} else {
 			var templateCache = new CaffeineTemplateCache(
 					Caffeine.newBuilder()
@@ -99,8 +100,8 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		PebbleTemplate compiledTemplate = engine.getTemplate(template);
 
 		Map<String, Object> values = new HashMap<>(model.values);
-		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
-		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
+		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
 		values.put("requestContext", context);
 		
 		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {

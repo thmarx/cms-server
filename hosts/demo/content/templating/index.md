@@ -1,6 +1,6 @@
 ---
 title: Templates & Engines
-template: start
+template: start.html
 menu: 
     title: Templating
     position: 80

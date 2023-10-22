@@ -79,12 +79,31 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		this.page = page;
 		return this;
 	}
+	public NodeListFunctionBuilder page(long page) {
+		this.page = (int)page;
+		return this;
+	}
+	
+	public NodeListFunctionBuilder page(String page) {
+		this.page = Integer.parseInt(page.trim());
+		return this;
+	}
 
 	public NodeListFunctionBuilder size(int size) {
 		this.size = size;
 		return this;
 	}
 
+	public NodeListFunctionBuilder size(long size) {
+		this.size = (int)size;
+		return this;
+	}
+	
+	public NodeListFunctionBuilder size(String size) {
+		this.size = Integer.parseInt(size.trim());
+		return this;
+	}
+	
 	public NodeListFunctionBuilder index(boolean index) {
 		this.index = index;
 		return this;
