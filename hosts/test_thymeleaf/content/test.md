@@ -1,6 +1,6 @@
 ---
 title: Startseite
-template: test
+template: test.html
 tags: [eins,zwei,drei]
 ---
 

@@ -58,7 +58,7 @@ public class PebbleTemplateEngineNGTest extends TemplateEngineTest {
 		var model = new TemplateEngine.Model(null);
 		model.values.put("title", "Hello World");
 		model.values.put("content", "The content!");
-		var html = templateEngine.render("test", model, requestContext());
+		var html = templateEngine.render("test.html", model, requestContext());
 		
 		var expected = """
                  <html>
@@ -77,7 +77,7 @@ public class PebbleTemplateEngineNGTest extends TemplateEngineTest {
 		var model = new TemplateEngine.Model(null);
 		model.values.put("title", "Hello World");
 
-		var html = templateEngine.render("list", model, requestContext());
+		var html = templateEngine.render("list.html", model, requestContext());
 		
 		var expected = """
                  <html>
