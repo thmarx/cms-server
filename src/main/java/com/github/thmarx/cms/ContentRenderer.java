@@ -54,7 +54,7 @@ public class ContentRenderer {
 		var content = contentParser.parse(contentFile);
 		
 		TemplateEngine.Model model = new TemplateEngine.Model(contentFile);
-		model.values.putAll(content.meta());
+		model.values.put("meta", content.meta());
 		model.values.put("content", context.renderContext().markdownRenderer().render(content.content()));
 		model.values.put("sections", sections);
 		return templates.render((String)content.meta().get("template"), model, context);

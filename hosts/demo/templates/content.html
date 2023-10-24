@@ -9,6 +9,13 @@
 		<nav th:replace="libs/header.html :: navigation"></nav>
 
 		<div class="container" th:utext="${content}"></div>
+
+		<div class="container" th:if="${sections.containsKey('part')}">
+			<th:block th:each="part : ${sections.get('part')}">
+				<th:block th:utext="${part.content}"></th:block>
+			</th:block>
+		</div>
+
 	</body>
 
 	<script th:replace="libs/header.html :: footer_scripts">

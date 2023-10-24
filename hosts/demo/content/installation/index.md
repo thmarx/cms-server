@@ -2,7 +2,7 @@
 title: Installation & Configuration
 template: start.html
 menu: 
-    position: 20
+    position: 10
     title: "Installation"
 ---
 
