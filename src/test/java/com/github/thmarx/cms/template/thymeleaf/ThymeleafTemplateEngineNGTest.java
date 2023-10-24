@@ -59,7 +59,7 @@ public class ThymeleafTemplateEngineNGTest extends TemplateEngineTest {
 	@Test
 	public void testSomeMethod() throws IOException {
 		var model = new TemplateEngine.Model(null);
-		model.values.put("title", "Hello World");
+		model.values.put("meta", Map.of("title", "Hello World"));
 		model.values.put("content", "The content!");
 		var html = templateEngine.render("test.html", model, requestContext());
 

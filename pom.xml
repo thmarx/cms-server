@@ -177,9 +177,6 @@
 					<descriptors>
 						<descriptor>src/assembly/executable.xml</descriptor>
 					</descriptors>
-					<!--descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs-->
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>

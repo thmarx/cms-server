@@ -1,6 +1,6 @@
 ---
 title: Content-Files
-template: part.html
+template: content.part.html
 ---
 
 Content Files contains to areas. The header and the content area.

@@ -12,6 +12,7 @@
 			<directory>${project.basedir}</directory>
 			<includes>
 				<include>application.properties</include>
+				<include>log4j2.xml</include>
 			</includes>
 		</fileSet>
 		<fileSet>

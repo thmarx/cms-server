@@ -1,6 +1,6 @@
 ---
 title: Header
-template: part.html
+template: content.part.html
 ---
 
 Frontematter header is default yaml!
