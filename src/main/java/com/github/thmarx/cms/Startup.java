@@ -24,6 +24,7 @@ import com.github.thmarx.cms.server.HttpServer;
 import com.github.thmarx.cms.server.jetty.JettyServer;
 import com.github.thmarx.cms.server.undertow.UndertowServer;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +39,8 @@ public class Startup {
 	
 	public static void main(String[] args) throws Exception {
 
+		printStartup();
+		
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
@@ -59,6 +62,16 @@ public class Startup {
 			case "undertow" -> new UndertowServer(properties);
 			default -> throw new RuntimeException("something bad happens");
 		};
+	}
+	
+	private static void printStartup () throws IOException {
+		try (var in = Startup.class.getResourceAsStream("application.properties")) {
+			Properties props = new Properties();
+			props.load(in);
+			
+			log.info("starting {} version {}", props.getProperty("name"), props.getProperty("version"));
+			log.info("build {}", props.getProperty("build.date"));
+		}
 	}
 
 }
