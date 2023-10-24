@@ -133,10 +133,11 @@
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources-filtered</directory>
 				<filtering>true</filtering>
-				<includes>
-					<include>**/cms/application.properties</include>
-				</includes>
 			</resource>
 		</resources>
 		<plugins>
