@@ -47,7 +47,7 @@ Default markdown engine is _flexmark_.
 hostname: localhost
 template:
   engine: thymeleaf
-markdownd:
+markdown:
   engine: flexmark
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: Templates & Engines
-template: start.html
+template: content.html
 menu: 
     title: Templating
     position: 20
@@ -13,3 +13,5 @@ Aktuell kann zwischen folgenden TemplateEngines zur Verfügung.
 * [Thymeleaf](https://thymeleaf.org)
 * [Pebble](https://pebbletemplates.io/)
 * [Apache Freemarker](https://freemarker.apache.org/)
+
+For information about configuration of template engien to be used see the [per host config](/installation#per-host-config)

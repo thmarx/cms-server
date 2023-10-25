@@ -20,6 +20,7 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
+import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
@@ -40,7 +41,8 @@ public class FlexMarkMarkdownRenderer implements MarkdownRenderer {
 	
 	public FlexMarkMarkdownRenderer () {
 		options.set(Parser.EXTENSIONS, List.of(
-				TablesExtension.create()
+				TablesExtension.create(),
+				AnchorLinkExtension.create()
 		));
 		parser = Parser.builder(options).build();
         renderer = HtmlRenderer.builder(options).build();
