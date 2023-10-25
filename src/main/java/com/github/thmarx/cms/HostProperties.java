@@ -62,7 +62,7 @@ public class HostProperties {
 	}
 	
 	public String templateEngine () {
-		return (String)getSubMap("template").getOrDefault("engine", "thymeleaf");
+		return (String)getSubMap("template").getOrDefault("engine", "freemarker");
 	}
 	public String markdownEngine () {
 		return (String)getSubMap("markdown").getOrDefault("engine", "flexmark");
