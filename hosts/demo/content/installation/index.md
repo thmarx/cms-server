@@ -34,15 +34,21 @@ dev=true
 
 The per host config is not shared between virtual hosts.
 
-*hostname* is the hostname under witch the virtual host should be reachable.
+*hostname* is the hostname under witch the virtual host should be reachable.  
 *tempate.engine* the template engine to be used for this virtual host. 
 Your options here are currently _freemarker_, _thymeleaf_ and _pebble_.
+Default template engine is _freemarker_.  
+*markdown.engine* the markdown rendering engine used for this virtual host.
+Options are _flexmark_ and _markd_.
+Default markdown engine is _flexmark_.
 
 **Example host config**
 ```yaml
 hostname: localhost
 template:
   engine: thymeleaf
+markdownd:
+  engine: flexmark
 ```
 
 ## Starting

@@ -30,15 +30,14 @@ import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
-import com.github.thmarx.cms.markdown.MarkdMarkdownRenderer;
 import com.github.thmarx.cms.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.markdown.MarkedMarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
 import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
@@ -134,8 +133,8 @@ public class VHost {
 		return switch (engine) {
 			case "flexmark" ->
 				new FlexMarkMarkdownRenderer();
-			case "markd" ->
-				new MarkdMarkdownRenderer(context);
+			case "marked" ->
+				new MarkedMarkdownRenderer(context);
 			default ->
 				new FlexMarkMarkdownRenderer();
 		};

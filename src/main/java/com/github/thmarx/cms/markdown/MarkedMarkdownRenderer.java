@@ -33,18 +33,18 @@ import org.jsoup.Jsoup;
  * @author t.marx
  */
 @Slf4j
-public class MarkdMarkdownRenderer implements MarkdownRenderer {
+public class MarkedMarkdownRenderer implements MarkdownRenderer {
 
 	public final Context context;
 	
 	public final Value markedFunction;
 	public final Source markedSource;
 	
-	public MarkdMarkdownRenderer (final Context context) {
+	public MarkedMarkdownRenderer (final Context context) {
 		try {
 			this.context = context;
 			
-			var content = new String(MarkdMarkdownRenderer.class.getResourceAsStream("marked.min.js").readAllBytes(), StandardCharsets.UTF_8);
+			var content = new String(MarkedMarkdownRenderer.class.getResourceAsStream("marked.min.js").readAllBytes(), StandardCharsets.UTF_8);
 			markedSource = Source.newBuilder("js", content, "marked.mjs").build();
 			context.eval(markedSource);
 			markedFunction = context.eval("js", "(function (param) {return marked.parse(param);})");
