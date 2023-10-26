@@ -60,7 +60,7 @@ public class JettyServer implements HttpServer {
 			if (Files.exists(props)) {
 				try {
 					var host = new JettyVHost(hostPath);
-					host.init();
+					host.init(Path.of("modules"));
 					vhosts.add(host);
 				} catch (IOException ex) {
 					ex.printStackTrace();

@@ -45,7 +45,6 @@ public class Startup {
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
-		System.out.println(Path.of("./").toAbsolutePath().toString());
 		ServerProperties properties = PropertiesLoader.serverProperties(Path.of("server.yaml"));
 		
 		DEV_MODE = properties.dev();

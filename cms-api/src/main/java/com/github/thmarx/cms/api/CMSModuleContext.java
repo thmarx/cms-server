@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.extensions.http.undertow;
+package com.github.thmarx.cms.api;
 
 /*-
  * #%L
- * cms-server
+ * cms-api
  * %%
  * Copyright (C) 2023 Marx-Software
  * %%
@@ -20,9 +20,8 @@ package com.github.thmarx.cms.extensions.http.undertow;
  * #L%
  */
 
-import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
+import com.github.thmarx.modules.api.Context;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -30,13 +29,7 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class UndertowHttpHandlerWrapper implements HttpHandler {
-	
-	private final ExtensionHttpHandler handler;
-	
-	@Override
-	public void handleRequest(final HttpServerExchange exchange) throws Exception {
-		handler.execute(new UndertowRequest(exchange), new UndertowResponse(exchange));
-	}
-	
+public class CMSModuleContext implements Context {
+	@Getter
+	private final HostProperties hostProperties;
 }

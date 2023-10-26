@@ -1,5 +1,3 @@
-const tryFromString = Java.type("io.undertow.util.HttpString").tryFromString
-
 const METHODS = {
 	GET : "GET",
 	POST : "POST",

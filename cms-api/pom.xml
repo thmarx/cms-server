@@ -15,5 +15,10 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.thmarx.modules</groupId>
+			<artifactId>modules-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 </project>

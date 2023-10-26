@@ -52,7 +52,7 @@ public class UndertowServer implements HttpServer {
 			if (Files.exists(props)) {
 				try {
 					UndertowVHost host = new UndertowVHost(hostPath);
-					host.init();
+					host.init(Path.of("modules"));
 					vhosts.add(host);
 				} catch (IOException ex) {
 					ex.printStackTrace();

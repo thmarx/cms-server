@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.extensions.http.undertow;
+package com.github.thmarx.cms.server.jetty.extension;
 
 /*-
  * #%L
@@ -20,28 +20,29 @@ package com.github.thmarx.cms.extensions.http.undertow;
  * #L%
  */
 
-import com.github.thmarx.cms.extensions.http.Response;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HttpString;
-import java.nio.charset.Charset;
+
+import com.github.thmarx.cms.api.extensions.http.ExtensionHttpHandler;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Callback;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class UndertowResponse implements Response {
+public class JettyHttpHandlerWrapper extends Handler.Abstract {
 	
-	private final HttpServerExchange exchange;
+	private final ExtensionHttpHandler handler;
 
 	@Override
-	public void addHeader(String name, String value) {
-		exchange.getResponseHeaders().add(HttpString.tryFromString(name), value);
+	public boolean handle(Request request, Response response, Callback callback) throws Exception {
+		handler.execute(new JettyRequest(request), new JettyResponse(response, callback));
+		return true;
 	}
-
-	@Override
-	public void write(String content, Charset charset) {
-		exchange.getResponseSender().send(content, charset);
-	}
+	
+	
+	
 }

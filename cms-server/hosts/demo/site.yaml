@@ -3,3 +3,6 @@ template:
   engine: thymeleaf
 markdownd:
   engine: marked
+modules:
+  active:
+    - example-module

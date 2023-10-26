@@ -22,7 +22,7 @@ package com.github.thmarx.cms.server.undertow;
 
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
-import com.github.thmarx.cms.extensions.http.undertow.UndertowHttpHandlerWrapper;
+import com.github.thmarx.cms.server.undertow.extension.UndertowHttpHandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import java.util.Optional;

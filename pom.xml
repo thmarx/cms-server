@@ -11,10 +11,12 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<exec.mainClass>com.github.thmarx.cms.Startup</exec.mainClass>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		<modules.version>1.1</modules.version>
 	</properties>
 	<modules>
 		<module>cms-api</module>
-	 <module>cms-server</module>
+		<module>cms-server</module>
+		<module>example-module</module>
 	</modules>
 	<inceptionYear>2023</inceptionYear>
 	<organization>
@@ -28,6 +30,16 @@
 				<groupId>com.github.thmarx.cms</groupId>
 				<artifactId>cms-api</artifactId>
 				<version>${project.version}</version>            
+			</dependency>
+			<dependency>
+				<groupId>com.github.thmarx.modules</groupId>
+				<artifactId>modules-manager</artifactId>
+				<version>${modules.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.thmarx.modules</groupId>
+				<artifactId>modules-api</artifactId>
+				<version>${modules.version}</version>
 			</dependency>
 			
 			<dependency>
@@ -128,12 +140,6 @@
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
 				<version>1.16.1</version>
-			</dependency>
-	
-			<dependency>
-				<groupId>com.github.thmarx.modules</groupId>
-				<artifactId>modules-manager</artifactId>
-				<version>1.0</version>
 			</dependency>
 	
 			<dependency>

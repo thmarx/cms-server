@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.extensions.http;
+package com.github.thmarx.cms.api.extensions.http;
 
 /*-
  * #%L

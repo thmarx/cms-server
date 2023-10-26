@@ -24,6 +24,7 @@ import com.github.thmarx.cms.ContentRenderer;
 import com.github.thmarx.cms.ContentResolver;
 import com.github.thmarx.cms.api.HostProperties;
 import com.github.thmarx.cms.PropertiesLoader;
+import com.github.thmarx.cms.api.CMSModuleContext;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
@@ -37,8 +38,15 @@ import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
 import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
+import com.github.thmarx.modules.api.ModuleManager;
+import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
+import com.github.thmarx.modules.manager.ModuleManagerImpl;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
@@ -69,6 +77,8 @@ public class VHost {
 	private final EventBus eventBus;
 
 	protected HostProperties properties;
+	
+	protected ModuleManager moduleManager;
 
 	public VHost(final Path hostBase) {
 		this.eventBus = new EventBus();
@@ -84,13 +94,30 @@ public class VHost {
 		}
 	}
 
-	public void init() throws IOException {
+	public void init(Path modules) throws IOException {
 
 		fileSystem.init();
-
+		
 		var props = fileSystem.resolve("site.yaml");
 		properties = PropertiesLoader.hostProperties(props);
 
+		var classLoader = new ModuleAPIClassLoader(ClassLoader.getSystemClassLoader(), 
+				List.of("org.slf4j", "com.github.thmarx.cms", "com.github.thmarx.moduls")
+		);
+        this.moduleManager = ModuleManagerImpl.create(
+				modules.toFile(), 
+				fileSystem.resolve("modules_data").toFile(), 
+				new CMSModuleContext(properties), 
+				classLoader
+		);
+		properties.activeModules().forEach(module_id -> {
+			try {
+				moduleManager.activateModule(module_id);
+			} catch (IOException ex) {
+				log.error(null, ex);
+			}
+		});
+		
 		hostname = properties.hostname();
 
 		contentBase = fileSystem.resolve("content/");

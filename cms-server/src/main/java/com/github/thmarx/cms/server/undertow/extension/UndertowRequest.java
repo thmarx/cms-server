@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.extensions.http.undertow;
+package com.github.thmarx.cms.server.undertow.extension;
 
 /*-
  * #%L
@@ -20,7 +20,7 @@ package com.github.thmarx.cms.extensions.http.undertow;
  * #L%
  */
 
-import com.github.thmarx.cms.extensions.http.Request;
+import com.github.thmarx.cms.api.extensions.http.Request;
 import io.undertow.server.HttpServerExchange;
 import java.io.IOException;
 import java.nio.charset.Charset;

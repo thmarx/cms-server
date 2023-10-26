@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty;
+package com.github.thmarx.cms.server.jetty.handler;
 
 /*-
  * #%L
@@ -22,7 +22,7 @@ package com.github.thmarx.cms.server.jetty;
 
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
-import com.github.thmarx.cms.extensions.http.jetty.JettyHttpHandlerWrapper;
+import com.github.thmarx.cms.server.jetty.extension.JettyHttpHandlerWrapper;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,8 +60,7 @@ public class JettyExtensionHandler extends Handler.Abstract {
 
 	private String getExtensionName(Request request) {
 		var path = request.getHttpURI().getPath();
-		var contextPath = request.getContext().getContextPath();
-		path = path.replace(contextPath, "");
+		path = path.replace("/extension", "");
 		if (!path.startsWith("/")) {
 			path = "/" + path;
 		}

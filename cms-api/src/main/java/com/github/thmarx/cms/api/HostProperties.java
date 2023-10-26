@@ -21,6 +21,7 @@ package com.github.thmarx.cms.api;
  */
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
@@ -46,5 +47,8 @@ public class HostProperties {
 	}
 	public String markdownEngine () {
 		return (String)getSubMap("markdown").getOrDefault("engine", "flexmark");
+	}
+	public List<String> activeModules () {
+		return (List<String>)getSubMap("modules").getOrDefault("active", List.of());
 	}
 }

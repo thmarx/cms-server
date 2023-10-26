@@ -68,7 +68,7 @@ public class UndertowVHost extends VHost {
 		extensionHandler.get("/{name}", new UndertowExtensionsHttpHandler(extensionManager, "get"));
 		extensionHandler.post("/{name}", new UndertowExtensionsHttpHandler(extensionManager, "post"));
 
-		pathHandler.addPrefixPath("/extensions", extensionHandler);
+		pathHandler.addPrefixPath("/extension", extensionHandler);
 
 		return pathHandler;
 	}

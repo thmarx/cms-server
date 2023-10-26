@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.extensions.http.jetty;
+package com.github.thmarx.cms.server.jetty.extension;
 
 /*-
  * #%L
@@ -19,8 +19,8 @@ package com.github.thmarx.cms.extensions.http.jetty;
  * limitations under the License.
  * #L%
  */
-import com.github.thmarx.cms.extensions.http.Request;
-import com.github.thmarx.cms.server.jetty.JettyDefaultHandler;
+import com.github.thmarx.cms.api.extensions.http.Request;
+import com.github.thmarx.cms.server.jetty.handler.JettyDefaultHandler;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

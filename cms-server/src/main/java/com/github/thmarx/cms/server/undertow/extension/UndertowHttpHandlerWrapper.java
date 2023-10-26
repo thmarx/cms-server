@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.extensions.http.jetty;
+package com.github.thmarx.cms.server.undertow.extension;
 
 /*-
  * #%L
@@ -20,29 +20,23 @@ package com.github.thmarx.cms.extensions.http.jetty;
  * #L%
  */
 
-
-import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
+import com.github.thmarx.cms.api.extensions.http.ExtensionHttpHandler;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import lombok.RequiredArgsConstructor;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.util.Callback;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class JettyHttpHandlerWrapper extends Handler.Abstract {
+public class UndertowHttpHandlerWrapper implements HttpHandler {
 	
 	private final ExtensionHttpHandler handler;
-
+	
 	@Override
-	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		handler.execute(new JettyRequest(request), new JettyResponse(response, callback));
-		return true;
+	public void handleRequest(final HttpServerExchange exchange) throws Exception {
+		handler.execute(new UndertowRequest(exchange), new UndertowResponse(exchange));
 	}
-	
-	
 	
 }
