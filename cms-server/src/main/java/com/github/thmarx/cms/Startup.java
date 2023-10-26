@@ -20,11 +20,13 @@ package com.github.thmarx.cms;
  * #L%
  */
 
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.server.HttpServer;
 import com.github.thmarx.cms.server.jetty.JettyServer;
 import com.github.thmarx.cms.server.undertow.UndertowServer;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,18 +46,17 @@ public class Startup {
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
-		Properties properties = new Properties();
-		try (var inStream = new FileInputStream("application.properties")) {
-			properties.load(inStream);
-		}
-		DEV_MODE = Boolean.parseBoolean(properties.getProperty("dev", "false"));
+		System.out.println(Path.of("./").toAbsolutePath().toString());
+		ServerProperties properties = PropertiesLoader.serverProperties(Path.of("application.yaml"));
+		
+		DEV_MODE = properties.dev();
 
 		var server = getServerEngine(properties);
 		server.startup();
 	}
 	
-	private static HttpServer getServerEngine (Properties properties) {
-		var engine = properties.getProperty("server.engine", "jetty");
+	private static HttpServer getServerEngine (ServerProperties properties) {
+		var engine = properties.serverEngine();
 		log.debug("try to load engine: {}", engine);
 		return switch (engine) {
 			case "jetty" -> new JettyServer(properties);

@@ -20,12 +20,12 @@ package com.github.thmarx.cms.server.jetty;
  * #L%
  */
 
+import com.github.thmarx.cms.api.ServerProperties;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.server.HttpServer;
@@ -40,7 +40,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy;
 
 /**
  *
@@ -50,7 +49,7 @@ import org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy;
 @Slf4j
 public class JettyServer implements HttpServer {
 
-	private final Properties properties;
+	private final ServerProperties properties;
 	private Server server;
 
 	@Override
@@ -97,8 +96,8 @@ public class JettyServer implements HttpServer {
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
 
 		ServerConnector connector = new ServerConnector(server, http11);
-		connector.setPort(Integer.valueOf(properties.getProperty("server.port", "8080")));
-		connector.setHost(properties.getProperty("server.ip", "127.0.0.1"));
+		connector.setPort(properties.serverPort());
+		connector.setHost(properties.serverIp());
 
 		server.addConnector(connector);
 		

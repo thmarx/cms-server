@@ -17,17 +17,18 @@ We have to kinds of configuration, global and per host configurations.
 
 ### Global config
 
-First there is the application.properties. 
+First there is the application.yaml. 
 Here you can config the **port** and the **ip** the server will listen on.
 Your options for **server.engine** are _undertow_ and _jetty_.
 Setting the _dev_ mode to true, will disable most caches. For production you should definitly set this to false.
 
 **Example server config**
-```properties
-server.port=8080
-server.ip=127.0.0.1
-server.engine=jetty
-dev=true
+```yaml
+server:
+    port: 1010
+    ip: "127.0.0.1"
+    engine: jetty
+dev: true
 ```
 
 ### Per host config

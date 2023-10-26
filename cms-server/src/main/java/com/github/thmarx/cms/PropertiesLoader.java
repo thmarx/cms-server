@@ -21,6 +21,7 @@ package com.github.thmarx.cms;
  */
 
 import com.github.thmarx.cms.api.HostProperties;
+import com.github.thmarx.cms.api.ServerProperties;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -32,10 +33,15 @@ import org.yaml.snakeyaml.Yaml;
  *
  * @author t.marx
  */
-public abstract class HostPropertiesLoader {
+public abstract class PropertiesLoader {
 	
-	public static HostProperties load (Path path) throws IOException {
+	public static HostProperties hostProperties (Path path) throws IOException {
 		Map<String, Object> properties = new Yaml().load(Files.readString(path, StandardCharsets.UTF_8));
 		return new HostProperties(properties);
+	}
+	
+	public static ServerProperties serverProperties (Path path) throws IOException {
+		Map<String, Object> properties = new Yaml().load(Files.readString(path, StandardCharsets.UTF_8));
+		return new ServerProperties(properties);
 	}
 }

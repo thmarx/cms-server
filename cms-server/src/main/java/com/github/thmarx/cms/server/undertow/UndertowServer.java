@@ -20,6 +20,7 @@ package com.github.thmarx.cms.server.undertow;
  * #L%
  */
 
+import com.github.thmarx.cms.api.ServerProperties;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
@@ -28,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.server.HttpServer;
@@ -41,7 +41,7 @@ import com.github.thmarx.cms.server.HttpServer;
 @RequiredArgsConstructor
 public class UndertowServer implements HttpServer {
 
-	private final Properties properties;
+	private final ServerProperties properties;
 	private Undertow server;
 	
 	@Override
@@ -77,8 +77,8 @@ public class UndertowServer implements HttpServer {
 
 		server = Undertow.builder()
 				.addHttpListener(
-						Integer.valueOf(properties.getProperty("server.port", "8080")), 
-						properties.getProperty("server.ip", "127.0.0.1")
+						properties.serverPort(), 
+						properties.serverIp()
 				).setHandler(hostHandlers)
 				.setServerOption(UndertowOptions.URL_CHARSET, "UTF8")
 				.build();
