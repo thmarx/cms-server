@@ -14,11 +14,5 @@ nbactions-default.xml
 build
 .gradle
 target/
-db-data/
-mvstore-data/
-rocksdb-new-data/
-mapdb-data/
-rocksdb-data/
-fs-data/
 .vscode/
-hosts/marx-software
+server/hosts/marx-software

@@ -1,0 +1,12 @@
+<html>
+	<head>
+		<title>{{ meta.title }}</title>
+	</head>
+	<body>
+		{% set page = nodeList.list("/") %}
+		{% for node in page.items %}
+		<h3>{{ node.name }}</h3>
+		{% endfor %}
+
+	</body>
+</html>
