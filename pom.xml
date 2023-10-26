@@ -13,7 +13,8 @@
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 	</properties>
 	<modules>
-		<module>server</module>
+		<module>cms-api</module>
+	 <module>cms-server</module>
 	</modules>
 	<inceptionYear>2023</inceptionYear>
 	<organization>
@@ -22,6 +23,13 @@
 	
 	<dependencyManagement>
 		<dependencies>
+			
+			<dependency>
+				<groupId>com.github.thmarx.cms</groupId>
+				<artifactId>cms-api</artifactId>
+				<version>${project.version}</version>            
+			</dependency>
+			
 			<dependency>
 				<groupId>org.yaml</groupId>
 				<artifactId>snakeyaml</artifactId>

@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.github.thmarx.cms;
+package com.github.thmarx.cms.api;
 
 /*-
  * #%L
@@ -24,15 +20,9 @@ package com.github.thmarx.cms;
  * #L%
  */
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import lombok.RequiredArgsConstructor;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  *
@@ -41,17 +31,7 @@ import org.yaml.snakeyaml.Yaml;
 @RequiredArgsConstructor
 public class HostProperties {
 	
-	private Map<String, Object> properties;
-	
-	public HostProperties load (Path path) throws IOException {
-		if (this.properties != null) {
-			return this;
-		}
-		
-		this.properties = new Yaml().load(Files.readString(path, StandardCharsets.UTF_8));
-		
-		return this;
-	}
+	private final Map<String, Object> properties;
 	
 	public String hostname () {
 		return (String) properties.getOrDefault("hostname", "localhost");

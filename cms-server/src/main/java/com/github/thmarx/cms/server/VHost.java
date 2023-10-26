@@ -22,7 +22,8 @@ package com.github.thmarx.cms.server;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.ContentRenderer;
 import com.github.thmarx.cms.ContentResolver;
-import com.github.thmarx.cms.HostProperties;
+import com.github.thmarx.cms.api.HostProperties;
+import com.github.thmarx.cms.HostPropertiesLoader;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
@@ -88,7 +89,7 @@ public class VHost {
 		fileSystem.init();
 
 		var props = fileSystem.resolve("site.yaml");
-		properties = new HostProperties().load(props);
+		properties = HostPropertiesLoader.load(props);
 
 		hostname = properties.hostname();
 
