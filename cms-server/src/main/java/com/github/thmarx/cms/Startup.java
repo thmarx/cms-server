@@ -24,7 +24,6 @@ import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.server.HttpServer;
 import com.github.thmarx.cms.server.jetty.JettyServer;
 import com.github.thmarx.cms.server.undertow.UndertowServer;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -47,7 +46,7 @@ public class Startup {
 		System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
 		System.out.println(Path.of("./").toAbsolutePath().toString());
-		ServerProperties properties = PropertiesLoader.serverProperties(Path.of("application.yaml"));
+		ServerProperties properties = PropertiesLoader.serverProperties(Path.of("server.yaml"));
 		
 		DEV_MODE = properties.dev();
 
