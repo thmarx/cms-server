@@ -19,14 +19,10 @@ package com.github.thmarx.cms.modules.marked;
  * limitations under the License.
  * #L%
  */
-import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
-import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.modules.api.ModuleLifeCycleExtension;
 import com.github.thmarx.modules.api.annotation.Extension;
 import lombok.extern.slf4j.Slf4j;
-import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
-import org.graalvm.polyglot.HostAccess;
 
 /**
  *

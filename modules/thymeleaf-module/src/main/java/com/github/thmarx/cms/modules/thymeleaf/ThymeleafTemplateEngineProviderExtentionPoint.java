@@ -31,11 +31,9 @@ import com.github.thmarx.modules.api.annotation.Extension;
 @Extension(TemplateEngineProviderExtentionPoint.class)
 public class ThymeleafTemplateEngineProviderExtentionPoint extends TemplateEngineProviderExtentionPoint {
 
-	ThymeleafTemplateEngine templateEngine;
 	
 	@Override
 	public void init() {
-		templateEngine = new ThymeleafTemplateEngine(getContext().getFileSystem(), getContext().getServerProperties());
 	}
 
 	@Override
@@ -45,7 +43,7 @@ public class ThymeleafTemplateEngineProviderExtentionPoint extends TemplateEngin
 
 	@Override
 	public TemplateEngine getTemplateEngine() {
-		return templateEngine;
+		return ThymeleafLifecycleExtension.templateEngine;
 	}
 
 }

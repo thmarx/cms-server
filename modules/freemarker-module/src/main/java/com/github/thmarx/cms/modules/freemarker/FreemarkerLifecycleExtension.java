@@ -1,8 +1,12 @@
-package com.github.thmarx.cms.modules.pebble;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.github.thmarx.cms.modules.freemarker;
 
 /*-
  * #%L
- * example-module
+ * freemarker-module
  * %%
  * Copyright (C) 2023 Marx-Software
  * %%
@@ -20,29 +24,29 @@ package com.github.thmarx.cms.modules.pebble;
  * #L%
  */
 
-import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
-import com.github.thmarx.cms.api.template.TemplateEngine;
+import com.github.thmarx.cms.api.CMSModuleContext;
+import com.github.thmarx.modules.api.ModuleLifeCycleExtension;
 import com.github.thmarx.modules.api.annotation.Extension;
 
 /**
  *
  * @author t.marx
  */
-@Extension(TemplateEngineProviderExtentionPoint.class)
-public class PebbleTemplateEngineProviderExtentionPoint extends TemplateEngineProviderExtentionPoint {
+@Extension(ModuleLifeCycleExtension.class)
+public class FreemarkerLifecycleExtension extends ModuleLifeCycleExtension<CMSModuleContext> {
 
+	static FreemarkerTemplateEngine templateEngine;
+	
 	@Override
 	public void init() {
 	}
 
 	@Override
-	public String getName() {
-		return "pebble";
+	public void activate() {
+		templateEngine = new FreemarkerTemplateEngine(getContext().getFileSystem(), getContext().getServerProperties());
 	}
 
 	@Override
-	public TemplateEngine getTemplateEngine() {
-		return PebbleLifecycleExtension.templateEngine;
+	public void deactivate() {
 	}
-
 }

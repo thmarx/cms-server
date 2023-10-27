@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.modules.freemarker;
+package com.github.thmarx.cms.modules.flexmark;
 
 /*-
  * #%L
@@ -19,33 +19,30 @@ package com.github.thmarx.cms.modules.freemarker;
  * limitations under the License.
  * #L%
  */
-
-import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
-import com.github.thmarx.cms.api.template.TemplateEngine;
+import com.github.thmarx.modules.api.ModuleLifeCycleExtension;
 import com.github.thmarx.modules.api.annotation.Extension;
 
 /**
  *
  * @author t.marx
  */
-@Extension(TemplateEngineProviderExtentionPoint.class)
-public class ThymeleafTemplateEngineProviderExtentionPoint extends TemplateEngineProviderExtentionPoint {
+@Extension(ModuleLifeCycleExtension.class)
+public class FlexMarkRendererLifecycle extends ModuleLifeCycleExtension {
 
-	FreemarkerTemplateEngine templateEngine;
-	
+	protected static FlexMarkMarkdownRenderer renderer;
+
+	@Override
+	public void deactivate() {
+		renderer.close();
+	}
+
+	@Override
+	public void activate() {
+		renderer = new FlexMarkMarkdownRenderer();
+	}
+
 	@Override
 	public void init() {
-		templateEngine = new FreemarkerTemplateEngine(getContext().getFileSystem(), getContext().getServerProperties());
-	}
-
-	@Override
-	public String getName() {
-		return "thymeleaf";
-	}
-
-	@Override
-	public TemplateEngine getTemplateEngine() {
-		return templateEngine;
 	}
 
 }

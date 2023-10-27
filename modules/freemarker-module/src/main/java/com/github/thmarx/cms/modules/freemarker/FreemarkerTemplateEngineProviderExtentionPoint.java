@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.modules.pebble;
+package com.github.thmarx.cms.modules.freemarker;
 
 /*-
  * #%L
@@ -29,20 +29,22 @@ import com.github.thmarx.modules.api.annotation.Extension;
  * @author t.marx
  */
 @Extension(TemplateEngineProviderExtentionPoint.class)
-public class PebbleTemplateEngineProviderExtentionPoint extends TemplateEngineProviderExtentionPoint {
+public class FreemarkerTemplateEngineProviderExtentionPoint extends TemplateEngineProviderExtentionPoint {
 
+	
+	
 	@Override
 	public void init() {
 	}
 
 	@Override
 	public String getName() {
-		return "pebble";
+		return "freemarker";
 	}
 
 	@Override
 	public TemplateEngine getTemplateEngine() {
-		return PebbleLifecycleExtension.templateEngine;
+		return FreemarkerLifecycleExtension.templateEngine;
 	}
 
 }

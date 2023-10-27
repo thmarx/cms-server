@@ -31,7 +31,6 @@ import com.github.thmarx.modules.api.annotation.Extension;
 @Extension(MarkdownRendererProviderExtentionPoint.class)
 public class FlexmarkRendererProviderExtentionPoint extends MarkdownRendererProviderExtentionPoint {
 
-	private FlexMarkMarkdownRenderer renderer;
 	
 	@Override
 	public void init() {
@@ -45,10 +44,6 @@ public class FlexmarkRendererProviderExtentionPoint extends MarkdownRendererProv
 
 	@Override
 	public MarkdownRenderer getRenderer() {
-		if (renderer == null) {
-			renderer = new FlexMarkMarkdownRenderer();
-		}
-		
-		return renderer;
+		return FlexMarkRendererLifecycle.renderer;
 	}
 }
