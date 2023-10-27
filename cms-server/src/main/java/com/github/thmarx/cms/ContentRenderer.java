@@ -22,7 +22,9 @@ package com.github.thmarx.cms;
 
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
-import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.api.template.TemplateEngine;
+import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
+import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.utils.SectionUtil;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -57,7 +59,20 @@ public class ContentRenderer {
 		model.values.put("meta", content.meta());
 		model.values.put("content", context.renderContext().markdownRenderer().render(content.content()));
 		model.values.put("sections", sections);
-		return templates.render((String)content.meta().get("template"), model, context);
+		
+		model.values.put("navigation", new NavigationFunction(this.fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
+		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
+		model.values.put("requestContext", context);
+		
+		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
+			model.values.put(service.name(), service.supplier());
+		});
+
+		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
+			model.values.put(service.name(), service.function());
+		});
+		
+		return templates.render((String)content.meta().get("template"), model);
 	}
 	
 	public Map<String, List<Section>> renderSections (final List<MetaData.MetaNode> sectionNodes, final RequestContext context) throws IOException {

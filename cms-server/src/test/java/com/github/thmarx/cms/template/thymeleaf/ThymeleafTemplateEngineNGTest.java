@@ -25,7 +25,7 @@ import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
-import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -59,7 +59,7 @@ public class ThymeleafTemplateEngineNGTest extends TemplateEngineTest {
 		var model = new TemplateEngine.Model(null);
 		model.values.put("meta", Map.of("title", "Hello World"));
 		model.values.put("content", "The content!");
-		var html = templateEngine.render("test.html", model, requestContext());
+		var html = templateEngine.render("test.html", model);
 
 		var expected = """
                  <!DOCTYPE html>

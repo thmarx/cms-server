@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template;
+package com.github.thmarx.cms.api.template;
 
 /*-
  * #%L
@@ -20,8 +20,6 @@ package com.github.thmarx.cms.template;
  * #L%
  */
 
-import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
-import com.github.thmarx.cms.RequestContext;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -36,7 +34,7 @@ public interface TemplateEngine {
 	
 	public void invalidateCache();
 
-	String render(final String template, final FreemarkerTemplateEngine.Model model, final RequestContext context) throws IOException;
+	String render(final String template, final TemplateEngine.Model model) throws IOException;
 	
 	@RequiredArgsConstructor
 	public static class Model {

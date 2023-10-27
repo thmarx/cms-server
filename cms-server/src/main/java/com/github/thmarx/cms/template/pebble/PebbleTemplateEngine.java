@@ -22,12 +22,9 @@ package com.github.thmarx.cms.template.pebble;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.template.TemplateEngine;
-import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
-import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
+import com.github.thmarx.cms.api.template.TemplateEngine;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.cache.tag.CaffeineTagCache;
 import io.pebbletemplates.pebble.cache.template.CaffeineTemplateCache;
@@ -39,8 +36,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -93,26 +88,13 @@ public class PebbleTemplateEngine implements TemplateEngine {
 	}
 
 	@Override
-	public String render(String template, Model model, RequestContext context) throws IOException {
+	public String render(String template, Model model) throws IOException {
 
 		Writer writer = new StringWriter();
 
 		PebbleTemplate compiledTemplate = engine.getTemplate(template);
 
-		Map<String, Object> values = new HashMap<>(model.values);
-		values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
-		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
-		values.put("requestContext", context);
-		
-		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
-			values.put(service.name(), service.supplier());
-		});
-
-		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
-			values.put(service.name(), service.function());
-		});
-		
-		compiledTemplate.evaluate(writer, values);
+		compiledTemplate.evaluate(writer, model.values);
 
 		return writer.toString();
 

@@ -24,9 +24,7 @@ import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.template.TemplateEngine;
-import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
-import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
+import com.github.thmarx.cms.api.template.TemplateEngine;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.NullCacheStorage;
 import java.io.IOException;
@@ -36,7 +34,6 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
-import freemarker.template.TemplateModelException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -81,27 +78,7 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 	}
 
 	@Override
-	public String render(final String template, final FreemarkerTemplateEngine.Model model, final RequestContext context) throws IOException {
-		model.values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
-		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
-		model.values.put("requestContext", context);
-
-		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
-			try {
-				config.setSharedVariable(service.name(), service.supplier());
-			} catch (TemplateModelException ex) {
-				log.error(null, ex);
-			}
-		});
-
-		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
-			try {
-				config.setSharedVariable(service.name(), service.function());
-			} catch (TemplateModelException ex) {
-				log.error(null, ex);
-			}
-		});
-		
+	public String render(final String template, final FreemarkerTemplateEngine.Model model) throws IOException {
 		StringWriter out = new StringWriter();
 		try {
 			Template loadedTemplate = config.getTemplate(template);

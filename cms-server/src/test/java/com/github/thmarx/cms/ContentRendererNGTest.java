@@ -23,7 +23,7 @@ package com.github.thmarx.cms;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
-import com.github.thmarx.cms.template.TemplateEngine;
+import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import java.io.IOException;

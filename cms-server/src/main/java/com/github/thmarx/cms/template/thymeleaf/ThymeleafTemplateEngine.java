@@ -20,20 +20,15 @@ package com.github.thmarx.cms.template.thymeleaf;
  * #L%
  */
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.template.TemplateEngine;
-import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
-import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
+import com.github.thmarx.cms.api.template.TemplateEngine;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.context.Context;
@@ -73,24 +68,10 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 	}
 
 	@Override
-	public String render(String template, TemplateEngine.Model model, RequestContext context) throws IOException {
+	public String render(String template, TemplateEngine.Model model) throws IOException {
 
 		Writer writer = new StringWriter();
-
-		Map<String, Object> values = new HashMap<>(model.values);
-		values.put("navigation", new NavigationFunction(this.fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
-		values.put("nodeList", new NodeListFunctionBuilder(fileSystem, model.contentFile, contentParser, context.renderContext().markdownRenderer()));
-		values.put("requestContext", context);
-
-		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
-			values.put(service.name(), service.supplier());
-		});
-
-		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
-			values.put(service.name(), service.function());
-		});
-
-		engine.process(template, new Context(Locale.getDefault(), values), writer);
+		engine.process(template, new Context(Locale.getDefault(), model.values), writer);
 		return writer.toString();
 	}
 
