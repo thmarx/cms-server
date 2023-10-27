@@ -51,10 +51,6 @@
 			<artifactId>freemarker</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.pebbletemplates</groupId>
-			<artifactId>pebble</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf</artifactId>
 		</dependency>

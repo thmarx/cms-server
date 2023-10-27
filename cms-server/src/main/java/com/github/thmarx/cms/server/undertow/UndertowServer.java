@@ -51,7 +51,7 @@ public class UndertowServer implements HttpServer {
 			var props = hostPath.resolve("site.yaml");
 			if (Files.exists(props)) {
 				try {
-					UndertowVHost host = new UndertowVHost(hostPath);
+					UndertowVHost host = new UndertowVHost(hostPath, properties);
 					host.init(Path.of("modules"));
 					vhosts.add(host);
 				} catch (IOException ex) {

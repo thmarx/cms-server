@@ -19,6 +19,7 @@ package com.github.thmarx.cms.filesystem;
  * limitations under the License.
  * #L%
  */
+import com.github.thmarx.cms.api.ModuleFileSystem;
 import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.eventbus.EventBus;
@@ -48,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class FileSystem {
+public class FileSystem implements ModuleFileSystem {
 
 	private final Path hostBaseDirectory;
 	private final EventBus eventBus;
@@ -80,6 +81,7 @@ public class FileSystem {
 		}
 	}
 
+	@Override
 	public Path resolve(String path) {
 		return hostBaseDirectory.resolve(path);
 	}

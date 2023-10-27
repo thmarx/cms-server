@@ -17,3 +17,4 @@ target/
 .vscode/
 server/hosts/marx-software
 cms-server/modules/flexmark-module
+cms-server/modules/pebble-module

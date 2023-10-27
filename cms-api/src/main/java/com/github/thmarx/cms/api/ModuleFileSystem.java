@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
+ */
 package com.github.thmarx.cms.api;
 
 /*-
@@ -20,20 +24,14 @@ package com.github.thmarx.cms.api;
  * #L%
  */
 
-import com.github.thmarx.modules.api.Context;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.nio.file.Path;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class CMSModuleContext implements Context {
-	@Getter
-	private final HostProperties hostProperties;
-	@Getter
-	private final ServerProperties serverProperties;
-	@Getter
-	private final ModuleFileSystem fileSystem;
+public interface ModuleFileSystem {
+
+	Path resolve(String path);
+	
 }

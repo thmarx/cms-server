@@ -25,6 +25,7 @@ package com.github.thmarx.cms.server.undertow;
  */
 
 import com.github.thmarx.cms.Startup;
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.server.VHost;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
@@ -42,8 +43,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class UndertowVHost extends VHost {
 
-	public UndertowVHost(Path hostBase) {
-		super(hostBase);
+	public UndertowVHost(Path hostBase, ServerProperties serverProperties) {
+		super(hostBase, serverProperties);
 	}
 	public HttpHandler httpHandler() {
 		final PathResourceManager resourceManager = new PathResourceManager(assetBase);

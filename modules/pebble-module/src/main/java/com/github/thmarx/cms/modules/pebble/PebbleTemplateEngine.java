@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.pebble;
+package com.github.thmarx.cms.modules.pebble;
 
 /*-
  * #%L
@@ -21,9 +21,8 @@ package com.github.thmarx.cms.template.pebble;
  */
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.Startup;
-import com.github.thmarx.cms.filesystem.FileSystem;
+import com.github.thmarx.cms.api.ModuleFileSystem;
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.cache.tag.CaffeineTagCache;
@@ -46,15 +45,13 @@ public class PebbleTemplateEngine implements TemplateEngine {
 	private final PebbleEngine engine;
 	private final Path templateBase;
 	final Path contentBase; 
-	final ContentParser contentParser;
 
-	final FileSystem fileSystem;
+	final ModuleFileSystem fileSystem;
 	
-	public PebbleTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
+	public PebbleTemplateEngine(final ModuleFileSystem fileSystem, final ServerProperties properties) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
 		this.contentBase = fileSystem.resolve("content/");
-		this.contentParser = contentParser;
 		
 		var loader = new FileLoader();
 		loader.setPrefix(this.templateBase.toString() + File.separatorChar);
@@ -62,7 +59,7 @@ public class PebbleTemplateEngine implements TemplateEngine {
 		final PebbleEngine.Builder builder = new PebbleEngine.Builder()
 				.loader(loader);
 		
-		if (Startup.DEV_MODE) {
+		if (properties.dev()) {
 			builder.templateCache(null);
 			builder.tagCache(null);
 			builder.cacheActive(false);

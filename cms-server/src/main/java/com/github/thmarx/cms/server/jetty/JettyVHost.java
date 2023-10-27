@@ -20,6 +20,7 @@ package com.github.thmarx.cms.server.jetty;
  * #L%
  */
 
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.server.jetty.handler.JettyDefaultHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyModuleHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyExtensionHandler;
@@ -33,7 +34,6 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.PathMappingsHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.util.resource.PathResourceFactory;
 
 /**
  *
@@ -42,8 +42,8 @@ import org.eclipse.jetty.util.resource.PathResourceFactory;
 @Slf4j
 public class JettyVHost extends VHost {
 
-	public JettyVHost(Path hostBase) {
-		super(hostBase);
+	public JettyVHost(Path hostBase, ServerProperties serverProperties) {
+		super(hostBase, serverProperties);
 	}
 
 	public Handler httpHandler() {

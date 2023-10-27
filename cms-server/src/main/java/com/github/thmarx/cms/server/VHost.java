@@ -25,7 +25,9 @@ import com.github.thmarx.cms.ContentResolver;
 import com.github.thmarx.cms.api.HostProperties;
 import com.github.thmarx.cms.PropertiesLoader;
 import com.github.thmarx.cms.api.CMSModuleContext;
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
+import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
@@ -36,7 +38,6 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.markdown.MarkedMarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
-import com.github.thmarx.cms.template.pebble.PebbleTemplateEngine;
 import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
@@ -78,9 +79,12 @@ public class VHost {
 	
 	protected ModuleManager moduleManager;
 
-	public VHost(final Path hostBase) {
+	protected final ServerProperties serverProperties;
+	
+	public VHost(final Path hostBase, final ServerProperties serverProperties) {
 		this.eventBus = new EventBus();
 		this.fileSystem = new FileSystem(hostBase, eventBus);
+		this.serverProperties = serverProperties;
 	}
 
 	public void shutdown() {
@@ -105,7 +109,7 @@ public class VHost {
         this.moduleManager = ModuleManagerImpl.create(
 				modules.toFile(), 
 				fileSystem.resolve("modules_data").toFile(), 
-				new CMSModuleContext(properties), 
+				new CMSModuleContext(properties, serverProperties, fileSystem), 
 				classLoader
 		);
 		properties.activeModules().forEach(module_id -> {
@@ -144,11 +148,17 @@ public class VHost {
 
 	protected TemplateEngine resolveTemplateEngine() {
 		var engine = this.properties.templateEngine();
+		
+		List<TemplateEngineProviderExtentionPoint> extensions = moduleManager.extensions(TemplateEngineProviderExtentionPoint.class);
+		Optional<TemplateEngineProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
+		
+		if (extOpt.isPresent()) {
+			return extOpt.get().getTemplateEngine();
+		}
+		
 		return switch (engine) {
 			case "thymeleaf" ->
 				new ThymeleafTemplateEngine(fileSystem, contentParser);
-			case "pebble" ->
-				new PebbleTemplateEngine(fileSystem, contentParser);
 			default ->
 				new FreemarkerTemplateEngine(fileSystem, contentParser);
 		};

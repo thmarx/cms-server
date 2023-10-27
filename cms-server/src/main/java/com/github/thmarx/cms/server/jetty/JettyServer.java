@@ -59,7 +59,7 @@ public class JettyServer implements HttpServer {
 			var props = hostPath.resolve("site.yaml");
 			if (Files.exists(props)) {
 				try {
-					var host = new JettyVHost(hostPath);
+					var host = new JettyVHost(hostPath, properties);
 					host.init(Path.of("modules"));
 					vhosts.add(host);
 				} catch (IOException ex) {
