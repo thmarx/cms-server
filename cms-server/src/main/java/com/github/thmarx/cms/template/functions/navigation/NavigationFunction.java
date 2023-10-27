@@ -72,7 +72,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 				var position1 = NodeUtil.getMenuPosition(node1);
 				var position2 = NodeUtil.getMenuPosition(node2);
 				
-				int compare = Float.compare(position1, position2);
+				int compare = Double.compare(position1, position2);
 				
 				if (compare == 0) {
 					var name1 = NodeUtil.getName(node1);

@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.thymeleaf;
+package com.github.thmarx.cms.modules.thymeleaf;
 
 /*-
  * #%L
@@ -19,9 +19,9 @@ package com.github.thmarx.cms.template.thymeleaf;
  * limitations under the License.
  * #L%
  */
-import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.Startup;
-import com.github.thmarx.cms.filesystem.FileSystem;
+
+import com.github.thmarx.cms.api.ModuleFileSystem;
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,6 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
@@ -39,24 +38,24 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
  *
  * @author thmar
  */
-@Slf4j
+
 public class ThymeleafTemplateEngine implements TemplateEngine {
 
 	private final org.thymeleaf.TemplateEngine engine;
 	private final Path templateBase;
-	private final FileSystem fileSystem;
-	private final ContentParser contentParser;
+	private final ModuleFileSystem fileSystem;
+	private final ServerProperties serverProperties;
 
-	public ThymeleafTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
+	public ThymeleafTemplateEngine(final ModuleFileSystem fileSystem, final ServerProperties serverProperties) {
 		this.fileSystem = fileSystem;
 		this.templateBase = fileSystem.resolve("templates/");
-		this.contentParser = contentParser;
+		this.serverProperties = serverProperties;
 
 		var templateResolver = new FileTemplateResolver();
 		templateResolver.setTemplateMode(TemplateMode.HTML);
 		templateResolver.setPrefix(this.templateBase.toString() + File.separatorChar);
 		//templateResolver.setSuffix(".html");
-		if (Startup.DEV_MODE) {
+		if (serverProperties.dev()) {
 			templateResolver.setCacheable(false);
 		} else {
 			templateResolver.setCacheable(true);

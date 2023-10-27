@@ -7,3 +7,6 @@ modules:
   active:
     - example-module
     - flexmark-module
+    - pebble-module
+    - thymeleaf-module
+    - freemarker-module

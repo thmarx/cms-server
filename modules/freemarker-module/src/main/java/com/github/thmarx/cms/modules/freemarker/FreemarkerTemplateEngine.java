@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.freemarker;
+package com.github.thmarx.cms.modules.freemarker;
 
 /*-
  * #%L
@@ -20,10 +20,8 @@ package com.github.thmarx.cms.template.freemarker;
  * #L%
  */
 
-import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.RequestContext;
-import com.github.thmarx.cms.Startup;
-import com.github.thmarx.cms.filesystem.FileSystem;
+import com.github.thmarx.cms.api.ModuleFileSystem;
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.NullCacheStorage;
@@ -34,20 +32,16 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class FreemarkerTemplateEngine implements TemplateEngine {
 
 	private final Configuration config;
 
-	private final ContentParser contentParser;
 
-	final FileSystem fileSystem;
+	final ModuleFileSystem fileSystem;
 
-	public FreemarkerTemplateEngine(final FileSystem fileSystem, final ContentParser contentParser) {
+	public FreemarkerTemplateEngine(final ModuleFileSystem fileSystem, final ServerProperties serverProperties) {
 		this.fileSystem = fileSystem;
-		this.contentParser = contentParser;
 
 		config = new Configuration(Configuration.VERSION_2_3_32);
 
@@ -63,7 +57,7 @@ public class FreemarkerTemplateEngine implements TemplateEngine {
 		config.setWrapUncheckedExceptions(true);
 		config.setFallbackOnNullLoopVariable(false);
 
-		if (Startup.DEV_MODE) {
+		if (serverProperties.dev()) {
 			config.setCacheStorage(new NullCacheStorage());
 			config.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
 		} else {

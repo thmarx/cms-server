@@ -19,12 +19,11 @@ package com.github.thmarx.cms.utils;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.filesystem.MetaData;
+import java.util.Collections;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import ognl.Ognl;
-import ognl.OgnlException;
 
 /**
  *
@@ -33,45 +32,29 @@ import ognl.OgnlException;
 @Slf4j
 public class NodeUtil {
 
-	private static Object menuTitleExpression;
-	private static Object menuPositionExpression;
-	static {
-		try {
-			menuTitleExpression = Ognl.parseExpression("data['menu']!=null ? data.menu['title'] : null");
-			menuPositionExpression = Ognl.parseExpression("data['menu']!=null ? data.menu['position'] : null");
-		} catch (OgnlException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-	
 	public static String getName(MetaData.MetaNode node) {
-		try {
-			var context = Ognl.createDefaultContext(node);
-			String menuTitle = (String) Ognl.getValue(menuTitleExpression, context, node, String.class);
-			if (menuTitle != null) {
-				return menuTitle;
-			}
-			if (node.data().containsKey("title")) {
-				return (String) node.data().get("title");
-			}
-			
-			
-		} catch (OgnlException ex) {
-			log.error("error getting name", ex);
+
+		Map<String, Object> menu = (Map<String, Object>) node.data().getOrDefault("menu", Collections.EMPTY_MAP);
+
+		if (menu.containsKey("title")) {
+			return (String) menu.get("title");
 		}
+		if (node.data().containsKey("title")) {
+			return (String) node.data().get("title");
+		}
+
 		return node.name();
 	}
-	
-	public static float getMenuPosition (MetaData.MetaNode node) {
-		try {
-			var context = Ognl.createDefaultContext(node);
-			Float menuPosition = (Float) Ognl.getValue(menuPositionExpression, context, node, Float.class);
-			if (menuPosition != null) {
-				return menuPosition;
-			}
-		} catch (OgnlException ex) {
-			log.error("error getting menu position", ex);
+
+	public static Double getMenuPosition(MetaData.MetaNode node) {
+
+		Map<String, Object> menu = (Map<String, Object>) node.data().getOrDefault("menu", Collections.EMPTY_MAP);
+
+		if (menu.containsKey("position")) {
+			var number = (Number) menu.get("position");
+			return number.doubleValue();
 		}
+
 		return Constants.DEFAULT_MENU_POSITION;
 	}
 }

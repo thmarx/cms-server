@@ -19,14 +19,12 @@ package com.github.thmarx.cms;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
-import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -41,36 +39,36 @@ import org.testng.annotations.Test;
  * @author t.marx
  */
 public class SectionsTest extends TemplateEngineTest {
-	
-		ContentRenderer contentRenderer;
+
+	ContentRenderer contentRenderer;
 	private MarkdownRenderer markdownRenderer;
 	private FileSystem fileSystem;
-	
+
 	@BeforeClass
-	public void beforeClass () throws IOException {
+	public void beforeClass() throws IOException {
 		fileSystem = new FileSystem(Path.of("hosts/test/"), new EventBus());
 		fileSystem.init();
 		var contentParser = new ContentParser(fileSystem);
 		markdownRenderer = TestHelper.getRenderer();
-		TemplateEngine templates = new FreemarkerTemplateEngine(fileSystem, contentParser);
-		
+		TemplateEngine templates = new TestTemplateEngine(fileSystem);
+
 		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem);
 	}
-	
+
 	@Test
 	public void test_sections() throws IOException {
 		List<MetaData.MetaNode> listSections = fileSystem.listSections(fileSystem.resolve("content/page.md"));
 		Assertions.assertThat(listSections).hasSize(4);
-		
+
 		Map<String, List<ContentRenderer.Section>> renderSections = contentRenderer.renderSections(listSections, requestContext());
-		
+
 		Assertions.assertThat(renderSections)
 				.hasSize(1)
 				.containsKey("left");
-		
+
 		Assertions.assertThat(renderSections.get("left"))
 				.hasSize(4);
-		
+
 		var sectionIndexes = renderSections.get("left").stream().map(section -> section.index()).collect(Collectors.toList());
 		Assertions.assertThat(sectionIndexes).containsExactly(0, 1, 2, 10);
 	}

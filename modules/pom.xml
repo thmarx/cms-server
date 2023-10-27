@@ -14,5 +14,7 @@
 		<module>example-module</module>
 		<module>flexmark-module</module>
 		<module>pebble-module</module>
+		<module>thymeleaf-module</module>
+		<module>freemarker-module</module>
 	</modules>
 </project>

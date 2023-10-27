@@ -25,7 +25,6 @@ import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
-import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
@@ -46,7 +45,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test/"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
 		markdownRenderer = TestHelper.getRenderer();
-		TemplateEngine templates = new FreemarkerTemplateEngine(fileSystem, contentParser);
+		TemplateEngine templates = new TestTemplateEngine(fileSystem);
 		
 		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem);
 	}

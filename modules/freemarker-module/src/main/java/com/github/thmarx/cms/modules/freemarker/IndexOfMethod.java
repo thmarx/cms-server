@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.freemarker;
+package com.github.thmarx.cms.modules.freemarker;
 
 /*-
  * #%L

@@ -37,8 +37,6 @@ import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.markdown.MarkedMarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
-import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
-import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
 import com.github.thmarx.modules.manager.ModuleManagerImpl;
@@ -104,8 +102,11 @@ public class VHost {
 		properties = PropertiesLoader.hostProperties(props);
 
 		var classLoader = new ModuleAPIClassLoader(ClassLoader.getSystemClassLoader(), 
-				List.of("org.slf4j", "com.github.thmarx.cms", "com.github.thmarx.moduls")
-		);
+				List.of(
+						"org.slf4j", 
+						"com.github.thmarx.cms",
+						"org.apache.logging"
+		));
         this.moduleManager = ModuleManagerImpl.create(
 				modules.toFile(), 
 				fileSystem.resolve("modules_data").toFile(), 
@@ -154,14 +155,9 @@ public class VHost {
 		
 		if (extOpt.isPresent()) {
 			return extOpt.get().getTemplateEngine();
+		} else {
+			throw new RuntimeException("no template engine found");
 		}
-		
-		return switch (engine) {
-			case "thymeleaf" ->
-				new ThymeleafTemplateEngine(fileSystem, contentParser);
-			default ->
-				new FreemarkerTemplateEngine(fileSystem, contentParser);
-		};
 	}
 
 	protected MarkdownRenderer resolveMarkdownRenderer(final Context context) {
