@@ -30,10 +30,16 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
  *
  * @author t.marx
  */
-public abstract class TestHelper {
+public class TestMarkdownRenderer implements MarkdownRenderer {
 
-	public static MarkdownRenderer getRenderer() {
-		return new TestMarkdownRenderer();
+	@Override
+	public String excerpt(String markdown, int length) {
+		return markdown;
 	}
 
+	@Override
+	public String render(String markdown) {
+		return markdown;
+	}
+	
 }

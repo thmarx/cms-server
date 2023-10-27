@@ -58,7 +58,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
                      		<title>Startseite</title>
                      	</head>
 						<body>
-                            <p>Und hier der Inhalt</p>
+                            Und hier der Inhalt
 						</body>
                      </html>
                      """;
@@ -75,7 +75,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
                      		<title>ProduktSeite</title>
                      	</head>
 						<body>
-							<p>Das ist ein Produkt!</p>
+							Das ist ein Produkt!
                      	</body>
                      </html>
                      """;

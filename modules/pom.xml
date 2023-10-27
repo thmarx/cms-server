@@ -16,5 +16,6 @@
 		<module>pebble-module</module>
 		<module>thymeleaf-module</module>
 		<module>freemarker-module</module>
+	 <module>markedjs-module</module>
 	</modules>
 </project>

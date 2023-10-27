@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown;
+package com.github.thmarx.cms.modules.marked;
 
 /*-
  * #%L
@@ -54,6 +54,13 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 			throw new RuntimeException(ex);
 		}
 	}
+
+	@Override
+	public void close() {
+		context.close(true);
+	}
+	
+	
 	
 	@Override
 	public String excerpt(String markdown, int length) {

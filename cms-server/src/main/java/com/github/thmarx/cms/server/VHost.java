@@ -35,7 +35,6 @@ import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
-import com.github.thmarx.cms.markdown.MarkedMarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
@@ -169,9 +168,7 @@ public class VHost {
 		if (extOpt.isPresent()) {
 			return extOpt.get().getRenderer();
 		} else {
-			return new MarkedMarkdownRenderer(context);
+			throw new RuntimeException("no markdown renderer found");
 		}
 	}
-
-	
 }

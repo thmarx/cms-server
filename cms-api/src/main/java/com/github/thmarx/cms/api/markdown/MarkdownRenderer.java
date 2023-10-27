@@ -24,10 +24,12 @@ package com.github.thmarx.cms.api.markdown;
  *
  * @author t.marx
  */
-public interface MarkdownRenderer {
+public interface MarkdownRenderer extends AutoCloseable {
 
 	String excerpt(final String markdown, final int length);
 
 	String render(final String markdown);
 	
+	@Override
+	default void close () {}
 }

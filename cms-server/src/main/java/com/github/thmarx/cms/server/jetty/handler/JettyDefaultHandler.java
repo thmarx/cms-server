@@ -19,7 +19,6 @@ package com.github.thmarx.cms.server.jetty.handler;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.ContentResolver;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.RequestContext;
@@ -78,14 +77,17 @@ public class JettyDefaultHandler extends Handler.Abstract {
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
 		var uri = request.getHttpURI().getPath();
 		var queryParameters = queryParameters(request.getHttpURI().getQuery());
-		try (var contextHolder = manager.newContext()) {
+		try (
+				var contextHolder = manager.newContext(); 
+				final MarkdownRenderer markdownRenderer = markdownRendererProvider.apply(contextHolder.getContext());) {
+
 			RequestContext context = new RequestContext(uri, queryParameters,
-					new RenderContext(contextHolder, markdownRendererProvider.apply(contextHolder.getContext())));
+					new RenderContext(contextHolder, markdownRenderer));
 			Optional<String> content = contentResolver.getContent(context);
 			response.setStatus(200);
 			if (!content.isPresent()) {
 				context = new RequestContext("/.technical/404", queryParameters,
-						new RenderContext(contextHolder, markdownRendererProvider.apply(contextHolder.getContext())));
+						new RenderContext(contextHolder, markdownRenderer));
 				content = contentResolver.getContent(context);
 				response.setStatus(404);
 			}
