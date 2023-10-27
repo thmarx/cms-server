@@ -47,8 +47,6 @@ public class JettyVHost extends VHost {
 	}
 
 	public Handler httpHandler() {
-		final PathResourceFactory pathResourceFactory = new PathResourceFactory();
-		
 		var defaultHandler = new JettyDefaultHandler(contentResolver, extensionManager, (context) -> {
 			return resolveMarkdownRenderer(context);
 		});

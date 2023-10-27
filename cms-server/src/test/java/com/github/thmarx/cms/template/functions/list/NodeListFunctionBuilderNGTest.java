@@ -21,7 +21,7 @@ package com.github.thmarx.cms.template.functions.list;
  */
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
+import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class NodeListFunctionBuilderNGTest {
 		fileSystem = new FileSystem(Path.of("hosts/test"), new EventBus());
 		fileSystem.init();
 		ContentParser parser = new ContentParser(fileSystem);
-		FlexMarkMarkdownRenderer markdownRenderer = new FlexMarkMarkdownRenderer();
+		var markdownRenderer = TestHelper.getRenderer();
 		nodeList = new NodeListFunctionBuilder(fileSystem, fileSystem.resolve("content/").resolve("index.md"), parser, markdownRenderer);
 	}
 	@AfterClass

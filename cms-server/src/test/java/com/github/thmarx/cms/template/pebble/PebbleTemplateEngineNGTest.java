@@ -21,12 +21,10 @@ package com.github.thmarx.cms.template.pebble;
  */
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.RenderContext;
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
+import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.eventbus.EventBus;
-import com.github.thmarx.cms.extensions.ExtensionHolder;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
 import java.io.IOException;
@@ -49,7 +47,7 @@ public class PebbleTemplateEngineNGTest extends TemplateEngineTest {
 	public void setup () {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test_pebble/"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
-		markdownRenderer = new FlexMarkMarkdownRenderer();
+		markdownRenderer = TestHelper.getRenderer();
 		templateEngine = new PebbleTemplateEngine(fileSystem, contentParser);
 	}
 

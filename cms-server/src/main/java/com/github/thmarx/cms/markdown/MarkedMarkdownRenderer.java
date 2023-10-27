@@ -20,6 +20,7 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;

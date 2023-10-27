@@ -1,8 +1,9 @@
 hostname: localhost
 template:
   engine: thymeleaf
-markdownd:
-  engine: marked
+markdown:
+  engine: flexmark
 modules:
   active:
     - example-module
+    - flexmark-module

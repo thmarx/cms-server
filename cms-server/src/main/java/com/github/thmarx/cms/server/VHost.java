@@ -25,14 +25,14 @@ import com.github.thmarx.cms.ContentResolver;
 import com.github.thmarx.cms.api.HostProperties;
 import com.github.thmarx.cms.PropertiesLoader;
 import com.github.thmarx.cms.api.CMSModuleContext;
+import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.eventbus.EventListener;
 import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.markdown.MarkedMarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
@@ -41,12 +41,10 @@ import com.github.thmarx.cms.template.thymeleaf.ThymeleafTemplateEngine;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
 import com.github.thmarx.modules.manager.ModuleManagerImpl;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
@@ -158,14 +156,15 @@ public class VHost {
 
 	protected MarkdownRenderer resolveMarkdownRenderer(final Context context) {
 		var engine = this.properties.markdownEngine();
-		return switch (engine) {
-			case "flexmark" ->
-				new FlexMarkMarkdownRenderer();
-			case "marked" ->
-				new MarkedMarkdownRenderer(context);
-			default ->
-				new FlexMarkMarkdownRenderer();
-		};
+		
+		List<MarkdownRendererProviderExtentionPoint> extensions = moduleManager.extensions(MarkdownRendererProviderExtentionPoint.class);
+		Optional<MarkdownRendererProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
+		
+		if (extOpt.isPresent()) {
+			return extOpt.get().getRenderer();
+		} else {
+			return new MarkedMarkdownRenderer(context);
+		}
 	}
 
 	

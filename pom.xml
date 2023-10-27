@@ -63,21 +63,6 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.vladsch.flexmark</groupId>
-				<artifactId>flexmark</artifactId>
-				<version>0.64.8</version>
-			</dependency>
-			<dependency>
-				<groupId>com.vladsch.flexmark</groupId>
-				<artifactId>flexmark-ext-tables</artifactId>
-				<version>0.64.8</version>
-			</dependency>
-			<dependency>
-				<groupId>com.vladsch.flexmark</groupId>
-				<artifactId>flexmark-ext-anchorlink</artifactId>
-				<version>0.64.8</version>
-			</dependency>
-			<dependency>
 				<groupId>org.freemarker</groupId>
 				<artifactId>freemarker</artifactId>
 				<version>2.3.32</version>

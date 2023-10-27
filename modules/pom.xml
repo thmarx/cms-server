@@ -12,5 +12,6 @@
 	
 	<modules>
 		<module>example-module</module>
+		<module>flexmark-module</module>
 	</modules>
 </project>

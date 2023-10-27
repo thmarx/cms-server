@@ -20,10 +20,9 @@ package com.github.thmarx.cms;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
 import com.github.thmarx.cms.template.freemarker.FreemarkerTemplateEngine;
@@ -46,7 +45,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 	public void beforeClass () throws IOException {
 		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test/"), new EventBus());
 		var contentParser = new ContentParser(fileSystem);
-		markdownRenderer = new FlexMarkMarkdownRenderer();
+		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new FreemarkerTemplateEngine(fileSystem, contentParser);
 		
 		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem);

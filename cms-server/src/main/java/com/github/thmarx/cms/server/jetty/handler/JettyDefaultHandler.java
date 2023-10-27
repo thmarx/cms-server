@@ -24,7 +24,7 @@ import com.github.thmarx.cms.ContentResolver;
 import com.github.thmarx.cms.RenderContext;
 import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.extensions.ExtensionManager;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.google.common.base.Strings;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;

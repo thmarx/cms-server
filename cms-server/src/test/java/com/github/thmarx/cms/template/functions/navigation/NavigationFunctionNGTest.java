@@ -36,7 +36,7 @@ package com.github.thmarx.cms.template.functions.navigation;
  */
 
 import com.github.thmarx.cms.ContentParser;
-import com.github.thmarx.cms.markdown.FlexMarkMarkdownRenderer;
+import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
@@ -59,7 +59,7 @@ public class NavigationFunctionNGTest {
 	void init() throws IOException {
 		FileSystem fileSystem = new FileSystem(Path.of("hosts/test"), new EventBus());
 		fileSystem.init();
-		FlexMarkMarkdownRenderer markdownRenderer = new FlexMarkMarkdownRenderer();
+		var markdownRenderer = TestHelper.getRenderer();
 		navigationFunction = new NavigationFunction(fileSystem, Path.of("hosts/test/content/nav/index.md"), new ContentParser(fileSystem),
 				markdownRenderer);
 	}

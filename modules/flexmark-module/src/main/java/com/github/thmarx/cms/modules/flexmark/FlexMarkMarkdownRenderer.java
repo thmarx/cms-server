@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown;
+package com.github.thmarx.cms.modules.flexmark;
 
 /*-
  * #%L
@@ -20,6 +20,7 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;

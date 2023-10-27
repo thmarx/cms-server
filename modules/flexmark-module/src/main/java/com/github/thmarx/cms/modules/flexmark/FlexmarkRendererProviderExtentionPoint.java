@@ -1,8 +1,8 @@
-package com.github.thmarx.cms;
+package com.github.thmarx.cms.modules.flexmark;
 
 /*-
  * #%L
- * cms-server
+ * example-module
  * %%
  * Copyright (C) 2023 Marx-Software
  * %%
@@ -20,16 +20,35 @@ package com.github.thmarx.cms;
  * #L%
  */
 
-import com.github.thmarx.cms.extensions.ExtensionHolder;
+import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
-import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.modules.api.annotation.Extension;
 
 /**
  *
  * @author t.marx
  */
- @Slf4j
-public record RenderContext(ExtensionHolder extensionHolder, MarkdownRenderer markdownRenderer) {
+@Extension(MarkdownRendererProviderExtentionPoint.class)
+public class FlexmarkRendererProviderExtentionPoint extends MarkdownRendererProviderExtentionPoint {
+
+	private FlexMarkMarkdownRenderer renderer;
 	
-	
+	@Override
+	public void init() {
+		
+	}
+
+	@Override
+	public String getName() {
+		return "flexmark";
+	}
+
+	@Override
+	public MarkdownRenderer getRenderer() {
+		if (renderer == null) {
+			renderer = new FlexMarkMarkdownRenderer();
+		}
+		
+		return renderer;
+	}
 }

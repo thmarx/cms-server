@@ -21,7 +21,7 @@ package com.github.thmarx.cms.server.undertow;
  */
 import com.github.thmarx.cms.*;
 import com.github.thmarx.cms.extensions.ExtensionManager;
-import com.github.thmarx.cms.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
