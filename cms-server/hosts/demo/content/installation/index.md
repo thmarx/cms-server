@@ -41,7 +41,7 @@ Your options here are currently _freemarker_, _thymeleaf_ and _pebble_.
 Default template engine is _freemarker_.  
 *markdown.engine* the markdown rendering engine used for this virtual host.
 Options are _flexmark_ and _markd_.
-Default markdown engine is _flexmark_.
+Default markdown engine is _markd_.
 
 **Example host config**
 ```yaml
@@ -50,6 +50,9 @@ template:
   engine: thymeleaf
 markdown:
   engine: flexmark
+modules:
+  active:
+    - flexmark-module
 ```
 
 ## Starting
