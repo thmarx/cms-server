@@ -21,6 +21,12 @@
 				<include>demo/**/*</include>
 			</includes>
 		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/modules</directory>
+			<includes>
+				<include>**/*</include>
+			</includes>
+		</fileSet>
 	</fileSets>
 	<files>
 		<file>

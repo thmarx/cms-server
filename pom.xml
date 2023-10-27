@@ -194,4 +194,10 @@
 			<url>https://maven.pkg.github.com/thmarx/modules/</url>
 		</repository>
 	</repositories>
+	
+	<profiles>
+		<profile>
+			<id>dist</id>
+		</profile>
+	</profiles>
 </project>
