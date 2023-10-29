@@ -14,11 +14,10 @@ nbactions-default.xml
 build
 .gradle
 target/
-db-data/
-mvstore-data/
-rocksdb-new-data/
-mapdb-data/
-rocksdb-data/
-fs-data/
 .vscode/
-hosts/marx-software
+server/hosts/marx-software
+cms-server/modules/flexmark-module
+cms-server/modules/markedjs-module
+cms-server/modules/pebble-module
+cms-server/modules/thymeleaf-module
+cms-server/modules/freemarker-module

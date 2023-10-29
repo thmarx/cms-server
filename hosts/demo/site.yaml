@@ -1,5 +1,0 @@
-hostname: localhost
-template:
-  engine: thymeleaf
-markdownd:
-  engine: marked

@@ -1,0 +1,13 @@
+hostname: localhost
+template:
+  engine: thymeleaf
+markdown:
+  engine: markedjs
+modules:
+  active:
+    - example-module
+    - flexmark-module
+    - markedjs-module
+    - pebble-module
+    - thymeleaf-module
+    - freemarker-module

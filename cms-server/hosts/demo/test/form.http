@@ -1,0 +1,5 @@
+POST http://localhost:1010/extension/form
+
+{
+    "form": "contact"
+}
