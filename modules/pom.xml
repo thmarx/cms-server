@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.github.thmarx.cms</groupId>
-        <artifactId>cms-parent</artifactId>
-        <version>2.0.0</version>
-    </parent>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.github.thmarx.cms</groupId>
+		<artifactId>cms-parent</artifactId>
+		<version>2.0.0</version>
+	</parent>
 	<groupId>com.github.thmarx.cms.modules</groupId>
-    <artifactId>cms-modules</artifactId>
-    <packaging>pom</packaging>
+	<artifactId>cms-modules</artifactId>
+	<packaging>pom</packaging>
+	
+	<properties>
+		<cms.version>2.0.0</cms.version>
+	</properties>
 	
 	<modules>
 		<module>example-module</module>
@@ -16,6 +20,13 @@
 		<module>pebble-module</module>
 		<module>thymeleaf-module</module>
 		<module>freemarker-module</module>
-	 <module>markedjs-module</module>
+		<module>markedjs-module</module>
 	</modules>
+	<dependencyManagement>
+		<dependency>
+			<groupId>com.github.thmarx.cms</groupId>
+			<artifactId>cms-api</artifactId>
+			<version>${cms.version}</version>            
+		</dependency>
+	</dependencyManagement>
 </project>
