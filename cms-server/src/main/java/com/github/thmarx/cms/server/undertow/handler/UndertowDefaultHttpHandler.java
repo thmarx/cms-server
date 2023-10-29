@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.undertow;
+package com.github.thmarx.cms.server.undertow.handler;
 
 /*-
  * #%L

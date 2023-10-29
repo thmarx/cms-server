@@ -24,9 +24,12 @@ package com.github.thmarx.cms.server.undertow;
  * #L%
  */
 
+import com.github.thmarx.cms.server.undertow.handler.UndertowExtensionsHttpHandler;
+import com.github.thmarx.cms.server.undertow.handler.UndertowDefaultHttpHandler;
 import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.server.VHost;
+import com.github.thmarx.cms.server.undertow.handler.UndertowModuleHttpHandler;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
@@ -68,9 +71,13 @@ public class UndertowVHost extends VHost {
 		RoutingHandler extensionHandler = Handlers.routing();
 		extensionHandler.get("/{name}", new UndertowExtensionsHttpHandler(extensionManager, "get"));
 		extensionHandler.post("/{name}", new UndertowExtensionsHttpHandler(extensionManager, "post"));
-
 		pathHandler.addPrefixPath("/extension", extensionHandler);
 
+		RoutingHandler moduleHandler = Handlers.routing();
+		moduleHandler.get("/{module}/*", new UndertowModuleHttpHandler(moduleManager, "get"));
+		moduleHandler.post("/{module}/*", new UndertowModuleHttpHandler(moduleManager, "post"));
+		pathHandler.addPrefixPath("/module", moduleHandler);
+		
 		return pathHandler;
 	}
 }
