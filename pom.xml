@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.thmarx.cms</groupId>
 	<artifactId>cms-parent</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
+	<version>2.1.0</version>
 	<packaging>pom</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -171,18 +171,8 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>3.0.1</version>
-			</plugin>
 		</plugins>
 	</build>
-	
-	<scm>
-		<developerConnection>scm:git:https://github.com/thmarx/cms.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
 	
 	<repositories>
 		<repository>
