@@ -6,7 +6,7 @@
 	<link rel="canonical" th:href="${site.get('baseurl')} + ${requestContext.uri}" />
 	<link rel="shortcut icon" href="/favicon.ico" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-		
+
 	<link rel="stylesheet" href="/assets/bootstrap-5.3.2/css/bootstrap.min.css" defer />
 	<script src="/assets/prism-1.29.0/prism.js" defer></script>
 	<link rel="stylesheet" href="/assets/prism-1.29.0/prism.css" defer />
@@ -34,6 +34,18 @@
 			</div>
 		</div>
 	</nav>
+
+	<div class="container" th:fragment="footer">
+		<footer class="py-3 my-4">
+			<ul th:with="nodes=${navigation.list('/')}" class="nav justify-content-center border-bottom pb-3 mb-3">
+				<li th:each="node : ${nodes}" th:if="${node.path} != '/'" class="nav-item">
+					<a th:attr="aria-current=${node.current ? 'page' : ''}" th:classappend="${node.current}? 'active'"
+						class="nav-link px-2 text-muted" th:href="${node.path}" th:text="${node.name}"></a>
+				</li>
+			</ul>
+			<p class="text-center text-muted">© 2023 NoCompany, No-Inc</p>
+		</footer>
+	</div>
 
 	<th:block th:fragment="footer_scripts">
 		<script src="/assets/bootstrap-5.3.2/js/bootstrap.bundle.min.js"></script>

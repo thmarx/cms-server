@@ -9,6 +9,9 @@
 		<nav th:replace="libs/header.html :: navigation"></nav>
 
 		<div class="container" th:utext="${content}"></div>
+
+		<th:block th:replace="libs/header.html :: footer"></th:block>
+
 	</body>
 
 	<script th:replace="libs/header.html :: footer_scripts">
