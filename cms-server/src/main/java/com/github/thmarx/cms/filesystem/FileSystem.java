@@ -201,7 +201,7 @@ public class FileSystem implements ModuleFileSystem {
 		var templateBase = resolve("templates/");
 		log.debug("init filewatcher");
 		this.fileWatcher = new MultiRootRecursiveWatcher(List.of(contentBase, templateBase));
-		fileWatcher.getPublisher(contentBase).subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
+		fileWatcher.getPublisher(contentBase).subscribe(new MultiRootRecursiveWatcher.AbstractFileEventSubscriber() {
 			@Override
 			public void onNext(FileEvent item) {
 				try {
@@ -218,7 +218,7 @@ public class FileSystem implements ModuleFileSystem {
 				this.subscription.request(1);
 			}
 		});
-		fileWatcher.getPublisher(templateBase).subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
+		fileWatcher.getPublisher(templateBase).subscribe(new MultiRootRecursiveWatcher.AbstractFileEventSubscriber() {
 			@Override
 			public void onNext(FileEvent item) {
 				eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
