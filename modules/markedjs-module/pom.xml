@@ -29,11 +29,13 @@
 			<groupId>org.graalvm.polyglot</groupId>
 			<artifactId>polyglot</artifactId>
 			<version>23.1.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.graalvm.js</groupId>
 			<artifactId>js-language</artifactId>
 			<version>23.1.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>

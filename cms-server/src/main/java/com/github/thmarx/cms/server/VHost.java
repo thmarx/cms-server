@@ -104,7 +104,9 @@ public class VHost {
 				List.of(
 						"org.slf4j", 
 						"com.github.thmarx.cms",
-						"org.apache.logging"
+						"org.apache.logging",
+						"org.graalvm.polyglot",
+						"org.graalvm.js"
 		));
         this.moduleManager = ModuleManagerImpl.create(
 				modules.toFile(), 
