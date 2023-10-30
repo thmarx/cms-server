@@ -6,7 +6,7 @@ markdown:
 modules:
   active:
     - example-module
-    - flexmark-module
+#    - flexmark-module
     - markedjs-module
     - pebble-module
     - thymeleaf-module

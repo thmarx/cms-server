@@ -114,7 +114,19 @@ public class VHost {
 		);
 		properties.activeModules().forEach(module_id -> {
 			try {
+				log.debug("activate module {}", module_id);
 				moduleManager.activateModule(module_id);
+			} catch (IOException ex) {
+				log.error(null, ex);
+			}
+		});
+		
+		moduleManager.getModuleIds().stream()
+				.filter(id -> !properties.activeModules().contains(id))
+				.forEach((module_id) -> {
+			try {
+				log.debug("deactivate module {}", module_id);
+				moduleManager.deactivateModule(module_id);
 			} catch (IOException ex) {
 				log.error(null, ex);
 			}
