@@ -1,14 +1,14 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
-<head th:include="libs/header.html :: header">
+<head th:include="libs/fragments.html :: header">
 	<title></title>
 	
 </head>
 
 <body>
 
-	<nav th:replace="libs/header.html :: navigation"></nav>
+	<nav th:replace="libs/fragments.html :: navigation"></nav>
 
 	<div class="container" th:with="pageNumber = ${requestContext.getQueryParameter('page', '1')}">
 
@@ -41,7 +41,9 @@
 		</div>
 	</div>
 
-	<script th:replace="libs/header.html :: footer_scripts">
+	<th:block th:replace="libs/fragments.html :: footer"></th:block>
+
+	<script th:replace="libs/fragments.html :: footer_scripts">
 
 	</script>
 
