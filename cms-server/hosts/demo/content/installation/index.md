@@ -59,9 +59,9 @@ modules:
 
 ### Linux
 ```shell
-java -Dlog4j2.configurationFile=log4j2.xml -jar cms-server-1.0.jar
+java -Dlog4j2.configurationFile=log4j2.xml -jar cms-server-2.0.0.jar
 ```
 ### Windows
 ```shell
-java "-Dlog4j2.configurationFile=log4j2.xml" -jar cms-server-1.0.jar
+java "-Dlog4j2.configurationFile=log4j2.xml" -jar cms-server-2.0.0.jar
 ```
