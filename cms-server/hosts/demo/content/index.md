@@ -3,6 +3,6 @@ title: Startseite
 template: start.html
 ---
 
-Und hier der Inhalt
+# Demo Project
 
 ![TestBild!](/assets/images/test.jpg "Test bild")

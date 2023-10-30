@@ -56,13 +56,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RecursiveWatcher {
 
-    private Path root;
+    private final Path root;
 
-    private AtomicBoolean running;
+    private final AtomicBoolean running;
 
     private WatchService watchService;
     private Thread watchThread;
-    private Map<Path, WatchKey> watchPathKeyMap;
+    private final Map<Path, WatchKey> watchPathKeyMap;
 
     private Timer timer;
 
@@ -241,11 +241,6 @@ public class RecursiveWatcher {
             watchKey.cancel();
             watchPathKeyMap.remove(dir);
         }
-    }
-
-    public interface WatchListener {
-
-        public void watchEventsOccurred();
     }
 
     public abstract static class AbstractFileEventSubscriber implements Flow.Subscriber<FileEvent> {

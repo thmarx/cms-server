@@ -54,9 +54,8 @@ public class FileSystem implements ModuleFileSystem {
 	private final Path hostBaseDirectory;
 	private final EventBus eventBus;
 
-	private RecursiveWatcher contentWatcher;
-	private RecursiveWatcher templateWatcher;
-
+	private MultiRootRecursiveWatcher fileWatcher;
+	
 	final ContentParser contentParser = new ContentParser(this);
 	private Path contentBase;
 
@@ -73,11 +72,8 @@ public class FileSystem implements ModuleFileSystem {
 	}
 
 	public void shutdown() {
-		if (contentWatcher != null) {
-			contentWatcher.stop();
-		}
-		if (templateWatcher != null) {
-			templateWatcher.stop();
+		if (fileWatcher != null) {
+			fileWatcher.stop();
 		}
 	}
 
@@ -202,9 +198,10 @@ public class FileSystem implements ModuleFileSystem {
 		log.debug("init filesystem");
 
 		this.contentBase = resolve("content/");
-		log.debug("init watcher for content changes");
-		this.contentWatcher = new RecursiveWatcher(contentBase);
-		contentWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
+		var templateBase = resolve("templates/");
+		log.debug("init filewatcher");
+		this.fileWatcher = new MultiRootRecursiveWatcher(List.of(contentBase, templateBase));
+		fileWatcher.getPublisher(contentBase).subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
 			@Override
 			public void onNext(FileEvent item) {
 				try {
@@ -221,20 +218,16 @@ public class FileSystem implements ModuleFileSystem {
 				this.subscription.request(1);
 			}
 		});
-
-		reInitFolder(contentBase);
-
-		contentWatcher.start();
-
-		log.debug("init watcher for template changes");
-		templateWatcher = new RecursiveWatcher(resolve("templates/"));
-		templateWatcher.getPublisher().subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
+		fileWatcher.getPublisher(templateBase).subscribe(new RecursiveWatcher.AbstractFileEventSubscriber() {
 			@Override
 			public void onNext(FileEvent item) {
 				eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
 			}
 		});
-		templateWatcher.start();
+
+		reInitFolder(contentBase);
+
+		fileWatcher.start();
 	}
 
 	private void swapMetaData() throws IOException {
