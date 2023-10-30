@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CMSModuleContext implements Context {
 	@Getter
-	private final HostProperties hostProperties;
+	private final SiteProperties siteProperties;
 	@Getter
 	private final ServerProperties serverProperties;
 	@Getter

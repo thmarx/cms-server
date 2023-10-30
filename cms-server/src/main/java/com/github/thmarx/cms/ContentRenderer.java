@@ -20,6 +20,7 @@ package com.github.thmarx.cms;
  * #L%
  */
 
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.template.TemplateEngine;
@@ -47,6 +48,7 @@ public class ContentRenderer {
 	private final ContentParser contentParser;
 	private final TemplateEngine templates;
 	private final FileSystem fileSystem;
+	private final SiteProperties siteProperties;
 	
 	public String render (final Path contentFile, final RequestContext context) throws IOException {
 		return render(contentFile, context, Collections.emptyMap());
@@ -63,6 +65,7 @@ public class ContentRenderer {
 		model.values.put("navigation", new NavigationFunction(this.fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
 		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
 		model.values.put("requestContext", context);
+		model.values.put("site", siteProperties);
 		
 		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
 			model.values.put(service.name(), service.supplier());

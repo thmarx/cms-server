@@ -30,12 +30,16 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class HostProperties {
+public class SiteProperties {
 	
 	private final Map<String, Object> properties;
 	
 	public String hostname () {
 		return (String) properties.getOrDefault("hostname", "localhost");
+	}
+	
+	public Object get (final String name) {
+		return properties.get(name);
 	}
 	
 	private Map<String, Object> getSubMap (final String name) {

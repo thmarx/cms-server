@@ -1,4 +1,5 @@
 hostname: localhost
+baseurl: "https://demo.marx-software.de"
 template:
   engine: thymeleaf
 markdown:

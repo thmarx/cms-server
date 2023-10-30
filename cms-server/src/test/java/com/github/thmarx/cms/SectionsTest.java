@@ -19,6 +19,7 @@ package com.github.thmarx.cms;
  * limitations under the License.
  * #L%
  */
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
@@ -52,7 +53,7 @@ public class SectionsTest extends TemplateEngineTest {
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(fileSystem);
 
-		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem);
+		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem, new SiteProperties(Map.of()));
 	}
 
 	@Test

@@ -20,6 +20,7 @@ package com.github.thmarx.cms;
  * #L%
  */
 
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -27,6 +28,7 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -47,7 +49,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(fileSystem);
 		
-		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem);
+		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem, new SiteProperties(Map.of()));
 	}
 
 	@Test

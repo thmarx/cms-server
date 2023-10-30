@@ -22,7 +22,7 @@ package com.github.thmarx.cms.server;
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.ContentRenderer;
 import com.github.thmarx.cms.ContentResolver;
-import com.github.thmarx.cms.api.HostProperties;
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.PropertiesLoader;
 import com.github.thmarx.cms.api.CMSModuleContext;
 import com.github.thmarx.cms.api.ServerProperties;
@@ -72,7 +72,7 @@ public class VHost {
 	@Getter
 	private final EventBus eventBus;
 
-	protected HostProperties properties;
+	protected SiteProperties properties;
 	
 	protected ModuleManager moduleManager;
 
@@ -147,7 +147,7 @@ public class VHost {
 
 		templateEngine = resolveTemplateEngine();
 
-		contentRenderer = new ContentRenderer(contentParser, templateEngine, fileSystem);
+		contentRenderer = new ContentRenderer(contentParser, templateEngine, fileSystem, properties);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
 
 		eventBus.register(ContentChangedEvent.class, (EventListener<ContentChangedEvent>) (ContentChangedEvent event) -> {
