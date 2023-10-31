@@ -66,7 +66,10 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		try {
-			final List<MetaData.MetaNode> navNodes = fileSystem.listContent(base, start);
+			final List<MetaData.MetaNode> navNodes = new ArrayList(
+					fileSystem.listContent(base, start)
+						.stream().filter(NodeUtil::getMenuVisibility).toList()
+			);
 			
 			navNodes.sort((node1, node2) -> {
 				var position1 = NodeUtil.getMenuPosition(node1);
@@ -90,10 +93,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 			navNodes.forEach((node) -> {
 				var name = NodeUtil.getName(node);
 				var path = contentBase.resolve(node.uri());
-				final NavNode navNode = new NavNode(name, getUrl(path));
-				if (isCurrentNode(path)) {
-					navNode.setCurrent(true);
-				}
+				final NavNode navNode = new NavNode(name, getUrl(path), isCurrentNode(path));
 				nodes.add(navNode);
 			});
 			return nodes;

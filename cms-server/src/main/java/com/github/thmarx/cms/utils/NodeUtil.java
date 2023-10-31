@@ -34,24 +34,35 @@ public class NodeUtil {
 
 	public static String getName(MetaData.MetaNode node) {
 
-		Map<String, Object> menu = (Map<String, Object>) node.data().getOrDefault("menu", Collections.EMPTY_MAP);
+		Map<String, Object> menu = (Map<String, Object>) node.data().getOrDefault(Constants.MetaFields.MENU, Collections.EMPTY_MAP);
 
-		if (menu.containsKey("title")) {
-			return (String) menu.get("title");
+		if (menu.containsKey(Constants.MetaFields.MENU_TITLE)) {
+			return (String) menu.get(Constants.MetaFields.MENU_TITLE);
 		}
-		if (node.data().containsKey("title")) {
-			return (String) node.data().get("title");
+		if (node.data().containsKey(Constants.MetaFields.TITLE)) {
+			return (String) node.data().get(Constants.MetaFields.TITLE);
 		}
 
 		return node.name();
 	}
 
+	public static boolean getMenuVisibility(MetaData.MetaNode node) {
+
+		Map<String, Object> menu = (Map<String, Object>) node.data().getOrDefault(Constants.MetaFields.MENU, Collections.EMPTY_MAP);
+
+		if (menu.containsKey(Constants.MetaFields.MENU_VISIBLE)) {
+			return (boolean) menu.get(Constants.MetaFields.MENU_VISIBLE);
+		}
+
+		return Constants.DEFAULT_MENU_VISIBILITY;
+	}
+	
 	public static Double getMenuPosition(MetaData.MetaNode node) {
 
-		Map<String, Object> menu = (Map<String, Object>) node.data().getOrDefault("menu", Collections.EMPTY_MAP);
+		Map<String, Object> menu = (Map<String, Object>) node.data().getOrDefault(Constants.MetaFields.MENU, Collections.EMPTY_MAP);
 
-		if (menu.containsKey("position")) {
-			var number = (Number) menu.get("position");
+		if (menu.containsKey(Constants.MetaFields.MENU_POSITION)) {
+			var number = (Number) menu.get(Constants.MetaFields.MENU_POSITION);
 			return number.doubleValue();
 		}
 

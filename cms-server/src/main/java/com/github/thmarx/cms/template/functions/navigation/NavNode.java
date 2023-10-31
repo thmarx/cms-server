@@ -20,18 +20,15 @@ package com.github.thmarx.cms.template.functions.navigation;
  * #L%
  */
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-
 /**
  *
  * @author t.marx
  */
-@Data
-@RequiredArgsConstructor
-public class NavNode {
-	private final String name;
-	private final String path;
-	private int depth = 1;
-	private boolean current = false;
+public record NavNode (String name, String path, int depth, boolean current) {
+	public NavNode (String name, String path, int depth) {
+		this(name, path, depth, false);
+	}
+	public NavNode (String name, String path, boolean current) {
+		this(name, path, 1, current);
+	}
 }

@@ -1,18 +1,3 @@
-/*
- * Copyright 2023 thmar.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.github.thmarx.cms.template.functions.navigation;
 
 /*-
@@ -69,7 +54,7 @@ public class NavigationFunctionNGTest {
 
 		List<NavNode> list = navigationFunction.list("/nav");
 
-		var nodeUris = list.stream().map(NavNode::getPath).collect(Collectors.toList());
+		var nodeUris = list.stream().map(NavNode::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
 				.containsExactlyInAnyOrder("/nav", "/nav/folder1");
 	}
@@ -79,7 +64,7 @@ public class NavigationFunctionNGTest {
 
 		List<NavNode> list = navigationFunction.list("/nav/folder1");
 
-		var nodeUris = list.stream().map(NavNode::getPath).collect(Collectors.toList());
+		var nodeUris = list.stream().map(NavNode::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
 				.containsExactlyInAnyOrder("/nav/folder1/test", "/nav/folder1");
 	}
@@ -90,5 +75,15 @@ public class NavigationFunctionNGTest {
 		List<NavNode> list = navigationFunction.list("/nav2");
 
 		Assertions.assertThat(list).isEmpty();
+	}
+	
+	@Test
+	public void test_visibility() {
+
+		List<NavNode> list = navigationFunction.list("/visibility");
+
+		var nodeUris = list.stream().map(NavNode::path).collect(Collectors.toList());
+		Assertions.assertThat(nodeUris)
+				.containsExactlyInAnyOrder("/visibility/folder1");
 	}
 }
