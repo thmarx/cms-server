@@ -20,7 +20,7 @@ package com.github.thmarx.cms;
  * #L%
  */
 import com.github.thmarx.cms.api.SiteProperties;
-import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -41,19 +41,19 @@ import org.testng.annotations.Test;
  */
 public class SectionsTest extends TemplateEngineTest {
 
-	ContentRenderer contentRenderer;
-	private MarkdownRenderer markdownRenderer;
-	private FileSystem fileSystem;
+	static ContentRenderer contentRenderer;
+	static MarkdownRenderer markdownRenderer;
+	static FileSystem fileSystem;
 
-	@BeforeClass
-	public void beforeClass() throws IOException {
-		fileSystem = new FileSystem(Path.of("hosts/test/"), new EventBus());
+	@BeforeAll
+	public static void beforeClass() throws IOException {
+		fileSystem = new FileSystem(Path.of("hosts/test/"), new DefaultEventBus());
 		fileSystem.init();
 		var contentParser = new ContentParser(fileSystem);
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(fileSystem);
 
-		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem, new SiteProperties(Map.of()));
+		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem, new SiteProperties(Map.of()), new MockModuleManager());
 	}
 
 	@Test

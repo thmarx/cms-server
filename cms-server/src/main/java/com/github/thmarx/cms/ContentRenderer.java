@@ -21,12 +21,14 @@ package com.github.thmarx.cms;
  */
 
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.utils.SectionUtil;
+import com.github.thmarx.modules.api.ModuleManager;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ public class ContentRenderer {
 	private final TemplateEngine templates;
 	private final FileSystem fileSystem;
 	private final SiteProperties siteProperties;
+	private final ModuleManager moduleManager;
 	
 	public String render (final Path contentFile, final RequestContext context) throws IOException {
 		return render(contentFile, context, Collections.emptyMap());
@@ -75,7 +78,13 @@ public class ContentRenderer {
 			model.values.put(service.name(), service.function());
 		});
 		
+		extendModel(model);
+		
 		return templates.render((String)content.meta().get("template"), model);
+	}
+	
+	private void extendModel (final TemplateEngine.Model model) {
+		moduleManager.extensions(TemplateModelExtendingExtentionPoint.class).forEach(extensionPoint -> extensionPoint.extendModel(model));
 	}
 	
 	public Map<String, List<Section>> renderSections (final List<MetaData.MetaNode> sectionNodes, final RequestContext context) throws IOException {

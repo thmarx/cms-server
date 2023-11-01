@@ -21,35 +21,43 @@ package com.github.thmarx.cms;
  */
 
 import com.github.thmarx.cms.api.SiteProperties;
-import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.TemplateEngineTest;
+import com.github.thmarx.modules.api.ModuleManager;
+import com.github.thmarx.modules.manager.ModuleManagerImpl;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  *
  * @author t.marx
  */
+@ExtendWith(MockitoExtension.class)
 public class ContentRendererNGTest extends TemplateEngineTest {
 	
-	ContentRenderer contentRenderer;
-	private MarkdownRenderer markdownRenderer;
+	static ContentRenderer contentRenderer;
+	static MarkdownRenderer markdownRenderer;
 	
-	@BeforeClass
-	public void beforeClass () throws IOException {
-		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test/"), new EventBus());
+	static ModuleManager moduleManager = new MockModuleManager();
+	
+	@BeforeAll
+	public static void beforeClass () throws IOException {
+		final FileSystem fileSystem = new FileSystem(Path.of("hosts/test/"), new DefaultEventBus());
 		var contentParser = new ContentParser(fileSystem);
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(fileSystem);
 		
-		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem, new SiteProperties(Map.of()));
+		contentRenderer = new ContentRenderer(contentParser, templates, fileSystem, new SiteProperties(Map.of()), moduleManager);
 	}
 
 	@Test

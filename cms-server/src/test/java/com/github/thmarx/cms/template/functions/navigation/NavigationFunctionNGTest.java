@@ -22,15 +22,15 @@ package com.github.thmarx.cms.template.functions.navigation;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.TestHelper;
-import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -38,11 +38,11 @@ import org.testng.annotations.Test;
  */
 public class NavigationFunctionNGTest {
 
-	NavigationFunction navigationFunction;
+	static NavigationFunction navigationFunction;
 
-	@BeforeClass
-	void init() throws IOException {
-		FileSystem fileSystem = new FileSystem(Path.of("hosts/test"), new EventBus());
+	@BeforeAll
+	static void init() throws IOException {
+		FileSystem fileSystem = new FileSystem(Path.of("hosts/test"), new DefaultEventBus());
 		fileSystem.init();
 		var markdownRenderer = TestHelper.getRenderer();
 		navigationFunction = new NavigationFunction(fileSystem, Path.of("hosts/test/content/nav/index.md"), new ContentParser(fileSystem),

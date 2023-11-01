@@ -26,12 +26,13 @@ import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.PropertiesLoader;
 import com.github.thmarx.cms.api.CMSModuleContext;
 import com.github.thmarx.cms.api.ServerProperties;
+import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
-import com.github.thmarx.cms.eventbus.EventBus;
-import com.github.thmarx.cms.eventbus.EventListener;
-import com.github.thmarx.cms.eventbus.events.ContentChangedEvent;
-import com.github.thmarx.cms.eventbus.events.TemplateChangedEvent;
+import com.github.thmarx.cms.eventbus.DefaultEventBus;
+import com.github.thmarx.cms.api.eventbus.EventListener;
+import com.github.thmarx.cms.api.eventbus.events.ContentChangedEvent;
+import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -79,7 +80,7 @@ public class VHost {
 	protected final ServerProperties serverProperties;
 	
 	public VHost(final Path hostBase, final ServerProperties serverProperties) {
-		this.eventBus = new EventBus();
+		this.eventBus = new DefaultEventBus();
 		this.fileSystem = new FileSystem(hostBase, eventBus);
 		this.serverProperties = serverProperties;
 	}
@@ -111,7 +112,7 @@ public class VHost {
         this.moduleManager = ModuleManagerImpl.create(
 				modules.toFile(), 
 				fileSystem.resolve("modules_data").toFile(), 
-				new CMSModuleContext(properties, serverProperties, fileSystem), 
+				new CMSModuleContext(properties, serverProperties, fileSystem, eventBus), 
 				classLoader
 		);
 		properties.activeModules().forEach(module_id -> {
@@ -147,7 +148,7 @@ public class VHost {
 
 		templateEngine = resolveTemplateEngine();
 
-		contentRenderer = new ContentRenderer(contentParser, templateEngine, fileSystem, properties);
+		contentRenderer = new ContentRenderer(contentParser, templateEngine, fileSystem, properties, moduleManager);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
 
 		eventBus.register(ContentChangedEvent.class, (EventListener<ContentChangedEvent>) (ContentChangedEvent event) -> {

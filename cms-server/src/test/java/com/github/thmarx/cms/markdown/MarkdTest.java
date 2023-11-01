@@ -27,9 +27,9 @@ import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -37,15 +37,15 @@ import org.testng.annotations.Test;
  */
 public class MarkdTest {
 
-	Engine engine;
-	Context context;
-	Source markedSource;
-	Source purifySource;
+	static Engine engine;
+	static Context context;
+	static Source markedSource;
+	static Source purifySource;
 
-	Value markedFunction;
+	static Value markedFunction;
 	
-	@BeforeClass
-	public void init() throws IOException {
+	@BeforeAll
+	public static void init() throws IOException {
 		engine = Engine.newBuilder("js")
 				.option("engine.WarnInterpreterOnly", "false")
 				.build();
@@ -61,13 +61,13 @@ public class MarkdTest {
 		context.eval(markedSource);
 		markedFunction = context.eval("js", "(function (param) {return marked.parse(param);})");
 	}
-	@AfterClass
-	public void close () {
+	@AfterAll
+	public static void close () {
 		context.close();
 		engine.close();
 	}
 	
-	@Test(invocationCount = 10)
+	@Test
 	public void renderMarkDown () {
 		try (var cxt = Context.newBuilder("js")
 				.engine(engine)
@@ -81,7 +81,7 @@ public class MarkdTest {
 		}
 	}
 	
-	@Test(invocationCount = 10)
+	@Test
 	public void global () {
 		System.out.println(markedFunction.execute("*bold*"));
 	}

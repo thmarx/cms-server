@@ -30,7 +30,7 @@ import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -72,7 +72,7 @@ public class RegexTest {
 		Assertions.assertThat(replaceAll).isEqualTo("<img src=\"/assets/images/test.jpg\" alt=\"TestBild!\" title=\"Test bild\" />");
 	}
 	
-	@Test(invocationCount = 100)
+	@Test
 	public void home_renderer () throws IOException {
 		HomeRenderer renderer = new HomeRenderer();
 		renderer.add(new LineElement(Pattern.compile("\\*{2}(.*?)\\*{2}"), (result) -> "<strong>%s</strong>".formatted(result.group(1))));

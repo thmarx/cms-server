@@ -28,8 +28,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -37,10 +37,10 @@ import org.testng.annotations.Test;
  */
 public class PugTemplateEngineNGTest {
 	
-	PugTemplateEngine engine;
+	static PugTemplateEngine engine;
 	
-	@BeforeClass
-	void setup () {
+	@BeforeAll
+	static void setup () {
 		ServerProperties properties = new ServerProperties(Map.of("dev", true));
 		var fileSystem = new ModuleFileSystem() {
 			@Override

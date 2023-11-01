@@ -1,5 +1,5 @@
 hostname: localhost
-baseurl: "https://demo.marx-software.de"
+baseurl: "http://localhost:8080"
 template:
   engine: thymeleaf
 markdown:
@@ -9,6 +9,6 @@ modules:
     - example-module
 #    - flexmark-module
     - markedjs-module
-    - pebble-module
+#    - pebble-module
     - thymeleaf-module
-    - freemarker-module
+#    - freemarker-module

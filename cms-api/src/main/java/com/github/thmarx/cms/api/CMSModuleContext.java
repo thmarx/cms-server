@@ -20,6 +20,7 @@ package com.github.thmarx.cms.api;
  * #L%
  */
 
+import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.modules.api.Context;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -36,4 +37,6 @@ public class CMSModuleContext implements Context {
 	private final ServerProperties serverProperties;
 	@Getter
 	private final ModuleFileSystem fileSystem;
+	@Getter
+	private final EventBus eventBus;
 }

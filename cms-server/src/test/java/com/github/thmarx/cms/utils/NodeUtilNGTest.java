@@ -24,7 +24,7 @@ import com.github.thmarx.cms.Constants;
 import com.github.thmarx.cms.filesystem.MetaData;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *

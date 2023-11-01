@@ -22,15 +22,15 @@ package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.ContentParser;
 import com.github.thmarx.cms.TestHelper;
-import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -38,19 +38,19 @@ import org.testng.annotations.Test;
  */
 public class NodeListFunctionBuilderNGTest {
 	
-	NodeListFunctionBuilder nodeList;
-	private FileSystem fileSystem;
+	static NodeListFunctionBuilder nodeList;
+	static FileSystem fileSystem;
 	
-	@BeforeClass
-	void setup () throws IOException {
-		fileSystem = new FileSystem(Path.of("hosts/test"), new EventBus());
+	@BeforeAll
+	static void setup () throws IOException {
+		fileSystem = new FileSystem(Path.of("hosts/test"), new DefaultEventBus());
 		fileSystem.init();
 		ContentParser parser = new ContentParser(fileSystem);
 		var markdownRenderer = TestHelper.getRenderer();
 		nodeList = new NodeListFunctionBuilder(fileSystem, fileSystem.resolve("content/").resolve("index.md"), parser, markdownRenderer);
 	}
-	@AfterClass
-	void close () {
+	@AfterAll
+	static void close () {
 		fileSystem.shutdown();
 	}
 

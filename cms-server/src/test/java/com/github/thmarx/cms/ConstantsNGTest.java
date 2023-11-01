@@ -22,7 +22,7 @@ package com.github.thmarx.cms;
 
 import java.util.regex.Matcher;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *

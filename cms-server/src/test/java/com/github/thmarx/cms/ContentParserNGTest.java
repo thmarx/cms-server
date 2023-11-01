@@ -21,13 +21,13 @@ package com.github.thmarx.cms;
  */
 
 import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.eventbus.EventBus;
+import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 import org.assertj.core.api.Assertions;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -40,7 +40,7 @@ public class ContentParserNGTest {
 
 	@Test
 	public void testSomeMethod() throws IOException {
-		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new EventBus()));
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new DefaultEventBus()));
 		
 		var expectedMD = """
                    
@@ -58,7 +58,7 @@ public class ContentParserNGTest {
 	
 	@Test
 	public void test_date() throws IOException {
-		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new EventBus()));
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new DefaultEventBus()));
 		
 		var content = contentParser.parse(Path.of("hosts/test/content/test.md"));
 		
@@ -76,7 +76,7 @@ public class ContentParserNGTest {
 	
 	@Test
 	public void test_tags() throws IOException {
-		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new EventBus()));
+		var contentParser = new ContentParser(new FileSystem(Path.of("hosts/test/"), new DefaultEventBus()));
 		
 		var content = contentParser.parse(Path.of("hosts/test/content/tags.md"));
 		
