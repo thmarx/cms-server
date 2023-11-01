@@ -37,7 +37,7 @@ public class PugTemplateEngineProviderExtentionPoint extends TemplateEngineProvi
 
 	@Override
 	public String getName() {
-		return "pebble";
+		return "pug";
 	}
 
 	@Override
