@@ -44,7 +44,6 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.PathMappingsHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.util.Callback;
 
 /**
  *
@@ -85,14 +84,14 @@ public class JettyVHost extends VHost {
 		defaultContextHandler.setVirtualHosts(List.of(properties.hostname()));
 		
 		
-		var moduleHandler = new JettyModuleHandler(moduleManager);
-		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, "/module");
+//		var moduleHandler = new JettyModuleHandler(moduleManager);
+//		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, "/module");
 		var extensionHandler = new JettyExtensionHandler(extensionManager);
 		ContextHandler extensionContextHandler = new ContextHandler(extensionHandler, "/extension");
 		
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection(
 				defaultContextHandler,
-				moduleContextHandler,
+//				moduleContextHandler,
 				extensionContextHandler,
 				modulesContextHandler()
 		);
@@ -112,12 +111,12 @@ public class JettyVHost extends VHost {
 		List<ContextHandler> contextHandlers = new ArrayList<>();
 		moduleManager.extensions(JettyHttpHandlerExtensionPoint.class).forEach((extension) -> {
 			contextHandlers.add(new ContextHandler(
-					extension.getHandler(), "/modules/" + extension.getContextPath() 
+					extension.getHandler(), "/module/" + extension.getContextPath() 
 			));
 		});
 		ContextHandler modulesContextHandler = new ContextHandler(
 				new ContextHandlerCollection(contextHandlers.toArray(ContextHandler[]::new)),
-				"/modules"
+				"/module"
 		);
 		
 		return modulesContextHandler;
