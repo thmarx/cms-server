@@ -20,16 +20,10 @@ package com.github.thmarx.cms.api.extensions;
  * #L%
  */
 
-import org.eclipse.jetty.server.Handler;
-
 /**
  *
  * @author t.marx
  */
-public abstract class JettyHttpHandlerExtensionPoint extends AbstractExtensionEndpoint {
-
-	abstract public String getContextPath();
-	
-	abstract public Handler getHandler();
-
+public abstract class JettyHttpHandlerExtensionPoint extends AbstractExtensionPoint {
+	abstract public Mapping getMapping();
 }

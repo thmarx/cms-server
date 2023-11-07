@@ -21,6 +21,7 @@ package com.github.thmarx.cms.modules.example;
  */
 
 import com.github.thmarx.cms.api.extensions.JettyHttpHandlerExtensionPoint;
+import com.github.thmarx.cms.api.extensions.Mapping;
 import com.github.thmarx.modules.api.annotation.Extension;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -29,8 +30,6 @@ import org.eclipse.jetty.http.pathmap.PathSpec;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.PathMappingsHandler;
 import org.eclipse.jetty.util.Callback;
 
 /**
@@ -41,17 +40,12 @@ import org.eclipse.jetty.util.Callback;
 public class ExampleJettyHttpHandlerExtension extends JettyHttpHandlerExtensionPoint {
 
 	@Override
-	public String getContextPath() {
-		return "example";
-	}
-
-	@Override
-	public Handler getHandler() {
-		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
-		pathMappingsHandler.addMapping(PathSpec.from("/world"), new ExampleHandler("Hello world!"));
-		pathMappingsHandler.addMapping(PathSpec.from("/people"), new ExampleHandler("Hello people!"));
+	public Mapping getMapping() {
+		Mapping mapping = new Mapping();
+		mapping.add(PathSpec.from("/world"), new ExampleHandler("Hello world!"));
+		mapping.add(PathSpec.from("/people"), new ExampleHandler("Hello people!"));
 		
-		return pathMappingsHandler;
+		return mapping;
 	}
 	
 	@RequiredArgsConstructor
