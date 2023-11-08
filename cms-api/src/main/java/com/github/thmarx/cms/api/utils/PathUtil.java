@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.utils;
+package com.github.thmarx.cms.api.utils;
 
 /*-
  * #%L
@@ -33,7 +33,7 @@ public class PathUtil {
 		return maybeChild.toFile().getCanonicalPath().startsWith(possibleParent.toFile().getCanonicalPath());
 	}
 
-	public static String toPath(final Path contentPath, final Path contentBase) {
+	public static String toRelativePath(final Path contentPath, final Path contentBase) {
 		Path tempPath = contentPath;
 		if (!Files.isDirectory(contentPath)) {
 			tempPath = contentPath.getParent();
@@ -44,7 +44,7 @@ public class PathUtil {
 		return uri;
 	}
 
-	public static String toFile(final Path contentFile, final Path contentBase) {
+	public static String toRelativeFile(final Path contentFile, final Path contentBase) {
 		Path relativize = contentBase.relativize(contentFile);
 		if (Files.isDirectory(contentFile)) {
 			relativize = relativize.resolve("index.md");
@@ -52,5 +52,28 @@ public class PathUtil {
 		var uri = relativize.toString();
 		uri = uri.replaceAll("\\\\", "/");
 		return uri;
+	}
+	
+	public static String toURI(final Path contentFile, final Path contentBase) {
+		var relFile = toRelativeFile(contentFile, contentBase);
+		if (relFile.endsWith("index.md")) {
+			relFile = relFile.replace("index.md", "");
+		}
+		
+		if (relFile.equals("")) {
+			relFile = "/";
+		} else if (relFile.endsWith("/")) {
+			relFile = relFile.substring(0, relFile.lastIndexOf("/"));
+		} 
+		
+		if (!relFile.startsWith("/")) {
+			relFile = "/" + relFile;
+		}
+		if (relFile.endsWith(".md")) {
+			relFile = relFile.substring(0, relFile.lastIndexOf(".md"));
+		}
+		
+		
+		return relFile;
 	}
 }

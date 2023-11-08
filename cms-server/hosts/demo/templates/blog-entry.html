@@ -1,15 +1,16 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
-<head th:include="libs/fragments.html :: header">
-	<title></title>
+<head>
+	<th:block th:replace="libs/fragments.html :: header">
+	</th:block>
 </head>
 
 <body>
 
 	<nav th:replace="libs/fragments.html :: navigation"></nav>
 
-	<div class="container">
+	<div id="content" class="container">
 
 		<div class="row">
 			<h2 th:utext="${title}"></h2>

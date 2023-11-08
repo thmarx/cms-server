@@ -22,6 +22,11 @@ package com.github.thmarx.cms.api;
 
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.modules.api.Context;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -39,4 +44,6 @@ public class CMSModuleContext implements Context {
 	private final ModuleFileSystem fileSystem;
 	@Getter
 	private final EventBus eventBus;
+	@Getter
+	private final BiFunction<String, Map<String, List<String>>, Optional<String>> renderContentFunction;
 }

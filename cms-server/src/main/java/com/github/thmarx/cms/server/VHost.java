@@ -37,6 +37,7 @@ import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
+import com.github.thmarx.cms.module.RenderContentFunction;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
 import com.github.thmarx.modules.manager.ModuleManagerImpl;
@@ -111,11 +112,30 @@ public class VHost {
 						"org.eclipse.jetty",
 						"jakarta.servlet"
 				));
+
 		this.moduleManager = ModuleManagerImpl.create(modules.toFile(),
 				fileSystem.resolve("modules_data").toFile(),
-				new CMSModuleContext(siteProperties, serverProperties, fileSystem, eventBus),
+				new CMSModuleContext(siteProperties, serverProperties, fileSystem, eventBus,
+						new RenderContentFunction(() -> contentResolver, () -> extensionManager, (context) -> resolveMarkdownRenderer())
+				),
 				classLoader
 		);
+
+		hostname = siteProperties.hostname();
+
+		contentBase = fileSystem.resolve("content/");
+		assetBase = fileSystem.resolve("assets/");
+		templateBase = fileSystem.resolve("templates/");
+
+		extensionManager = new ExtensionManager(fileSystem);
+		extensionManager.init();
+
+		contentParser = new ContentParser(fileSystem);
+
+		contentRenderer = new ContentRenderer(contentParser, () -> resolveTemplateEngine(), fileSystem, siteProperties, () -> moduleManager);
+		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
+
+		this.moduleManager.initModules();
 		siteProperties.activeModules().stream()
 				.filter(module_id -> moduleManager.getModuleIds().contains(module_id))
 				.forEach(module_id -> {
@@ -138,46 +158,34 @@ public class VHost {
 					}
 				});
 
-		hostname = siteProperties.hostname();
-
-		contentBase = fileSystem.resolve("content/");
-		assetBase = fileSystem.resolve("assets/");
-		templateBase = fileSystem.resolve("templates/");
-
-		extensionManager = new ExtensionManager(fileSystem);
-		extensionManager.init();
-
-		contentParser = new ContentParser(fileSystem);
-
-		templateEngine = resolveTemplateEngine();
-
-		contentRenderer = new ContentRenderer(contentParser, templateEngine, fileSystem, siteProperties, moduleManager);
-		contentResolver = new ContentResolver(contentBase, contentRenderer, fileSystem);
-
 		eventBus.register(ContentChangedEvent.class, (EventListener<ContentChangedEvent>) (ContentChangedEvent event) -> {
 			log.debug("invalidate content cache");
 			contentParser.clearCache();
 		});
 		eventBus.register(TemplateChangedEvent.class, (EventListener<TemplateChangedEvent>) (TemplateChangedEvent event) -> {
 			log.debug("invalidate template cache");
-			templateEngine.invalidateCache();
+			resolveTemplateEngine().invalidateCache();
 		});
 	}
 
 	protected TemplateEngine resolveTemplateEngine() {
-		var engine = this.siteProperties.templateEngine();
+		if (this.templateEngine == null) {
+			var engine = this.siteProperties.templateEngine();
 
-		List<TemplateEngineProviderExtentionPoint> extensions = moduleManager.extensions(TemplateEngineProviderExtentionPoint.class);
-		Optional<TemplateEngineProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
+			List<TemplateEngineProviderExtentionPoint> extensions = moduleManager.extensions(TemplateEngineProviderExtentionPoint.class);
+			Optional<TemplateEngineProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
 
-		if (extOpt.isPresent()) {
-			return extOpt.get().getTemplateEngine();
-		} else {
-			throw new RuntimeException("no template engine found");
+			if (extOpt.isPresent()) {
+				this.templateEngine = extOpt.get().getTemplateEngine();
+			} else {
+				throw new RuntimeException("no template engine found");
+			}
 		}
+
+		return this.templateEngine;
 	}
 
-	protected MarkdownRenderer resolveMarkdownRenderer(final Context context) {
+	protected MarkdownRenderer resolveMarkdownRenderer() {
 		var engine = this.siteProperties.markdownEngine();
 
 		List<MarkdownRendererProviderExtentionPoint> extensions = moduleManager.extensions(MarkdownRendererProviderExtentionPoint.class);
