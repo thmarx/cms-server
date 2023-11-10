@@ -22,6 +22,7 @@ package com.github.thmarx.cms.template.functions.navigation;
 
 import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.TestHelper;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
@@ -39,12 +40,13 @@ import org.junit.jupiter.api.Test;
 public class NavigationFunctionNGTest {
 
 	static NavigationFunction navigationFunction;
+	private static FileSystem fileSystem;
+	static MarkdownRenderer markdownRenderer = TestHelper.getRenderer();
 
 	@BeforeAll
 	static void init() throws IOException {
-		FileSystem fileSystem = new FileSystem(Path.of("hosts/test"), new DefaultEventBus());
+		fileSystem = new FileSystem(Path.of("hosts/test"), new DefaultEventBus());
 		fileSystem.init();
-		var markdownRenderer = TestHelper.getRenderer();
 		navigationFunction = new NavigationFunction(fileSystem, Path.of("hosts/test/content/nav/index.md"), new ContentParser(fileSystem),
 				markdownRenderer);
 	}
@@ -85,5 +87,19 @@ public class NavigationFunctionNGTest {
 		var nodeUris = list.stream().map(NavNode::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
 				.containsExactlyInAnyOrder("/visibility/folder1");
+	}
+	
+	@Test
+	public void test_path() {
+
+		var sut = new NavigationFunction(fileSystem, Path.of("hosts/test/content/nav3/folder1/index.md"), new ContentParser(fileSystem),
+				markdownRenderer);
+		
+		List<NavNode> path = sut.path();
+
+		Assertions.assertThat(path).hasSize(3);
+		Assertions.assertThat(path.get(0).path()).isEqualTo("/");
+		Assertions.assertThat(path.get(1).path()).isEqualTo("/nav3");
+		Assertions.assertThat(path.get(2).path()).isEqualTo("/nav3/folder1");
 	}
 }
