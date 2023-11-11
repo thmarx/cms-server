@@ -19,8 +19,6 @@ package com.github.thmarx.cms.media;
  * limitations under the License.
  * #L%
  */
-
-
 import com.luciad.imageio.webp.WebPWriteParam;
 import java.awt.Color;
 import java.awt.Image;
@@ -55,36 +53,51 @@ public class Scale {
 		JPEG,
 		WEBP;
 	}
-	public static Format format4String (final String format) {
+
+	public static Format format4String(final String format) {
 		return switch (format) {
-			case "webp" -> Format.WEBP;
-			case "jpeg" -> Format.JPEG;
-			case "png" -> Format.PNG;
-			default -> throw new RuntimeException("unknown image format");
+			case "webp" ->
+				Format.WEBP;
+			case "jpeg" ->
+				Format.JPEG;
+			case "png" ->
+				Format.PNG;
+			default ->
+				throw new RuntimeException("unknown image format");
 		};
 	}
-	public static String mime4Format (final Format format) {
+
+	public static String mime4Format(final Format format) {
 		return switch (format) {
-			case JPEG -> "image/jpeg";
-			case PNG -> "image/png";
-			case WEBP -> "image/webp";
-			default -> throw new RuntimeException("unknown image format");
+			case JPEG ->
+				"image/jpeg";
+			case PNG ->
+				"image/png";
+			case WEBP ->
+				"image/webp";
+			default ->
+				throw new RuntimeException("unknown image format");
 		};
 	}
-	public static String fileending4Format (final Format format) {
+
+	public static String fileending4Format(final Format format) {
 		return switch (format) {
-			case JPEG -> ".jpeg";
-			case PNG -> ".png";
-			case WEBP -> ".webp";
-			default -> throw new RuntimeException("unknown image format");
+			case JPEG ->
+				".jpeg";
+			case PNG ->
+				".png";
+			case WEBP ->
+				".webp";
+			default ->
+				throw new RuntimeException("unknown image format");
 		};
 	}
-	
+
 	public static ScaleResult scaleWithAspectIfTooLarge(byte[] fileData, int maxWidth,
 			int maxHeight, boolean uncompressed, final Format format) {
 		ScaleResult result = new ScaleResult();
-		ByteArrayInputStream in = new ByteArrayInputStream(fileData);
-		try {
+
+		try (ByteArrayInputStream in = new ByteArrayInputStream(fileData)) {
 			BufferedImage img = ImageIO.read(in);
 			int origWidth = img.getWidth();
 			int origHeight = img.getHeight();
@@ -98,7 +111,7 @@ public class Scale {
 						result.height,
 						Image.SCALE_SMOOTH);
 				BufferedImage imageBuff = new BufferedImage(result.width,
-						result.height,	
+						result.height,
 						BufferedImage.TYPE_INT_RGB);
 				imageBuff.getGraphics().drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null);
 				// output
@@ -112,12 +125,6 @@ public class Scale {
 			}
 		} catch (IOException e) {
 			log.error("scaleWithAspectIfTooLarge(): IOexception ", e);
-		} finally {
-			try {
-				in.close();
-			} catch (Exception e) {
-				log.error("scaleWithAspectIfTooLarge(): IOException when closing ByteArrayInputStream");
-			}
 		}
 		return result;
 	}
@@ -127,14 +134,13 @@ public class Scale {
 			if (uncompressed) {
 				final ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
 				writer.setOutput(new MemoryCacheImageOutputStream(buffer));
-				
+
 				var writeParam = writer.getDefaultWriteParam();
 				if (writeParam.canWriteCompressed()) {
 					writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 					writeParam.setCompressionQuality(1f);
 				}
-				
-				
+
 				writer.write(null, new IIOImage(imageBuff, null, null), writeParam);
 				return buffer.toByteArray();
 			} else {
@@ -143,7 +149,7 @@ public class Scale {
 			}
 		}
 	}
-	
+
 	private static byte[] toJPG(final BufferedImage imageBuff, final boolean uncompressed) throws IOException {
 		try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
 			if (uncompressed) {
@@ -160,17 +166,16 @@ public class Scale {
 			}
 		}
 	}
+
 	private static byte[] toWEBP(final BufferedImage imageBuff, final boolean uncompressed) throws IOException {
 		try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
 			if (uncompressed) {
 				WebPWriteParam writeParam = new WebPWriteParam(Locale.getDefault());
 				writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 				writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
-//				final ImageWriter writer = ImageIO.getImageWritersByFormatName("image/webp").next();
 				final ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
 				final MemoryCacheImageOutputStream memoryCacheImageOutputStream = new MemoryCacheImageOutputStream(buffer);
 				writer.setOutput(memoryCacheImageOutputStream);
-//				writer.setOutput(new FileImageOutputStream(new File("/tmp/output.webp")));
 				writer.write(null, new IIOImage(imageBuff, null, null), writeParam);
 				memoryCacheImageOutputStream.close();
 				return buffer.toByteArray();
@@ -215,22 +220,21 @@ public class Scale {
 		public int width;
 		public int height;
 	}
-	
-	public static void main (final String...args) throws IOException {
+
+	public static void main(final String... args) throws IOException {
 //		scale("/tmp/test.png");
 //		scale("/tmp/test.jpg");
 
 		scale("../../testdata/image.jpg");
 	}
-	
-	public static void scale (final String file) throws IOException {
+
+	public static void scale(final String file) throws IOException {
 		byte[] fileData = Files.readAllBytes(Path.of(new File(file).toURI()));
 		ScaleResult result = scaleWithAspectIfTooLarge(fileData, 200, 300, false, Format.JPEG);
 		Files.write(Path.of(file + ".jpg"), result.data);
-		
+
 		//result = scaleWithAspectIfTooLarge(fileData, 200, 300, true, Format.WEBP);
 		//Files.write(Path.of(file + ".webp"), result.data);
-		
 		result = scaleWithAspectIfTooLarge(fileData, 200, 300, true, Format.PNG);
 		Files.write(Path.of(file + ".png"), result.data);
 	}

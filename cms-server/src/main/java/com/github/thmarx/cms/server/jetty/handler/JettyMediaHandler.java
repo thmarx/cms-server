@@ -50,42 +50,55 @@ public class JettyMediaHandler extends Handler.Abstract {
 
 	private final Path assetBase;
 	private final SiteProperties siteProperties;
-	
+
 	private Path tempDirectory;
-	
+
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
 
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
 		try {
-			final List<String> formatParameter = queryParameters.getOrDefault("format", Collections.emptyList());
-			if (formatParameter.isEmpty()) {
-				log.error("format parameter missing");
-				response.setStatus(404);
-				callback.succeeded();
-				return true;
-			}
+			final List<String> formatParameter = queryParameters.getOrDefault("format", List.of("##original##"));
+			final String formatValue = formatParameter.getFirst();
 
-			var format = loadFormats().get(formatParameter.getFirst());
-			if (format == null) {
-				log.error("unknown format {}", formatParameter.getFirst());
-				response.setStatus(404);
-				callback.succeeded();
-				return true;
-			}
+			if ("##original##".equalsIgnoreCase(formatValue)) {
+				var mediaPath = getRelativeMediaPath(request);
+				Path assetPath = assetBase.resolve(mediaPath);
+				if (Files.exists(assetPath)) {
+					var bytes = Files.readAllBytes(assetPath);
+					var mimetype = Files.probeContentType(assetPath);
+					
+					response.getHeaders().add("Content-Type", mimetype);
+					response.getHeaders().add("Content-Length", bytes.length);
+					response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
+					response.setStatus(200);
 
-			var mediaPath = getRelativeMediaPath(request);
-			
-			var result = getScaledContent(mediaPath, format);
-			if (result.isPresent()) {
-				response.getHeaders().add("Content-Type", Scale.mime4Format(format.format()));
-				response.getHeaders().add("Content-Length", result.get().length);
-				response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
-				response.setStatus(200);
+					Content.Sink.write(response, true, ByteBuffer.wrap(bytes));
+					callback.succeeded();
+					return true;
+				}
+			} else {
+				var format = loadFormats().get(formatValue);
+				if (format == null) {
+					log.error("unknown format {}", formatParameter.getFirst());
+					response.setStatus(404);
+					callback.succeeded();
+					return true;
+				}
 
-				Content.Sink.write(response, true, ByteBuffer.wrap(result.get()));
-				callback.succeeded();
-				return true;
+				var mediaPath = getRelativeMediaPath(request);
+
+				var result = getScaledContent(mediaPath, format);
+				if (result.isPresent()) {
+					response.getHeaders().add("Content-Type", Scale.mime4Format(format.format()));
+					response.getHeaders().add("Content-Length", result.get().length);
+					response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
+					response.setStatus(200);
+
+					Content.Sink.write(response, true, ByteBuffer.wrap(result.get()));
+					callback.succeeded();
+					return true;
+				}
 			}
 
 		} catch (Exception e) {
@@ -96,15 +109,15 @@ public class JettyMediaHandler extends Handler.Abstract {
 		return true;
 	}
 
-	private Path getTempDirectory () throws IOException {
+	private Path getTempDirectory() throws IOException {
 		if (tempDirectory == null) {
 			tempDirectory = Files.createTempDirectory("cms-media-temp");
 		}
 		return tempDirectory;
 	}
-	
+
 	private Optional<byte[]> getScaledContent(final String mediaPath, final MediaFormat mediaFormat) throws IOException {
-		
+
 		Path resolve = assetBase.resolve(mediaPath);
 
 		if (Files.exists(resolve)) {
@@ -115,37 +128,37 @@ public class JettyMediaHandler extends Handler.Abstract {
 			byte[] bytes = Files.readAllBytes(resolve);
 
 			var result = Scale.scaleWithAspectIfTooLarge(bytes, mediaFormat.width(), mediaFormat.height(), mediaFormat.compression(), mediaFormat.format());
-			
+
 			writeTempContent(mediaPath, mediaFormat, result.data);
-			
+
 			return Optional.of(result.data);
 		}
 		return Optional.empty();
 	}
-	
-	public String getTempFilename (final String mediaPath, final MediaFormat mediaFormat) {
+
+	public String getTempFilename(final String mediaPath, final MediaFormat mediaFormat) {
 		var tempFilename = mediaPath.replace("/", "_").replace(".", "_");
 		tempFilename += "-" + mediaFormat.name() + Scale.fileending4Format(mediaFormat.format());
-		
+
 		return tempFilename;
 	}
-	
-	private void writeTempContent (final String mediaPath, final MediaFormat mediaFormat, byte[] content) throws IOException {
+
+	private void writeTempContent(final String mediaPath, final MediaFormat mediaFormat, byte[] content) throws IOException {
 		var tempFilename = getTempFilename(mediaPath, mediaFormat);
-		
+
 		var tempFile = getTempDirectory().resolve(tempFilename);
 		Files.deleteIfExists(tempFile);
 		Files.write(tempFile, content);
 	}
-	
-	private Optional<byte[]> getTempContent (final String mediaPath, final MediaFormat mediaFormat) throws IOException {
+
+	private Optional<byte[]> getTempContent(final String mediaPath, final MediaFormat mediaFormat) throws IOException {
 		var tempFilename = getTempFilename(mediaPath, mediaFormat);
-		
+
 		var tempFile = getTempDirectory().resolve(tempFilename);
 		if (Files.exists(tempFile)) {
 			return Optional.of(Files.readAllBytes(tempFile));
 		}
-		
+
 		return Optional.empty();
 	}
 
