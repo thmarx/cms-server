@@ -67,13 +67,9 @@ public class JettyMediaHandler extends Handler.Abstract {
 				if (Files.exists(assetPath)) {
 					var bytes = Files.readAllBytes(assetPath);
 					var mimetype = Files.probeContentType(assetPath);
-					
-					response.getHeaders().add("Content-Type", mimetype);
-					response.getHeaders().add("Content-Length", bytes.length);
-					response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
-					response.setStatus(200);
 
-					Content.Sink.write(response, true, ByteBuffer.wrap(bytes));
+					deliver(bytes, mimetype, response);
+					
 					callback.succeeded();
 					return true;
 				}
@@ -90,12 +86,9 @@ public class JettyMediaHandler extends Handler.Abstract {
 
 				var result = getScaledContent(mediaPath, format);
 				if (result.isPresent()) {
-					response.getHeaders().add("Content-Type", Scale.mime4Format(format.format()));
-					response.getHeaders().add("Content-Length", result.get().length);
-					response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
-					response.setStatus(200);
 
-					Content.Sink.write(response, true, ByteBuffer.wrap(result.get()));
+					deliver(result.get(), Scale.mime4Format(format.format()), response);
+					
 					callback.succeeded();
 					return true;
 				}
@@ -107,6 +100,15 @@ public class JettyMediaHandler extends Handler.Abstract {
 		}
 		response.setStatus(404);
 		return true;
+	}
+
+	private void deliver(final byte[] bytes, final String mimetype, Response response) throws IOException {
+		response.getHeaders().add("Content-Type", mimetype);
+		response.getHeaders().add("Content-Length", bytes.length);
+		response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
+		response.setStatus(200);
+
+		Content.Sink.write(response, true, ByteBuffer.wrap(bytes));
 	}
 
 	private Path getTempDirectory() throws IOException {
