@@ -19,6 +19,7 @@ package com.github.thmarx.cms.server.jetty.handler;
  * limitations under the License.
  * #L%
  */
+import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.media.Scale;
 import com.github.thmarx.cms.utils.HTTPUtil;
@@ -105,8 +106,10 @@ public class JettyMediaHandler extends Handler.Abstract {
 	private void deliver(final byte[] bytes, final String mimetype, Response response) throws IOException {
 		response.getHeaders().add("Content-Type", mimetype);
 		response.getHeaders().add("Content-Length", bytes.length);
-		response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
-		response.getHeaders().add("Cache-Control", "max-age=" + Duration.ofMinutes(1).toSeconds());
+		if (!Startup.DEV_MODE) {
+			response.getHeaders().add("Access-Control-Max-Age", Duration.ofDays(10).toSeconds());
+			response.getHeaders().add("Cache-Control", "max-age=" + Duration.ofDays(10).toSeconds());
+		}		
 		response.setStatus(200);
 
 		Content.Sink.write(response, true, ByteBuffer.wrap(bytes));
