@@ -106,6 +106,7 @@ public class JettyMediaHandler extends Handler.Abstract {
 		response.getHeaders().add("Content-Type", mimetype);
 		response.getHeaders().add("Content-Length", bytes.length);
 		response.getHeaders().add("Access-Control-Max-Age", Duration.ofMinutes(1).toSeconds());
+		response.getHeaders().add("Cache-Control", "max-age=" + Duration.ofMinutes(1).toSeconds());
 		response.setStatus(200);
 
 		Content.Sink.write(response, true, ByteBuffer.wrap(bytes));
