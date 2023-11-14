@@ -53,8 +53,8 @@ public class JettyDefaultHandler extends Handler.Abstract {
 			response.setStatus(200);
 
 			if (!content.isPresent()) {
-				try (var context = requestContextFactory.create("/.technical/404", queryParameters)) {
-					content = contentResolver.getContent(context);
+				try (var errorContext = requestContextFactory.create("/.technical/404", queryParameters)) {
+					content = contentResolver.getContent(errorContext);
 					response.setStatus(404);
 				}
 			}

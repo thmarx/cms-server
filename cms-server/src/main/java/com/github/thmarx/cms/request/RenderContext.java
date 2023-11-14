@@ -30,7 +30,12 @@ import lombok.extern.slf4j.Slf4j;
  * @author t.marx
  */
  @Slf4j
-public record RenderContext(MarkdownRenderer markdownRenderer, ContentTags contentTags, Theme theme) {
+public record RenderContext(MarkdownRenderer markdownRenderer, ContentTags contentTags, Theme theme) implements AutoCloseable {
+
+	@Override
+	public void close() throws Exception {
+		markdownRenderer.close();
+	}
 	
 	
 }

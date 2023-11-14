@@ -45,10 +45,10 @@ public class JettyExtensionHandler extends Handler.Abstract {
 
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		try (var context = requestContextFactory.create(request.getHttpURI().getPath(), Map.of())) {
+		try (var requestContext = requestContextFactory.create(request.getHttpURI().getPath(), Map.of())) {
 			String extension = getExtensionName(request);
 			var method = request.getMethod();
-			Optional<HttpHandlerExtension> findHttpHandler = context.extensions().findHttpHandler(method, extension);
+			Optional<HttpHandlerExtension> findHttpHandler = requestContext.extensions().findHttpHandler(method, extension);
 			if (findHttpHandler.isEmpty()) {
 				response.setStatus(404);
 				callback.succeeded();
