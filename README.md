@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 2.8.0
+
+* update markedjs markdown renderer to version 10 [#74](https://github.com/thmarx/cms/issues/74)
+
 ## 2.7.0
 
 * theme support [#12](https://github.com/thmarx/cms/issues/12)
