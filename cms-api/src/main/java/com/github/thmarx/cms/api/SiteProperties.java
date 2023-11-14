@@ -20,42 +20,27 @@ package com.github.thmarx.cms.api;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class SiteProperties {
+public class SiteProperties extends ThemeProperties {
 	
-	private final Map<String, Object> properties;
+	public SiteProperties (final Map<String, Object> properties) {
+		super(properties);
+	}
 	
 	public String hostname () {
 		return (String) properties.getOrDefault("hostname", "localhost");
 	}
 	
-	public Object get (final String name) {
-		return properties.get(name);
-	}
-	public <T> T getOrDefault (final String name, final T defaultValue) {
-		return (T)properties.getOrDefault(name, defaultValue);
-	}
-	
-	private Map<String, Object> getSubMap (final String name) {
-		return (Map<String, Object>) properties.getOrDefault(name, Collections.emptyMap());
-	}
-	
-	public String templateEngine () {
-		return (String)getSubMap("template").getOrDefault("engine", "freemarker");
-	}
 	public String markdownEngine () {
 		return (String)getSubMap("markdown").getOrDefault("engine", "flexmark");
 	}
-	public List<String> activeModules () {
-		return (List<String>)getSubMap("modules").getOrDefault("active", List.of());
+	
+	public String theme () {
+		return (String) properties.get("theme");
 	}
 }

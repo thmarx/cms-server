@@ -23,16 +23,19 @@ package com.github.thmarx.cms.modules.thymeleaf;
 import com.github.thmarx.cms.api.ModuleFileSystem;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.template.TemplateEngine;
+import com.github.thmarx.cms.api.theme.Theme;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 
 /**
  *
@@ -42,18 +45,31 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
 public class ThymeleafTemplateEngine implements TemplateEngine {
 
 	private final org.thymeleaf.TemplateEngine engine;
-	private final Path templateBase;
-	private final ModuleFileSystem fileSystem;
 	private final ServerProperties serverProperties;
 
-	public ThymeleafTemplateEngine(final ModuleFileSystem fileSystem, final ServerProperties serverProperties) {
-		this.fileSystem = fileSystem;
-		this.templateBase = fileSystem.resolve("templates/");
+	public ThymeleafTemplateEngine(final ModuleFileSystem fileSystem, 
+			final ServerProperties serverProperties,
+			final Theme theme) {
+	
+		
 		this.serverProperties = serverProperties;
 
+		var templateBase = fileSystem.resolve("templates/");
+		
+		ITemplateResolver siteTemplateResolver = templateResolver(templateBase);
+		ITemplateResolver themeTemplateResolver = null;
+		if (!theme.empty()) {
+			themeTemplateResolver = templateResolver(theme.templatesPath());
+		}
+
+		engine = new org.thymeleaf.TemplateEngine();
+		engine.setTemplateResolver(new ThemeTemplateResolver(siteTemplateResolver, Optional.ofNullable(themeTemplateResolver)));
+	}
+	
+	private ITemplateResolver templateResolver (final Path templatePath) {
 		var templateResolver = new FileTemplateResolver();
 		templateResolver.setTemplateMode(TemplateMode.HTML);
-		templateResolver.setPrefix(this.templateBase.toString() + File.separatorChar);
+		templateResolver.setPrefix(templatePath.toString() + File.separatorChar);
 		//templateResolver.setSuffix(".html");
 		if (serverProperties.dev()) {
 			templateResolver.setCacheable(false);
@@ -61,9 +77,8 @@ public class ThymeleafTemplateEngine implements TemplateEngine {
 			templateResolver.setCacheable(true);
 			templateResolver.setCacheTTLMs(TimeUnit.MINUTES.toMillis(1));
 		}
-
-		engine = new org.thymeleaf.TemplateEngine();
-		engine.setTemplateResolver(templateResolver);
+		
+		return templateResolver;
 	}
 
 	@Override

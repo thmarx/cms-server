@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.github.thmarx.cms.modules.thymeleaf;
 
 /*-
@@ -23,7 +19,6 @@ package com.github.thmarx.cms.modules.thymeleaf;
  * limitations under the License.
  * #L%
  */
-
 import com.github.thmarx.cms.api.CMSModuleContext;
 import com.github.thmarx.modules.api.ModuleLifeCycleExtension;
 import com.github.thmarx.modules.api.annotation.Extension;
@@ -36,14 +31,18 @@ import com.github.thmarx.modules.api.annotation.Extension;
 public class ThymeleafLifecycleExtension extends ModuleLifeCycleExtension<CMSModuleContext> {
 
 	static ThymeleafTemplateEngine templateEngine;
-	
+
 	@Override
 	public void init() {
 	}
 
 	@Override
 	public void activate() {
-		templateEngine = new ThymeleafTemplateEngine(getContext().getFileSystem(), getContext().getServerProperties());
+		templateEngine = new ThymeleafTemplateEngine(
+				getContext().getFileSystem(), 
+				getContext().getServerProperties(), 
+				getContext().getTheme()
+		);
 	}
 
 	@Override

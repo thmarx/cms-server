@@ -20,25 +20,21 @@ package com.github.thmarx.cms.api;
  * #L%
  */
 
-import java.util.Collections;
+import java.nio.file.Path;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class ServerProperties {
+public class ServerProperties extends YamlProperties {
 	
-	private final Map<String, Object> properties;
+	public ServerProperties (final Map<String, Object> properties) {
+		super(properties);
+	}
 	
 	public boolean dev () {
 		return (Boolean) properties.getOrDefault("dev", true);
-	}
-	
-	private Map<String, Object> getSubMap (final String name) {
-		return (Map<String, Object>) properties.getOrDefault(name, Collections.emptyMap());
 	}
 	
 	public String serverEngine () {
@@ -49,5 +45,9 @@ public class ServerProperties {
 	}
 	public int serverPort () {
 		return (int)getSubMap("server").getOrDefault("port", 8080);
+	}
+	
+	public Path getThemesFolder () {
+		return Path.of("themes/");
 	}
 }

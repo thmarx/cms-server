@@ -20,7 +20,6 @@ package com.github.thmarx.cms.content;
  * #L%
  */
 
-import com.github.thmarx.cms.RequestContext;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
@@ -30,6 +29,7 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.api.utils.SectionUtil;
+import com.github.thmarx.cms.request.RequestContext;
 import com.github.thmarx.modules.api.ModuleManager;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -74,13 +74,14 @@ public class ContentRenderer {
 		model.values.put("navigation", new NavigationFunction(this.fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
 		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
 		model.values.put("requestContext", context);
+		model.values.put("theme", context.renderContext().theme());
 		model.values.put("site", siteProperties);
 		
-		context.renderContext().extensionHolder().getRegisterTemplateSupplier().forEach(service -> {
+		context.extensions().getRegisterTemplateSupplier().forEach(service -> {
 			model.values.put(service.name(), service.supplier());
 		});
 
-		context.renderContext().extensionHolder().getRegisterTemplateFunctions().forEach(service -> {
+		context.extensions().getRegisterTemplateFunctions().forEach(service -> {
 			model.values.put(service.name(), service.function());
 		});
 		
