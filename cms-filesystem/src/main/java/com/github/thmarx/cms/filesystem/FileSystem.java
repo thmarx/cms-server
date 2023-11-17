@@ -65,33 +65,34 @@ public class FileSystem implements ModuleFileSystem {
 	@Getter
 	private final MetaData metaData = new MetaData();
 
-	public <T> Query<T> query (final Function<MetaData.MetaNode, T> nodeMapper) {
+	public <T> Query<T> query(final Function<MetaData.MetaNode, T> nodeMapper) {
 		return new Query(new ArrayList<>(metaData.nodes().values()), nodeMapper);
 	}
-	
-	public <T> Query<T>  query (final String startURI, final Function<MetaData.MetaNode, T> nodeMapper) {
-		
+
+	public <T> Query<T> query(final String startURI, final Function<MetaData.MetaNode, T> nodeMapper) {
+
 		final String uri;
 		if (startURI.startsWith("/")) {
 			uri = startURI.substring(1);
 		} else {
 			uri = startURI;
 		}
-		
+
 		var nodes = metaData.nodes().values().stream().filter(node -> node.uri().startsWith(uri)).toList();
-		
+
 		return new Query(nodes, nodeMapper);
 	}
-	
+
 	@Experimental
-	protected <T> Dimension<T, MetaData.MetaNode> createDimension (final String name, Function<MetaData.MetaNode, T> dimFunc, Class<T> type) {
+	protected <T> Dimension<T, MetaData.MetaNode> createDimension(final String name, Function<MetaData.MetaNode, T> dimFunc, Class<T> type) {
 		return metaData.getDataFilter().dimension(name, dimFunc, type);
 	}
+
 	@Experimental
-	protected Dimension<?, MetaData.MetaNode> getDimension (final String name) {
+	protected Dimension<?, MetaData.MetaNode> getDimension(final String name) {
 		return metaData.getDataFilter().dimension(name);
 	}
-	
+
 	public boolean isVisible(final String uri) {
 		var node = metaData.byUri(uri);
 		if (node.isEmpty()) {
@@ -141,6 +142,24 @@ public class FileSystem implements ModuleFileSystem {
 					.forEach((node) -> {
 						nodes.add(node);
 					});
+		} else if (folder.contains("/")) {
+			MetaData.MetaNode node = null;
+			var parts = folder.split("\\/");
+			for (var part : parts) {
+				if (node == null) {
+					node = metaData.tree().get(part);
+				} else {
+					node = node.children().get(part);
+				}
+			}
+			if (node != null) {
+				node.children().values()
+						.stream()
+						.filter(n -> n.isDirectory())
+						.forEach((n) -> {
+							nodes.add(n);
+						});
+			}
 		} else {
 			metaData.tree().get(folder).children().values()
 					.stream()
@@ -184,7 +203,7 @@ public class FileSystem implements ModuleFileSystem {
 					.filter(node -> !node.isHidden())
 					.filter(node -> node.isPublished())
 					.filter(node -> node.isSection())
-					.filter(node -> { 
+					.filter(node -> {
 						return isSectionOf.matcher(node.name()).matches() || isOrderedSectionOf.matcher(node.name()).matches();
 					})
 					.forEach((node) -> {
