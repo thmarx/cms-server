@@ -22,6 +22,7 @@ package com.github.thmarx.cms.template.functions.list;
 
 import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.TestHelper;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
@@ -41,9 +42,12 @@ public class NodeListFunctionBuilderNGTest {
 	static NodeListFunctionBuilder nodeList;
 	static FileSystem fileSystem;
 	
+	static ContentParser parser = new ContentParser();
+	static MarkdownRenderer markdownRenderer = TestHelper.getRenderer();
+	
 	@BeforeAll
 	static void setup () throws IOException {
-		ContentParser parser = new ContentParser();
+		
 		fileSystem = new FileSystem(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
 				return parser.parseMeta(file);
@@ -52,7 +56,6 @@ public class NodeListFunctionBuilderNGTest {
 			}
 		});
 		fileSystem.init();
-		var markdownRenderer = TestHelper.getRenderer();
 		nodeList = new NodeListFunctionBuilder(fileSystem, fileSystem.resolve("content/").resolve("index.md"), parser, markdownRenderer);
 	}
 	@AfterAll
@@ -135,6 +138,20 @@ public class NodeListFunctionBuilderNGTest {
 						"/nodelist/folder1/test",
 						"/nodelist/folder2",
 						"/nodelist/folder2/test"
+				);
+	}
+	
+	@Test
+	void test_from_subfolder () {
+		var nodeList = new NodeListFunctionBuilder(fileSystem, fileSystem.resolve("content/nodelist2/index.md"), parser, markdownRenderer);
+		Page<Node> page = nodeList.from("./sub_folder/*").page(1).size(10).list();
+		var nodeUris = page.getItems().stream().map(Node::path).collect(Collectors.toList());
+		Assertions.assertThat(nodeUris)
+				.containsExactlyInAnyOrder(
+						"/nodelist2/sub_folder/folder1", 
+						"/nodelist2/sub_folder/folder1/test",
+						"/nodelist2/sub_folder/folder2",
+						"/nodelist2/sub_folder/folder2/test"
 				);
 	}
 }
