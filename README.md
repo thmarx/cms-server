@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 2.9.1
+
+* Bugfix for nodelist function if current not is not on root level and use relative start path
+
 ## 2.9.0
 
 * error, if theme template engine does not match site template engine [#76](https://github.com/thmarx/cms/issues/76)
