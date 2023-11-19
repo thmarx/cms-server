@@ -77,7 +77,7 @@ public class QueryTest {
 	@Test
 	public void test_not() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").not(true).get();
+		var nodes = query.where("featured").not_eq(true).get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.stream().map(MetaData.MetaNode::uri).toList()).contains("/test1", "/test2");
 	}
@@ -92,7 +92,7 @@ public class QueryTest {
 	@Test
 	public void test_sort_asc() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").eq(false).sort("index").asc().get();
+		var nodes = query.where("featured").eq(false).orderby("index").asc().get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 		Assertions.assertThat(nodes.get(1).uri()).isEqualTo("/test2");
@@ -101,7 +101,7 @@ public class QueryTest {
 	@Test
 	public void test_sort_desc() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").eq(false).sort("index").desc().get();
+		var nodes = query.where("featured").eq(false).orderby("index").desc().get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 		Assertions.assertThat(nodes.get(1).uri()).isEqualTo("/test1");
@@ -110,7 +110,7 @@ public class QueryTest {
 	@Test
 	public void test_offset_0() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").eq(false).sort("index").desc().get(0, 1);
+		var nodes = query.where("featured").eq(false).orderby("index").desc().get(0, 1);
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 	}
@@ -118,7 +118,7 @@ public class QueryTest {
 	@Test
 	public void test_offset_1() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").eq(false).sort("index").desc().get(1, 1);
+		var nodes = query.where("featured").eq(false).orderby("index").desc().get(1, 1);
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
@@ -137,5 +137,47 @@ public class QueryTest {
 		var nodes = query.where("tags").contains_not("one").get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
+	}
+	
+	@Test
+	public void test_gt() {
+		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
+		var nodes = query.where("index").gt(1).get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
+	}
+	
+	@Test
+	public void test_gte() {
+		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
+		var nodes = query.where("index").gte(2).get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
+	}
+	
+	@Test
+	public void test_lt() {
+		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
+		var nodes = query.where("index").lt(2).get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
+	}
+	
+	@Test
+	public void test_lte() {
+		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
+		var nodes = query.where("index").lte(1).get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
+	}
+	
+	@Test
+	public void test_group_by() {
+		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
+		var nodes = query.groupby("featured");
+		Assertions.assertThat(nodes).hasSize(2);
+		Assertions.assertThat(nodes).containsKeys(true, false);
+		Assertions.assertThat(nodes.get(true).stream().map(MetaData.MetaNode::uri).toList()).contains("/", "/2");
+		Assertions.assertThat(nodes.get(false).stream().map(MetaData.MetaNode::uri).toList()).contains("/test1", "/test2");
 	}
 }

@@ -26,6 +26,7 @@ import static com.github.thmarx.cms.filesystem.query.QueryUtil.sorted;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
@@ -65,20 +66,24 @@ public class Query<T> {
 		return Collections.unmodifiableList(filteredNodes.stream().map(nodeMapper).toList());
 	}
 	
-	public Sort<T> sort (final String field) {
+	public Sort<T> orderby (final String field) {
 		return new Sort<T>(field, nodes, nodeMapper);
+	}
+	
+	public Map<Object, List<MetaData.MetaNode>> groupby (final String field) {
+		return QueryUtil.groupby(nodes, field);
 	}
 
 	
 
 	public static record Where<T>(String field, Collection<MetaData.MetaNode> nodes, Function<MetaData.MetaNode, T> nodeMapper) {
 		
-		public Query<T> not(Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.NOT_EQUALS), nodeMapper);
+		public Query<T> not_eq(Object value) {
+			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.NOT_EQ), nodeMapper);
 		}
 
 		public Query<T> eq(Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.EQUALS), nodeMapper);
+			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.EQ), nodeMapper);
 		}
 		
 		public Query<T> contains(Object value) {
@@ -86,6 +91,20 @@ public class Query<T> {
 		}
 		public Query<T> contains_not(Object value) {
 			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.CONTAINS_NOT), nodeMapper);
+		}
+		
+		public Query<T> gt (Object value) {
+			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.GT), nodeMapper);
+		}
+		public Query<T> gte (Object value) {
+			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.GTE), nodeMapper);
+		}
+		
+		public Query<T> lt (Object value) {
+			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.LT), nodeMapper);
+		}
+		public Query<T> lte (Object value) {
+			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.LTE), nodeMapper);
 		}
 	}
 	public static record Sort<T>(String field, Collection<MetaData.MetaNode> nodes, Function<MetaData.MetaNode, T> nodeMapper) {
