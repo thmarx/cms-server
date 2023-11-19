@@ -43,6 +43,11 @@ public class Query<T> {
 		return new Where<T>(field, nodes, nodeMapper);
 	}
 
+	public List<T> get(final long offset, final long size) {
+		System.out.println("");
+		return get((int)offset, (int)size);
+	}
+	
 	public List<T> get(final int offset, final int size) {
 		var filteredNodes = nodes.stream()
 				.filter(node -> !node.isDirectory())
@@ -68,12 +73,12 @@ public class Query<T> {
 	
 
 	public static record Where<T>(String field, Collection<MetaData.MetaNode> nodes, Function<MetaData.MetaNode, T> nodeMapper) {
-
+		
 		public Query<T> not(Object value) {
 			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.NOT_EQUALS), nodeMapper);
 		}
 
-		public Query<T> is(Object value) {
+		public Query<T> eq(Object value) {
 			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.EQUALS), nodeMapper);
 		}
 		

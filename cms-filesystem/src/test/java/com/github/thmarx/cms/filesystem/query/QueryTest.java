@@ -69,7 +69,7 @@ public class QueryTest {
 	@Test
 	public void test_is() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").is(true).get();
+		var nodes = query.where("featured").eq(true).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.getFirst().uri()).isEqualTo("/2");
 	}
@@ -92,7 +92,7 @@ public class QueryTest {
 	@Test
 	public void test_sort_asc() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").is(false).sort("index").asc().get();
+		var nodes = query.where("featured").eq(false).sort("index").asc().get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 		Assertions.assertThat(nodes.get(1).uri()).isEqualTo("/test2");
@@ -101,7 +101,7 @@ public class QueryTest {
 	@Test
 	public void test_sort_desc() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").is(false).sort("index").desc().get();
+		var nodes = query.where("featured").eq(false).sort("index").desc().get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 		Assertions.assertThat(nodes.get(1).uri()).isEqualTo("/test1");
@@ -110,7 +110,7 @@ public class QueryTest {
 	@Test
 	public void test_offset_0() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").is(false).sort("index").desc().get(0, 1);
+		var nodes = query.where("featured").eq(false).sort("index").desc().get(0, 1);
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 	}
@@ -118,7 +118,7 @@ public class QueryTest {
 	@Test
 	public void test_offset_1() {
 		Query<MetaData.MetaNode> query = new Query<>(nodes, (node) -> node);
-		var nodes = query.where("featured").is(false).sort("index").desc().get(1, 1);
+		var nodes = query.where("featured").eq(false).sort("index").desc().get(1, 1);
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
