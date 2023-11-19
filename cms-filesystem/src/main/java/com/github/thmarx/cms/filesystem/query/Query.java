@@ -44,7 +44,6 @@ public class Query<T> {
 	}
 
 	public List<T> get(final long offset, final long size) {
-		System.out.println("");
 		return get((int)offset, (int)size);
 	}
 	
