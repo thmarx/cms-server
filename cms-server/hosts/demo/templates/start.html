@@ -15,7 +15,18 @@
 	</div>
 
 	<div class="container">
-		<th:block th:each="featured : ${query.create().where('featured').is(true).get(0, 1)}">
+		<h2>Featured</h2>
+		<th:block th:each="featured : ${query.create().where('featured', true).get(0, 1)}">
+			<div class="featured">
+				<h3 th:text="${featured.name}"></h3>
+				<a th:href="${featured.path}">goto</a>
+			</div>
+		</th:block>
+	</div>
+
+	<div class="container">
+		<h2>Featured IN </h2>
+		<th:block th:each="featured : ${query.create().whereIn('featured', true, false).get(0, 1)}">
 			<div class="featured">
 				<h3 th:text="${featured.name}"></h3>
 				<a th:href="${featured.path}">goto</a>

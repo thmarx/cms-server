@@ -61,7 +61,7 @@ public class FileSystemTest {
 	@Test
 	public void test_query() throws IOException {
 
-		var nodes = fileSystem.query(node -> node).where("featured").eq(true).get();
+		var nodes = fileSystem.query(node -> node).where("featured", true).get();
 		
 		Assertions.assertThat(nodes).hasSize(2);
 	}
@@ -69,7 +69,7 @@ public class FileSystemTest {
 	@Test
 	public void test_query_with_start_uri() throws IOException {
 
-		var nodes = fileSystem.query("/test", node -> node).where("featured").eq(true).get();
+		var nodes = fileSystem.query("/test", node -> node).where("featured", true).get();
 		
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.getFirst().uri()).isEqualTo("test/test1.md");

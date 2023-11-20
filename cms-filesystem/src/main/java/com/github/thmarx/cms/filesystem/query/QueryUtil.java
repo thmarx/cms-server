@@ -23,6 +23,8 @@ package com.github.thmarx.cms.filesystem.query;
  */
 
 import com.github.thmarx.cms.filesystem.MetaData;
+import com.google.common.base.Strings;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +45,8 @@ final class QueryUtil {
 	public static enum Operator {
 		CONTAINS,
 		CONTAINS_NOT,
+		IN,
+		NOT_IN,
 		EQ,
 		NOT_EQ,
 		GT,
@@ -50,6 +54,21 @@ final class QueryUtil {
 		LT,
 		LTE
 		;
+	}
+	
+	public static Operator operator4String (final String operator) {
+		if (Strings.isNullOrEmpty(operator)) {
+			throw new RuntimeException("operator must not be empty");
+		}
+		return switch (operator) {
+			case "=" -> Operator.EQ;
+			case "!=" -> Operator.NOT_EQ;
+			case ">" -> Operator.GT;
+			case ">=" -> Operator.GTE;
+			case "<" -> Operator.LT;
+			case "<=" -> Operator.LTE;
+			default -> throw new IllegalArgumentException("unknown operator " + operator);
+		};
 	}
 
 	protected static Map<Object, List<MetaData.MetaNode>> groupby (final Collection<MetaData.MetaNode> nodes, final String field) {
@@ -136,6 +155,22 @@ final class QueryUtil {
 				return compare(node_value, value) < 0;
 			} else if (Operator.LTE.equals(operator)) {
 				return compare(node_value, value) <= 0;
+			} else if (Operator.IN.equals(operator)) {
+				List<?> values = Collections.emptyList();
+				if (value instanceof List) {
+					values = (List<?>)value;
+				} else if (value.getClass().isArray()) {
+					values = Arrays.asList((Object[])value);
+				}
+				return values.contains(node_value);
+			} else if (Operator.NOT_IN.equals(operator)) {
+				List<?> values = Collections.emptyList();
+				if (value instanceof List) {
+					values = (List<?>)value;
+				} else if (value.getClass().isArray()) {
+					values = Arrays.asList((Object[])value);
+				}
+				return !values.contains(node_value);
 			}
 			
 			log.error("unknown operation " + operator.name());

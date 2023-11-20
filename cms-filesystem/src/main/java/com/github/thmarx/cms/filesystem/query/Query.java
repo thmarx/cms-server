@@ -42,10 +42,42 @@ public class Query<T> {
 	private final Collection<MetaData.MetaNode> nodes;
 	public final Function<MetaData.MetaNode, T> nodeMapper;
 
-	public Where<T> where(final String field) {
-		return new Where<T>(field, nodes, nodeMapper);
+	public Query<T> where (final String field, final Object value) {
+		return where(field, QueryUtil.Operator.EQ, value);
 	}
 
+	public Query<T> where (final String field, final String operator, final Object value) {
+		return where(field, QueryUtil.operator4String(operator), value);
+	}
+	
+	public Query<T> whereContains (final String field, final Object value) {
+		return where(field, QueryUtil.Operator.CONTAINS, value);
+	}
+	
+	public Query<T> whereContainsNot (final String field, final Object value) {
+		return where(field, QueryUtil.Operator.CONTAINS_NOT, value);
+	}
+	
+	public Query<T> whereIn (final String field, final Object... value) {
+		return where(field, QueryUtil.Operator.IN, value);
+	}
+	
+	public Query<T> whereNotIn (final String field, final Object... value) {
+		return where(field, QueryUtil.Operator.NOT_IN, value);
+	}
+	
+	public Query<T> whereIn (final String field, final List<Object> value) {
+		return where(field, QueryUtil.Operator.IN, value);
+	}
+	
+	public Query<T> whereNotIn (final String field, final List<Object> value) {
+		return where(field, QueryUtil.Operator.NOT_IN, value);
+	}
+	
+	private Query<T> where (final String field, final QueryUtil.Operator operator, final Object value) {
+		return new Query<>(filtered(nodes, field, value, operator), nodeMapper);
+	}
+	
 	public List<T> get(final long offset, final long size) {
 		return get((int)offset, (int)size);
 	}
@@ -76,39 +108,6 @@ public class Query<T> {
 		return QueryUtil.groupby(nodes, field);
 	}
 
-	
-
-	public static record Where<T>(String field, Collection<MetaData.MetaNode> nodes, Function<MetaData.MetaNode, T> nodeMapper) {
-		
-		public Query<T> not_eq(Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.NOT_EQ), nodeMapper);
-		}
-
-		public Query<T> eq(Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.EQ), nodeMapper);
-		}
-		
-		public Query<T> contains(Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.CONTAINS), nodeMapper);
-		}
-		public Query<T> contains_not(Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.CONTAINS_NOT), nodeMapper);
-		}
-		
-		public Query<T> gt (Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.GT), nodeMapper);
-		}
-		public Query<T> gte (Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.GTE), nodeMapper);
-		}
-		
-		public Query<T> lt (Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.LT), nodeMapper);
-		}
-		public Query<T> lte (Object value) {
-			return new Query<>(filtered(nodes, field, value, QueryUtil.Operator.LTE), nodeMapper);
-		}
-	}
 	public static record Sort<T>(String field, Collection<MetaData.MetaNode> nodes, Function<MetaData.MetaNode, T> nodeMapper) {
 
 		public Query<T> asc() {
