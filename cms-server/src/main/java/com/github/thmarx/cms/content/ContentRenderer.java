@@ -76,7 +76,7 @@ public class ContentRenderer {
 		
 		model.values.put("navigation", new NavigationFunction(this.fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
 		model.values.put("nodeList", new NodeListFunctionBuilder(fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
-		model.values.put("query", new QueryFunction(fileSystem));
+		model.values.put("query", new QueryFunction(fileSystem, contentFile, contentParser, context.renderContext().markdownRenderer()));
 		model.values.put("requestContext", context);
 		model.values.put("theme", context.renderContext().theme());
 		model.values.put("site", siteProperties);

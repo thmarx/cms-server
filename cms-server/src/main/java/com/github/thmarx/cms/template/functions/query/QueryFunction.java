@@ -21,43 +21,52 @@ package com.github.thmarx.cms.template.functions.query;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.filesystem.query.Query;
+import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.template.functions.list.Node;
 import com.github.thmarx.cms.utils.NodeUtil;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
+import java.nio.file.Path;
+import java.util.function.Function;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class QueryFunction {
+public class QueryFunction extends AbstractCurrentNodeFunction {
 
-	private final FileSystem fileSystem;
+	Function<MetaData.MetaNode, Node> nodeMapper = null;
+
+	public QueryFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
+		super(fileSystem, currentNode, contentParser, markdownRenderer);
+	}
+	
+	private Function<MetaData.MetaNode, Node> nodeMapper() {
+		if (nodeMapper == null) {
+			nodeMapper = node -> {
+				var name = NodeUtil.getName(node);
+				var temp_path = fileSystem.resolve("content/").resolve(node.uri());
+				var url = toUrl(node.uri());
+				var md = parse(temp_path);
+				var excerpt = markdownRenderer.excerpt(md.get().content(), 200);
+				final Node navNode = new Node(name, url, excerpt, node.data());
+
+				return navNode;
+			};
+		}
+
+		return nodeMapper;
+	}
 
 	public Query create() {
-		return fileSystem.query(node -> {
-			var name = NodeUtil.getName(node);
-			var url = toUrl(node.uri());
-			final Node navNode = new Node(name, url, "", node.data());
-
-			return navNode;
-		});
+		return fileSystem.query(nodeMapper());
 	}
 
 	public Query create(final String startUri) {
-		return fileSystem.query(startUri, node -> {
-			var name = NodeUtil.getName(node);
-			var url = toUrl(node.uri());
-			final Node navNode = new Node(name, url, "", node.data());
-
-			return navNode;
-		});
+		return fileSystem.query(startUri, nodeMapper());
 	}
 
 	protected String toUrl(String uri) {
@@ -71,10 +80,10 @@ public class QueryFunction {
 		if (!uri.startsWith("/")) {
 			uri = "/" + uri;
 		}
-		if (uri.length() > 1 && uri.endsWith("/") ) {
+		if (uri.length() > 1 && uri.endsWith("/")) {
 			uri = uri.substring(0, uri.length() - 1);
 		}
-		
+
 		return uri;
 	}
 }

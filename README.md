@@ -8,6 +8,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 ## 2.10.0
 
+* let query return excerpt from content
+
+## 2.10.0
+
 * Switch to GPLv3 [#82](https://github.com/thmarx/cms/issues/82)
 * **BUGIX** Fix issue with query function when using pebble template engine [#81](https://github.com/thmarx/cms/issues/81)
 * **FEATURE** Extend query function to allow le, leq, gt and gte [#79](https://github.com/thmarx/cms/issues/79)
