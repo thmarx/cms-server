@@ -6,7 +6,13 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
-## 2.10.0
+## 2.12.0
+
+* **FEATURE** Temp directory per site [#89](https://github.com/thmarx/cms/issues/89)
+* **FEATURE** Cropping of images [#88](https://github.com/thmarx/cms/issues/88)
+* **FEATURE** Extend query function to get count [#86](https://github.com/thmarx/cms/issues/86)
+
+## 2.11.0
 
 * let query return excerpt from content
 
