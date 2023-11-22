@@ -69,7 +69,11 @@ public class SearchLifecycleExtension extends ModuleLifeCycleExtension<CMSModule
 		var contentPath = getContext().getFileSystem().resolve("content");
 		try {
 			searchEngine.clear();
-			Files.walkFileTree(contentPath, new FileIndexingVisitor(contentPath, SearchLifecycleExtension.searchEngine, getContext()));
+			Files.walkFileTree(contentPath, new FileIndexingVisitor(
+					contentPath, 
+					SearchLifecycleExtension.searchEngine, 
+					getContext()
+			));
 			searchEngine.commit();
 		} catch (IOException e) {
 			log.error(null, e);

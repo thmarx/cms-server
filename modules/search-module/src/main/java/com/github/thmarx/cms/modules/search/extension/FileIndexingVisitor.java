@@ -22,6 +22,7 @@ package com.github.thmarx.cms.modules.search.extension;
  * #L%
  */
 import com.github.thmarx.cms.api.CMSModuleContext;
+import com.github.thmarx.cms.api.ModuleFileSystem;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import com.github.thmarx.cms.modules.search.IndexDocument;
@@ -33,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +67,14 @@ public class FileIndexingVisitor extends SimpleFileVisitor<Path> {
 
 		try {
 			log.trace("indexing file {}", file.getFileName().toString());
+			
+			if (!shouldIndex(file)) {
+				log.trace("indexing is disabled for this file");
+				return FileVisitResult.CONTINUE;
+			}
+			
 			var uri = PathUtil.toURI(file, contentBase);
+			
 			var content = getContent(file);
 
 			if (content.isPresent()) {
@@ -99,6 +108,15 @@ public class FileIndexingVisitor extends SimpleFileVisitor<Path> {
 		return FileVisitResult.CONTINUE;
 	}
 
+	private boolean shouldIndex (Path contentFile) {
+		Optional<Map<String, Object>> meta = moduleContext.getFileSystem().getMeta(PathUtil.toRelativeFile(contentFile, contentBase));
+		
+		return (Boolean)((Map<String, Object>) meta
+				.orElse(Map.of())
+				.getOrDefault("search", Map.of()))
+				.getOrDefault("index", Boolean.TRUE);
+	}
+	
 	private boolean noindex (final Document document) {
 		Element meta = document.selectFirst("head meta[name='robots']");
 		

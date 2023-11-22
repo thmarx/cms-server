@@ -104,6 +104,16 @@ public class FileSystem implements ModuleFileSystem {
 		var n = node.get();
 		return MetaData.isVisible(n);
 	}
+	
+	@Override
+	public Optional<Map<String,Object>> getMeta(final String uri) {
+		var node = metaData.byUri(uri);
+		if (node.isEmpty()) {
+			return Optional.empty();
+		}
+		var n = node.get();
+		return Optional.of(n.data());
+	}
 
 	public void shutdown() {
 		if (fileWatcher != null) {

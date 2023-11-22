@@ -1,6 +1,8 @@
 ---
 title: Startseite
 template: start.html
+search:
+    index: false
 ---
 
 # Demo Project

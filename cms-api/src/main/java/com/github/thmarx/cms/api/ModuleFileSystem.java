@@ -23,6 +23,8 @@ package com.github.thmarx.cms.api;
  */
 
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  *
@@ -31,5 +33,6 @@ import java.nio.file.Path;
 public interface ModuleFileSystem {
 
 	Path resolve(String path);
-	
+
+	Optional<Map<String, Object>> getMeta(String path);
 }
