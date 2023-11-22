@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,11 @@ public class PugTemplateEngineNGTest {
 			@Override
 			public Path resolve(String path) {
 				return Path.of("src/test/resources").resolve(path);
+			}
+
+			@Override
+			public Optional<Map<String, Object>> getMeta(String path) {
+				throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
 			}
 		};
 		engine = new PugTemplateEngine(fileSystem, properties, new Theme() {

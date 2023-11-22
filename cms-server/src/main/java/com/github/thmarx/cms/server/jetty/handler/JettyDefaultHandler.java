@@ -55,10 +55,16 @@ public class JettyDefaultHandler extends Handler.Abstract {
 			response.setStatus(200);
 
 			if (!content.isPresent()) {
-				try (var errorContext = requestContextFactory.create("/.technical/404", queryParameters)) {
-					content = contentResolver.getContent(errorContext);
-					response.setStatus(404);
+
+				// try to resolve static files
+				content = contentResolver.getStaticContent(uri);
+				if (content.isEmpty()) {
+					try (var errorContext = requestContextFactory.create("/.technical/404", queryParameters)) {
+						content = contentResolver.getContent(errorContext);
+						response.setStatus(404);
+					}
 				}
+
 			}
 			response.getHeaders().add("Content-Type", "text/html; charset=utf-8");
 

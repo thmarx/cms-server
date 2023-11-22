@@ -31,6 +31,10 @@ import java.nio.file.Path;
  */
 public class PathUtil {
 
+	public static boolean isContentFile (final Path file) {
+		return file.toString().endsWith(".md");
+	}
+	
 	public static boolean isChild(Path possibleParent, Path maybeChild) throws IOException {
 		return maybeChild.toFile().getCanonicalPath().startsWith(possibleParent.toFile().getCanonicalPath());
 	}

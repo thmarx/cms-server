@@ -27,6 +27,8 @@ import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.request.RequestContext;
 import com.google.common.base.Strings;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -48,6 +50,22 @@ public class ContentResolver {
 	private final ContentRenderer contentRenderer;
 	
 	private final FileSystem fileSystem;
+	
+	public Optional<String> getStaticContent (String uri) {
+		if (uri.startsWith("/")) {
+			uri = uri.substring(1);
+		}
+		Path staticFile = contentBase.resolve(uri);
+		try {
+			if (!PathUtil.isChild(contentBase, staticFile)) {
+				return Optional.empty();
+			}
+			return Optional.ofNullable(Files.readString(staticFile, StandardCharsets.UTF_8));
+		} catch (IOException ex) {
+			log.error("", ex);
+		}
+		return Optional.empty();
+	}
 	
 	public Optional<String> getContent(final RequestContext context) {
 		String path;

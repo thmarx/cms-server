@@ -248,6 +248,9 @@ public class FileSystem implements ModuleFileSystem {
 		if (!Files.exists(file)) {
 			return;
 		}
+		if (!PathUtil.isContentFile(file)) {
+			return;
+		}
 		log.debug("update meta data for {}", file.toString());
 		Map<String, Object> fileMeta = contentParser.apply(file);
 
