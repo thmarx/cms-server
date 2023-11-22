@@ -21,36 +21,38 @@ package com.github.thmarx.cms.api;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.media.MediaFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
+@Slf4j
 public class ThemeProperties extends YamlProperties {
-	
-	public ThemeProperties (final Map<String, Object> properties) {
+
+	public ThemeProperties(final Map<String, Object> properties) {
 		super(properties);
 	}
-	
-	public String templateEngine () {
-		return (String)getSubMap("template").get("engine");
+
+	public String templateEngine() {
+		return (String) getSubMap("template").get("engine");
 	}
-	
-	public List<String> activeModules () {
-		return (List<String>)getSubMap("modules").getOrDefault("active", List.of());
+
+	public List<String> activeModules() {
+		return (List<String>) getSubMap("modules").getOrDefault("active", List.of());
 	}
-	
+
 	public Map<String, MediaFormat> getMediaFormats() {
-			Map<String, MediaFormat> mediaFormats = new HashMap<>();
-			Map<String, Object> media = (Map<String, Object>) properties.getOrDefault("media", Collections.emptyMap());
-			List<Map<String, Object>> formats = (List<Map<String, Object>>) media.getOrDefault("formats", Collections.emptyList());
-			formats.forEach(map -> {
+		Map<String, MediaFormat> mediaFormats = new HashMap<>();
+		Map<String, Object> media = (Map<String, Object>) properties.getOrDefault("media", Collections.emptyMap());
+		List<Map<String, Object>> formats = (List<Map<String, Object>>) media.getOrDefault("formats", Collections.emptyList());
+		formats.forEach(map -> {
+			try {
 				var mediaFormat = new MediaFormat(
 						(String) map.get("name"),
 						(int) map.get("width"),
@@ -60,10 +62,13 @@ public class ThemeProperties extends YamlProperties {
 						(boolean) map.getOrDefault("cropped", false)
 				);
 				mediaFormats.put(mediaFormat.name(), mediaFormat);
-			});
+			} catch (Exception e) {
+				log.error("error createing format " + map.get("name"), e);
+			}
+
+		});
 
 		return mediaFormats;
 	}
-	
-	
+
 }

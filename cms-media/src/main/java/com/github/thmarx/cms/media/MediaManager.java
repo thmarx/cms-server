@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
 
@@ -41,6 +42,7 @@ import net.coobird.thumbnailator.geometry.Positions;
  *
  * @author t.marx
  */
+@Slf4j
 @RequiredArgsConstructor
 public class MediaManager {
 
