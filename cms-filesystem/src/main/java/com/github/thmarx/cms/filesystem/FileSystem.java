@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import lombok.Getter;
@@ -67,11 +68,11 @@ public class FileSystem implements ModuleFileSystem {
 	@Getter
 	private final MetaData metaData = new MetaData();
 
-	public <T> Query<T> query(final Function<MetaData.MetaNode, T> nodeMapper) {
+	public <T> Query<T> query(final BiFunction<MetaData.MetaNode, Integer, T> nodeMapper) {
 		return new Query(new ArrayList<>(metaData.nodes().values()), nodeMapper);
 	}
 
-	public <T> Query<T> query(final String startURI, final Function<MetaData.MetaNode, T> nodeMapper) {
+	public <T> Query<T> query(final String startURI, final BiFunction<MetaData.MetaNode, Integer, T> nodeMapper) {
 
 		final String uri;
 		if (startURI.startsWith("/")) {

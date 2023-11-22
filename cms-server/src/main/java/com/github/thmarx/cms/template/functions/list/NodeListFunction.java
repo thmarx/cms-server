@@ -69,10 +69,14 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 	}
 
 	public Page<Node> list(String start, int page, int size, final Comparator<MetaData.MetaNode> comparator) {
-		return getNodes(start, page, size, comparator);
+		return list(start, page, size, Constants.DEFAULT_EXCERPT_LENGTH, comparator);
 	}
 
-	Page<Node> getNodes(final String start, int page, int size, final Comparator<MetaData.MetaNode> comparator) {
+	public Page<Node> list(String start, int page, int size, int excerptLength, final Comparator<MetaData.MetaNode> comparator) {
+		return getNodes(start, page, size, excerptLength, comparator);
+	}
+	
+	Page<Node> getNodes(final String start, int page, int size, int excerptLength, final Comparator<MetaData.MetaNode> comparator) {
 
 		Path baseNode = null;
 		String path = start;
@@ -120,7 +124,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 						var temp_path = contentBase.resolve(node.uri());
 						var name = NodeUtil.getName(node);
 						var md = parse(temp_path);
-						var excerpt = markdownRenderer.excerpt(md.get().content(), 200);
+						var excerpt = markdownRenderer.excerpt(md.get().content(), excerptLength);
 						final Node navNode = new Node(name, getUrl(temp_path), excerpt, node.data());
 						navNodes.add(navNode);
 					});

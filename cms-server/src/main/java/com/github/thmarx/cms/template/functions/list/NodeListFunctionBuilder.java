@@ -22,6 +22,7 @@ package com.github.thmarx.cms.template.functions.list;
  * #L%
  */
 
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
@@ -43,6 +44,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 
 	int page = NodeListFunction.DEFAULT_PAGE;
 	int size = NodeListFunction.DEFAUTL_PAGE_SIZE;
+	int excerptLength = Constants.DEFAULT_EXCERPT_LENGTH;
 
 	String from = "";
 
@@ -77,6 +79,15 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return this;
 	}
 
+	public NodeListFunctionBuilder excerpt(int length) {
+		this.excerptLength = length;
+		return this;
+	}
+	public NodeListFunctionBuilder excerpt(long length) {
+		this.excerptLength = (int)length;
+		return this;
+	}
+	
 	public NodeListFunctionBuilder page(int page) {
 		this.page = page;
 		return this;
@@ -132,7 +143,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 			comparator = comparator.reversed();
 		}
 
-		return function.list(from, page, size, comparator);
+		return function.list(from, page, size, excerptLength, comparator);
 	}
 
 	private Comparator<MetaData.MetaNode> getComparator() {

@@ -66,4 +66,5 @@ public abstract class Constants {
 	public static final int DEFAULT_SECTION_ORDERED_INDEX = 0;
 	public static final double DEFAULT_MENU_POSITION = 1000f;
 	public static final boolean DEFAULT_MENU_VISIBILITY = true;
+	public static final int DEFAULT_EXCERPT_LENGTH = 200;
 }

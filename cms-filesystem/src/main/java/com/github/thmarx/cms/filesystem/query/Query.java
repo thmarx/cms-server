@@ -22,6 +22,7 @@ package com.github.thmarx.cms.filesystem.query;
  * #L%
  */
 
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.filesystem.MetaData;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.filtered;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.sorted;
@@ -29,19 +30,32 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import lombok.RequiredArgsConstructor;
+import java.util.function.BiFunction;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
 public class Query<T> {
 
 	private final Collection<MetaData.MetaNode> nodes;
-	public final Function<MetaData.MetaNode, T> nodeMapper;
+//	public final BiFunction<MetaData.MetaNode, Integer, T> nodeMapper;
 
+	private ExcerptMapperFunction<T> nodeMapper;
+	
+	public Query(Collection<MetaData.MetaNode> nodes, BiFunction<MetaData.MetaNode, Integer, T> nodeMapper) {
+		this(nodes, new ExcerptMapperFunction<>(nodeMapper));
+	}
+	public Query(Collection<MetaData.MetaNode> nodes, ExcerptMapperFunction<T> nodeMapper) {
+		this.nodes = nodes;
+		this.nodeMapper = nodeMapper;
+	}
+	
+	public Query<T> excerpt (final int excerptLength) {
+		nodeMapper.setExcerpt(excerptLength);
+		return this;
+	}
+	
 	public Query<T> where (final String field, final Object value) {
 		return where(field, QueryUtil.Operator.EQ, value);
 	}
@@ -83,7 +97,7 @@ public class Query<T> {
 	}
 	
 	public List<T> get(final long offset, final long size) {
-		return get((int)offset, (int)size);
+		return get(offset, size);
 	}
 	
 	public List<T> get(final int offset, final int size) {
@@ -112,7 +126,7 @@ public class Query<T> {
 		return QueryUtil.groupby(nodes, field);
 	}
 
-	public static record Sort<T>(String field, Collection<MetaData.MetaNode> nodes, Function<MetaData.MetaNode, T> nodeMapper) {
+	public static record Sort<T>(String field, Collection<MetaData.MetaNode> nodes, ExcerptMapperFunction<T> nodeMapper) {
 
 		public Query<T> asc() {
 			return new Query<>(sorted(nodes, field, true), nodeMapper);

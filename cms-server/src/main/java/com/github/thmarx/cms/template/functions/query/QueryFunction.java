@@ -30,6 +30,7 @@ import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.template.functions.list.Node;
 import com.github.thmarx.cms.utils.NodeUtil;
 import java.nio.file.Path;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -38,20 +39,20 @@ import java.util.function.Function;
  */
 public class QueryFunction extends AbstractCurrentNodeFunction {
 
-	Function<MetaData.MetaNode, Node> nodeMapper = null;
+	BiFunction<MetaData.MetaNode, Integer, Node> nodeMapper = null;
 
 	public QueryFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
 		super(fileSystem, currentNode, contentParser, markdownRenderer);
 	}
 	
-	private Function<MetaData.MetaNode, Node> nodeMapper() {
+	private BiFunction<MetaData.MetaNode, Integer, Node> nodeMapper() {
 		if (nodeMapper == null) {
-			nodeMapper = node -> {
+			nodeMapper = (node, excerptLength) -> {
 				var name = NodeUtil.getName(node);
 				var temp_path = fileSystem.resolve("content/").resolve(node.uri());
 				var url = toUrl(node.uri());
 				var md = parse(temp_path);
-				var excerpt = markdownRenderer.excerpt(md.get().content(), 200);
+				var excerpt = markdownRenderer.excerpt(md.get().content(), excerptLength);
 				final Node navNode = new Node(name, url, excerpt, node.data());
 
 				return navNode;
