@@ -22,7 +22,6 @@ package com.github.thmarx.cms.filesystem.query;
  * #L%
  */
 
-import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.filesystem.MetaData;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.filtered;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.sorted;
@@ -97,7 +96,7 @@ public class Query<T> {
 	}
 	
 	public List<T> get(final long offset, final long size) {
-		return get(offset, size);
+		return get((int)offset, (int)size);
 	}
 	
 	public List<T> get(final int offset, final int size) {

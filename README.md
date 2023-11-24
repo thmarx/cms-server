@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 2.13.1
+
+* **BUGFIX** Wrong method overloading in query causes pebble engine exception
+
 ## 2.13.0
 
 * **FEATURE** GIT integration to add a deployment workflow [#100](https://github.com/thmarx/cms/issues/100)
