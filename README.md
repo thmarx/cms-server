@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 2.13.2
+
+* **BUGFIX** JettyDefaultHandler does not call _callback.succeeded()_
+
 ## 2.13.1
 
 * **BUGFIX** Wrong method overloading in query causes pebble engine exception
