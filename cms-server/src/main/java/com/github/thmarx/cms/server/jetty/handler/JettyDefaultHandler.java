@@ -73,6 +73,8 @@ public class JettyDefaultHandler extends Handler.Abstract {
 			log.error("", e);
 			response.setStatus(500);
 			response.getHeaders().add("Content-Type", "text/html; charset=utf-8");
+			
+			callback.succeeded();
 		}
 		return true;
 	}
