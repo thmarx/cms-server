@@ -22,7 +22,9 @@ package com.github.thmarx.cms.content;
  * #L%
  */
 
+import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.PreviewContext;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
 import com.github.thmarx.cms.filesystem.FileSystem;
@@ -80,6 +82,9 @@ public class ContentRenderer {
 		model.values.put("requestContext", context);
 		model.values.put("theme", context.renderContext().theme());
 		model.values.put("site", siteProperties);
+		
+		model.values.put("PREVIEW_MODE", PreviewContext.IS_PREVIEW.get());
+		model.values.put("DEV_MODE", Startup.DEV_MODE);
 		
 		context.extensions().getRegisterTemplateSupplier().forEach(service -> {
 			model.values.put(service.name(), service.supplier());

@@ -21,6 +21,7 @@ package com.github.thmarx.cms.modules.marked;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.PreviewContext;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
