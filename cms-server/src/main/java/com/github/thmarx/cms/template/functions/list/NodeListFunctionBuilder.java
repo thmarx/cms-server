@@ -23,6 +23,8 @@ package com.github.thmarx.cms.template.functions.list;
  */
 
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
@@ -57,7 +59,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 
 	final NodeListFunction nodeListFunctionNoIndex;
 
-	public final Comparator<MetaData.MetaNode> nameComparator = (node1, node2) -> {
+	public final Comparator<ContentNode> nameComparator = (node1, node2) -> {
 		var filename1 = NodeUtil.getName(node1);
 		var filename2 = NodeUtil.getName(node2);
 		if (filename1.equals("index.md")) {
@@ -68,10 +70,10 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return filename1.compareTo(filename2);
 	};
 
-	public NodeListFunctionBuilder(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
-		super(fileSystem, currentNode, contentParser, markdownRenderer);
-		this.nodeListFunction = new NodeListFunction(fileSystem, currentNode, contentParser, markdownRenderer);
-		this.nodeListFunctionNoIndex = new NodeListFunction(fileSystem, currentNode, contentParser, markdownRenderer, true);
+	public NodeListFunctionBuilder(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
+		super(db, currentNode, contentParser, markdownRenderer);
+		this.nodeListFunction = new NodeListFunction(db, currentNode, contentParser, markdownRenderer);
+		this.nodeListFunctionNoIndex = new NodeListFunction(db, currentNode, contentParser, markdownRenderer, true);
 	}
 
 	public NodeListFunctionBuilder from(String from) {
@@ -138,7 +140,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 			function = nodeListFunctionNoIndex;
 		}
 
-		Comparator<MetaData.MetaNode> comparator = getComparator();
+		Comparator<ContentNode> comparator = getComparator();
 		if (reverse) {
 			comparator = comparator.reversed();
 		}
@@ -146,14 +148,14 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return function.list(from, page, size, excerptLength, comparator);
 	}
 
-	private Comparator<MetaData.MetaNode> getComparator() {
+	private Comparator<ContentNode> getComparator() {
 		if (sort == null || "name".equals("sort")) {
 			return nameComparator;
 		} else {
 
-			return Comparator.comparing(new Function<MetaData.MetaNode, Object>() {
+			return Comparator.comparing(new Function<ContentNode, Object>() {
 				@Override
-				public Object apply(MetaData.MetaNode node) {
+				public Object apply(ContentNode node) {
 					return node.data().get(sort);
 				}
 			}, Comparator.nullsLast((key1, key2) -> {

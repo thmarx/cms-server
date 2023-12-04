@@ -23,6 +23,8 @@ package com.github.thmarx.cms.template.functions.list;
  */
 
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
@@ -51,7 +53,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 
 	private boolean excludeIndexMd = false;
 
-	private Predicate<MetaData.MetaNode> nodeNameFilter = (node) -> {
+	private Predicate<ContentNode> nodeNameFilter = (node) -> {
 		var filename = node.name();
 		if (excludeIndexMd && "index.md".equals(filename)) {
 			return false;
@@ -59,30 +61,30 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		return true;
 	};
 
-	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
-		super(fileSystem, currentNode, contentParser, markdownRenderer);
+	public NodeListFunction(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
+		super(db, currentNode, contentParser, markdownRenderer);
 	}
 
-	public NodeListFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer, boolean excludeIndexMd) {
-		this(fileSystem, currentNode, contentParser, markdownRenderer);
+	public NodeListFunction(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer, boolean excludeIndexMd) {
+		this(db, currentNode, contentParser, markdownRenderer);
 		this.excludeIndexMd = excludeIndexMd;
 	}
 
-	public Page<Node> list(String start, int page, int size, final Comparator<MetaData.MetaNode> comparator) {
+	public Page<Node> list(String start, int page, int size, final Comparator<ContentNode> comparator) {
 		return list(start, page, size, Constants.DEFAULT_EXCERPT_LENGTH, comparator);
 	}
 
-	public Page<Node> list(String start, int page, int size, int excerptLength, final Comparator<MetaData.MetaNode> comparator) {
+	public Page<Node> list(String start, int page, int size, int excerptLength, final Comparator<ContentNode> comparator) {
 		return getNodes(start, page, size, excerptLength, comparator);
 	}
 	
-	Page<Node> getNodes(final String start, int page, int size, int excerptLength, final Comparator<MetaData.MetaNode> comparator) {
+	Page<Node> getNodes(final String start, int page, int size, int excerptLength, final Comparator<ContentNode> comparator) {
 
 		Path baseNode = null;
 		String path = start;
 		// first select base node
 		if (start.startsWith("/")) {
-			baseNode = fileSystem.resolve("content/");
+			baseNode = db.getFileSystem().resolve("content/");
 			path = start.substring(1);
 		} else if (start.equals(".")) {
 			baseNode = currentNode.getParent();
@@ -102,13 +104,14 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		blog\/*\/*
 		 */
 		if (path.contains("*")) {
-			final Path contentBase = fileSystem.resolve("content/");
-			List<MetaData.MetaNode> relevantPaths = getPaths(baseNode, path);
+			final Path contentBase = db.getFileSystem()
+					.resolve("content/");
+			List<ContentNode> relevantPaths = getPaths(baseNode, path);
 
-			List<MetaData.MetaNode> allContentNodes = new ArrayList<>();
+			List<ContentNode> allContentNodes = new ArrayList<>();
 			relevantPaths.forEach((metaNode) -> {
 
-				List<MetaData.MetaNode> children = fileSystem.listContent(contentBase, metaNode.uri());
+				List<ContentNode> children = db.getContent().listContent(contentBase, metaNode.uri());
 				allContentNodes.addAll(children);
 			});
 
@@ -137,16 +140,16 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		}
 	}
 
-	private List<MetaData.MetaNode> getPaths(final Path base, final String path) {
-		Set<MetaData.MetaNode> relevantPaths = new HashSet<>();
+	private List<ContentNode> getPaths(final Path base, final String path) {
+		Set<ContentNode> relevantPaths = new HashSet<>();
 		var parts = path.split(Constants.SPLIT_PATH_PATTERN);
 
 		var part = parts[0];
-		List<MetaData.MetaNode> nodes;
+		List<ContentNode> nodes;
 		if ("*".equals(part)) {
-			nodes = fileSystem.listDirectories(base, "");
+			nodes = db.getContent().listDirectories(base, "");
 		} else {
-			nodes = fileSystem.listDirectories(base, part);
+			nodes = db.getContent().listDirectories(base, part);
 		}
 		if (parts.length > 1) {
 			nodes.forEach((node) -> {
@@ -162,11 +165,12 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		return new ArrayList<>(relevantPaths);
 	}
 
-	public Page<Node> getNodesFromBase(final Path base, final String start, final int page, final int pageSize, final Comparator<MetaData.MetaNode> comparator) {
+	public Page<Node> getNodesFromBase(final Path base, final String start, final int page, final int pageSize, 
+			final Comparator<ContentNode> comparator) {
 		try {
 			List<Node> nodes = new ArrayList<>();
-			final List<MetaData.MetaNode> navNodes = fileSystem.listContent(base, start);
-			final Path contentBase = fileSystem.resolve("content/");
+			final List<ContentNode> navNodes = db.getContent().listContent(base, start);
+			final Path contentBase = db.getFileSystem().resolve("content/");
 			long total = navNodes.stream().filter(nodeNameFilter).count();
 			int skipCount = (page - 1) * pageSize;
 

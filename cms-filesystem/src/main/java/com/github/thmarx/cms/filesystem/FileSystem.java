@@ -24,6 +24,8 @@ package com.github.thmarx.cms.filesystem;
 import com.github.thmarx.cms.api.ModuleFileSystem;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.annotations.Experimental;
+import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.DBFileSystem;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
@@ -38,8 +40,10 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class FileSystem implements ModuleFileSystem {
+public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
 	private final Path hostBaseDirectory;
 	private final EventBus eventBus;
@@ -68,11 +72,11 @@ public class FileSystem implements ModuleFileSystem {
 	@Getter
 	private final MetaData metaData = new MetaData();
 
-	public <T> Query<T> query(final BiFunction<MetaData.MetaNode, Integer, T> nodeMapper) {
+	public <T> Query<T> query(final BiFunction<ContentNode, Integer, T> nodeMapper) {
 		return new Query(new ArrayList<>(metaData.nodes().values()), nodeMapper);
 	}
 
-	public <T> Query<T> query(final String startURI, final BiFunction<MetaData.MetaNode, Integer, T> nodeMapper) {
+	public <T> Query<T> query(final String startURI, final BiFunction<ContentNode, Integer, T> nodeMapper) {
 
 		final String uri;
 		if (startURI.startsWith("/")) {
@@ -87,12 +91,12 @@ public class FileSystem implements ModuleFileSystem {
 	}
 
 	@Experimental
-	protected <T> Dimension<T, MetaData.MetaNode> createDimension(final String name, Function<MetaData.MetaNode, T> dimFunc, Class<T> type) {
+	protected <T> Dimension<T, ContentNode> createDimension(final String name, Function<ContentNode, T> dimFunc, Class<T> type) {
 		return metaData.getDataFilter().dimension(name, dimFunc, type);
 	}
 
 	@Experimental
-	protected Dimension<?, MetaData.MetaNode> getDimension(final String name) {
+	protected Dimension<?, ContentNode> getDimension(final String name) {
 		return metaData.getDataFilter().dimension(name);
 	}
 
@@ -126,27 +130,31 @@ public class FileSystem implements ModuleFileSystem {
 		return hostBaseDirectory.resolve(path);
 	}
 
+	@Override
 	public String loadContent(final Path file) throws IOException {
 		return loadContent(file, StandardCharsets.UTF_8);
 	}
 
+	@Override
 	public List<String> loadLines(final Path file) throws IOException {
 		return loadLines(file, StandardCharsets.UTF_8);
 	}
 
+	@Override
 	public String loadContent(final Path file, final Charset charset) throws IOException {
 		return Files.readString(file, charset);
 	}
 
+	@Override
 	public List<String> loadLines(final Path file, final Charset charset) throws IOException {
 		return Files.readAllLines(file, charset);
 	}
 
-	public List<MetaData.MetaNode> listDirectories(final Path base, final String start) {
+	public List<ContentNode> listDirectories(final Path base, final String start) {
 		var startPath = base.resolve(start);
 		String folder = PathUtil.toRelativePath(startPath, contentBase).toString();
 
-		List<MetaData.MetaNode> nodes = new ArrayList<>();
+		List<ContentNode> nodes = new ArrayList<>();
 
 		if ("".equals(folder)) {
 			metaData.tree().values()
@@ -156,7 +164,7 @@ public class FileSystem implements ModuleFileSystem {
 						nodes.add(node);
 					});
 		} else if (folder.contains("/")) {
-			MetaData.MetaNode node = null;
+			ContentNode node = null;
 			var parts = folder.split("\\/");
 			for (var part : parts) {
 				if (node == null) {
@@ -185,12 +193,12 @@ public class FileSystem implements ModuleFileSystem {
 		return nodes;
 	}
 
-	public List<MetaData.MetaNode> listContent(final Path base, final String start) {
+	public List<ContentNode> listContent(final Path base, final String start) {
 		var startPath = base.resolve(start);
 
 		String folder = PathUtil.toRelativePath(startPath, contentBase).toString();
 
-		List<MetaData.MetaNode> nodes = new ArrayList<>();
+		List<ContentNode> nodes = new ArrayList<>();
 
 		if ("".equals(folder)) {
 			return metaData.listChildren("");
@@ -200,12 +208,12 @@ public class FileSystem implements ModuleFileSystem {
 
 	}
 
-	public List<MetaData.MetaNode> listSections(final Path contentFile) {
+	public List<ContentNode> listSections(final Path contentFile) {
 		String folder = PathUtil.toRelativePath(contentFile, contentBase).toString();
 		String filename = contentFile.getFileName().toString();
 		filename = filename.substring(0, filename.length() - 3);
 
-		List<MetaData.MetaNode> nodes = new ArrayList<>();
+		List<ContentNode> nodes = new ArrayList<>();
 
 		final Pattern isSectionOf = Constants.SECTION_OF_PATTERN.apply(filename);
 		final Pattern isOrderedSectionOf = Constants.SECTION_ORDERED_OF_PATTERN.apply(filename);
@@ -223,7 +231,7 @@ public class FileSystem implements ModuleFileSystem {
 						nodes.add(node);
 					});
 		} else {
-			Optional<MetaData.MetaNode> findFolder = metaData.findFolder(folder);
+			Optional<ContentNode> findFolder = metaData.findFolder(folder);
 			if (findFolder.isPresent()) {
 				findFolder.get().children().values()
 						.stream()
@@ -256,7 +264,9 @@ public class FileSystem implements ModuleFileSystem {
 
 		var uri = PathUtil.toRelativeFile(file, contentBase);
 
-		metaData.addFile(uri, fileMeta);
+		var lastModified = LocalDate.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
+		
+		metaData.addFile(uri, fileMeta, lastModified);
 	}
 
 	public void init() throws IOException {

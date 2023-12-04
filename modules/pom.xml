@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.thmarx.cms</groupId>
 		<artifactId>cms-parent</artifactId>
-		<version>2.14.0</version>
+		<version>2.15.0</version>
 	</parent>
 	<groupId>com.github.thmarx.cms.modules</groupId>
 	<artifactId>cms-modules</artifactId>
@@ -19,5 +19,6 @@
 		<module>markedjs-module</module>
 		<module>pug-module</module>
 		<module>search-module</module>
+		<module>seo-module</module>
 	</modules>
 </project>

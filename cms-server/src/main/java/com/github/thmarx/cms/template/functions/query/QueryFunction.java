@@ -22,9 +22,11 @@ package com.github.thmarx.cms.template.functions.query;
  * #L%
  */
 import com.github.thmarx.cms.api.PreviewContext;
+import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.ContentQuery;
+import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.content.ContentParser;
-import com.github.thmarx.cms.filesystem.FileSystem;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.filesystem.query.Query;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
@@ -39,17 +41,17 @@ import java.util.function.BiFunction;
  */
 public class QueryFunction extends AbstractCurrentNodeFunction {
 
-	BiFunction<MetaData.MetaNode, Integer, Node> nodeMapper = null;
+	BiFunction<ContentNode, Integer, Node> nodeMapper = null;
 
-	public QueryFunction(FileSystem fileSystem, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
-		super(fileSystem, currentNode, contentParser, markdownRenderer);
+	public QueryFunction(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
+		super(db, currentNode, contentParser, markdownRenderer);
 	}
 	
-	private BiFunction<MetaData.MetaNode, Integer, Node> nodeMapper() {
+	private BiFunction<ContentNode, Integer, Node> nodeMapper() {
 		if (nodeMapper == null) {
 			nodeMapper = (node, excerptLength) -> {
 				var name = NodeUtil.getName(node);
-				var temp_path = fileSystem.resolve("content/").resolve(node.uri());
+				var temp_path = db.getFileSystem().resolve("content/").resolve(node.uri());
 				var url = toUrl(node.uri());
 				var md = parse(temp_path);
 				var excerpt = markdownRenderer.excerpt(md.get().content(), excerptLength);
@@ -62,12 +64,12 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 		return nodeMapper;
 	}
 
-	public Query create() {
-		return fileSystem.query(nodeMapper());
+	public ContentQuery create() {
+		return db.getContent().query(nodeMapper());
 	}
 
-	public Query create(final String startUri) {
-		return fileSystem.query(startUri, nodeMapper());
+	public ContentQuery create(final String startUri) {
+		return db.getContent().query(startUri, nodeMapper());
 	}
 
 	protected String toUrl(String uri) {
