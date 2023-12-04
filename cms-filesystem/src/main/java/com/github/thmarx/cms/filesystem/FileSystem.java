@@ -91,12 +91,12 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 	}
 
 	@Experimental
-	protected <T> Dimension<T, ContentNode> createDimension(final String name, Function<ContentNode, T> dimFunc, Class<T> type) {
+	public <T> Dimension<T, ContentNode> createDimension(final String name, Function<ContentNode, T> dimFunc, Class<T> type) {
 		return metaData.getDataFilter().dimension(name, dimFunc, type);
 	}
 
 	@Experimental
-	protected Dimension<?, ContentNode> getDimension(final String name) {
+	public Dimension<?, ContentNode> getDimension(final String name) {
 		return metaData.getDataFilter().dimension(name);
 	}
 

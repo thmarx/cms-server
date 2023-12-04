@@ -22,6 +22,7 @@ package com.github.thmarx.cms.template.functions.list;
  * #L%
  */
 
+import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
@@ -44,8 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 
-	int page = NodeListFunction.DEFAULT_PAGE;
-	int size = NodeListFunction.DEFAUTL_PAGE_SIZE;
+	int page = Constants.DEFAULT_PAGE;
+	int size = Constants.DEFAULT_PAGE_SIZE;
 	int excerptLength = Constants.DEFAULT_EXCERPT_LENGTH;
 
 	String from = "";

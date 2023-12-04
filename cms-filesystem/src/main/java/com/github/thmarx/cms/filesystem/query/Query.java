@@ -22,8 +22,10 @@ package com.github.thmarx.cms.filesystem.query;
  * #L%
  */
 
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.filesystem.MetaData;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.filtered;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.sorted;
@@ -74,7 +76,7 @@ public class Query<T> implements ContentQuery<T> {
 	}
 	
 	@Override
-	public Query<T> whereContainsNot (final String field, final Object value) {
+	public Query<T> whereNotContains (final String field, final Object value) {
 		return where(field, QueryUtil.Operator.CONTAINS_NOT, value);
 	}
 	
@@ -121,6 +123,42 @@ public class Query<T> implements ContentQuery<T> {
 				.limit(size)
 				.toList();
 		return Collections.unmodifiableList(filteredNodes.stream().map(nodeMapper).toList());
+	}
+	
+	public Page<T> page (final Object page, final Object size) {
+		int i_page = Constants.DEFAULT_PAGE;
+		int i_size = Constants.DEFAULT_PAGE_SIZE;
+		if (page instanceof Integer || page instanceof Long) {
+			i_page = ((Number)page).intValue();
+		} else if (page instanceof String) {
+			i_page = Integer.valueOf((String)page);
+		}
+		if (size instanceof Integer || size instanceof Long) {
+			i_size = ((Number)size).intValue();
+		} else if (size instanceof String) {
+			i_size = Integer.valueOf((String)size);
+		}
+		return page((int)i_page, (int)i_size);
+	}
+	
+	public Page<T> page (final long page, final long size) {
+		return page((int)page, (int)size);
+	}
+
+	public Page<T> page (final int page, final int size) {
+		int total = count();
+		int offset = (page - 1) * size;
+
+		var filteredNodes = nodes.stream()
+				.filter(node -> !node.isDirectory())
+				.filter(MetaData::isVisible)
+				.skip(offset)
+				.limit(size)
+				.map(nodeMapper)
+				.toList();
+
+		int totalPages = (int) Math.ceil((float) total / size);
+		return new Page<T>(filteredNodes.size(), totalPages, page, filteredNodes);
 	}
 	
 	@Override

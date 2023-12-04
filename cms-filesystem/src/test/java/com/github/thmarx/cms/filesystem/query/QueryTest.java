@@ -141,7 +141,7 @@ public class QueryTest {
 	@Test
 	public void test_contains_not() {
 		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
-		var nodes = query.whereContainsNot("tags", "one").get();
+		var nodes = query.whereNotContains("tags", "one").get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}

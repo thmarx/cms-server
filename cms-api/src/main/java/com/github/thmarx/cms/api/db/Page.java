@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.list;
+package com.github.thmarx.cms.api.db;
 
 /*-
  * #%L
