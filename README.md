@@ -6,6 +6,9 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 2.15.0
+* **FEATURE** SEO module to auto generate xml sitemap [#98](https://github.com/thmarx/cms/issues/98)
+
 ## 2.14.0
 * **FEATURE** Update markedjs module to version 11.0.0 [#105](https://github.com/thmarx/cms/issues/105)
 * **FEATURE** Allow to config multiple hostnames per site [#103](https://github.com/thmarx/cms/issues/103)
