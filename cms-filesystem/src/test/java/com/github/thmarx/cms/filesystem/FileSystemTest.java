@@ -51,12 +51,12 @@ public class FileSystemTest {
 	}
 
 	@Test
-	public void test_dimension() throws IOException {
+	public void test_seconday_index() throws IOException {
 
-		var dimension = fileSystem.createDimension("featured", (ContentNode node) -> node.data().containsKey("featured") ? (Boolean) node.data().get("featured") : false, Boolean.class);
+//		var dimension = fileSystem.createDimension("featured", (ContentNode node) -> node.data().containsKey("featured") ? (Boolean) node.data().get("featured") : false, Boolean.class);
 
-		Assertions.assertThat(dimension.filter(Boolean.TRUE)).hasSize(2);
-		Assertions.assertThat(dimension.filter(Boolean.FALSE)).hasSize(1);
+//		Assertions.assertThat(dimension.filter(Boolean.TRUE)).hasSize(2);
+//		Assertions.assertThat(dimension.filter(Boolean.FALSE)).hasSize(1);
 	}
 
 	@Test

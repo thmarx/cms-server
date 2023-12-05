@@ -24,6 +24,8 @@ package com.github.thmarx.cms.filesystem.query;
 
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.filesystem.MetaData;
+import com.github.thmarx.cms.filesystem.index.IndexProviding;
+import com.github.thmarx.cms.filesystem.index.SecondaryIndex;
 import com.google.common.base.Strings;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -41,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author t.marx
  */
 @Slf4j
-final class QueryUtil {
+public final class QueryUtil {
 	
 	public static enum Operator {
 		CONTAINS,
@@ -72,13 +75,13 @@ final class QueryUtil {
 		};
 	}
 
-	protected static Map<Object, List<ContentNode>> groupby (final Collection<ContentNode> nodes, final String field) {
-		return nodes.stream().collect(Collectors.groupingBy((node) -> getValue(node.data(), field)));
+	protected static Map<Object, List<ContentNode>> groupby (final Stream<ContentNode> nodes, final String field) {
+		return nodes.collect(Collectors.groupingBy((node) -> getValue(node.data(), field)));
 	}
 	
-	protected static List<ContentNode> sorted(final Collection<ContentNode> nodes, final String field, final boolean asc) {
+	protected static Stream<ContentNode> sorted(final Stream<ContentNode> nodes, final String field, final boolean asc) {
 		
-		var tempNodes = nodes.stream().sorted(
+		var tempNodes = nodes.sorted(
 				(node1, node2) -> {
 					var value1 = getValue(node1.data(), field);
 					var value2 = getValue(node2.data(), field);
@@ -91,7 +94,7 @@ final class QueryUtil {
 			tempNodes = tempNodes.reversed();
 		}
 		
-		return tempNodes;
+		return tempNodes.stream();
 	}
 	
 	private static int compare (Object o1, Object o2) {
@@ -128,8 +131,19 @@ final class QueryUtil {
 		return 0;
 	}
 
-	protected static Collection<ContentNode> filtered(final Collection<ContentNode> nodes, final String field, final Object value, final Operator operator) {
-		return nodes.stream().filter(createPredicate(field, value, operator)).toList();
+	protected static Stream<ContentNode> filteredWithIndex(final Stream<ContentNode> nodes, 
+			final IndexProviding indexProviding, final String field, final Object value, final Operator operator) {
+		
+		if (Operator.EQ.equals(operator)) {
+			SecondaryIndex<Object> index = (SecondaryIndex<Object>) indexProviding.getOrCreateIndex(field, node -> getValue(node.data(), field));			
+			return nodes.filter(node -> index.eq(node, value));
+		} else {
+			return nodes.filter(createPredicate(field, value, operator));
+		}
+	}
+	
+	protected static Stream<ContentNode> filtered(final Stream<ContentNode> nodes, final String field, final Object value, final Operator operator) {
+		return nodes.filter(createPredicate(field, value, operator));
 	}
 
 	private static Predicate<? super ContentNode> createPredicate(final String field, final Object value, final Operator operator) {
@@ -179,7 +193,7 @@ final class QueryUtil {
 		};
 	}
 
-	private static Object getValue(final Map<String, Object> map, final String field) {
+	public static Object getValue(final Map<String, Object> map, final String field) {
 		String[] keys = field.split("\\.");
 		Map subMap = map;
 		for (int i = 0; i < keys.length - 1; i++) {

@@ -23,46 +23,55 @@ package com.github.thmarx.cms.filesystem;
  */
 
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.PreviewContext;
 import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.api.utils.SectionUtil;
-import com.github.thmarx.cms.filesystem.datafilter.DataFilter;
+import com.github.thmarx.cms.filesystem.index.IndexProviding;
+import com.github.thmarx.cms.filesystem.index.SecondaryIndex;
 import com.google.common.base.Strings;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.Getter;
 
 /**
  *
  * @author t.marx
  */
-public class MetaData {
+public class MetaData implements IndexProviding {
 
 	private ConcurrentMap<String, ContentNode> nodes = new ConcurrentHashMap<>();
 
 	private ConcurrentMap<String, ContentNode> tree = new ConcurrentHashMap<>();
 	
-	@Getter
-	private final DataFilter<ContentNode> dataFilter = DataFilter.builder(ContentNode.class).build();
-
+	private ConcurrentMap<String, SecondaryIndex<?>> secondaryIndexes = new ConcurrentHashMap<>();
+	
+	@Override
+	public SecondaryIndex<?> getOrCreateIndex (final String field, Function<ContentNode, Object> indexFunction) {
+		
+		if (!secondaryIndexes.containsKey(field)) {
+			var index = SecondaryIndex.<Object>builder()
+					.indexFunction(indexFunction)
+					.build();
+			index.addAll(nodes.values());
+			secondaryIndexes.put(field, index);
+		}
+		
+		return secondaryIndexes.get(field);
+	}
+	
 	void clear() {
 		nodes.clear();
 		tree.clear();
-		dataFilter.clear();
+		secondaryIndexes.clear();
 	}
-
+	
 	ConcurrentMap<String, ContentNode> nodes() {
 		return new ConcurrentHashMap<>(nodes);
 	}
@@ -168,7 +177,6 @@ public class MetaData {
 		final ContentNode node = new ContentNode(uri, parts[parts.length - 1], data, lastModified);
 
 		nodes.put(uri, node);
-		dataFilter.add(node);
 
 		var folder = getFolder(uri);
 		if (folder.isPresent()) {
@@ -176,6 +184,8 @@ public class MetaData {
 		} else {
 			tree.put(node.name(), node);
 		}
+		
+		secondaryIndexes.values().forEach(index -> index.add(node));
 	}
 
 	public Optional<ContentNode> byUri(final String uri) {
@@ -186,7 +196,7 @@ public class MetaData {
 	}
 
 	void remove(String uri) {
-		nodes.remove(uri);
+		var node = nodes.remove(uri);
 
 		var folder = getFolder(uri);
 		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
@@ -196,6 +206,8 @@ public class MetaData {
 		} else {
 			tree.remove(name);
 		}
+		
+		secondaryIndexes.values().forEach(index -> index.remove(node));
 	}
 
 	

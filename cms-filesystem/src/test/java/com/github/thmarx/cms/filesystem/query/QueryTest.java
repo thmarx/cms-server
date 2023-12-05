@@ -21,9 +21,9 @@ package com.github.thmarx.cms.filesystem.query;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.filesystem.MetaData;
+import com.github.thmarx.cms.filesystem.index.IndexProviding;
+import com.github.thmarx.cms.filesystem.index.SecondaryIndex;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -31,6 +31,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,165 +43,188 @@ import org.junit.jupiter.api.Test;
  * @author t.marx
  */
 public class QueryTest {
-	
+
 	private static Collection<ContentNode> nodes;
 
+	private IndexProviding indexProviding = new IndexProviding() {
+		private ConcurrentMap<String, SecondaryIndex<?>> secondaryIndexes = new ConcurrentHashMap<>();
+
+		@Override
+		public SecondaryIndex<?> getOrCreateIndex(String field, Function<ContentNode, Object> indexFunction) {
+			if (!secondaryIndexes.containsKey(field)) {
+				var index = SecondaryIndex.<Object>builder()
+						.indexFunction(indexFunction)
+						.build();
+				index.addAll(nodes);
+				secondaryIndexes.put(field, index);
+			}
+
+			return secondaryIndexes.get(field);
+		}
+	};
+
 	@BeforeAll
-	public static void setup (){
+	public static void setup() {
 		nodes = new ArrayList<>();
 		ContentNode node = new ContentNode("/", "index.md", Map.of(
-				"featured", true, 
+				"featured", true,
 				"published", Date.from(Instant.now().plus(1, ChronoUnit.DAYS))));
 		nodes.add(node);
 		node = new ContentNode("/2", "index2.md", Map.of(
-				"featured", true, 
+				"featured", true,
 				"published", Date.from(Instant.now().minus(1, ChronoUnit.DAYS))));
 		nodes.add(node);
 		node = new ContentNode("/test1", "test1.md", Map.of(
-				"featured", false, 
+				"featured", false,
 				"index", 1, "published", Date.from(Instant.now().minus(1, ChronoUnit.DAYS)),
 				"tags", List.of("three", "four")
 		));
 		nodes.add(node);
 		node = new ContentNode("/test2", "test2.md", Map.of(
-				"featured", false, 
-				"index", 2, 
-				"published",	Date.from(Instant.now().minus(1, ChronoUnit.DAYS)),
+				"featured", false,
+				"index", 2,
+				"published", Date.from(Instant.now().minus(1, ChronoUnit.DAYS)),
 				"tags", List.of("one", "two"))
 		);
 		nodes.add(node);
 	}
+
+	protected Query<ContentNode> createQuery() {
+		return new Query<>(nodes, indexProviding, (node, i) -> node);
+	}
+	
 	
 	@Test
-	public void test_is() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+	public void test_eq() {
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("featured", true).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.getFirst().uri()).isEqualTo("/2");
-		
+
+		query = createQuery();
 		nodes = query.where("featured", "=", true).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.getFirst().uri()).isEqualTo("/2");
 	}
-	
+
 	@Test
 	public void test_not() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("featured", "!=", true).get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
 	}
-	
+
 	@Test
 	public void test_data() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.get();
 		Assertions.assertThat(nodes).hasSize(3);
 	}
-	
+
 	@Test
 	public void test_sort_asc() {
-		Query<ContentNode> query = new Query<>(nodes, (node,i ) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("featured", false).orderby("index").asc().get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 		Assertions.assertThat(nodes.get(1).uri()).isEqualTo("/test2");
 	}
-	
+
 	@Test
 	public void test_sort_desc() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("featured", false).orderby("index").desc().get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 		Assertions.assertThat(nodes.get(1).uri()).isEqualTo("/test1");
 	}
-	
+
 	@Test
 	public void test_offset_0() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("featured", false).orderby("index").desc().get(0, 1);
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 	}
-	
+
 	@Test
 	public void test_offset_1() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("featured", false).orderby("index").desc().get(1, 1);
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
-	
+
 	@Test
 	public void test_contains() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.whereContains("tags", "one").get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 	}
-	
+
 	@Test
 	public void test_contains_not() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.whereNotContains("tags", "one").get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
-	
+
 	@Test
 	public void test_gt() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("index", ">", 1).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 	}
-	
+
 	@Test
 	public void test_gte() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("index", ">=", 2).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 	}
-	
+
 	@Test
 	public void test_lt() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("index", "<", 2).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
-	
+
 	@Test
 	public void test_lte() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.where("index", "<=", 1).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
-	
+
 	@Test
 	public void test_group_by() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.groupby("featured");
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes).containsKeys(true, false);
 		Assertions.assertThat(nodes.get(true).stream().map(ContentNode::uri).toList()).contains("/", "/2");
 		Assertions.assertThat(nodes.get(false).stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
 	}
-	
+
 	@Test
 	public void test_in() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.whereIn("index", 1, 2).get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
 	}
-	
+
 	@Test
 	public void test_not_in() {
-		Query<ContentNode> query = new Query<>(nodes, (node, i) -> node);
+		Query<ContentNode> query = createQuery();
 		var nodes = query.whereIn("index", 1, 3, 4).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1");

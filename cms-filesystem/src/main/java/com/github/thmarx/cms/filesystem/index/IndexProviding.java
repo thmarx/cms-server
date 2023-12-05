@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.filesystem.datafilter;
+package com.github.thmarx.cms.filesystem.index;
 
 /*-
  * #%L
@@ -22,38 +22,14 @@ package com.github.thmarx.cms.filesystem.datafilter;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
+import com.github.thmarx.cms.api.db.ContentNode;
+import java.util.function.Function;
 
-public abstract class AbstractTest {
-	public class Person {
-		public String name;
-		public int age;
-		
-		public Person () {
-			
-		}
-		public Person(String name, int age) {
-			this.name = name;
-			this.age = age;
-		}
-	}
-
-	protected Person createPerson() {
-		Person p = new Person();
-		p.name = TestHelper.randomString();
-		p.age = TestHelper.randomInt(50);
-
-		return p;
-	}
-
-	protected List<Person> createPersons(int count) {
-		List<Person> persons = new ArrayList<Person>();
-
-		for (int i = 0; i < count; i++) {
-			persons.add(createPerson());
-		}
-
-		return persons;
-	}
+/**
+ *
+ * @author t.marx
+ */
+public interface IndexProviding {
+	
+	public SecondaryIndex<?> getOrCreateIndex (final String field, Function<ContentNode, Object> indexFunction);
 }

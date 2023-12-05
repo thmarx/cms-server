@@ -23,14 +23,12 @@ package com.github.thmarx.cms.filesystem;
  */
 import com.github.thmarx.cms.api.ModuleFileSystem;
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DBFileSystem;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.api.utils.PathUtil;
-import com.github.thmarx.cms.filesystem.datafilter.dimension.Dimension;
 import com.github.thmarx.cms.filesystem.query.Query;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -42,7 +40,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +70,7 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 	private final MetaData metaData = new MetaData();
 
 	public <T> Query<T> query(final BiFunction<ContentNode, Integer, T> nodeMapper) {
-		return new Query(new ArrayList<>(metaData.nodes().values()), nodeMapper);
+		return new Query(new ArrayList<>(metaData.nodes().values()), metaData, nodeMapper);
 	}
 
 	public <T> Query<T> query(final String startURI, final BiFunction<ContentNode, Integer, T> nodeMapper) {
@@ -87,17 +84,7 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
 		var nodes = metaData.nodes().values().stream().filter(node -> node.uri().startsWith(uri)).toList();
 
-		return new Query(nodes, nodeMapper);
-	}
-
-	@Experimental
-	public <T> Dimension<T, ContentNode> createDimension(final String name, Function<ContentNode, T> dimFunc, Class<T> type) {
-		return metaData.getDataFilter().dimension(name, dimFunc, type);
-	}
-
-	@Experimental
-	public Dimension<?, ContentNode> getDimension(final String name) {
-		return metaData.getDataFilter().dimension(name);
+		return new Query(nodes, metaData, nodeMapper);
 	}
 
 	public boolean isVisible(final String uri) {
