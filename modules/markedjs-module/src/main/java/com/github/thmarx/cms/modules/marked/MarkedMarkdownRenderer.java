@@ -75,7 +75,6 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 			var PreviewContext = Java.type('com.github.thmarx.cms.api.PreviewContext');
 			
 			if (PreviewContext.IS_PREVIEW.get()) {
-				console.log(PreviewContext.IS_PREVIEW.get())
                 const cleanUrl = (href) => {
                   try {
                     href = encodeURI(href).replace(/%25/g, '%');
