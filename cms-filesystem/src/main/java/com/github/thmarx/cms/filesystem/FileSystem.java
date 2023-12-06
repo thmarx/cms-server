@@ -185,8 +185,6 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
 		String folder = PathUtil.toRelativePath(startPath, contentBase).toString();
 
-		List<ContentNode> nodes = new ArrayList<>();
-
 		if ("".equals(folder)) {
 			return metaData.listChildren("");
 		} else {

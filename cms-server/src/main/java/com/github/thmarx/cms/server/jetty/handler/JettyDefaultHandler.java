@@ -24,7 +24,6 @@ package com.github.thmarx.cms.server.jetty.handler;
 import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.api.PreviewContext;
 import com.github.thmarx.cms.content.ContentResolver;
-import com.github.thmarx.cms.request.RequestContext;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.utils.HTTPUtil;
 import java.util.Optional;
@@ -67,7 +66,7 @@ public class JettyDefaultHandler extends Handler.Abstract {
 				content = contentResolver.getStaticContent(uri);
 				if (content.isEmpty()) {
 					try (var errorContext = requestContextFactory.create("/.technical/404", queryParameters)) {
-						content = contentResolver.getContent(errorContext);
+						content = contentResolver.getErrorContent(errorContext);
 						response.setStatus(404);
 					}
 				}

@@ -24,8 +24,6 @@ package com.github.thmarx.cms.content;
 
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.request.RequestContext;
 import com.google.common.base.Strings;
@@ -71,13 +69,23 @@ public class ContentResolver {
 		return Optional.empty();
 	}
 	
-	public Optional<String> getContent(final RequestContext context) {
+	public Optional<String> getContent (final RequestContext context) {
+		return getContent(context, true);
+	}
+	
+	public Optional<String> getErrorContent (final RequestContext context) {
+		return getContent(context, false);
+	}
+	
+	private Optional<String> getContent(final RequestContext context, boolean checkVisibility) {
 		String path;
 		if (Strings.isNullOrEmpty(context.uri())) {
 			path = "";
-		} else {
+		} else if (context.uri().startsWith("/")) {
 			// remove leading slash
 			path = context.uri().substring(1);
+		} else {
+			path = context.uri();
 		}
 		
 
@@ -99,7 +107,7 @@ public class ContentResolver {
 		}
 		
 		var uri = PathUtil.toRelativeFile(contentFile, contentBase);
-		if (!db.getContent().isVisible(uri)) {
+		if (checkVisibility && !db.getContent().isVisible(uri)) {
 			return Optional.empty();
 		}
 		

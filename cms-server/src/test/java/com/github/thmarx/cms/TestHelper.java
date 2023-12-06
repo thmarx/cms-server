@@ -27,6 +27,12 @@ package com.github.thmarx.cms;
  */
 
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.content.ContentTags;
+import com.github.thmarx.cms.request.RenderContext;
+import com.github.thmarx.cms.request.RequestContext;
+import com.github.thmarx.cms.request.RequestExtensions;
+import com.github.thmarx.cms.theme.DefaultTheme;
+import java.util.Map;
 
 /**
  *
@@ -36,6 +42,19 @@ public abstract class TestHelper {
 
 	public static MarkdownRenderer getRenderer() {
 		return new TestMarkdownRenderer();
+	}
+	
+	public static RequestContext requestContext() {
+		return requestContext("");
+	}
+	
+	public static RequestContext requestContext(String uri) {
+		var markdownRenderer = TestHelper.getRenderer();
+		return new RequestContext(
+				uri, 
+				Map.of(), 
+				new RequestExtensions(null, null), 
+				new RenderContext(markdownRenderer, new ContentTags(Map.of()), DefaultTheme.EMPTY));
 	}
 
 }

@@ -99,7 +99,8 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		try {
 			final List<ContentNode> navNodes = new ArrayList(
 					db.getContent().listContent(base, start)
-						.stream().filter(NodeUtil::getMenuVisibility).toList()
+						.stream().filter(NodeUtil::getMenuVisibility)
+							.toList()
 			);
 			
 			navNodes.sort((node1, node2) -> {

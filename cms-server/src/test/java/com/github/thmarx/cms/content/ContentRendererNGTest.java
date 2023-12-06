@@ -26,7 +26,6 @@ import com.github.thmarx.cms.MockModuleManager;
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.TestTemplateEngine;
 import com.github.thmarx.cms.api.SiteProperties;
-import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,11 +53,12 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 	static MarkdownRenderer markdownRenderer;
 	
 	static ModuleManager moduleManager = new MockModuleManager();
+	static FileDB db;
 	
 	@BeforeAll
 	public static void beforeClass () throws IOException {
 		var contentParser = new ContentParser();
-		final FileDB db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
+		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
 				return contentParser.parseMeta(file);
 			} catch (Exception e) {
@@ -73,6 +74,10 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 				db, 
 				new SiteProperties(Map.of()), 
 				() -> moduleManager);
+	}
+	@AfterAll
+	public static void shutdown () throws Exception {
+		db.close();
 	}
 
 	@Test
