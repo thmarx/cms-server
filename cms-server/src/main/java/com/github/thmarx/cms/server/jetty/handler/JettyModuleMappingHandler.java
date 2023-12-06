@@ -46,20 +46,6 @@ import org.eclipse.jetty.util.Callback;
 public class JettyModuleMappingHandler extends Handler.AbstractContainer {
 
 	private final ModuleManager moduleManager;
-	private final SiteProperties siteProperties;
-	
-	private final Multimap<String, Mapping> moduleMappgings = ArrayListMultimap.create();
-	
-	public void init () {
-		siteProperties.activeModules().forEach((var moduleid) -> {
-			final Module module = moduleManager
-					.module(moduleid);
-			if (module.provides(JettyHttpHandlerExtensionPoint.class)) {
-				List<JettyHttpHandlerExtensionPoint> extensions = module.extensions(JettyHttpHandlerExtensionPoint.class);
-				extensions.forEach(ext -> moduleMappgings.put(moduleid, ext.getMapping()));
-			}
-		});
-	}
 
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
@@ -67,14 +53,17 @@ public class JettyModuleMappingHandler extends Handler.AbstractContainer {
 			String moduleId = getModuleID(request);
 
 			var module = moduleManager.module(moduleId);
-			
-			if (!moduleMappgings.containsKey(moduleId)) {
+
+			if (!module.provides(JettyHttpHandlerExtensionPoint.class)) {
 				Response.writeError(request, response, callback, 404);
 				return false;
 			}
-			
+
 			var uri = getModuleUri(request);
-			Optional<Mapping> findFirst = moduleMappgings.get(moduleId).stream().filter(mapping -> mapping.getMatchingHandler(uri).isPresent()).findFirst();
+			Optional<Mapping> findFirst = module.extensions(JettyHttpHandlerExtensionPoint.class).stream()
+					.map(JettyHttpHandlerExtensionPoint::getMapping).
+					filter(mapping -> mapping.getMatchingHandler(uri).isPresent())
+					.findFirst();
 
 			if (findFirst.isPresent()) {
 				var mapping = findFirst.get();
@@ -84,7 +73,7 @@ public class JettyModuleMappingHandler extends Handler.AbstractContainer {
 				}
 				return handler.handle(request, response, callback);
 			}
-			
+
 			Response.writeError(request, response, callback, 404);
 			return false;
 		} catch (Exception e) {
@@ -125,7 +114,9 @@ public class JettyModuleMappingHandler extends Handler.AbstractContainer {
 
 	@Override
 	public List<Handler> getHandlers() {
-		return moduleMappgings.values().stream().map(mapper -> mapper.getHandlers())
+
+		return moduleManager.extensions(JettyHttpHandlerExtensionPoint.class).stream()
+				.map(JettyHttpHandlerExtensionPoint::getMapping).map(mapper -> mapper.getHandlers())
 				.flatMap(List::stream)
 				.toList();
 	}
