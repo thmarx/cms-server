@@ -6,6 +6,13 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+
+## 2.16.0
+* **FEATURE** Enable gfm and anchors in markedjs module [#113](https://github.com/thmarx/cms/issues/113)
+* **BUGIX** Multiple bugs with visibility of pages [#114](https://github.com/thmarx/cms/issues/114)
+* **BUGIX** Remove debug logging from markedjs module [#111](https://github.com/thmarx/cms/issues/111)
+* **BUGIX** Error accessing theme modules [#112](https://github.com/thmarx/cms/issues/112)
+
 ## 2.15.0
 * **FEATURE** SEO module to auto generate xml sitemap [#98](https://github.com/thmarx/cms/issues/98)
 
