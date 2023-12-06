@@ -21,7 +21,6 @@ package com.github.thmarx.cms.modules.marked;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.PreviewContext;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,6 +41,7 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 
 	public final Value markedFunction;
 	public final Source markedSource;
+	public final Source headingSource;
 
 	public MarkedMarkdownRenderer(final Context context) {
 		try {
@@ -49,11 +49,18 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 
 			var content = new String(MarkedMarkdownRenderer.class.getResourceAsStream("marked.min.js").readAllBytes(), StandardCharsets.UTF_8);
 			markedSource = Source.newBuilder("js", content, "marked.mjs").build();
+			
+			content = new String(MarkedMarkdownRenderer.class.getResourceAsStream("marked-gfm-heading-id.min.js").readAllBytes(), StandardCharsets.UTF_8);
+			headingSource = Source.newBuilder("js", content, "marked-gfm-heading-id.min.js").build();
+			
 			context.eval(markedSource);
+			context.eval(headingSource);
 
 			var markedFunctionSource = """
                               (function (param) {
-								%s
+									marked.setOptions({gfm: true});
+									marked.use(gfmHeadingId());
+									%s
                                     return marked.parse(param);
                               })
                               """.formatted(preview());

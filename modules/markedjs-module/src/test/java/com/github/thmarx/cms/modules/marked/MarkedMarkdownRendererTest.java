@@ -21,7 +21,6 @@ package com.github.thmarx.cms.modules.marked;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.PreviewContext;
 import org.assertj.core.api.Assertions;
 import org.graalvm.polyglot.Context;
@@ -36,12 +35,12 @@ import org.junit.jupiter.api.Test;
  * @author t.marx
  */
 public class MarkedMarkdownRendererTest {
-	
+
 	private static Engine engine;
 	private static MarkedMarkdownRenderer sut;
 
 	@BeforeAll
-	public static void setup () {
+	public static void setup() {
 		engine = Engine.create();
 		sut = new MarkedMarkdownRenderer(Context.newBuilder()
 				.allowAllAccess(true)
@@ -50,27 +49,27 @@ public class MarkedMarkdownRendererTest {
 				.allowValueSharing(true)
 				.engine(engine).build());
 	}
-	
+
 	@AfterAll
-	public static void clean () {
+	public static void clean() {
 		sut.close();
 		engine.close();
 	}
-	
+
 	@Test
 	public void test_simple_markdown() {
 		var result = sut.render("**Bold**");
-		
+
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><strong>Bold</strong></p>");
 	}
-	
+
 	@Test
 	public void test_link() {
 		var result = sut.render("[Link text Here](https://link-url-here.org)");
-		
+
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><a href=\"https://link-url-here.org\">Link text Here</a></p>");
 	}
-	
+
 	@Test
 	public void test_link_preview() {
 		try {
@@ -81,7 +80,7 @@ public class MarkedMarkdownRendererTest {
 			PreviewContext.IS_PREVIEW.remove();
 		}
 	}
-	
+
 	@Test
 	public void test_link_preview_append() {
 		try {
@@ -92,18 +91,26 @@ public class MarkedMarkdownRendererTest {
 			PreviewContext.IS_PREVIEW.remove();
 		}
 	}
-	
+
 	@Test
 	public void test_link_preview_extern() {
 		try {
 			PreviewContext.IS_PREVIEW.set(Boolean.TRUE);
 			var result = sut.render("[Link text Here](http://external.org/url?hello=world)");
 			Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><a href=\"http://external.org/url?hello=world\">Link text Here</a></p>");
-			
+
 			result = sut.render("[Link text Here](https://external.org/url?hello=world)");
 			Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><a href=\"https://external.org/url?hello=world\">Link text Here</a></p>");
 		} finally {
 			PreviewContext.IS_PREVIEW.remove();
 		}
+	}
+
+	@Test
+	public void test_heading_id() {
+
+		var result = sut.render("# heading");
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<h1 id=\"heading\">heading</h1>");
+
 	}
 }
