@@ -22,7 +22,7 @@ package com.github.thmarx.cms.server.jetty.handler;
  * #L%
  */
 import com.github.thmarx.cms.Startup;
-import com.github.thmarx.cms.api.Media;
+import com.github.thmarx.cms.api.media.Media;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.utils.HTTPUtil;
 import java.io.IOException;

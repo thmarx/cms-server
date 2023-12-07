@@ -22,7 +22,7 @@ package com.github.thmarx.cms.api.media;
  * #L%
  */
 
-import com.github.thmarx.cms.api.Media;
+import com.github.thmarx.cms.api.media.Media;
 
 /**
  *

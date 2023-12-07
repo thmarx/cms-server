@@ -95,9 +95,9 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 		var n = node.get();
 		return MetaData.isVisible(n);
 	}
-	
+
 	@Override
-	public Optional<Map<String,Object>> getMeta(final String uri) {
+	public Optional<Map<String, Object>> getMeta(final String uri) {
 		var node = metaData.byUri(uri);
 		if (node.isEmpty()) {
 			return Optional.empty();
@@ -237,21 +237,25 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 		return nodes;
 	}
 
-	private void addOrUpdateMetaData(Path file) throws IOException {
-		if (!Files.exists(file)) {
-			return;
-		}
-		if (!PathUtil.isContentFile(file)) {
-			return;
-		}
-		log.debug("update meta data for {}", file.toString());
-		Map<String, Object> fileMeta = contentParser.apply(file);
+	private void addOrUpdateMetaData(Path file) {
+		try {
+			if (!Files.exists(file)) {
+				return;
+			}
+			if (!PathUtil.isContentFile(file)) {
+				return;
+			}
+			log.debug("update meta data for {}", file.toString());
+			Map<String, Object> fileMeta = contentParser.apply(file);
 
-		var uri = PathUtil.toRelativeFile(file, contentBase);
+			var uri = PathUtil.toRelativeFile(file, contentBase);
 
-		var lastModified = LocalDate.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
-		
-		metaData.addFile(uri, fileMeta, lastModified);
+			var lastModified = LocalDate.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
+
+			metaData.addFile(uri, fileMeta, lastModified);
+		} catch (Exception e) {
+			log.error(null, e);
+		}
 	}
 
 	public void init() throws IOException {

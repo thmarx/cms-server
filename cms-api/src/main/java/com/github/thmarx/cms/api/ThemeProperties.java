@@ -1,5 +1,6 @@
 package com.github.thmarx.cms.api;
 
+import com.github.thmarx.cms.api.media.Media;
 /*-
  * #%L
  * cms-server
