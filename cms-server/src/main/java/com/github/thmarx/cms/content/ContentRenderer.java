@@ -29,14 +29,13 @@ import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
-import com.github.thmarx.cms.filesystem.FileSystem;
-import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.template.TemplateEngine;
-import com.github.thmarx.cms.template.functions.list.NodeListFunctionBuilder;
-import com.github.thmarx.cms.template.functions.navigation.NavigationFunction;
+import com.github.thmarx.cms.api.utils.PathUtil;
+import com.github.thmarx.cms.filesystem.functions.list.NodeListFunctionBuilder;
+import com.github.thmarx.cms.filesystem.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import com.github.thmarx.cms.request.RequestContext;
-import com.github.thmarx.cms.template.functions.query.QueryFunction;
+import com.github.thmarx.cms.filesystem.functions.query.QueryFunction;
 import com.github.thmarx.modules.api.ModuleManager;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -45,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +73,10 @@ public class ContentRenderer {
 		var markdownContent = content.content();
 		markdownContent = context.renderContext().contentTags().replace(markdownContent);
 		
-		TemplateEngine.Model model = new TemplateEngine.Model(contentFile);
+		var uri = PathUtil.toRelativeFile(contentFile, db.getFileSystem().resolve("content/"));
+		Optional<ContentNode> contentNode = db.getContent().byUri(uri);
+		
+		TemplateEngine.Model model = new TemplateEngine.Model(contentFile, contentNode.isPresent() ? contentNode.get() : null);
 		model.values.put("meta", content.meta());
 		model.values.put("content", context.renderContext().markdownRenderer().render(markdownContent));
 		model.values.put("sections", sections);
@@ -86,7 +89,7 @@ public class ContentRenderer {
 		model.values.put("site", siteProperties);
 		
 		model.values.put("PREVIEW_MODE", PreviewContext.IS_PREVIEW.get());
-		model.values.put("DEV_MODE", Startup.DEV_MODE);
+		model.values.put("DEV_MODE", PreviewContext.IS_DEV);
 		
 		context.extensions().getRegisterTemplateSupplier().forEach(service -> {
 			model.values.put(service.name(), service.supplier());
