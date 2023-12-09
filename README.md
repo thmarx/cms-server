@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 2.17.0
+
+* **FEATURE** Pages can redirect to external web sites
+* **FEATURE** unpublish_date meta field
 
 ## 2.16.0
 * **FEATURE** Enable gfm and anchors in markedjs module [#113](https://github.com/thmarx/cms/issues/113)

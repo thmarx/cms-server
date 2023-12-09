@@ -76,12 +76,15 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 		public boolean isPublished() {
 			if (PreviewContext.IS_PREVIEW.get()) {
 				return true;
+			
 			}
+			
 			var publish_date = (Date) data.getOrDefault(Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now()));
-			var unpublish_date = (Date) data.getOrDefault(Constants.MetaFields.UNPUBLISH_DATE, Date.from(Instant.now()));
+			var unpublish_date = (Date) data.getOrDefault(Constants.MetaFields.UNPUBLISH_DATE, null);
 			var now = Date.from(Instant.now());
 			return !isDraft() 
 					&& (publish_date.before(now) || publish_date.equals(now))
+					&& (unpublish_date != null && (unpublish_date.after(now) || publish_date.equals(now)))
 			;
 		}
 
