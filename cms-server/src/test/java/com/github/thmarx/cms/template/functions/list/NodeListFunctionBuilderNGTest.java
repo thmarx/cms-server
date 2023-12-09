@@ -25,6 +25,7 @@ package com.github.thmarx.cms.template.functions.list;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.TestHelper;
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
@@ -78,7 +79,7 @@ public class NodeListFunctionBuilderNGTest {
 	public void test_blog_entry_sorted() {
 		Page<Node> page = nodeList.from("/blog/*")
 				.page(1).size(10)
-				.sort("published")
+				.sort(Constants.MetaFields.PUBLISH_DATE)
 				.list();
 		Assertions.assertThat(page.getItems()).hasSize(2);
 		Assertions.assertThat(page.getItems().get(0).name()).isEqualTo("September");
@@ -89,7 +90,7 @@ public class NodeListFunctionBuilderNGTest {
 	public void test_blog_entry_sorted_reverse() {
 		Page<Node> page = nodeList.from("/blog/*")
 				.page(1).size(10)
-				.sort("published")
+				.sort(Constants.MetaFields.PUBLISH_DATE)
 				.reverse(true)
 				.list();
 		Assertions.assertThat(page.getItems()).hasSize(2);

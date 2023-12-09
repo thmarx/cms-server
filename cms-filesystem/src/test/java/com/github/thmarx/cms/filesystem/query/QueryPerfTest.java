@@ -21,6 +21,7 @@ package com.github.thmarx.cms.filesystem.query;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.filesystem.index.IndexProviding;
 import com.github.thmarx.cms.filesystem.index.SecondaryIndex;
@@ -78,7 +79,7 @@ public class QueryPerfTest {
 			var node = new ContentNode("/test" + i, "test2.md", Map.of(
 					"article", Map.of("featured", (i % 2 == 0 ? true : false)),
 					"index", i,
-					"published", Date.from(Instant.now().minus(1, ChronoUnit.DAYS)),
+					Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now().minus(1, ChronoUnit.DAYS)),
 					"tags", List.of("one", "two"))
 			);
 			nodes.add(node);

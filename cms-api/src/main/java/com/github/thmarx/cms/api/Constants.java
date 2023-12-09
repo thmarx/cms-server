@@ -32,8 +32,9 @@ import java.util.regex.Pattern;
 public abstract class Constants {
 	
 	public static class MetaFields {
-		public static final String DRAFT = "draft";
 		public static final String PUBLISHED = "published";
+		public static final String PUBLISH_DATE = "publish_date";
+		public static final String UNPUBLISH_DATE = "unpublish_date";
 		public static final String TITLE = "title";
 		public static final String MENU = "menu";
 		public static final String MENU_VISIBLE = "visible";

@@ -18,11 +18,11 @@
 
 		<div class="row" th:utext="${content}"></div>
 		<div class="row"
-			th:with='page = ${nodeList.from("/blog/*").sort("published").reverse(true).page(pageNumber).size(1).list()}'>
+			th:with='page = ${nodeList.from("/blog/*").sort("publish_date").reverse(true).page(pageNumber).size(1).list()}'>
 			<th:block th:each="entry : ${page.items}" data-test="e">
 				<h2 th:text="${entry.name}"></h2>
 				<p th:text="${entry.content}"></p>
-				<u th:text="${#dates.format(entry.meta['published'], 'dd-MM-yyyy HH:mm')}"></u>
+				<u th:text="${#dates.format(entry.meta['publish_date'], 'dd-MM-yyyy HH:mm')}"></u>
 				<a th:href="${entry.path}">goto</a>
 			</th:block>
 

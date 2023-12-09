@@ -69,14 +69,14 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 		}
 
 		public boolean isDraft() {
-			return (boolean) data().getOrDefault(Constants.MetaFields.DRAFT, false);
+			return !((boolean) data().getOrDefault(Constants.MetaFields.PUBLISHED, true));
 		}
 
 		public boolean isPublished() {
 			if (PreviewContext.IS_PREVIEW.get()) {
 				return true;
 			}
-			var localDate = (Date) data.getOrDefault(Constants.MetaFields.PUBLISHED, Date.from(Instant.now()));
+			var localDate = (Date) data.getOrDefault(Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now()));
 			var now = Date.from(Instant.now());
 			return !isDraft() && (localDate.before(now) || localDate.equals(now));
 		}

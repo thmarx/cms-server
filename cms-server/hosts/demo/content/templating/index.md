@@ -1,7 +1,7 @@
 ---
 title: Templates & Engines
 template: content.html
-draft: true
+published: false
 menu: 
     title: Templating
     position: 20

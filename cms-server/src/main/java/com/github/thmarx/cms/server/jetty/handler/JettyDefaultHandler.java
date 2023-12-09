@@ -56,7 +56,7 @@ public class JettyDefaultHandler extends Handler.Abstract {
 			if (PreviewContext.IS_DEV && queryParameters.containsKey("preview")) {
 				PreviewContext.IS_PREVIEW.set(Boolean.TRUE);
 			}
-
+			
 			Optional<ContentResponse> content = contentResolver.getContent(requestContext);
 			response.setStatus(200);
 
