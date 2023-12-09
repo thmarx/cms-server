@@ -29,7 +29,7 @@ import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.filesystem.functions.list.Node;
-import com.github.thmarx.cms.filesystem.utils.NodeUtil;
+import com.github.thmarx.cms.api.utils.NodeUtil;
 import java.nio.file.Path;
 import java.util.function.BiFunction;
 

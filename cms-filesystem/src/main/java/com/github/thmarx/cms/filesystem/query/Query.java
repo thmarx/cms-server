@@ -30,7 +30,7 @@ import com.github.thmarx.cms.filesystem.index.IndexProviding;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.filtered;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.filteredWithIndex;
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.sorted;
-import com.github.thmarx.cms.filesystem.utils.NodeUtil;
+import com.github.thmarx.cms.api.utils.NodeUtil;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

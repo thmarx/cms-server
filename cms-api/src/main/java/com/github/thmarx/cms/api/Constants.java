@@ -35,11 +35,16 @@ public abstract class Constants {
 		public static final String PUBLISHED = "published";
 		public static final String PUBLISH_DATE = "publish_date";
 		public static final String UNPUBLISH_DATE = "unpublish_date";
+		
 		public static final String TITLE = "title";
+		
 		public static final String MENU = "menu";
 		public static final String MENU_VISIBLE = "visible";
 		public static final String MENU_POSITION = "position";
 		public static final String MENU_TITLE = "title";
+		
+		public static final String REDIRECT_STATUS = "redirect.status";
+		public static final String REDIRECT_LOCATION = "redirect.location";
 	}
 	
 	public static class Folders {
@@ -48,6 +53,11 @@ public abstract class Constants {
 		public static final String ASSETS = "assets/";
 		public static final String EXTENSIONS = "extensions/";
 		public static final String MODULES = "modules/";
+	}
+	
+	public static class ContentTypes {
+		public static String HTML = "text/html";
+		public static String JSON = "application/json";
 	}
 	
 	public static final String SPLIT_PATH_PATTERN = Pattern.quote("/");
@@ -72,8 +82,7 @@ public abstract class Constants {
 	public static int DEFAULT_PAGE_SIZE = 5;
 	
 	public static String DEFAULT_CONTENT_TYPE = ContentTypes.HTML;
-	public static class ContentTypes {
-		public static String HTML = "text/html";
-		public static String JSON = "application/json";
-	}
+	
+	public static final int DEFAULT_REDIRECT_STATUS = 301;
+	
 }

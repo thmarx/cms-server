@@ -24,6 +24,7 @@ package com.github.thmarx.cms.api.db;
 
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.PreviewContext;
+import com.github.thmarx.cms.api.utils.NodeUtil;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -76,13 +77,26 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 			if (PreviewContext.IS_PREVIEW.get()) {
 				return true;
 			}
-			var localDate = (Date) data.getOrDefault(Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now()));
+			var publish_date = (Date) data.getOrDefault(Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now()));
+			var unpublish_date = (Date) data.getOrDefault(Constants.MetaFields.UNPUBLISH_DATE, Date.from(Instant.now()));
 			var now = Date.from(Instant.now());
-			return !isDraft() && (localDate.before(now) || localDate.equals(now));
+			return !isDraft() 
+					&& (publish_date.before(now) || publish_date.equals(now))
+			;
 		}
 
 		public boolean isSection() {
 			return SectionUtil.isSection(name);
+		}
+		
+		public boolean isRedirect () {
+			return NodeUtil.getValue(data, Constants.MetaFields.REDIRECT_LOCATION) != null;
+		}
+		public int getRedirectStatus () {
+			return NodeUtil.getValue(data, Constants.MetaFields.REDIRECT_STATUS, Constants.DEFAULT_REDIRECT_STATUS);
+		}
+		public String getRedirectLocation () {
+			return NodeUtil.getValue(data, Constants.MetaFields.REDIRECT_LOCATION, "");
 		}
 		
 		@Override

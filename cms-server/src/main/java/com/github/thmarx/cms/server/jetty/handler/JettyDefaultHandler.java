@@ -72,9 +72,17 @@ public class JettyDefaultHandler extends Handler.Abstract {
 				}
 
 			}
-			response.getHeaders().add("Content-Type", "%s; charset=utf-8".formatted(content.get().contentType()));
-
-			Content.Sink.write(response, true, content.get().content(), callback);
+			
+			var contentResponse = content.get();
+			if (contentResponse.isRedirect()) {
+				response.getHeaders().add("Location", contentResponse.node().getRedirectLocation());
+				response.setStatus(contentResponse.node().getRedirectStatus());
+				callback.succeeded();
+			} else {
+				response.getHeaders().add("Content-Type", "%s; charset=utf-8".formatted(content.get().contentType()));
+				Content.Sink.write(response, true, content.get().content(), callback);
+			}
+			
 		} catch (Exception e) {
 			log.error("", e);
 			response.setStatus(500);

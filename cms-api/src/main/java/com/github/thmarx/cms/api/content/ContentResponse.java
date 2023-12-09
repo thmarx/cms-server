@@ -1,6 +1,7 @@
 package com.github.thmarx.cms.api.content;
 
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.db.ContentNode;
 
 /*-
  * #%L
@@ -28,9 +29,17 @@ import com.github.thmarx.cms.api.Constants;
  *
  * @author t.marx
  */
-public record ContentResponse(String content, String contentType) {
+public record ContentResponse(String content, String contentType, ContentNode node) {
 
-	public ContentResponse (String content) {
-		this(content, Constants.DEFAULT_CONTENT_TYPE);
+	public ContentResponse (String content, ContentNode node) {
+		this(content, Constants.DEFAULT_CONTENT_TYPE, node);
+	}
+	
+	public ContentResponse (ContentNode node) {
+		this("", Constants.DEFAULT_CONTENT_TYPE, node);
+	}
+	
+	public boolean isRedirect () {
+		return node.isRedirect();
 	}
 };

@@ -64,7 +64,7 @@ public class ContentResolver {
 			if (Files.exists(staticFile)) {
 				return Optional.ofNullable(new ContentResponse(
 						Files.readString(staticFile, StandardCharsets.UTF_8), 
-						Files.probeContentType(staticFile)
+						Files.probeContentType(staticFile), null
 				));
 			}
 		} catch (IOException ex) {
@@ -115,6 +115,11 @@ public class ContentResolver {
 			return Optional.empty();
 		}
 		
+		final ContentNode contentNode = db.getContent().byUri(uri).get();
+		if (contentNode.isRedirect()) {
+			return Optional.of(new ContentResponse(contentNode));
+		}
+		
 		try {
 			
 			List<ContentNode> sections = db.getContent().listSections(contentFile);
@@ -123,9 +128,9 @@ public class ContentResolver {
 			
 			var content = contentRenderer.render(contentFile, context, renderedSections);
 			
-			var contentType = db.getContent().byUri(uri).get().contentType();
+			var contentType = contentNode.contentType();
 			
-			return Optional.of(new ContentResponse(content, contentType));
+			return Optional.of(new ContentResponse(content, contentType, contentNode));
 		} catch (Exception ex) {
 			log.error(null, ex);
 			return Optional.empty();
