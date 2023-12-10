@@ -17,6 +17,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 * **FEATURE** New meta field *excerpt* to add custom excerpt
 * **FEATURE** Add depth to navigation function to easier build subnavigations
 
+### Migration
+Renamed MetaFields
+published -> publish_date
+draft -> published (attention: values are inverted)
+
 ## 2.16.0
 * **FEATURE** Enable gfm and anchors in markedjs module [#113](https://github.com/thmarx/cms/issues/113)
 * **BUGIX** Multiple bugs with visibility of pages [#114](https://github.com/thmarx/cms/issues/114)
