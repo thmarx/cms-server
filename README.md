@@ -6,14 +6,15 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
-## 2.17.0
+## 3.0.0_SNAPSHOT
 
 * **FEATURE** Pages can redirect to external web sites
 * **FEATURE** unpublish_date meta field
 * **FEATURE** Detected and reload site properties
 * **FEATURE** Support for different content types to generate *json* or *html*, default content type is *text/html*
 * **FEATURE** New site property *content.type* to set default content type
-* **FEATuRE** New meta field *excerpt* to add custom excerpt
+* **FEATURE** New meta field *excerpt* to add custom excerpt
+* **FEATURE** Add depth to navigation function to easier build subnavigations
 
 ## 2.16.0
 * **FEATURE** Enable gfm and anchors in markedjs module [#113](https://github.com/thmarx/cms/issues/113)
