@@ -21,7 +21,7 @@ package com.github.thmarx.cms.filesystem.functions.query;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.PreviewContext;
+import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
@@ -52,7 +52,7 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 				var temp_path = db.getFileSystem().resolve("content/").resolve(node.uri());
 				var url = toUrl(node.uri());
 				var md = parse(temp_path);
-				var excerpt = markdownRenderer.excerpt(md.get().content(), excerptLength);
+				var excerpt = NodeUtil.excerpt(node, md.get().content(), excerptLength, markdownRenderer);
 				final Node navNode = new Node(name, url, excerpt, node.data());
 
 				return navNode;
@@ -85,6 +85,6 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 			uri = uri.substring(0, uri.length() - 1);
 		}
 
-		return uri + (PreviewContext.IS_PREVIEW.get() ? "?preview" : "");
+		return uri + (isPreview() ? "?preview" : "");
 	}
 }

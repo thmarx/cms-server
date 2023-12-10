@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template;
+package com.github.thmarx.cms.api.eventbus.events;
 
 /*-
  * #%L
@@ -21,24 +21,11 @@ package com.github.thmarx.cms.template;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.TestHelper;
-import com.github.thmarx.cms.api.request.RequestContext;
-import com.github.thmarx.cms.api.request.features.IsDevModeFeature;
-import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
-import com.github.thmarx.cms.api.request.features.RequestFeature;
-import com.github.thmarx.cms.content.ContentTags;
-import com.github.thmarx.cms.request.RenderContext;
-import com.github.thmarx.cms.request.RequestExtensions;
-import com.github.thmarx.cms.theme.DefaultTheme;
-import java.util.Map;
+import com.github.thmarx.cms.api.eventbus.Event;
 
 /**
  *
  * @author t.marx
  */
-public abstract class TemplateEngineTest {
-
-	
-	
-
+public record SitePropertiesChanged() implements Event {
 }

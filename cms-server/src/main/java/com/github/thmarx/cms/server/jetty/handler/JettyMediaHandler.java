@@ -21,8 +21,7 @@ package com.github.thmarx.cms.server.jetty.handler;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.Startup;
-import com.github.thmarx.cms.api.PreviewContext;
+import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.media.Media;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.utils.HTTPUtil;
@@ -32,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.Content;
@@ -48,6 +48,7 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class JettyMediaHandler extends Handler.Abstract {
 
+	@Getter
 	private final MediaManager mediaManager;
 
 	@Override
@@ -102,7 +103,7 @@ public class JettyMediaHandler extends Handler.Abstract {
 	private void deliver(final byte[] bytes, final String mimetype, Response response) throws IOException {
 		response.getHeaders().add("Content-Type", mimetype);
 		response.getHeaders().add("Content-Length", bytes.length);
-		if (!PreviewContext.IS_DEV) {
+		if (!ServerContext.IS_DEV) {
 			response.getHeaders().add("Access-Control-Max-Age", Duration.ofDays(10).toSeconds());
 			response.getHeaders().add("Cache-Control", "max-age=" + Duration.ofDays(10).toSeconds());
 		}		

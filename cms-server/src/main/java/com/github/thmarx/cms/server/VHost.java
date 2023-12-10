@@ -36,6 +36,7 @@ import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.github.thmarx.cms.api.eventbus.events.ContentChangedEvent;
+import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -119,8 +120,19 @@ public class VHost {
 		return DefaultTheme.EMPTY;
 	}
 
+	public void updateProperties() {
+		try {
+			var props = db.getFileSystem().resolve("site.yaml");
+			siteProperties.update(PropertiesLoader.rawProperties(props));
+			
+			eventBus.publish(new SitePropertiesChanged());
+		} catch (IOException e) {
+			log.error(null, e);
+		}
+	}
+
 	public void init(Path modules) throws IOException {
-		
+
 		contentParser = new ContentParser();
 
 		this.db = new FileDB(hostBase, eventBus, (file) -> {
@@ -131,7 +143,7 @@ public class VHost {
 				throw new RuntimeException(ioe);
 			}
 		});
-		((FileDB)db).init();
+		((FileDB) db).init();
 
 		var props = db.getFileSystem().resolve("site.yaml");
 		siteProperties = PropertiesLoader.hostProperties(props);
@@ -141,14 +153,14 @@ public class VHost {
 		try {
 			getTemplateEngine();
 		} catch (Exception e) {
-			log.error(null , e);
+			log.error(null, e);
 			try {
 				db.close();
 			} catch (Exception ex) {
 			}
 			throw e;
 		}
-		
+
 		var classLoader = new ModuleAPIClassLoader(ClassLoader.getSystemClassLoader(),
 				List.of(
 						"org.slf4j",
@@ -181,7 +193,7 @@ public class VHost {
 		contentRenderer = new ContentRenderer(contentParser, () -> resolveTemplateEngine(), db, siteProperties, () -> moduleManager);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, db);
 
-		this.requestContextFactory = new RequestContextFactory(() -> resolveMarkdownRenderer(), extensionManager, getTheme());
+		this.requestContextFactory = new RequestContextFactory(() -> resolveMarkdownRenderer(), extensionManager, getTheme(), siteProperties);
 
 		this.moduleManager.initModules();
 
@@ -230,7 +242,7 @@ public class VHost {
 		if (theme_engine != null && engine != null && !theme_engine.equals(engine)) {
 			throw new RuntimeException("site template engine does not match theme template engine");
 		}
-		
+
 		return theme_engine != null ? theme_engine : engine;
 	}
 

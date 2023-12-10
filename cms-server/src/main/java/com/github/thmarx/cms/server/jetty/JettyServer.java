@@ -32,9 +32,14 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.server.HttpServer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -54,6 +59,7 @@ public class JettyServer implements HttpServer {
 
 	private final ServerProperties properties;
 	private Server server;
+	private Timer timer = new Timer(true);
 
 	@Override
 	public void startup() throws IOException {
@@ -65,6 +71,13 @@ public class JettyServer implements HttpServer {
 					var host = new JettyVHost(hostPath, properties);
 					host.init(Path.of(Constants.Folders.MODULES));
 					vhosts.add(host);
+					
+					SiteConfig siteConfig = new SiteConfig(
+							props, 
+							Files.getLastModifiedTime(props).toMillis(),
+							() -> host.updateProperties()
+					);
+					timer.schedule(siteConfig, TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(1));
 				} catch (IOException ex) {
 					log.error(null, ex);
 				}
@@ -85,6 +98,7 @@ public class JettyServer implements HttpServer {
 				log.debug("shutting down vhost : " + host.getHostnames());
 				host.shutdown();
 			});
+			timer.cancel();
 		}));
 
 		HttpConfiguration httpConfig = new HttpConfiguration();
@@ -118,4 +132,27 @@ public class JettyServer implements HttpServer {
 		server.stop();
 	}
 
+	@Slf4j
+	@AllArgsConstructor
+	public static class SiteConfig extends TimerTask {
+
+		public final Path config;
+		public long lastModified;
+		public Runnable onChange;
+		
+		@Override
+		public void run() {
+			try {
+				var tempMod = Files.getLastModifiedTime(config).toMillis();
+				
+				if (tempMod != lastModified) {
+					System.out.println("modified: " + config.getFileName().toString());
+					lastModified = tempMod;
+					onChange.run();
+				}
+			} catch (IOException ex) {
+				log.error(null, ex);
+			}
+		}
+	}
 }
