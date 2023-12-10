@@ -8,6 +8,7 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 ## 3.0.0_SNAPSHOT
 
+* **BREAKING CHANGE** Refactoring meta fields, forces to update projects
 * **FEATURE** Pages can redirect to external web sites
 * **FEATURE** unpublish_date meta field
 * **FEATURE** Detected and reload site properties
