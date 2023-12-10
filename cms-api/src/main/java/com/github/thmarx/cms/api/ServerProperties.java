@@ -39,9 +39,6 @@ public class ServerProperties extends YamlProperties {
 		return (Boolean) properties.getOrDefault("dev", true);
 	}
 	
-	public String serverEngine () {
-		return (String)getSubMap("server").getOrDefault("engine", "jetty");
-	}
 	public String serverIp () {
 		return (String)getSubMap("server").getOrDefault("ip", "127.0.0.1");
 	}

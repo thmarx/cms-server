@@ -53,7 +53,7 @@ public class Startup {
 
 		initGitRepositoryManager();
 		
-		var server = getServerEngine(properties);
+		var server = new JettyServer(properties);
 		server.startup();
 	}
 	
@@ -74,16 +74,6 @@ public class Startup {
 				log.error("error closing repo manager", ex);
 			}
 		}));
-	}
-	
-	
-	private static HttpServer getServerEngine (ServerProperties properties) {
-		var engine = properties.serverEngine();
-		log.debug("try to load engine: {}", engine);
-		return switch (engine) {
-			case "jetty" -> new JettyServer(properties);
-			default -> throw new RuntimeException("something bad happens");
-		};
 	}
 	
 	private static void printStartup () throws IOException {
