@@ -1,5 +1,8 @@
 package com.github.thmarx.cms.filesystem.functions.navigation;
 
+import java.util.Collections;
+import java.util.List;
+
 /*-
  * #%L
  * cms-server
@@ -26,11 +29,14 @@ package com.github.thmarx.cms.filesystem.functions.navigation;
  *
  * @author t.marx
  */
-public record NavNode (String name, String path, int depth, boolean current) {
+public record NavNode (String name, String path, int depth, boolean current, List<NavNode> children) {
 	public NavNode (String name, String path, int depth) {
-		this(name, path, depth, false);
+		this(name, path, depth, false, Collections.emptyList());
 	}
 	public NavNode (String name, String path, boolean current) {
-		this(name, path, 1, current);
+		this(name, path, 1, current, Collections.emptyList());
+	}
+	public NavNode (String name, String path, boolean current, List<NavNode> children) {
+		this(name, path, 1, current, children);
 	}
 }

@@ -32,6 +32,7 @@ import com.github.thmarx.cms.filesystem.functions.navigation.NavigationFunction;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -127,4 +128,23 @@ public class NavigationFunctionNGTest {
 		Assertions.assertThat(list).hasSize(1);
 		Assertions.assertThat(list.get(0).name()).isEqualTo("HTML");
 	}
+	
+	@Test
+	public void test_subnav() {
+
+		List<NavNode> list = navigationFunction.list("/subnav", 2);
+
+		var nodeUris = list.stream().map(NavNode::path).collect(Collectors.toList());
+		Assertions.assertThat(nodeUris)
+				.containsExactlyInAnyOrder("/subnav", "/subnav/folder1");
+		
+		NavNode navNode = list.stream().filter(node -> node.path().equals("/subnav/folder1")).findFirst().get();
+		
+		Assertions.assertThat(navNode.children()).hasSize(1);
+		nodeUris = navNode.children().stream().map(NavNode::path).collect(Collectors.toList());
+		Assertions.assertThat(nodeUris)
+				.containsExactlyInAnyOrder("/subnav/folder1/folder2");
+		
+	}
+	
 }

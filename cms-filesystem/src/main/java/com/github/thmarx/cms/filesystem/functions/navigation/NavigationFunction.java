@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NavigationFunction extends AbstractCurrentNodeFunction {
 
-	private static final int DEFAULT_DEPTH = 0;
+	private static final int DEFAULT_DEPTH = 1;
 
 	private String contentType = Constants.DEFAULT_CONTENT_TYPE;
 
@@ -111,7 +111,16 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return Collections.emptyList();
 	}
 
+	public List<NavNode> getSubNodesFromBaseRemoveCurrent (final Path base, final String start, final int depth, final String toRemovePath) {
+		List<NavNode> nodes = getNodesFromBase(base, start, depth);
+		
+		return nodes.stream().filter(node -> !node.path().equals(toRemovePath)).toList();
+	}
+	
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
+		if (depth == 0) {
+			return Collections.emptyList();
+		}
 		try {
 			final List<ContentNode> navNodes = new ArrayList(
 					db.getContent().listContent(base, start)
@@ -142,7 +151,13 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 			navNodes.forEach((node) -> {
 				var name = NodeUtil.getName(node);
 				var path = contentBase.resolve(node.uri());
-				final NavNode navNode = new NavNode(name, getUrl(path), isCurrentNode(path));
+				var node_url = getUrl(path);
+				final NavNode navNode = new NavNode(
+						name, 
+						node_url, 
+						isCurrentNode(path),
+						getSubNodesFromBaseRemoveCurrent(path.getParent(), "./", (depth - 1), node_url)
+				);
 				nodes.add(navNode);
 			});
 			return nodes;
