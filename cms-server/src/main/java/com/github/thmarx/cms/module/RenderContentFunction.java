@@ -50,8 +50,6 @@ public class RenderContentFunction implements BiFunction<String, Map<String, Lis
 		try (
 				var requestContext = requestContextFactory.get().create(uri, parameters);) {
 			
-			requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(false));
-			
 			return contentResolver.get().getContent(requestContext);
 		} catch (Exception e) {
 			log.error("", e);

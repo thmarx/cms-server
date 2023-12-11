@@ -28,6 +28,6 @@ import com.github.thmarx.cms.api.request.Feature;
  *
  * @author t.marx
  */
-public record IsPreviewFeature(boolean isPreview) implements Feature {
+public record IsPreviewFeature() implements Feature {
 
 }

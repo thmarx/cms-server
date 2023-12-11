@@ -84,7 +84,7 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 		
             let requestContext = ThreadLocalRequestContext.REQUEST_CONTEXT.get();
          
-			if (requestContext != null && requestContext.has(IsPreviewFeature.class) && requestContext.get(IsPreviewFeature.class).isPreview()) {
+			if (requestContext != null && requestContext.has(IsPreviewFeature.class)) {
                 const cleanUrl = (href) => {
                   try {
                     href = encodeURI(href).replace(/%25/g, '%');

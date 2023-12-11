@@ -70,7 +70,9 @@ public class RequestContextFactory {
 		context.add(RequestExtensions.class, requestExtensions);
 		context.add(ThemeFeature.class, new ThemeFeature(requestTheme));
 		context.add(RenderContext.class, renderContext);
-		context.add(IsDevModeFeature.class, new IsDevModeFeature(ServerContext.IS_DEV));
+		if (ServerContext.IS_DEV) {
+			context.add(IsDevModeFeature.class, new IsDevModeFeature());
+		}
 		context.add(SitePropertiesFeatures.class, new SitePropertiesFeatures(siteProperties));
 		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
 		

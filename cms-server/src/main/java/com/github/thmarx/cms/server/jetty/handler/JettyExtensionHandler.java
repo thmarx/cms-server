@@ -56,9 +56,7 @@ public class JettyExtensionHandler extends Handler.Abstract {
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
 			var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
 			if (ServerContext.IS_DEV && queryParameters.containsKey("preview")) {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(true));
-			} else {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(false));
+				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
 			}
 			
 			String extension = getExtensionName(request);

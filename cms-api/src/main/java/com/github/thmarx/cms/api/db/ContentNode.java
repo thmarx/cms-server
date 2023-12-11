@@ -96,10 +96,8 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 
 	public boolean isPublished() {
 		if (ThreadLocalRequestContext.REQUEST_CONTEXT.get() != null
-				&& ThreadLocalRequestContext.REQUEST_CONTEXT.get()
-						.get(IsPreviewFeature.class).isPreview()) {
+				&& ThreadLocalRequestContext.REQUEST_CONTEXT.get().has(IsPreviewFeature.class)) {
 			return true;
-
 		}
 
 		if (isDraft()) {

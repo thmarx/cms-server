@@ -128,13 +128,13 @@ public class ContentRenderer {
 
 	private boolean isPreview(final RequestContext context) {
 		if (context.has(IsPreviewFeature.class)) {
-			return context.get(IsPreviewFeature.class).isPreview();
+			return context.has(IsPreviewFeature.class);
 		}
 		return false;
 	}
 	private boolean isDevMode(final RequestContext context) {
 		if (context.has(IsDevModeFeature.class)) {
-			return context.get(IsDevModeFeature.class).isDevMode();
+			return context.has(IsDevModeFeature.class);
 		}
 		return false;
 	}

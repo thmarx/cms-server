@@ -75,7 +75,7 @@ public class MarkedMarkdownRendererTest {
 	@Test
 	public void test_link_preview() {
 		RequestContext context = new RequestContext();
-		context.add(IsPreviewFeature.class, new IsPreviewFeature(true));
+		context.add(IsPreviewFeature.class, new IsPreviewFeature());
 		ThreadLocalRequestContext.REQUEST_CONTEXT.set(context);
 		try {
 			var result = sut.render("[Link text Here](/internal/url)");
@@ -88,7 +88,7 @@ public class MarkedMarkdownRendererTest {
 	@Test
 	public void test_link_preview_append() {
 		RequestContext context = new RequestContext();
-		context.add(IsPreviewFeature.class, new IsPreviewFeature(true));
+		context.add(IsPreviewFeature.class, new IsPreviewFeature());
 		ThreadLocalRequestContext.REQUEST_CONTEXT.set(context);
 		try {
 			var result = sut.render("[Link text Here](/internal/url?hello=world)");
@@ -101,7 +101,7 @@ public class MarkedMarkdownRendererTest {
 	@Test
 	public void test_link_preview_extern() {
 		RequestContext context = new RequestContext();
-		context.add(IsPreviewFeature.class, new IsPreviewFeature(true));
+		context.add(IsPreviewFeature.class, new IsPreviewFeature());
 		ThreadLocalRequestContext.REQUEST_CONTEXT.set(context);
 		try {
 			var result = sut.render("[Link text Here](http://external.org/url?hello=world)");

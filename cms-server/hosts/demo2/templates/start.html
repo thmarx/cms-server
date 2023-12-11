@@ -5,7 +5,7 @@
 {% endfor %}
 
 <h1>featured with in</h1>
-{% set news = query.create("/blog").whereIn('featured', [true, false]).get(0) %}
+{% set news = query.create("/blog").whereIn('featured', [true, false]).get() %}
 {% for entry in news %}
 	<h2>{{entry.name}}</h2>
 {% endfor %}

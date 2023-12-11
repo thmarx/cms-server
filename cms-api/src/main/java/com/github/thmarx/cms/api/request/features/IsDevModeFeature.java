@@ -28,6 +28,6 @@ import com.github.thmarx.cms.api.request.Feature;
  *
  * @author t.marx
  */
-public record IsDevModeFeature(boolean isDevMode) implements Feature {
+public record IsDevModeFeature() implements Feature {
 
 }

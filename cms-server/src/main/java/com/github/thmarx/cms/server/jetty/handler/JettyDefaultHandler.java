@@ -58,9 +58,7 @@ public class JettyDefaultHandler extends Handler.Abstract {
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
 			
 			if (ServerContext.IS_DEV && queryParameters.containsKey("preview")) {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(true));
-			} else {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(false));
+				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
 			}
 			
 			Optional<ContentResponse> content = contentResolver.getContent(requestContext);

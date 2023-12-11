@@ -73,8 +73,7 @@ public abstract class AbstractCurrentNodeFunction {
 	protected boolean isPreview() {
 		if (ThreadLocalRequestContext.REQUEST_CONTEXT.get() != null
 				&& ThreadLocalRequestContext.REQUEST_CONTEXT.get().has(IsPreviewFeature.class)) {
-			ThreadLocalRequestContext.REQUEST_CONTEXT.get().get(IsPreviewFeature.class).isPreview();
-
+			return true;
 		}
 
 		return false;

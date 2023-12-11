@@ -56,9 +56,6 @@ public abstract class TestHelper {
 		context.add(RequestExtensions.class, new RequestExtensions(null, null));
 		context.add(RenderContext.class, new RenderContext(markdownRenderer, new ContentTags(Map.of()), DefaultTheme.EMPTY));
 		
-		context.add(IsPreviewFeature.class, new IsPreviewFeature(false));
-		context.add(IsDevModeFeature.class, new IsDevModeFeature(false));
-		
 		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(new FileMediaService(null)));
 		
 		return context;
