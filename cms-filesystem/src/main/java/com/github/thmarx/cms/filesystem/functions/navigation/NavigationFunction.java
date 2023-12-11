@@ -96,6 +96,10 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return getNodes(start, DEFAULT_DEPTH);
 	}
 
+	public List<NavNode> list(final String start, final long depth) {
+		return getNodes(start, (int) depth);
+	}
+	
 	public List<NavNode> list(final String start, final int depth) {
 		return getNodes(start, depth);
 	}
