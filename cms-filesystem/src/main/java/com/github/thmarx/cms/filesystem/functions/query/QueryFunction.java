@@ -21,7 +21,6 @@ package com.github.thmarx.cms.filesystem.functions.query;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
@@ -30,8 +29,10 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.filesystem.functions.list.Node;
 import com.github.thmarx.cms.api.utils.NodeUtil;
+import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.util.function.BiFunction;
+import lombok.Setter;
 
 /**
  *
@@ -40,6 +41,9 @@ import java.util.function.BiFunction;
 public class QueryFunction extends AbstractCurrentNodeFunction {
 
 	BiFunction<ContentNode, Integer, Node> nodeMapper = null;
+	
+	@Setter
+	private String contentType;
 
 	public QueryFunction(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
 		super(db, currentNode, contentParser, markdownRenderer);
@@ -63,11 +67,21 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 	}
 
 	public ContentQuery create() {
-		return db.getContent().query(nodeMapper());
+		
+		var query = db.getContent().query(nodeMapper());
+		
+		if (!Strings.isNullOrEmpty(contentType)) {
+			query.contentType(contentType);
+		}
+		return query;
 	}
 
 	public ContentQuery create(final String startUri) {
-		return db.getContent().query(startUri, nodeMapper());
+		var query = db.getContent().query(startUri, nodeMapper());
+		if (!Strings.isNullOrEmpty(contentType)) {
+			query.contentType(contentType);
+		}
+		return query;
 	}
 
 	public String toUrl(String uri) {

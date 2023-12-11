@@ -32,14 +32,10 @@ import static com.github.thmarx.cms.filesystem.query.QueryUtil.filteredWithIndex
 import static com.github.thmarx.cms.filesystem.query.QueryUtil.sorted;
 import com.github.thmarx.cms.api.utils.NodeUtil;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  *
@@ -136,37 +132,31 @@ public class Query<T> implements ContentQuery<T> {
 		context.setUseSecondaryIndex(true);
 		return new Query<>(context);
 	}
-	
+
+	@Override
 	public Query<T> html() {
 		context.setContentType(Constants.ContentTypes.HTML);
 		return new Query<>(context);
 	}
 
+	@Override
 	public Query<T> json() {
 		context.setContentType(Constants.ContentTypes.JSON);
 		return new Query<>(context);
 	}
 
 	@Override
-	public int count() {
-		return (int) context.getNodes()
-				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
-				.count();
+	public Query<T> contentType(String contentType) {
+		context.setContentType(contentType);
+		return new Query<>(context);
 	}
 
 	@Override
-	public List<T> get(final long offset, final long size) {
-		return get((int) offset, (int) size);
-	}
-
-	@Override
-	public List<T> get(final int offset, final int size) {
+	public List<T> get() {
 		return context.getNodes()
 				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
 				.filter(node -> !node.isDirectory())
 				.filter(MetaData::isVisible)
-				.skip(offset)
-				.limit(size)
 				.map(context.getNodeMapper())
 				.toList();
 	}
@@ -192,30 +182,24 @@ public class Query<T> implements ContentQuery<T> {
 	}
 
 	public Page<T> page(final int page, final int size) {
-		int total = count();
 		int offset = (page - 1) * size;
 
 		var filteredNodes = context.getNodes()
 				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
 				.filter(node -> !node.isDirectory())
 				.filter(MetaData::isVisible)
+				.toList();
+
+		var total = filteredNodes.size();
+
+		var filteredTargetNodes = filteredNodes.stream()
 				.skip(offset)
 				.limit(size)
 				.map(context.getNodeMapper())
 				.toList();
 
 		int totalPages = (int) Math.ceil((float) total / size);
-		return new Page<T>(filteredNodes.size(), totalPages, page, filteredNodes);
-	}
-
-	@Override
-	public List<T> get() {
-		return context.getNodes()
-				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
-				.filter(node -> !node.isDirectory())
-				.filter(MetaData::isVisible)
-				.map(context.getNodeMapper())
-				.toList();
+		return new Page<T>(filteredNodes.size(), totalPages, page, filteredTargetNodes);
 	}
 
 	@Override

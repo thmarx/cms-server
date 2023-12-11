@@ -8,7 +8,7 @@ Query nodes.
 ```html
 <!-- example for a blog overview page  -->
 <div
-	th:with='entries = ${query.create("/blog/*").where("featured", true).get(0, 10)}'>
+	th:with='entries = ${query.create("/blog/*").where("featured", true).page(1, 10)}'>
 	<th:block th:each="entry : ${entries.items}">
 		<h2 th:text="${entry.name}"></h2>
 		<p th:text="${entry.content}"></p>

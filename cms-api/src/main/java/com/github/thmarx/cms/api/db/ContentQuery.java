@@ -32,24 +32,24 @@ import java.util.Map;
  */
 public interface ContentQuery<T> {
 
-	int count();
-
 	ContentQuery<T> excerpt(final int excerptLength);
 
 	Page<T> page(final long page, final long size);
 
 	Page<T> page(final int page, final int size);
 	
-	List<T> get(final long offset, final long size);
-
-	List<T> get(final int offset, final int size);
-
 	List<T> get();
-
+	
 	Map<Object, List<ContentNode>> groupby(final String field);
 
 	Sort<T> orderby(final String field);
 
+	ContentQuery<T> json();
+	
+	ContentQuery<T> html();
+	
+	ContentQuery<T> contentType(String contentType);
+	
 	ContentQuery<T> where(final String field, final Object value);
 
 	ContentQuery<T> where(final String field, final String operator, final Object value);

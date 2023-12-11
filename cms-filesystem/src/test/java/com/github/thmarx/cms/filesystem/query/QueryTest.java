@@ -154,17 +154,17 @@ public class QueryTest {
 	@Test
 	public void test_offset_0() {
 		Query<ContentNode> query = createQuery();
-		var nodes = query.where("featured", false).orderby("index").desc().get(0, 1);
-		Assertions.assertThat(nodes).hasSize(1);
-		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
+		var page = query.where("featured", false).orderby("index").desc().page(1, 1);
+		Assertions.assertThat(page.getItems()).hasSize(1);
+		Assertions.assertThat(page.getItems().get(0).uri()).isEqualTo("/test2");
 	}
 
 	@Test
 	public void test_offset_1() {
 		Query<ContentNode> query = createQuery();
-		var nodes = query.where("featured", false).orderby("index").desc().get(1, 1);
-		Assertions.assertThat(nodes).hasSize(1);
-		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
+		var page = query.where("featured", false).orderby("index").desc().page(2, 1);
+		Assertions.assertThat(page.getItems()).hasSize(1);
+		Assertions.assertThat(page.getItems().getFirst().uri()).isEqualTo("/test1");
 	}
 
 	@Test
@@ -244,7 +244,7 @@ public class QueryTest {
 	@Test
 	public void test_json() {
 		Query<ContentNode> query = createQuery();
-		var nodes = query.json().get(0, 1);
+		var nodes = query.json().page(1, 1).getItems();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/json");
 	}

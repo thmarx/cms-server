@@ -84,9 +84,9 @@ public class ContentRenderer {
 		model.values.put("content", context.get(RenderContext.class).markdownRenderer().render(markdownContent));
 		model.values.put("sections", sections);
 
-		model.values.put("navigation", new NavigationFunction(db, contentFile, contentParser, context.get(RenderContext.class).markdownRenderer()));
-		model.values.put("nodeList", new NodeListFunctionBuilder(db, contentFile, contentParser, context.get(RenderContext.class).markdownRenderer()));
-		model.values.put("query", new QueryFunction(db, contentFile, contentParser, context.get(RenderContext.class).markdownRenderer()));
+		model.values.put("navigation", createNavigationFunction(contentFile, context));
+		model.values.put("nodeList", createNodeListFunction(contentFile, context));
+		model.values.put("query", createQueryFunction(contentFile, context));
 		model.values.put("requestContext", context.get(RequestFeature.class));
 		model.values.put("theme", context.get(RenderContext.class).theme());
 		model.values.put("site", siteProperties);
@@ -106,6 +106,24 @@ public class ContentRenderer {
 		extendModel(model);
 
 		return templates.get().render((String) content.meta().get("template"), model);
+	}
+
+	protected QueryFunction createQueryFunction(final Path contentFile, final RequestContext context) {
+		var queryFn = new QueryFunction(db, contentFile, contentParser, context.get(RenderContext.class).markdownRenderer());
+		queryFn.setContentType(siteProperties.defaultContentType());
+		return queryFn;
+	}
+
+	protected NodeListFunctionBuilder createNodeListFunction(final Path contentFile, final RequestContext context) {
+		var nlFn = new NodeListFunctionBuilder(db, contentFile, contentParser, context.get(RenderContext.class).markdownRenderer());
+		nlFn.contentType(siteProperties.defaultContentType());
+		return nlFn;
+	}
+
+	protected NavigationFunction createNavigationFunction(final Path contentFile, final RequestContext context) {
+		var navFn = new NavigationFunction(db, contentFile, contentParser, context.get(RenderContext.class).markdownRenderer());
+		navFn.contentType(siteProperties.defaultContentType());
+		return navFn;
 	}
 
 	private boolean isPreview(final RequestContext context) {
