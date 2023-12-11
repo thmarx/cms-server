@@ -6,6 +6,9 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 3.0.1
+* **BUGFIX** Preview parameter was not added to generated urls [#123](https://github.com/thmarx/cms/issues/123)
+
 ## 3.0.0
 
 * **BREAKING CHANGE** Refactoring meta fields, forces to update projects
