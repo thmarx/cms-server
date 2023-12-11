@@ -6,9 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
-## 3.0.0_SNAPSHOT
+## 3.0.0
 
 * **BREAKING CHANGE** Refactoring meta fields, forces to update projects
+* **FEATURE** MediaService to access meta data of medias
 * **FEATURE** Pages can redirect to external web sites
 * **FEATURE** unpublish_date meta field
 * **FEATURE** Detected and reload site properties
