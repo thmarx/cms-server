@@ -101,6 +101,8 @@ public class ContentResolver {
 			var tempFile = contentPath.resolve("index.md");
 			if (Files.exists(tempFile)) {
 				contentFile = tempFile;
+			} else {
+				return Optional.empty();
 			}
 		} else {
 			var temp = contentBase.resolve(path + ".md");

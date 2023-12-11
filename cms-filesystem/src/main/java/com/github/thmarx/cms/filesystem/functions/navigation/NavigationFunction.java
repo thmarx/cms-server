@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -62,13 +63,16 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		while (!node.equals(contentBase.getParent())) {
 
 			var uri = PathUtil.toRelativeFile(node, contentBase);
-			var metaNode = db.getContent().byUri(uri).get();
-			var name = NodeUtil.getName(metaNode);
+			final Optional<ContentNode> contentNode = db.getContent().byUri(uri);
+			if (contentNode.isPresent()) {
+				var metaNode = contentNode.get();
+				var name = NodeUtil.getName(metaNode);
 
-			var path = contentBase.resolve(metaNode.uri());
-			final NavNode navNode = new NavNode(name, getUrl(path), isCurrentNode(path));
-			if (!nodes.contains(navNode)) {
-				nodes.add(navNode);
+				var path = contentBase.resolve(metaNode.uri());
+				final NavNode navNode = new NavNode(name, getUrl(path), isCurrentNode(path));
+				if (!nodes.contains(navNode)) {
+					nodes.add(navNode);
+				}
 			}
 
 			node = node.getParent();
@@ -99,7 +103,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 	public List<NavNode> list(final String start, final long depth) {
 		return getNodes(start, (int) depth);
 	}
-	
+
 	public List<NavNode> list(final String start, final int depth) {
 		return getNodes(start, depth);
 	}
@@ -115,12 +119,12 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return Collections.emptyList();
 	}
 
-	public List<NavNode> getSubNodesFromBaseRemoveCurrent (final Path base, final String start, final int depth, final String toRemovePath) {
+	public List<NavNode> getSubNodesFromBaseRemoveCurrent(final Path base, final String start, final int depth, final String toRemovePath) {
 		List<NavNode> nodes = getNodesFromBase(base, start, depth);
-		
+
 		return nodes.stream().filter(node -> !node.path().equals(toRemovePath)).toList();
 	}
-	
+
 	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		if (depth == 0) {
 			return Collections.emptyList();
@@ -157,8 +161,8 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 				var path = contentBase.resolve(node.uri());
 				var node_url = getUrl(path);
 				final NavNode navNode = new NavNode(
-						name, 
-						node_url, 
+						name,
+						node_url,
 						isCurrentNode(path),
 						getSubNodesFromBaseRemoveCurrent(path.getParent(), "./", (depth - 1), node_url)
 				);

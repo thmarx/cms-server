@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 3.0.3
+* **BUGFIX** If content file is not found, no 404 is thrown
+* **BUGFIX** Navigation function throws exception if index.md is missing
+
 ## 3.0.2
 * **BUGFIX** Fix navigation issue when using pebble engine
 
