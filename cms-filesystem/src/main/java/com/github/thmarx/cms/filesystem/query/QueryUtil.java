@@ -23,13 +23,10 @@ package com.github.thmarx.cms.filesystem.query;
  */
 
 import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.filesystem.MetaData;
-import com.github.thmarx.cms.filesystem.index.IndexProviding;
+import com.github.thmarx.cms.api.utils.MapUtil;
 import com.github.thmarx.cms.filesystem.index.SecondaryIndex;
-import com.github.thmarx.cms.api.utils.NodeUtil;
 import com.google.common.base.Strings;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -77,15 +74,15 @@ public final class QueryUtil {
 	}
 
 	protected static Map<Object, List<ContentNode>> groupby (final Stream<ContentNode> nodes, final String field) {
-		return nodes.collect(Collectors.groupingBy((node) -> NodeUtil.getValue(node.data(), field)));
+		return nodes.collect(Collectors.groupingBy((node) -> MapUtil.getValue(node.data(), field)));
 	}
 	
 	protected static QueryContext<?> sorted(final QueryContext<?> context, final String field, final boolean asc) {
 		
 		var tempNodes = context.getNodes().sorted(
 				(node1, node2) -> {
-					var value1 = NodeUtil.getValue(node1.data(), field);
-					var value2 = NodeUtil.getValue(node2.data(), field);
+					var value1 = MapUtil.getValue(node1.data(), field);
+					var value2 = MapUtil.getValue(node2.data(), field);
 					
 					return compare(value1, value2);
 				}
@@ -137,7 +134,7 @@ public final class QueryUtil {
 	protected static QueryContext<?> filteredWithIndex(final QueryContext<?> context, final String field, final Object value, final Operator operator) {
 		
 		if (Operator.EQ.equals(operator)) {
-			SecondaryIndex<Object> index = (SecondaryIndex<Object>) context.getIndexProviding().getOrCreateIndex(field, node -> NodeUtil.getValue(node.data(), field));			
+			SecondaryIndex<Object> index = (SecondaryIndex<Object>) context.getIndexProviding().getOrCreateIndex(field, node -> MapUtil.getValue(node.data(), field));			
 			context.setNodes(context.getNodes().filter(node -> index.eq(node, value)));
 			return context;
 		} else {
@@ -153,7 +150,7 @@ public final class QueryUtil {
 
 	private static Predicate<? super ContentNode> createPredicate(final String field, final Object value, final Operator operator) {
 		return (node) -> {
-			var node_value = NodeUtil.getValue(node.data(), field);
+			var node_value = MapUtil.getValue(node.data(), field);
 			
 			if (node_value == null) {
 				return false;

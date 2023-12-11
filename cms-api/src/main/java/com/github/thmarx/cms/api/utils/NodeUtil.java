@@ -77,24 +77,6 @@ public class NodeUtil {
 		return Constants.DEFAULT_MENU_POSITION;
 	}
 
-	public static Object getValue(final Map<String, Object> map, final String field) {
-		String[] keys = field.split("\\.");
-		Map subMap = map;
-		for (int i = 0; i < keys.length - 1; i++) {
-			subMap = (Map<String, Object>) subMap.getOrDefault(keys[i], Collections.emptyMap());
-		}
-		return subMap.get(keys[keys.length - 1]);
-	}
-
-	public static <T> T getValue(final Map<String, Object> map, final String field, final T defaultValue) {
-		String[] keys = field.split("\\.");
-		Map<String, Object> subMap = map;
-		for (int i = 0; i < keys.length - 1; i++) {
-			subMap = (Map<String, Object>) subMap.getOrDefault(keys[i], Collections.emptyMap());
-		}
-		return (T) subMap.getOrDefault(keys[keys.length - 1], defaultValue);
-	}
-
 	public static String excerpt(final ContentNode node, final String markdown, final int length, final MarkdownRenderer renderer) {
 		if (node.hasMetaValue(Constants.MetaFields.EXCERPT)) {
 			return elipsis(node.getMetaValue(Constants.MetaFields.EXCERPT, ""), length);

@@ -22,14 +22,14 @@ package com.github.thmarx.cms.api.media;
  * #L%
  */
 
-import com.github.thmarx.cms.api.media.Media;
+import com.github.thmarx.cms.api.media.MediaUtils;
 
 /**
  *
  * @author t.marx
  */
-public record MediaFormat(String name, int width, int height, Media.Format format, boolean compression, boolean cropped) {
-	public MediaFormat (String name, int width, int height, Media.Format format, boolean compression) {
+public record MediaFormat(String name, int width, int height, MediaUtils.Format format, boolean compression, boolean cropped) {
+	public MediaFormat (String name, int width, int height, MediaUtils.Format format, boolean compression) {
 		this(name, width, height, format, compression, false);
 	}
 }

@@ -22,7 +22,7 @@ package com.github.thmarx.cms.server.jetty.handler;
  * #L%
  */
 import com.github.thmarx.cms.api.ServerContext;
-import com.github.thmarx.cms.api.media.Media;
+import com.github.thmarx.cms.api.media.MediaUtils;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.utils.HTTPUtil;
 import java.io.IOException;
@@ -85,7 +85,7 @@ public class JettyMediaHandler extends Handler.Abstract {
 				var result = mediaManager.getScaledContent(mediaPath, format);
 				if (result.isPresent()) {
 
-					deliver(result.get(), Media.mime4Format(format.format()), response);
+					deliver(result.get(), MediaUtils.mime4Format(format.format()), response);
 					
 					callback.succeeded();
 					return true;

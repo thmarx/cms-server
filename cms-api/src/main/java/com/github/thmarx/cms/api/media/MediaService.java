@@ -22,10 +22,11 @@ package com.github.thmarx.cms.api.media;
  * #L%
  */
 
-import com.github.thmarx.cms.api.media.meta.Meta;
-
 /**
  *
  * @author t.marx
  */
-public record Media (String uri, Meta meta, boolean exists) {}
+public interface MediaService {
+
+	public Media get (final String media);
+}

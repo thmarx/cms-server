@@ -27,7 +27,9 @@ import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.IsDevModeFeature;
 import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.request.features.RequestFeature;
+import com.github.thmarx.cms.api.request.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.content.ContentTags;
+import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.request.RenderContext;
 import com.github.thmarx.cms.request.RequestExtensions;
 import com.github.thmarx.cms.theme.DefaultTheme;
@@ -56,6 +58,8 @@ public abstract class TestHelper {
 		
 		context.add(IsPreviewFeature.class, new IsPreviewFeature(false));
 		context.add(IsDevModeFeature.class, new IsDevModeFeature(false));
+		
+		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(new FileMediaService(null)));
 		
 		return context;
 	}

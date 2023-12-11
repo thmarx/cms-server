@@ -21,9 +21,7 @@ package com.github.thmarx.cms.content;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.Startup;
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
@@ -32,6 +30,7 @@ import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.IsDevModeFeature;
 import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.request.features.RequestFeature;
+import com.github.thmarx.cms.api.request.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.filesystem.functions.list.NodeListFunctionBuilder;
@@ -91,6 +90,7 @@ public class ContentRenderer {
 		model.values.put("requestContext", context.get(RequestFeature.class));
 		model.values.put("theme", context.get(RenderContext.class).theme());
 		model.values.put("site", siteProperties);
+		model.values.put("mediaService", context.get(SiteMediaServiceFeature.class).mediaService());
 
 		model.values.put("PREVIEW_MODE", isPreview(context));
 		model.values.put("DEV_MODE", isDevMode(context));

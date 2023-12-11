@@ -1,6 +1,6 @@
 package com.github.thmarx.cms.api;
 
-import com.github.thmarx.cms.api.media.Media;
+import com.github.thmarx.cms.api.media.MediaUtils;
 /*-
  * #%L
  * cms-server
@@ -58,7 +58,7 @@ public class ThemeProperties extends YamlProperties {
 						(String) map.get("name"),
 						(int) map.get("width"),
 						(int) map.get("height"),
-						Media.format4String((String) map.get("format")),
+						MediaUtils.format4String((String) map.get("format")),
 						(boolean) map.get("compression"),
 						(boolean) map.getOrDefault("cropped", false)
 				);

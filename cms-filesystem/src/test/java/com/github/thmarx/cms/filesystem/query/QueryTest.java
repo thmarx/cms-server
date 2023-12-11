@@ -248,4 +248,15 @@ public class QueryTest {
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/json");
 	}
+	
+	@Test
+	public void test_where_not_null() {
+		Query<ContentNode> query = createQuery();
+		var nodes = query.where("index", "!=", null).get();
+		Assertions.assertThat(nodes).hasSize(2);
+		
+		query = createQuery();
+		query.where("index", "=", null).get();
+		Assertions.assertThat(nodes).hasSize(2);
+	}
 }

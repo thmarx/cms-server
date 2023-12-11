@@ -9,7 +9,7 @@
 <body>
 
 	<nav th:replace="libs/fragments.html :: navigation"></nav>
-	
+
 	<div id="content">
 		<div class="container" th:utext="${content}"></div>
 	</div>
@@ -30,6 +30,14 @@
 			<div class="featured">
 				<h3 th:text="${featured.name}"></h3>
 				<a th:href="${featured.path}">goto</a>
+			</div>
+		</th:block>
+	</div>
+	<div class="container">
+		<h2>MediaService</h2>
+		<th:block th:with="testMedia=${mediaService.get('images/test.jpg')}">
+			<div th:if="${testMedia.exists() == true}">
+				<img th:src="${'/media/' + testMedia.uri() + '?format=small'}" th:alt="${testMedia.meta.alt}" />
 			</div>
 		</th:block>
 	</div>

@@ -26,7 +26,7 @@ import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.request.features.SitePropertiesFeatures;
-import com.github.thmarx.cms.api.utils.NodeUtil;
+import com.github.thmarx.cms.api.utils.MapUtil;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -70,15 +70,15 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 	}
 	
 	public boolean hasMetaValue (final String field) {
-		return NodeUtil.getValue(data, field) != null;
+		return MapUtil.getValue(data, field) != null;
 	}
 	
 	public <T> T getMetaValue (final String field, final T defaultValue) {
-		return NodeUtil.getValue(data, field, defaultValue);
+		return MapUtil.getValue(data, field, defaultValue);
 	}
 	
 	public <T> Optional<T> getMetaValue (final String field, final Class<T> type) {
-		var value = NodeUtil.getValue(data, field);
+		var value = MapUtil.getValue(data, field);
 		return Optional.ofNullable((T)value);
 	}
 
@@ -123,15 +123,15 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 	}
 
 	public boolean isRedirect() {
-		return NodeUtil.getValue(data, Constants.MetaFields.REDIRECT_LOCATION) != null;
+		return MapUtil.getValue(data, Constants.MetaFields.REDIRECT_LOCATION) != null;
 	}
 
 	public int getRedirectStatus() {
-		return NodeUtil.getValue(data, Constants.MetaFields.REDIRECT_STATUS, Constants.DEFAULT_REDIRECT_STATUS);
+		return MapUtil.getValue(data, Constants.MetaFields.REDIRECT_STATUS, Constants.DEFAULT_REDIRECT_STATUS);
 	}
 
 	public String getRedirectLocation() {
-		return NodeUtil.getValue(data, Constants.MetaFields.REDIRECT_LOCATION, "");
+		return MapUtil.getValue(data, Constants.MetaFields.REDIRECT_LOCATION, "");
 	}
 
 	@Override

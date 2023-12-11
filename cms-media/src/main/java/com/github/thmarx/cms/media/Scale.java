@@ -21,7 +21,7 @@ package com.github.thmarx.cms.media;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.media.Media;
+import com.github.thmarx.cms.api.media.MediaUtils;
 import com.github.thmarx.cms.api.media.MediaFormat;
 import com.luciad.imageio.webp.WebPWriteParam;
 import java.awt.Color;
@@ -53,7 +53,7 @@ import lombok.extern.log4j.Log4j2;
 public class Scale {
 
 	public static ScaleResult scaleWithAspectIfTooLarge(byte[] fileData, int maxWidth,
-			int maxHeight, boolean uncompressed, final Media.Format format) {
+			int maxHeight, boolean uncompressed, final MediaUtils.Format format) {
 		ScaleResult result = new ScaleResult();
 
 		try (ByteArrayInputStream in = new ByteArrayInputStream(fileData)) {
@@ -74,11 +74,11 @@ public class Scale {
 						BufferedImage.TYPE_INT_RGB);
 				imageBuff.getGraphics().drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null);
 				// output
-				if (Media.Format.JPEG.equals(format)) {
+				if (MediaUtils.Format.JPEG.equals(format)) {
 					result.data = toJPG(imageBuff, uncompressed);
-				} else if (Media.Format.WEBP.equals(format)) {
+				} else if (MediaUtils.Format.WEBP.equals(format)) {
 					result.data = toWEBP(imageBuff, uncompressed);
-				} else if (Media.Format.PNG.equals(format)) {
+				} else if (MediaUtils.Format.PNG.equals(format)) {
 					result.data = toPNG(imageBuff, uncompressed);
 				}
 			}
@@ -200,12 +200,12 @@ public class Scale {
 
 	public static void scale(final String file) throws IOException {
 		byte[] fileData = Files.readAllBytes(Path.of(new File(file).toURI()));
-		ScaleResult result = scaleWithAspectIfTooLarge(fileData, 200, 300, false, Media.Format.JPEG);
+		ScaleResult result = scaleWithAspectIfTooLarge(fileData, 200, 300, false, MediaUtils.Format.JPEG);
 		Files.write(Path.of(file + ".jpg"), result.data);
 
 		//result = scaleWithAspectIfTooLarge(fileData, 200, 300, true, Format.WEBP);
 		//Files.write(Path.of(file + ".webp"), result.data);
-		result = scaleWithAspectIfTooLarge(fileData, 200, 300, true, Media.Format.PNG);
+		result = scaleWithAspectIfTooLarge(fileData, 200, 300, true, MediaUtils.Format.PNG);
 		Files.write(Path.of(file + ".png"), result.data);
 	}
 }

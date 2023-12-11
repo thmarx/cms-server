@@ -22,7 +22,7 @@ package com.github.thmarx.cms.media;
  * #L%
  */
 
-import com.github.thmarx.cms.api.media.Media;
+import com.github.thmarx.cms.api.media.MediaUtils;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
@@ -38,6 +38,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.geometry.Position;
 import net.coobird.thumbnailator.geometry.Positions;
 
 /**
@@ -93,7 +94,7 @@ public class MediaManager implements EventListener<SitePropertiesChanged> {
 					;
 			
 			if (mediaFormat.cropped()) {
-				scaleBuilder.crop(Positions.CENTER);
+				scaleBuilder.crop(getCropCenter(resolve));
 			}
 			
 			byte[] data = Scale.toFormat(scaleBuilder.asBufferedImage(), mediaFormat);
@@ -104,10 +105,30 @@ public class MediaManager implements EventListener<SitePropertiesChanged> {
 		}
 		return Optional.empty();
 	}
+	
+	public Position getCropCenter (Path media) {
+//		var metaFileName = media.getFileName().toString() + ".meta.yaml";
+//		var metaFile = media.getParent().resolve(metaFileName);
+//		if (Files.exists(metaFile)){
+//			try {
+//				final Meta meta = new Yaml().loadAs(Files.readString(metaFile, StandardCharsets.UTF_8), Meta.class);
+//				return new Position() {
+//					@Override
+//					public Point calculate(int enclosingWidth, int enclosingHeight, int width, int height, int insetLeft, int insetRight, int insetTop, int insetBottom) {
+//						return new Point(meta.getCrop().getCenter_x(), meta.getCrop().getCenter_y());
+//					}
+//				};
+//			} catch (IOException ex) {
+//				log.error(null, ex);
+//			}
+//		}
+		
+		return Positions.CENTER;
+	}
 
 	public String getTempFilename(final String mediaPath, final MediaFormat mediaFormat) {
 		var tempFilename = mediaPath.replace("/", "_").replace(".", "_");
-		tempFilename += "-" + mediaFormat.name() + Media.fileending4Format(mediaFormat.format());
+		tempFilename += "-" + mediaFormat.name() + MediaUtils.fileending4Format(mediaFormat.format());
 
 		return tempFilename;
 	}

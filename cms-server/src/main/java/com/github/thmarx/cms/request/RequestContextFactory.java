@@ -25,9 +25,11 @@ package com.github.thmarx.cms.request;
 import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.media.MediaService;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.IsDevModeFeature;
 import com.github.thmarx.cms.api.request.features.RequestFeature;
+import com.github.thmarx.cms.api.request.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.request.features.SitePropertiesFeatures;
 import com.github.thmarx.cms.api.request.features.ThemeFeature;
 import com.github.thmarx.cms.api.theme.Theme;
@@ -49,6 +51,7 @@ public class RequestContextFactory {
 	private final ExtensionManager extensionManager;
 	private final Theme theme;
 	private final SiteProperties siteProperties;
+	private final MediaService siteMediaService;
 
 	public RequestContext create (
 			String uri, Map<String, List<String>> queryParameters) throws IOException {
@@ -69,6 +72,7 @@ public class RequestContextFactory {
 		context.add(RenderContext.class, renderContext);
 		context.add(IsDevModeFeature.class, new IsDevModeFeature(ServerContext.IS_DEV));
 		context.add(SitePropertiesFeatures.class, new SitePropertiesFeatures(siteProperties));
+		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
 		
 		return context;
 	}

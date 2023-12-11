@@ -25,7 +25,7 @@ import com.github.thmarx.cms.content.ContentParser;
 import com.github.thmarx.cms.content.ContentRenderer;
 import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.api.SiteProperties;
-import com.github.thmarx.cms.PropertiesLoader;
+import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.CMSModuleContext;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.ServerProperties;
@@ -40,9 +40,11 @@ import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.media.MediaService;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
+import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.module.RenderContentFunction;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.theme.DefaultTheme;
@@ -193,7 +195,7 @@ public class VHost {
 		contentRenderer = new ContentRenderer(contentParser, () -> resolveTemplateEngine(), db, siteProperties, () -> moduleManager);
 		contentResolver = new ContentResolver(contentBase, contentRenderer, db);
 
-		this.requestContextFactory = new RequestContextFactory(() -> resolveMarkdownRenderer(), extensionManager, getTheme(), siteProperties);
+		this.requestContextFactory = new RequestContextFactory(() -> resolveMarkdownRenderer(), extensionManager, getTheme(), siteProperties, new FileMediaService(assetBase));
 
 		this.moduleManager.initModules();
 

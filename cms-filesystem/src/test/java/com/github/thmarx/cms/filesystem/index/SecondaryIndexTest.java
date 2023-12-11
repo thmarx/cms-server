@@ -23,7 +23,7 @@ package com.github.thmarx.cms.filesystem.index;
  */
 
 import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.api.utils.NodeUtil;
+import com.github.thmarx.cms.api.utils.MapUtil;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class SecondaryIndexTest {
 	@Test
 	public void testSomeMethod() {
 		SecondaryIndex<String> index = SecondaryIndex.<String>builder()
-				.indexFunction(node -> NodeUtil.getValue(node.data(), "name", ""))
+				.indexFunction(node -> MapUtil.getValue(node.data(), "name", ""))
 				.build();
 		final ContentNode node1 = new ContentNode("node1", "Eins", Map.of("name", "Eins"));
 		final ContentNode node2 = new ContentNode("node2", "Eins", Map.of("name", "Eins"));

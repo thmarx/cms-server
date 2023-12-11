@@ -22,6 +22,7 @@ package com.github.thmarx.cms;
  * #L%
  */
 
+import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.git.RepositoryManager;

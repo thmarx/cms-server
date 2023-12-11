@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.api.media;
+package com.github.thmarx.cms.api.media.meta;
 
 /*-
  * #%L
- * cms-api
+ * cms-media
  * %%
  * Copyright (C) 2023 Marx-Software
  * %%
@@ -22,10 +22,13 @@ package com.github.thmarx.cms.api.media;
  * #L%
  */
 
-import com.github.thmarx.cms.api.media.meta.Meta;
+import java.util.HashMap;
+import lombok.Data;
 
 /**
  *
  * @author t.marx
  */
-public record Media (String uri, Meta meta, boolean exists) {}
+public class Meta extends HashMap<String, Object>{
+
+}
