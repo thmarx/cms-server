@@ -9,6 +9,7 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 ## 3.0.0
 
 * **BREAKING CHANGE** Refactoring meta fields, forces to update projects
+* **BREAKING CHANGE** ContentQuery legacy methods removed, for pagination use _page_ method
 * **FEATURE** MediaService to access meta data of medias
 * **FEATURE** Pages can redirect to external web sites
 * **FEATURE** unpublish_date meta field
@@ -19,9 +20,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 * **FEATURE** Add depth to navigation function to easier build subnavigations
 
 ### Migration
-Renamed MetaFields
+#### Renamed MetaFields
 published -> publish_date
 draft -> published (attention: values are inverted)
+#### ContentQuery
+.get(offset, size) -> .page(page_number, page_size)
 
 ## 2.16.0
 * **FEATURE** Enable gfm and anchors in markedjs module [#113](https://github.com/thmarx/cms/issues/113)
