@@ -199,11 +199,7 @@ public class VHost {
 
 		this.moduleManager.initModules();
 
-		List<String> activeModules = new ArrayList<>();
-		activeModules.addAll(siteProperties.activeModules());
-		if (!theme.empty()) {
-			activeModules.addAll(theme.properties().activeModules());
-		}
+		List<String> activeModules = getActiveModules();
 
 		activeModules.stream()
 				.filter(module_id -> moduleManager.getModuleIds().contains(module_id))
@@ -235,6 +231,15 @@ public class VHost {
 			log.debug("invalidate template cache");
 			resolveTemplateEngine().invalidateCache();
 		});
+	}
+
+	protected List<String> getActiveModules() {
+		List<String> activeModules = new ArrayList<>();
+		activeModules.addAll(siteProperties.activeModules());
+		if (!theme.empty()) {
+			activeModules.addAll(theme.properties().activeModules());
+		}
+		return activeModules;
 	}
 
 	private String getTemplateEngine() {
