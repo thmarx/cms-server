@@ -12,6 +12,7 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 * **FEATURE** Logfiles per host [#93](https://github.com/thmarx/cms/issues/93)
 * **FEATURE** Taxonomy for string values [#4](https://github.com/thmarx/cms/issues/4)
 * **MAINTENANCE** Upate markedjs to 11.1.0
+* **FEATURE** Integrate modules framework for better customization
 
 ## 3.0.3
 * **BUGFIX** If content file is not found, no 404 is thrown

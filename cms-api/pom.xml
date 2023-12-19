@@ -16,7 +16,7 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.github.thmarx.modules</groupId>
+			<groupId>com.github.thmarx.cms.modules.framework</groupId>
 			<artifactId>modules-api</artifactId>
 		</dependency>
 		<dependency>

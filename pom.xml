@@ -11,12 +11,12 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<exec.mainClass>com.github.thmarx.cms.Startup</exec.mainClass>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-		<modules.version>1.3</modules.version>
 		<jetty.version>12.0.4</jetty.version>
 	</properties>
 	<modules>
 		<module>cms-api</module>
 		<module>cms-server</module>
+		<module>modules-framework</module>
 		<module>modules</module>
 		<module>cms-filesystem</module>
 		<module>cms-media</module>
@@ -54,17 +54,17 @@
 			<dependency>
 				<groupId>com.github.thmarx.cms</groupId>
 				<artifactId>cms-git</artifactId>
-				<version>${project.version}</version>            
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.github.thmarx.modules</groupId>
+				<groupId>com.github.thmarx.cms.modules.framework</groupId>
 				<artifactId>modules-manager</artifactId>
-				<version>${modules.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.github.thmarx.modules</groupId>
+				<groupId>com.github.thmarx.cms.modules.framework</groupId>
 				<artifactId>modules-api</artifactId>
-				<version>${modules.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			
 			<dependency>
@@ -254,13 +254,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	
-	<repositories>
-		<repository>
-			<id>github-modules</id>
-			<url>https://maven.pkg.github.com/thmarx/modules/</url>
-		</repository>
-	</repositories>
 	
 	<profiles>
 		<profile>
