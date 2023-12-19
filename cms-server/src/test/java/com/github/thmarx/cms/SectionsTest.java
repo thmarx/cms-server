@@ -21,9 +21,10 @@ package com.github.thmarx.cms;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.content.ContentParser;
+import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.content.ContentRenderer;
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.MetaData;
@@ -52,14 +53,15 @@ public class SectionsTest extends TemplateEngineTest {
 
 	@BeforeAll
 	public static void beforeClass() throws IOException {
-		var contentParser = new ContentParser();
+		var contentParser = new DefaultContentParser();
+		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
 				return contentParser.parseMeta(file);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		});
+		}, config);
 		db.init();
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(db);
@@ -68,7 +70,7 @@ public class SectionsTest extends TemplateEngineTest {
 				() -> templates,
 				db,
 				new SiteProperties(Map.of()),
-				() -> new MockModuleManager()
+				new MockModuleManager()
 		);
 	}
 

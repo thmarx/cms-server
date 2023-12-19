@@ -21,13 +21,12 @@ package com.github.thmarx.cms.server.jetty.handler;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
-import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.utils.HTTPUtil;
+import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,10 +40,9 @@ import org.eclipse.jetty.util.Callback;
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__({@Inject}))
 @Slf4j
-public class JettyDefaultHandler extends Handler.Abstract {
-
+public class JettyContentHandler extends Handler.Abstract {
 	private final ContentResolver contentResolver;
 	private final RequestContextFactory requestContextFactory;
 
@@ -53,13 +51,9 @@ public class JettyDefaultHandler extends Handler.Abstract {
 		var uri = request.getHttpURI().getPath();
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
 		try (
-				var requestContext = requestContextFactory.create(uri, queryParameters)) {
+				var requestContext = requestContextFactory.create(request)) {
 			
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
-			
-			if (ServerContext.IS_DEV && queryParameters.containsKey("preview")) {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
-			}
 			
 			Optional<ContentResponse> content = contentResolver.getContent(requestContext);
 			response.setStatus(200);
@@ -69,6 +63,7 @@ public class JettyDefaultHandler extends Handler.Abstract {
 				// try to resolve static files
 				content = contentResolver.getStaticContent(uri);
 				if (content.isEmpty()) {
+					log.debug("content not found {}", uri);
 					try (var errorContext = requestContextFactory.create("/.technical/404", queryParameters)) {
 						content = contentResolver.getErrorContent(errorContext);
 						response.setStatus(404);

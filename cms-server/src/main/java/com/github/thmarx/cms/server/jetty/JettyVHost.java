@@ -22,15 +22,23 @@ package com.github.thmarx.cms.server.jetty;
  * #L%
  */
 import com.github.thmarx.cms.api.ServerProperties;
+import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
+import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.media.MediaManager;
-import com.github.thmarx.cms.server.jetty.handler.JettyDefaultHandler;
+import com.github.thmarx.cms.request.RequestContextFactory;
+import com.github.thmarx.cms.server.jetty.handler.JettyContentHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyExtensionHandler;
 import com.github.thmarx.cms.server.VHost;
 import com.github.thmarx.cms.server.jetty.handler.JettyMediaHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyModuleMappingHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyTaxonomyHandler;
+import com.github.thmarx.modules.api.ModuleManager;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.pathmap.PathSpec;
 import org.eclipse.jetty.server.Handler;
@@ -47,45 +55,47 @@ import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 @Slf4j
 public class JettyVHost extends VHost {
 
-	public JettyVHost(Path hostBase, ServerProperties serverProperties) {
-		super(hostBase, serverProperties);
+	public JettyVHost(Path hostBase, Configuration configuration) {
+		super(hostBase, configuration);
 	}
 
 	public Handler httpHandler() {
 		
-		var defaultHandler = new JettyDefaultHandler(contentResolver, requestContextFactory);
-
-		log.debug("create assets handler for {}", assetBase.toString());
-		ResourceHandler assetsHandler = new ResourceHandler();
-		assetsHandler.setDirAllowed(false);
-		assetsHandler.setBaseResource(new FileFolderPathResource(assetBase));
-		if (serverProperties.dev()) {
-			assetsHandler.setCacheControl("no-cache");
-		} else {
-			assetsHandler.setCacheControl("max-age=" + TimeUnit.HOURS.toSeconds(24));
-		}
+		var contentHandler = injector.getInstance(JettyContentHandler.class);
+		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
+		var defaultHandlerSequence = new Handler.Sequence(taxonomyHandler, contentHandler);
+		
+		log.debug("create assets handler for site");
+		ResourceHandler assetsHandler = injector.getInstance(Key.get(ResourceHandler.class, Names.named("site")));
 
 		ResourceHandler faviconHandler = new ResourceHandler();
 		faviconHandler.setDirAllowed(false);
+		var assetBase = this.injector.getInstance(Key.get(Path.class, Names.named("assets")));
 		faviconHandler.setBaseResource(new FileFolderPathResource(assetBase.resolve("favicon.ico")));
 
 		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
-		pathMappingsHandler.addMapping(PathSpec.from("/"), defaultHandler);
+		pathMappingsHandler.addMapping(PathSpec.from("/"), defaultHandlerSequence);
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
 		
-		var assetsMediaManager = new MediaManager(assetBase, db.getFileSystem().resolve("temp"), getTheme(), siteProperties);
-		getEventBus().register(SitePropertiesChanged.class, assetsMediaManager);
-		final JettyMediaHandler mediaHandler = new JettyMediaHandler(assetsMediaManager);
+		var assetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("site")));
+		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, assetsMediaManager);
+		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
+		
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
 		ContextHandler defaultContextHandler = new ContextHandler(pathMappingsHandler, "/");
-		defaultContextHandler.setVirtualHosts(siteProperties.hostnames());
+		defaultContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
 
-		var moduleHandler = new JettyModuleMappingHandler(moduleManager, getActiveModules());
+		var moduleHandler = new JettyModuleMappingHandler(
+				injector.getInstance(ModuleManager.class), getActiveModules()
+		);
 		moduleHandler.init();
 		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, "/module");
-		var extensionHandler = new JettyExtensionHandler(requestContextFactory);
+		
+		var extensionHandler = new JettyExtensionHandler(
+				injector.getInstance(RequestContextFactory.class)
+		);
 		ContextHandler extensionContextHandler = new ContextHandler(extensionHandler, "/extension");
 
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection(
@@ -94,11 +104,13 @@ public class JettyVHost extends VHost {
 				extensionContextHandler
 		);
 		
-		if (!getTheme().empty()) {
+		if (!injector.getInstance(Theme.class).empty()) {
 			contextCollection.addHandler(themeContextHandler());
 		}
 
-		GzipHandler gzipHandler = new GzipHandler(contextCollection);
+		JettyLoggingFilterHandler logContextHandler = new JettyLoggingFilterHandler(contextCollection, injector.getInstance(SiteProperties.class));
+		
+		GzipHandler gzipHandler = new GzipHandler(logContextHandler);
 		gzipHandler.setMinGzipSize(1024);
 		gzipHandler.addIncludedMimeTypes("text/plain");
 		gzipHandler.addIncludedMimeTypes("text/html");
@@ -109,22 +121,15 @@ public class JettyVHost extends VHost {
 	}
 	
 	private ContextHandler themeContextHandler () {
-		ResourceHandler assetsHandler = new ResourceHandler();
-		assetsHandler.setDirAllowed(false);
-		assetsHandler.setBaseResource(new FileFolderPathResource(getTheme().assetsPath()));
-		if (serverProperties.dev()) {
-			assetsHandler.setCacheControl("no-cache");
-		} else {
-			assetsHandler.setCacheControl("max-age=" + TimeUnit.HOURS.toSeconds(24));
-		}
+		final MediaManager themeAssetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("theme")));
+		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, themeAssetsMediaManager);
+		JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("theme")));
+		ResourceHandler assetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));
+		
 		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
-		
-		final MediaManager themeAssetsMediaManager = new MediaManager(getTheme().assetsPath(), db.getFileSystem().resolve("temp"), getTheme(), siteProperties);
-		getEventBus().register(SitePropertiesChanged.class, themeAssetsMediaManager);
-		JettyMediaHandler mediaHandler = new JettyMediaHandler(themeAssetsMediaManager);
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 		
-		return new ContextHandler(pathMappingsHandler, "/themes/" + getTheme().getName());
+		return new ContextHandler(pathMappingsHandler, "/themes/" + injector.getInstance(Theme.class).getName());
 	}
 }

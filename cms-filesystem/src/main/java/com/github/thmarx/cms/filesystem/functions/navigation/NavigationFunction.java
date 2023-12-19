@@ -21,11 +21,14 @@ package com.github.thmarx.cms.filesystem.functions.navigation;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.utils.NodeUtil;
@@ -47,8 +50,14 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private String contentType = Constants.DEFAULT_CONTENT_TYPE;
 
-	public NavigationFunction(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
-		super(db, currentNode, contentParser, markdownRenderer);
+	public NavigationFunction(DB db, Path currentNode, RequestContext context) {
+		super(
+				db,
+				currentNode,
+				context.get(ContentParser.class),
+				context.get(MarkdownRenderer.class),
+				context.get(ContentNodeMapper.class),
+				context);
 	}
 
 	/**
@@ -104,10 +113,6 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return getNodes(start, (int) depth);
 	}
 
-	public List<NavNode> list(final String start, final int depth) {
-		return getNodes(start, depth);
-	}
-
 	private List<NavNode> getNodes(final String start, final int depth) {
 		if (start.startsWith("/")) { // root
 			return getNodesFromBase(db.getFileSystem().resolve("content/"), start.substring(1), depth);
@@ -119,7 +124,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return Collections.emptyList();
 	}
 
-	public List<NavNode> getSubNodesFromBaseRemoveCurrent(final Path base, final String start, final int depth, final String toRemovePath) {
+	private List<NavNode> getSubNodesFromBaseRemoveCurrent(final Path base, final String start, final int depth, final String toRemovePath) {
 		List<NavNode> nodes = getNodesFromBase(base, start, depth);
 
 		return nodes.stream().filter(node -> !node.path().equals(toRemovePath)).toList();

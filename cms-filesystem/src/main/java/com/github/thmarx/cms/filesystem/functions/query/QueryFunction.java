@@ -25,10 +25,11 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
-import com.github.thmarx.cms.filesystem.functions.list.Node;
-import com.github.thmarx.cms.api.utils.NodeUtil;
+import com.github.thmarx.cms.api.model.ListNode;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.util.function.BiFunction;
@@ -40,26 +41,25 @@ import lombok.Setter;
  */
 public class QueryFunction extends AbstractCurrentNodeFunction {
 
-	BiFunction<ContentNode, Integer, Node> nodeMapper = null;
+	BiFunction<ContentNode, Integer, ListNode> nodeMapper = null;
 	
 	@Setter
 	private String contentType;
 
-	public QueryFunction(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
-		super(db, currentNode, contentParser, markdownRenderer);
+	public QueryFunction(DB db, Path currentNode, RequestContext context) {
+		super(
+				db, 
+				currentNode, 
+				context.get(ContentParser.class), 
+				context.get(MarkdownRenderer.class), 
+				context.get(ContentNodeMapper.class),
+				context);
 	}
 	
-	private BiFunction<ContentNode, Integer, Node> nodeMapper() {
+	private BiFunction<ContentNode, Integer, ListNode> nodeMapper() {
 		if (nodeMapper == null) {
 			nodeMapper = (node, excerptLength) -> {
-				var name = NodeUtil.getName(node);
-				var temp_path = db.getFileSystem().resolve("content/").resolve(node.uri());
-				var url = toUrl(node.uri());
-				var md = parse(temp_path);
-				var excerpt = NodeUtil.excerpt(node, md.get().content(), excerptLength, markdownRenderer);
-				final Node navNode = new Node(name, url, excerpt, node.data());
-
-				return navNode;
+				return context.get(ContentNodeMapper.class).toListNode(node, context, excerptLength);
 			};
 		}
 

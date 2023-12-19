@@ -51,13 +51,8 @@ public class JettyExtensionHandler extends Handler.Abstract {
 
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		try (var requestContext = requestContextFactory.create(request.getHttpURI().getPath(), Map.of())) {
-			
+		try (var requestContext = requestContextFactory.create(request)) {			
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
-			var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
-			if (ServerContext.IS_DEV && queryParameters.containsKey("preview")) {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
-			}
 			
 			String extension = getExtensionName(request);
 			var method = request.getMethod();
@@ -69,7 +64,7 @@ public class JettyExtensionHandler extends Handler.Abstract {
 			}
 			return new JettyHttpHandlerWrapper(findHttpHandler.get().handler()).handle(request, response, callback);
 		} finally {
-			
+			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 		
 	}

@@ -46,6 +46,8 @@ public abstract class Constants {
 		
 		public static final String REDIRECT_STATUS = "redirect.status";
 		public static final String REDIRECT_LOCATION = "redirect.location";
+		
+		public static final String TEMPLATE = "template";
 	}
 	
 	public static class Folders {
@@ -62,6 +64,8 @@ public abstract class Constants {
 	}
 	
 	public static final String SPLIT_PATH_PATTERN = Pattern.quote("/");
+	
+	public static final Pattern TAXONOMY_VALUE = Pattern.compile("taxonomy\\.([a-zA-Z0-9]+[a-zA-Z0-9-]*)\\.yaml");
 	
 	public static final Pattern SECTION_PATTERN = Pattern.compile("\\w+[a-zA-Z0-9-]*\\.(?<section>[a-zA-Z0-9]+[a-zA-Z0-9-]*)\\.md");
 	
@@ -85,5 +89,10 @@ public abstract class Constants {
 	public static String DEFAULT_CONTENT_TYPE = ContentTypes.HTML;
 	
 	public static final int DEFAULT_REDIRECT_STATUS = 301;
+	
+	public static class Taxonomy {
+		public static final String DEFAULT_TEMPLATE = "taxonomy.html";
+		public static final String DEFAULT_SINGLE_TEMPLATE = "taxonomy.single.html";
+	}
 	
 }

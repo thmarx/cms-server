@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.filesystem.functions.list;
+package com.github.thmarx.cms.api.module.features;
 
 /*-
  * #%L
- * cms-server
+ * cms-api
  * %%
  * Copyright (C) 2023 Marx-Software
  * %%
@@ -22,16 +22,21 @@ package com.github.thmarx.cms.filesystem.functions.list;
  * #L%
  */
 
-import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.content.ContentResponse;
+import com.github.thmarx.cms.api.feature.Feature;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 /**
  *
  * @author t.marx
  */
+public record ContentRenderFeature(BiFunction<String, Map<String, List<String>>, Optional<ContentResponse>> renderContentFunction) implements Feature {
 
-public record Node (String name, String path, String content, String oontentType, Map<String, Object> meta) {
-	public Node (String name, String path, String content, Map<String, Object> meta) {
-		this(name, path, content, Constants.DEFAULT_CONTENT_TYPE, meta);
+	public Optional<ContentResponse> renderContentNode (String uri, Map<String, List<String>> params) {
+		return renderContentFunction().apply(uri, params);
 	}
+
 }

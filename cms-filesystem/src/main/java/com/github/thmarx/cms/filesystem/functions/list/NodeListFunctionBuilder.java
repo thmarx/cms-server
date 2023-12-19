@@ -22,12 +22,15 @@ package com.github.thmarx.cms.filesystem.functions.list;
  * #L%
  */
 
+import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.utils.NodeUtil;
 import java.nio.file.Path;
@@ -71,10 +74,16 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return filename1.compareTo(filename2);
 	};
 
-	public NodeListFunctionBuilder(DB db, Path currentNode, ContentParser contentParser, MarkdownRenderer markdownRenderer) {
-		super(db, currentNode, contentParser, markdownRenderer);
-		this.nodeListFunction = new NodeListFunction(db, currentNode, contentParser, markdownRenderer);
-		this.nodeListFunctionNoIndex = new NodeListFunction(db, currentNode, contentParser, markdownRenderer, true);
+	public NodeListFunctionBuilder(DB db, Path currentNode, RequestContext context) {
+		super(
+				db,
+				currentNode,
+				context.get(ContentParser.class),
+				context.get(MarkdownRenderer.class),
+				context.get(ContentNodeMapper.class),
+				context);
+		this.nodeListFunction = new NodeListFunction(db, currentNode, context);
+		this.nodeListFunctionNoIndex = new NodeListFunction(db, currentNode, context, true);
 	}
 
 	public NodeListFunctionBuilder from(String from) {
@@ -92,19 +101,11 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return this;
 	}
 	
-	public NodeListFunctionBuilder excerpt(int length) {
-		this.excerptLength = length;
-		return this;
-	}
 	public NodeListFunctionBuilder excerpt(long length) {
 		this.excerptLength = (int)length;
 		return this;
 	}
 	
-	public NodeListFunctionBuilder page(int page) {
-		this.page = page;
-		return this;
-	}
 	public NodeListFunctionBuilder page(long page) {
 		this.page = (int)page;
 		return this;
@@ -112,11 +113,6 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 	
 	public NodeListFunctionBuilder page(String page) {
 		this.page = Integer.parseInt(page.trim());
-		return this;
-	}
-
-	public NodeListFunctionBuilder size(int size) {
-		this.size = size;
 		return this;
 	}
 
@@ -145,7 +141,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return this;
 	}
 
-	public Page<Node> list() {
+	public Page<ListNode> list() {
 		NodeListFunction function = nodeListFunction;
 		if (!index) {
 			function = nodeListFunctionNoIndex;

@@ -22,17 +22,20 @@ package com.github.thmarx.cms.template.functions.navigation;
  * #L%
  */
 
-import com.github.thmarx.cms.content.ContentParser;
+import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.TestHelper;
+import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
-import com.github.thmarx.cms.filesystem.functions.navigation.NavNode;
+import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.filesystem.functions.navigation.NavigationFunction;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,18 +53,21 @@ public class NavigationFunctionNGTest {
 
 	@BeforeAll
 	static void init() throws IOException {
-		var contentParser = new ContentParser();
+		var contentParser = new DefaultContentParser();
+		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
 				return contentParser.parseMeta(file);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		});
+		}, config);
 		db.init();
-		navigationFunction = new NavigationFunction(db, Path.of("hosts/test/content/nav/index.md"), new ContentParser(),
-				markdownRenderer);
+		defaultContentParser = new DefaultContentParser();
+		navigationFunction = new NavigationFunction(db, Path.of("hosts/test/content/nav/index.md"), 
+				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 	}
+	protected static DefaultContentParser defaultContentParser;
 
 	@Test
 	public void test_root() {
@@ -104,8 +110,8 @@ public class NavigationFunctionNGTest {
 	@Test
 	public void test_path() {
 
-		var sut = new NavigationFunction(db, Path.of("hosts/test/content/nav3/folder1/index.md"), new ContentParser(),
-				markdownRenderer);
+		var sut = new NavigationFunction(db, Path.of("hosts/test/content/nav3/folder1/index.md"), 
+				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 		
 		List<NavNode> path = sut.path();
 
@@ -117,8 +123,8 @@ public class NavigationFunctionNGTest {
 	
 	@Test
 	public void test_json () {
-		var navigationFunction = new NavigationFunction(db, Path.of("hosts/test/content/nav/index.md"), new ContentParser(),
-				markdownRenderer);
+		var navigationFunction = new NavigationFunction(db, Path.of("hosts/test/content/nav/index.md"),
+				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 		
 		List<NavNode> list = navigationFunction.json().list("/json");
 		Assertions.assertThat(list).hasSize(1);

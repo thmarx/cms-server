@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.api.request.features;
+package com.github.thmarx.cms.api.model;
 
 /*-
  * #%L
- * cms-api
+ * cms-server
  * %%
  * Copyright (C) 2023 Marx-Software
  * %%
@@ -22,13 +22,16 @@ package com.github.thmarx.cms.api.request.features;
  * #L%
  */
 
-import com.github.thmarx.cms.api.SiteProperties;
-import com.github.thmarx.cms.api.request.Feature;
+import com.github.thmarx.cms.api.Constants;
+import java.util.Map;
 
 /**
  *
  * @author t.marx
  */
-public record SitePropertiesFeatures(SiteProperties siteProperties) implements Feature {
 
+public record ListNode (String name, String path, String content, String oontentType, Map<String, Object> meta) {
+	public ListNode (String name, String path, String content, Map<String, Object> meta) {
+		this(name, path, content, Constants.DEFAULT_CONTENT_TYPE, meta);
+	}
 }

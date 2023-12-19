@@ -1,5 +1,7 @@
 package com.github.thmarx.cms.api.db;
 
+import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
+
 /*-
  * #%L
  * cms-api
@@ -31,4 +33,6 @@ public interface DB extends AutoCloseable{
 	public DBFileSystem getFileSystem();
 	
 	public Content getContent();
+	
+	public Taxonomies getTaxonomies();
 }
