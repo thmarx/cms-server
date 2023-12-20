@@ -22,7 +22,6 @@ package com.github.thmarx.cms.server.jetty.modules;
  * #L%
  */
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
