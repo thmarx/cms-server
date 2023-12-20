@@ -25,7 +25,7 @@ import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.request.RequestContextFactory;
-import com.github.thmarx.cms.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

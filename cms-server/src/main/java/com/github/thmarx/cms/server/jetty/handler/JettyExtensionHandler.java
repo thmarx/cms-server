@@ -29,7 +29,7 @@ import com.github.thmarx.cms.extensions.HttpHandlerExtension;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.request.RequestExtensions;
 import com.github.thmarx.cms.server.jetty.extension.JettyHttpHandlerWrapper;
-import com.github.thmarx.cms.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

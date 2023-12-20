@@ -38,7 +38,7 @@ import com.github.thmarx.cms.api.request.features.ThemeFeature;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.content.ContentTags;
 import com.github.thmarx.cms.extensions.ExtensionManager;
-import com.github.thmarx.cms.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.google.inject.Injector;
 import java.io.IOException;
 import java.util.List;

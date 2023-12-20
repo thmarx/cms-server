@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.utils;
+package com.github.thmarx.cms.api.utils;
 
 /*-
  * #%L

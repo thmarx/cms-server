@@ -24,7 +24,7 @@ package com.github.thmarx.cms.server.jetty.handler;
 import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.media.MediaUtils;
 import com.github.thmarx.cms.media.MediaManager;
-import com.github.thmarx.cms.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;

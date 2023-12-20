@@ -23,7 +23,7 @@ package com.github.thmarx.cms.server.jetty.extension;
  */
 import com.github.thmarx.cms.api.extensions.http.Request;
 import com.github.thmarx.cms.server.jetty.handler.JettyContentHandler;
-import com.github.thmarx.cms.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
