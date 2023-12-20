@@ -1,0 +1,10 @@
+mail:
+  smtp:
+    hostname: 127.0.0.1
+    port: 3025
+    username: test@example.test
+    password: password
+forms:
+  - name: contact
+    to: thmarx@gmx.net
+    subject: Ich suche Kontakt!

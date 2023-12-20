@@ -20,5 +20,6 @@
 		<module>pug-module</module>
 		<module>search-module</module>
 		<module>seo-module</module>
+		<module>forms-module</module>
 	</modules>
 </project>
