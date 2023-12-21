@@ -21,14 +21,20 @@ package com.github.thmarx.cms.modules.forms.handler;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.modules.forms.FormHandlingException;
 import com.github.thmarx.cms.modules.forms.FormsHandling;
 import com.github.thmarx.cms.modules.forms.FormsLifecycleExtension;
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.MimeTypes;
+import org.eclipse.jetty.http.MultiPart;
+import org.eclipse.jetty.http.MultiPartFormData;
 import org.eclipse.jetty.server.FormFields;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -58,7 +64,7 @@ public class SubmitFormHandler extends Handler.Abstract {
 		FormsHandling formHandling = new FormsHandling();
 
 		if (MimeTypes.Type.FORM_ENCODED.is(contentType)) {
-			CompletableFuture<Fields> completableFields = FormFields.from(request);
+			CompletableFuture<Fields> completableFields = FormFields.from(request, StandardCharsets.UTF_8);
 			completableFields.whenComplete((fields, failure) -> {
 				try {
 					if (failure == null) {
@@ -78,18 +84,17 @@ public class SubmitFormHandler extends Handler.Abstract {
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
 						callback.succeeded();
 					}
-				} catch (FormHandlingException e) {
+				} catch (FormHandlingException fhe) {
 					log.error(null, fhe);
 					var formOpt = fhe.getForm();
 					if (formOpt.isPresent() && !Strings.isNullOrEmpty(formOpt.get().getRedirects().getError())) {
 						response.getHeaders().add("Location", formOpt.get().getRedirects().getError());
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
 						callback.succeeded();
-						return true;
 					}
 				}
 			});
-
+			return true;
 		} else if (contentType.startsWith(MimeTypes.Type.MULTIPART_FORM_DATA.asString())) {
 			String boundary = MultiPart.extractBoundary(contentType);
 			MultiPartFormData.Parser parser = new MultiPartFormData.Parser(boundary);
@@ -118,17 +123,17 @@ public class SubmitFormHandler extends Handler.Abstract {
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
 						callback.succeeded();
 					}
-				} catch (FormHandlingException e) {
+				} catch (FormHandlingException fhe) {
 					log.error(null, fhe);
 					var formOpt = fhe.getForm();
 					if (formOpt.isPresent() && !Strings.isNullOrEmpty(formOpt.get().getRedirects().getError())) {
 						response.getHeaders().add("Location", formOpt.get().getRedirects().getError());
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
 						callback.succeeded();
-						return true;
 					}
 				}
 			});
+			return true;
 		}
 
 		response.getHeaders().add("Location", FormsLifecycleExtension.FORMSCONFIG.getRedirects().getError());

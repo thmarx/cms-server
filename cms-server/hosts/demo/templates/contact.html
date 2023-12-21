@@ -15,23 +15,24 @@
 	</div>
 
 	<div class="container">
-		<form class="row g-3" method="post" action="/module/forms-module/form/submit" >
+		<form class="row g-3" method="post" action="/module/forms-module/form/submit" enctype="multipart/form-data">
 			<input type="hidden" name="form" value="contact" >
 			<div class="col-md-12">
 				<label for="inputEmail4" class="form-label">Your mail</label>
-				<input type="email" name="from" class="form-control" id="inputEmail4">
+				<input type="email" name="from" class="form-control" id="inputEmail4" />
 			</div>
 			<div class="col-md-12">
 				<label for="inputMessage" class="form-label">Message</label>
-				<input type="text" class="form-control" name="message" id="inputMessage">
+				<textarea type="text" class="form-control" name="message" id="inputMessage" ></textarea>
 			</div>
-			<div class="col-4">
-				<img src="module/forms-module/captcha/generate?width=200&height=50&key=test" />
-				<input type="hidden" name="key" value="test" >
+			<div class="col-3">
+				<img id="captchaImg" src="/module/forms-module/captcha/generate?width=200&height=50&key=test" />
+				<input type="hidden" id="captchaKey" name="key" value="test" >
+				<span class="reload" id="reloadCaptcha">reload</span>
 			</div>
-			<div class="col-8">
+			<div class="col-9">
 				<label for="inputCaptcha" class="form-label">Captcha</label>
-				<input type="text" class="form-control" id="inputCaptcha" name="code" placeholder="captcha code here">
+				<input type="text" class="form-control" id="inputCaptcha" name="code" placeholder="captcha code here" />
 			</div>
 			<div class="col-12">
 				<button type="submit" class="btn btn-primary">Send request</button>

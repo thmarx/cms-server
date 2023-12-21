@@ -6,7 +6,7 @@ mail:
     password: password
 forms:
   - name: contact
-    to: thmarx@gmx.net
+    to: contact@example.com
     subject: Ich suche Kontakt!
     fields: [message]
     redirects:

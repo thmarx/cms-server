@@ -12,6 +12,7 @@ modules:
   active:
     - markedjs-module
     - seo-module
+    - forms-module
 media:
   formats:
     - name: small

@@ -58,7 +58,7 @@ public class FormsLifecycleExtension extends ModuleLifeCycleExtension<CMSModuleC
 	public void activate() {
 		CAPTCHAS = Caffeine.newBuilder()
 				.maximumSize(10_000)
-				.expireAfterWrite(Duration.ofMinutes(1))
+				.expireAfterWrite(Duration.ofMinutes(5))
 				.build();
 		
 		Path formsConfig = getContext().getDb().getFileSystem().resolve("config/forms.yaml");
