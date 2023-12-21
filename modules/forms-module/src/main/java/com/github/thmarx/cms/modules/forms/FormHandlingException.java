@@ -22,52 +22,37 @@ package com.github.thmarx.cms.modules.forms;
  * #L%
  */
 
-import java.util.List;
 import java.util.Optional;
-import lombok.Data;
 
 /**
  *
  * @author t.marx
  */
-@Data
-public class FormsConfig {
+public class FormHandlingException extends Exception {
+
+	private FormsConfig.Form form = null;
 	
-	private Mail mail;
-	
-	private List<Form> forms;
-	
-	private Redirects redirects;
-	
-	public Optional<Form> findForm (final String name) {
-		return forms.stream().filter(form -> form.getName().equals(name)).findFirst();
+	/**
+	 * Creates a new instance of <code>FormHandlingException</code> without detail message.
+	 */
+	public FormHandlingException() {
+	}
+
+	/**
+	 * Constructs an instance of <code>FormHandlingException</code> with the specified detail message.
+	 *
+	 * @param msg the detail message.
+	 */
+	public FormHandlingException(String msg) {
+		super(msg);
 	}
 	
-	@Data
-	public static class Form {
-		private String name;
-		private String to;
-		private String subject;
-		private Redirects redirects;
-		private List<String> fields;
+	public FormHandlingException(String msg, final FormsConfig.Form form) {
+		super(msg);
+		this.form = form;
 	}
 	
-	@Data
-	public static class Redirects {
-		private String error;
-		private String success;
-	}
-	
-	@Data
-	public static class Mail {
-		private Smtp smtp;
-	}
-	
-	@Data
-	public static class Smtp {
-		private String hostname;
-		private int port;
-		private String username;
-		private String password;
+	public Optional<FormsConfig.Form> getForm () {
+		return Optional.ofNullable(form);
 	}
 }

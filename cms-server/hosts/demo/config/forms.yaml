@@ -8,3 +8,8 @@ forms:
   - name: contact
     to: thmarx@gmx.net
     subject: Ich suche Kontakt!
+    fields: [message]
+    redirects:
+      success: /forms/contact/success
+redirects:
+  error: /forms/error

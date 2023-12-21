@@ -1,0 +1,50 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<th:block th:replace="libs/fragments.html :: header">
+	</th:block>
+</head>
+
+<body>
+
+	<nav th:replace="libs/fragments.html :: navigation"></nav>
+
+	<div id="content">
+		<div class="container" th:utext="${content}"></div>
+	</div>
+
+	<div class="container">
+		<form class="row g-3" method="post" action="/module/forms-module/form/submit" >
+			<input type="hidden" name="form" value="contact" >
+			<div class="col-md-12">
+				<label for="inputEmail4" class="form-label">Your mail</label>
+				<input type="email" name="from" class="form-control" id="inputEmail4">
+			</div>
+			<div class="col-md-12">
+				<label for="inputMessage" class="form-label">Message</label>
+				<input type="text" class="form-control" name="message" id="inputMessage">
+			</div>
+			<div class="col-4">
+				<img src="module/forms-module/captcha/generate?width=200&height=50&key=test" />
+				<input type="hidden" name="key" value="test" >
+			</div>
+			<div class="col-8">
+				<label for="inputCaptcha" class="form-label">Captcha</label>
+				<input type="text" class="form-control" id="inputCaptcha" name="code" placeholder="captcha code here">
+			</div>
+			<div class="col-12">
+				<button type="submit" class="btn btn-primary">Send request</button>
+			</div>
+		</form>
+	</div>
+
+	<th:block th:replace="libs/fragments.html :: footer"></th:block>
+
+</body>
+
+<script th:replace="libs/fragments.html :: footer_scripts">
+
+</script>
+
+</html>

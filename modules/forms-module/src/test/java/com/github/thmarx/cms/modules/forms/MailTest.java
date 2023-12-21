@@ -44,7 +44,7 @@ public class MailTest {
 
 	@BeforeAll
 	public static void setup() {
-		greenMail = new GreenMail(ServerSetupTest.SMTP);
+		greenMail = new GreenMail(ServerSetupTest.SMTP.dynamicPort());
 		greenMail.start();
 		
 		mailer = MailerBuilder.withSMTPServer(greenMail.getSmtp().getBindTo(), greenMail.getSmtp().getPort()).buildMailer();
