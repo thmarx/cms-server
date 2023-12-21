@@ -6,12 +6,18 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 3.2.0
+* **FEATURE** forms-module [#17](https://github.com/thmarx/cms/issues/17)
+* **FEATURE** Add HTTPUtils to api [#128](https://github.com/thmarx/cms/issues/128)
+* **MAINTENANCE** Update Jetty to 12.0.5 [#129](https://github.com/thmarx/cms/issues/129)
+* **MAINTENANCE** search-module, update lucene to 9.9.1 [#130](https://github.com/thmarx/cms/issues/130)
+
 ## 3.1.0
 * **FEATURE** Layer for configuration abstraction [#125](https://github.com/thmarx/cms/issues/125)
 * **FEATURE** Clean up template functions [#124](https://github.com/thmarx/cms/issues/124)
 * **FEATURE** Logfiles per host [#93](https://github.com/thmarx/cms/issues/93)
 * **FEATURE** Taxonomy for string values [#4](https://github.com/thmarx/cms/issues/4)
-* **MAINTENANCE** Upate markedjs to 11.1.0
+* **MAINTENANCE** Update markedjs to 11.1.0
 * **FEATURE** Integrate modules framework for better customization
 
 ## 3.0.3
