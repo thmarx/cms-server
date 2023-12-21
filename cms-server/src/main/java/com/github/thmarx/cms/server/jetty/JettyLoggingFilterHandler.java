@@ -49,7 +49,6 @@ public class JettyLoggingFilterHandler extends Handler.Wrapper {
 		try {
 			
 			ThreadContext.put("site", siteProperties.id());
-			log.debug("test log");
 			return super.handle(rqst, rspns, clbck);
 		}finally {
 			ThreadContext.clearAll();
