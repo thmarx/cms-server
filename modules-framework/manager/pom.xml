@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.thmarx.cms.modules.framework</groupId>
 		<artifactId>modules-framework</artifactId>
-		<version>3.2.0</version>
+		<version>3.2.1</version>
 	</parent>
 	<artifactId>modules-manager</artifactId>
 	<packaging>jar</packaging>

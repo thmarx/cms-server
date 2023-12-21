@@ -51,29 +51,30 @@ public class TaxonomyConfigurationLoader implements Loader<TaxonomyConfiguration
 
 	@Override
 	public TaxonomyConfiguration load() throws IOException {
-		
+
 		ConcurrentMap<String, Taxonomy> taxonomies = new ConcurrentHashMap<>();
-		
+
 		var props = hostBase.resolve("config/taxonomy.yaml");
+		if (Files.exists(props)) {
+			Map<String, Object> data = new Yaml().load(Files.readString(props, StandardCharsets.UTF_8));
 
-		Map<String, Object> data = new Yaml().load(Files.readString(props, StandardCharsets.UTF_8));
+			var tasList = (List<Map>) data.getOrDefault("taxonomies", List.of());
 
-		var tasList = (List<Map>) data.getOrDefault("taxonomies", List.of());
+			tasList.stream().map((taxo) -> {
+				Taxonomy tax = new Taxonomy();
+				tax.setTitle((String) taxo.get("title"));
+				tax.setSlug((String) taxo.get("slug"));
+				tax.setField((String) taxo.get("field"));
+				tax.setTemplate((String) taxo.getOrDefault("template", Constants.Taxonomy.DEFAULT_TEMPLATE));
+				tax.setSingleTemplate((String) taxo.getOrDefault("template_single", Constants.Taxonomy.DEFAULT_SINGLE_TEMPLATE));
+				tax.setArray((Boolean) taxo.getOrDefault("array", false));
 
-		tasList.stream().map((taxo) -> {
-			Taxonomy tax = new Taxonomy();
-			tax.setTitle((String) taxo.get("title"));
-			tax.setSlug((String) taxo.get("slug"));
-			tax.setField((String) taxo.get("field"));
-			tax.setTemplate((String) taxo.getOrDefault("template", Constants.Taxonomy.DEFAULT_TEMPLATE));
-			tax.setSingleTemplate((String) taxo.getOrDefault("template_single", Constants.Taxonomy.DEFAULT_SINGLE_TEMPLATE));
-			tax.setArray((Boolean) taxo.getOrDefault("array", false));
-			
-			loadValues(tax);
-			
-			return tax;
-		}).forEach(tax -> taxonomies.put(tax.getSlug(), tax));
-		
+				loadValues(tax);
+
+				return tax;
+			}).forEach(tax -> taxonomies.put(tax.getSlug(), tax));
+		}
+
 		return new TaxonomyConfiguration(taxonomies);
 	}
 

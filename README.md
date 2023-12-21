@@ -6,6 +6,9 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 3.2.1
+* **BUGIX** avoid exception on missing taxonomy config file
+
 ## 3.2.0
 * **FEATURE** forms-module [#17](https://github.com/thmarx/cms/issues/17)
 * **FEATURE** Add HTTPUtils to api [#128](https://github.com/thmarx/cms/issues/128)
