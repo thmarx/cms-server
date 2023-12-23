@@ -1,5 +1,5 @@
 // form.js
-const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const generateString = (length) => {
     let result = ''
     const charactersLength = characters.length
@@ -8,6 +8,31 @@ const generateString = (length) => {
     }
 
     return result;
+}
+
+const validateCaptcha = async (event) => {
+    event.preventDefault();
+    let request = {
+        code: document.getElementById("inputCaptcha").value,
+        key: document.getElementById("captchaKey").value
+    }
+
+    const response = await fetch('/module/forms-module/captcha/validate', {
+        method: 'POST',
+        body: JSON.stringify(request)
+    })
+
+    const validationResponse = await response.json()
+    
+    if (!validationResponse.valid){
+        alert("captcha code is not valid")
+        event.preventDefault()
+        return false
+    } else {
+        console.log(event.target)
+        event.target.submit()
+        return true
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

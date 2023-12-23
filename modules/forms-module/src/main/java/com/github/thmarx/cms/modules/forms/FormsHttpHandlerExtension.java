@@ -24,6 +24,7 @@ package com.github.thmarx.cms.modules.forms;
 
 import com.github.thmarx.cms.api.extensions.JettyHttpHandlerExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
+import com.github.thmarx.cms.modules.forms.handler.AjaxCaptchaValidationHandler;
 import com.github.thmarx.cms.modules.forms.handler.GenerateCaptchaHandler;
 import com.github.thmarx.cms.modules.forms.handler.AjaxSubmitFormHandler;
 import com.github.thmarx.cms.modules.forms.handler.SubmitFormHandler;
@@ -41,6 +42,7 @@ public class FormsHttpHandlerExtension extends JettyHttpHandlerExtensionPoint {
 	public Mapping getMapping() {
 		Mapping mapping = new Mapping();
 		
+		mapping.add(PathSpec.from("/captcha/validate"), new AjaxCaptchaValidationHandler());
 		mapping.add(PathSpec.from("/captcha/generate"), new GenerateCaptchaHandler());
 		mapping.add(PathSpec.from("/form/submit/ajax"), new AjaxSubmitFormHandler());
 		mapping.add(PathSpec.from("/form/submit"), new SubmitFormHandler());

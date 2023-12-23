@@ -15,7 +15,11 @@
 	</div>
 
 	<div class="container" th:with="captchaKey=${forms.captcha.generateKey()}">
-		<form class="row g-3" method="post" action="/module/forms-module/form/submit" enctype="multipart/form-data">
+		<form class="row g-3" method="post" 
+			action="/module/forms-module/form/submit" 
+			enctype="multipart/form-data"
+			onsubmit="return validateCaptcha(event)"
+			>
 			<input type="hidden" name="form" value="contact" >
 			<div class="col-md-12">
 				<label for="inputEmail4" class="form-label">Your mail</label>

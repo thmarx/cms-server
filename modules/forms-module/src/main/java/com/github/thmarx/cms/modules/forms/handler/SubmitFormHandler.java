@@ -82,7 +82,6 @@ public class SubmitFormHandler extends Handler.Abstract {
 					} else {
 						response.getHeaders().add("Location", FormsLifecycleExtension.FORMSCONFIG.getRedirects().getError());
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
-						callback.succeeded();
 					}
 				} catch (FormHandlingException fhe) {
 					log.error(null, fhe);
@@ -90,9 +89,12 @@ public class SubmitFormHandler extends Handler.Abstract {
 					if (formOpt.isPresent() && !Strings.isNullOrEmpty(formOpt.get().getRedirects().getError())) {
 						response.getHeaders().add("Location", formOpt.get().getRedirects().getError());
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
-						callback.succeeded();
+					} else {
+						response.getHeaders().add("Location", FormsLifecycleExtension.FORMSCONFIG.getRedirects().getError());
+						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
 					}
 				}
+				callback.succeeded();
 			});
 			return true;
 		} else if (contentType.startsWith(MimeTypes.Type.MULTIPART_FORM_DATA.asString())) {
@@ -117,11 +119,9 @@ public class SubmitFormHandler extends Handler.Abstract {
 
 						response.getHeaders().add("Location", form.getRedirects().getSuccess());
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
-						callback.succeeded();
 					} else {
 						response.getHeaders().add("Location", FormsLifecycleExtension.FORMSCONFIG.getRedirects().getError());
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
-						callback.succeeded();
 					}
 				} catch (FormHandlingException fhe) {
 					log.error(null, fhe);
@@ -129,9 +129,12 @@ public class SubmitFormHandler extends Handler.Abstract {
 					if (formOpt.isPresent() && !Strings.isNullOrEmpty(formOpt.get().getRedirects().getError())) {
 						response.getHeaders().add("Location", formOpt.get().getRedirects().getError());
 						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
-						callback.succeeded();
+					} else {
+						response.getHeaders().add("Location", FormsLifecycleExtension.FORMSCONFIG.getRedirects().getError());
+						response.setStatus(HttpStatus.MOVED_TEMPORARILY_302);
 					}
 				}
+				callback.succeeded();
 			});
 			return true;
 		}
