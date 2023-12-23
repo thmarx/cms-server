@@ -14,7 +14,7 @@
 		<div class="container" th:utext="${content}"></div>
 	</div>
 
-	<div class="container">
+	<div class="container" th:with="captchaKey=${forms.captcha.generateKey()}">
 		<form class="row g-3" method="post" action="/module/forms-module/form/submit" enctype="multipart/form-data">
 			<input type="hidden" name="form" value="contact" >
 			<div class="col-md-12">
@@ -26,8 +26,8 @@
 				<textarea type="text" class="form-control" name="message" id="inputMessage" ></textarea>
 			</div>
 			<div class="col-3">
-				<img id="captchaImg" src="/module/forms-module/captcha/generate?width=200&height=50&key=test" />
-				<input type="hidden" id="captchaKey" name="key" value="test" >
+				<img id="captchaImg" th:src="@{~/module/forms-module/captcha/generate(width=200,height=50,key=${captchaKey})}" />
+				<input type="hidden" id="captchaKey" name="key" th:value="${captchaKey}" >
 				<span class="reload" id="reloadCaptcha">reload</span>
 			</div>
 			<div class="col-9">
