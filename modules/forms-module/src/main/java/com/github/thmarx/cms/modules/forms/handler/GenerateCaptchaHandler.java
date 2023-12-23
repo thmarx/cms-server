@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import net.logicsquad.nanocaptcha.image.ImageCaptcha;
+import net.logicsquad.nanocaptcha.image.filter.RippleImageFilter;
+import net.logicsquad.nanocaptcha.image.filter.ShearImageFilter;
+import net.logicsquad.nanocaptcha.image.filter.StretchImageFilter;
+import net.logicsquad.nanocaptcha.image.noise.StraightLineNoiseProducer;
 import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -55,7 +59,10 @@ public class GenerateCaptchaHandler extends Handler.Abstract {
 		
 		String key = queryParameters.getOrDefault("key", List.of("default")).get(0);
 		
-		ImageCaptcha imageCaptcha = new ImageCaptcha.Builder(width, height).addContent().build();
+		ImageCaptcha imageCaptcha = new ImageCaptcha.Builder(width, height).addContent()
+				.addFilter(new StretchImageFilter())
+				.addNoise(new StraightLineNoiseProducer())
+				.build();
 		
 		FormsLifecycleExtension.CAPTCHAS.put(key, imageCaptcha.getContent());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
