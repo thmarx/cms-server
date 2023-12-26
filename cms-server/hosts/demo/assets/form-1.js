@@ -23,8 +23,8 @@ const validateCaptcha = async (event) => {
     })
 
     const validationResponse = await response.json()
-    
-    if (!validationResponse.valid){
+
+    if (!validationResponse.valid) {
         alert("captcha code is not valid")
         event.preventDefault()
         return false
@@ -36,12 +36,15 @@ const validateCaptcha = async (event) => {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("#reloadCaptcha").addEventListener("click", () => {
-        let href = new URL(document.getElementById("captchaImg").src)
-        let key = generateString(8)
-        href.searchParams.set('key', key)
+    if (document.getElementById("reloadCaptcha")) {
+        document.getElementById("reloadCaptcha").addEventListener("click", () => {
+            let href = new URL(document.getElementById("captchaImg").src)
+            let key = generateString(8)
+            href.searchParams.set('key', key)
 
-        document.getElementById("captchaKey").value = key
-        document.getElementById("captchaImg").src = href.toString()
-    })
+            document.getElementById("captchaKey").value = key
+            document.getElementById("captchaImg").src = href.toString()
+        })
+    }
+
 })
