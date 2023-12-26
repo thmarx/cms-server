@@ -1,5 +1,5 @@
 ---
-title: Extending
+title: Error sending form
 template: error.html
 menu: 
     visible: false

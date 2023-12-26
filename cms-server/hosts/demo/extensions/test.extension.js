@@ -1,7 +1,7 @@
 import { UTF_8 } from 'system/charsets.mjs';
 import { $http } from 'system/http.mjs';
 import { $template } from 'system/template.mjs';
-import { $tags } from 'system/tags.mjs';
+import { $shortcodes } from 'system/shortcodes.mjs';
 import { getLogger } from 'system/logging.mjs';
 
 const logger = getLogger("extensions");
@@ -31,7 +31,7 @@ $template.registerTemplateFunction(
 	(name) => "Hello " + name + "!"
 )
 
-$tags.addTag(
+$shortcodes.register(
 	"hello",
 	(params) => `Hello ${params.get("name")}, I'm a TAG!`
 )

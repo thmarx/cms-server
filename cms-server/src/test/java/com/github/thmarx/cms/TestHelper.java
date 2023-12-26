@@ -29,7 +29,7 @@ import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.InjectorFeature;
 import com.github.thmarx.cms.api.request.features.RequestFeature;
 import com.github.thmarx.cms.api.request.features.SiteMediaServiceFeature;
-import com.github.thmarx.cms.content.ContentTags;
+import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.request.RenderContext;
 import com.github.thmarx.cms.request.RequestExtensions;
@@ -57,7 +57,7 @@ public abstract class TestHelper {
 		RequestContext context = new RequestContext();
 		context.add(RequestFeature.class, new RequestFeature(uri, Map.of()));
 		context.add(RequestExtensions.class, new RequestExtensions(null, null));
-		context.add(RenderContext.class, new RenderContext(markdownRenderer, new ContentTags(Map.of()), DefaultTheme.EMPTY));
+		context.add(RenderContext.class, new RenderContext(markdownRenderer, new ShortCodes(Map.of()), DefaultTheme.EMPTY));
 		
 		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(new FileMediaService(null)));
 		context.add(InjectorFeature.class, new InjectorFeature(Mockito.mock(Injector.class)));

@@ -1,14 +1,14 @@
 ---
-title: Content-Tags
+title: Shortcodes
 template: start.html
 menu: 
     position: 91
 ---
 
-## Tags
+## Shortcodes
 
 [[hello name='Thorsten'/]]
 
-Or call a tag provided by the default theme
+Or call a shortcode provided by the default theme
 
 [[theme_name /]]

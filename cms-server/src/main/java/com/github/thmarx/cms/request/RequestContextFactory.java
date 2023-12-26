@@ -36,7 +36,7 @@ import com.github.thmarx.cms.api.request.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.request.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.request.features.ThemeFeature;
 import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.cms.content.ContentTags;
+import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.google.inject.Injector;
@@ -79,7 +79,7 @@ public class RequestContextFactory {
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer.get(),
-				new ContentTags(requestExtensions.getTags()),
+				new ShortCodes(requestExtensions.getShortCodes()),
 				requestTheme);
 
 		var context = new RequestContext();

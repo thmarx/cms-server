@@ -30,13 +30,13 @@ import org.junit.jupiter.api.Test;
  *
  * @author t.marx
  */
-public class ContentTagsTest {
+public class ShortCodesTest {
 	
-	static ContentTags contentTags;
+	static ShortCodes shortCodes;
 	
 	@BeforeAll
 	public static void init () {
-		ContentTags.Tags tags = new ContentTags.Tags();
+		ShortCodes.Codes tags = new ShortCodes.Codes();
 		tags.add(
 				"youtube", 
 				(params) -> "<video src='%s'></video>".formatted(params.getOrDefault("id", "")));
@@ -54,22 +54,22 @@ public class ContentTagsTest {
 				params -> "<mark class='%s'>%s</mark>".formatted(params.get("class"), params.get("content"))
 		);
 		
-		contentTags = new ContentTags(tags);
+		shortCodes = new ShortCodes(tags);
 	}
 	
 
 	@Test
 	void simpleTest () {
-		var result = contentTags.replace("[[youtube    /]]");
+		var result = shortCodes.replace("[[youtube    /]]");
 		Assertions.assertThat(result).isEqualTo("<video src=''></video>");
 		
-		result = contentTags.replace("[[youtube/]]");
+		result = shortCodes.replace("[[youtube/]]");
 		Assertions.assertThat(result).isEqualTo("<video src=''></video>");
 	}
 	
 	@Test
 	void simple_with_text_before_and_After () {
-		var result = contentTags.replace("before [[youtube /]] after");
+		var result = shortCodes.replace("before [[youtube /]] after");
 		Assertions.assertThat(result).isEqualTo("before <video src=''></video> after");
 	}
 	
@@ -84,7 +84,7 @@ public class ContentTagsTest {
                 some text after
                 """;
 		
-		var result = contentTags.replace(content);
+		var result = shortCodes.replace(content);
 		
 		var expected = """
                 some text before
@@ -99,32 +99,32 @@ public class ContentTagsTest {
 	
 	@Test
 	void unknown_tag () {
-		var result = contentTags.replace("before [[vimeo id='TEST' /]] after");
+		var result = shortCodes.replace("before [[vimeo id='TEST' /]] after");
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace("before  after");
 	}
 	
 	@Test
 	void hello_from () {
-		var result = contentTags.replace("[[hello_from name='Thorsten',from='Bochum' /]]");
+		var result = shortCodes.replace("[[hello_from name='Thorsten',from='Bochum' /]]");
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 		
-		result = contentTags.replace("[[hello_from name='Thorsten',from='Bochum'    /]]");
+		result = shortCodes.replace("[[hello_from name='Thorsten',from='Bochum'    /]]");
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 		
-		result = contentTags.replace("[[hello_from name='Thorsten', from='Bochum' /]]");
+		result = shortCodes.replace("[[hello_from name='Thorsten', from='Bochum' /]]");
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 	}
 	
 	@Test
 	void test_long () {
-		var result = contentTags.replace("[[mark]]Important[[/mark]]");
+		var result = shortCodes.replace("[[mark]]Important[[/mark]]");
 		
 		Assertions.assertThat(result).isEqualTo("<mark>Important</mark>");
 	}
 	
 	@Test
 	void test_long_with_params () {
-		var result = contentTags.replace("[[mark2 class='test-class']]Important[[/mark2]]");
+		var result = shortCodes.replace("[[mark2 class='test-class']]Important[[/mark2]]");
 		
 		Assertions.assertThat(result).isEqualTo("<mark class='test-class'>Important</mark>");
 	}
@@ -140,7 +140,7 @@ public class ContentTagsTest {
                 some text after
                 """;
 		
-		var result = contentTags.replace(content);
+		var result = shortCodes.replace(content);
 		
 		var expected = """
                 some text before

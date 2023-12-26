@@ -22,7 +22,7 @@ package com.github.thmarx.cms.request;
  * #L%
  */
 
-import com.github.thmarx.cms.content.ContentTags;
+import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.theme.Theme;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author t.marx
  */
 @Slf4j
-public record RenderContext(MarkdownRenderer markdownRenderer, ContentTags contentTags, Theme theme) 
+public record RenderContext(MarkdownRenderer markdownRenderer, ShortCodes shortCodes, Theme theme) 
 		implements AutoCloseable, Feature {
 
 	@Override

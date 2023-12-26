@@ -38,17 +38,17 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class ContentTags {
+public class ShortCodes {
 
 	public static final Pattern TAG_PARAMS_PATTERN_SHORT = Pattern.compile("\\[{2}(?<tag>[a-z_A-Z0-9]+)( (?<params>.*?))?\\p{Blank}*/\\]{2}");
 	
 	public static final Pattern TAG_PARAMS_PATTERN_LONG = Pattern.compile("\\[{2}(?<tag>[a-z_A-Z0-9]+)( (?<params>.*?))?\\]{2}(?<content>.*)\\[{2}/\\k<tag>\\]{2}");
 	
-	private final Tags tags;
+	private final Codes codes;
 
-	public ContentTags (Map<String, Function<Parameter, String>> tags) {
-		this.tags = new Tags();
-		this.tags.addAll(tags);
+	public ShortCodes (Map<String, Function<Parameter, String>> codes) {
+		this.codes = new Codes();
+		this.codes.addAll(codes);
 	}
 	
 	public String replace (final String content) {
@@ -70,7 +70,7 @@ public class ContentTags {
 			if (matcher.namedGroups().containsKey("content")) {
 				params.put("content", matcher.group("content"));
 			}
-			newContent += tags.get(tagName).apply(params);
+			newContent += codes.get(tagName).apply(params);
 
 			lastPosition = matcher.end();
 		}
@@ -101,18 +101,18 @@ public class ContentTags {
 		return params;
 	}
 	
-	public static class Tags {
-		private Map<String, Function<Parameter, String>> tags = new HashMap<>();
+	public static class Codes {
+		private Map<String, Function<Parameter, String>> codes = new HashMap<>();
 		
-		public void addAll(Map<String, Function<Parameter, String>> tags) {
-			this.tags.putAll(tags);
+		public void addAll(Map<String, Function<Parameter, String>> codes) {
+			this.codes.putAll(codes);
 		}
 		
-		public void add (final String tagName, Function<Parameter, String> function) {
-			tags.put(tagName, function);
+		public void add (final String codeName, Function<Parameter, String> function) {
+			codes.put(codeName, function);
 		}
-		public Function<Parameter, String> get (final String tagName) {
-			return tags.getOrDefault(tagName, (params) -> "");
+		public Function<Parameter, String> get (final String codeName) {
+			return codes.getOrDefault(codeName, (params) -> "");
 		}
 	}
 	

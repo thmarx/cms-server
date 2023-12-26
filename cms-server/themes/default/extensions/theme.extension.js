@@ -1,6 +1,6 @@
-import { $tags } from 'system/tags.mjs';
+import { $shortcodes } from 'system/shortcodes.mjs';
 
-$tags.addTag(
+$shortcodes.register(
 	"theme_name",
 	(params) => `Hello, I'm your default theme.`
 )

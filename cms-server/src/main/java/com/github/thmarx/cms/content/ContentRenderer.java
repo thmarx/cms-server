@@ -81,7 +81,7 @@ public class ContentRenderer {
 		var content = contentParser.parse(contentFile);
 
 		var markdownContent = content.content();
-		markdownContent = context.get(RenderContext.class).contentTags().replace(markdownContent);
+		markdownContent = context.get(RenderContext.class).shortCodes().replace(markdownContent);
 
 		return render(contentFile, context, sections, content.meta(), markdownContent, (model) -> {
 		});
