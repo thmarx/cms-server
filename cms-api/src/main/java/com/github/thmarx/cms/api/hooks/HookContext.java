@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.module;
+package com.github.thmarx.cms.api.hooks;
 
 /*-
  * #%L
@@ -22,30 +22,12 @@ package com.github.thmarx.cms.api.module;
  * #L%
  */
 
-import com.github.thmarx.cms.api.ServerProperties;
-import com.github.thmarx.cms.api.SiteProperties;
-import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.eventbus.EventBus;
-import com.github.thmarx.cms.api.feature.FeatureContainer;
-import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.modules.api.Context;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class CMSModuleContext extends FeatureContainer implements Context {
-	@Getter
-	private final SiteProperties siteProperties;
-	@Getter
-	private final ServerProperties serverProperties;
-	@Getter
-	private final DB db;
-	@Getter
-	private final EventBus eventBus;
-	@Getter
-	private final Theme theme;
-}
+public record HookContext(Map<String, Object> arguments, List<Object> results) {}
