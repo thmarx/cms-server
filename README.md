@@ -6,6 +6,12 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 3.3.0
+
+* **FEATURE** HookSystem [#99](https://github.com/thmarx/cms/issues/99)
+* **MAINTENANCE** rename content tags to shortcodes [#134](https://github.com/thmarx/cms/issues/134)
+* **FEATURE** Improvement for forms module [#133](https://github.com/thmarx/cms/issues/133)
+
 ## 3.2.1
 * **BUGFIX** avoid exception on missing taxonomy config file
 
