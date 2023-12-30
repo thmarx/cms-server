@@ -39,8 +39,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HookSystem {
 
-	private final ModuleManager moduleManager;
-
 	Multimap<String, Hook> hooks = ArrayListMultimap.create();
 
 	public void register(final String name, final Function<HookContext, Object> hookFunction) {

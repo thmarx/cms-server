@@ -1,8 +1,9 @@
 import { UTF_8 } from 'system/charsets.mjs';
 import { $http } from 'system/http.mjs';
 import { $template } from 'system/template.mjs';
-import { $tags } from 'system/tags.mjs';
 import { getLogger } from 'system/logging.mjs';
+import { $hooks } from 'system/hooks.mjs';
+
 
 const logger = getLogger("extensions");
 logger.info("debug log from test extension");
@@ -26,3 +27,12 @@ $template.registerTemplateFunction(
 	"getHello",
 	(name) => "Hello " + name + "!"
 )
+
+$hooks.register(
+    "test/content",
+    (context) => {
+        return `
+            <h5>Test Content</h5>
+        `;
+    }
+);

@@ -11,3 +11,8 @@
 {% endfor %}
 
 {{ getHello.apply("thorsten") }}
+
+<h3>test hooks</h3>
+{% for entry in hooks.call('test/content').results() %}
+	<h2>{{entry | raw}}</h2>
+{% endfor %}

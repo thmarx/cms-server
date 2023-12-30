@@ -26,6 +26,8 @@ import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
+import com.github.thmarx.cms.api.hooks.HookSystem;
+import com.github.thmarx.cms.api.hooks.HooksTemlateFunction;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.module.CMSModuleContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
@@ -93,6 +95,12 @@ public class ModulesModule extends AbstractModule {
 		);
 	}
 
+	/**
+	 * The markedjs markdown renderer is implemented using graaljs, so we need a fresh instance for every request
+	 * @param siteProperties
+	 * @param moduleManager
+	 * @return 
+	 */
 	@Provides
 	public MarkdownRenderer markdownRenderer(SiteProperties siteProperties, ModuleManager moduleManager) {
 		var engine = siteProperties.markdownEngine();
@@ -131,5 +139,18 @@ public class ModulesModule extends AbstractModule {
 		} else {
 			throw new RuntimeException("no template engine found");
 		}
+	}
+	
+	/**
+	 * new HookSystem for each request
+	 * @return 
+	 */
+	@Provides
+	public HookSystem hookSystem() {
+		return new HookSystem();
+	}
+	@Provides
+	public HooksTemlateFunction hooksTemplateFunction(HookSystem hooks) {
+		return new HooksTemlateFunction(hooks);
 	}
 }

@@ -12,6 +12,10 @@
 	<script src="/themes/default/assets/prism-1.29.0/prism.js" defer></script>
 	<link rel="stylesheet" href="/themes/default/assets/prism-1.29.0/prism.css" defer />
 
+	<th:block th:each="header : ${hooks.call('theme/header').results()}">
+		<th:block th:utext="${header}"></th:block>
+	</th:block>
+
 	<th:block th:each="css : ${theme.assets.css()}">
 		<link rel="stylesheet" th:href="${css}" defer />
 	</th:block>

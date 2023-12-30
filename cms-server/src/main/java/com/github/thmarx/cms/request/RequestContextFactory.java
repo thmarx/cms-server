@@ -24,10 +24,12 @@ package com.github.thmarx.cms.request;
 import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.content.ContentParser;
+import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.media.MediaService;
 import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.api.request.features.HookSystemFeature;
 import com.github.thmarx.cms.api.request.features.InjectorFeature;
 import com.github.thmarx.cms.api.request.features.IsDevModeFeature;
 import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
@@ -75,7 +77,9 @@ public class RequestContextFactory {
 
 		var requestTheme = new RequestTheme(theme);
 
-		RequestExtensions requestExtensions = extensionManager.newContext(requestTheme);
+		var hookSystem = injector.getInstance(HookSystem.class);
+		
+		RequestExtensions requestExtensions = extensionManager.newContext(requestTheme, hookSystem);
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer.get(),
@@ -84,6 +88,7 @@ public class RequestContextFactory {
 
 		var context = new RequestContext();
 		context.add(InjectorFeature.class, new InjectorFeature(injector));
+		context.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
 		context.add(RequestFeature.class, new RequestFeature(uri, queryParameters));
 		context.add(RequestExtensions.class, requestExtensions);
 		context.add(ThemeFeature.class, new ThemeFeature(requestTheme));

@@ -22,9 +22,9 @@ package com.github.thmarx.cms.extensions;
  * #L%
  */
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.request.RequestExtensions;
 import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -120,7 +120,7 @@ public class ExtensionManager implements AutoCloseable {
 	}
 	
 
-	public RequestExtensions newContext(Theme theme) throws IOException {
+	public RequestExtensions newContext(Theme theme, final HookSystem hookSystem) throws IOException {
 		var context = Context.newBuilder()
 				.allowAllAccess(true)
 				.allowHostClassLookup(className -> true)
@@ -153,6 +153,7 @@ public class ExtensionManager implements AutoCloseable {
 		bindings.putMember("fileSystem", db.getFileSystem());
 		bindings.putMember("db", db);
 		bindings.putMember("theme", theme);
+		bindings.putMember("hooks", hookSystem);
 
 		sources.forEach(context::eval);
 
@@ -162,6 +163,7 @@ public class ExtensionManager implements AutoCloseable {
 			themeBindings.putMember("fileSystem", db.getFileSystem());
 			themeBindings.putMember("db", db);
 			themeBindings.putMember("theme", theme);
+			themeBindings.putMember("hooks", hookSystem);
 
 			theme_sources.forEach(themeContext::eval);
 		}

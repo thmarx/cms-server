@@ -36,7 +36,7 @@ public class HookSystemTest {
 	
 	@BeforeEach
 	public void setup() {
-		hookSystem = new HookSystem(null);
+		hookSystem = new HookSystem();
 	}
 
 	@Test

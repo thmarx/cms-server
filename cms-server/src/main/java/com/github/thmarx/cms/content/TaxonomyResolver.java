@@ -31,7 +31,6 @@ import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.RequestFeature;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.google.inject.Inject;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
