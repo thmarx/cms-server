@@ -149,8 +149,4 @@ public class ModulesModule extends AbstractModule {
 	public HookSystem hookSystem() {
 		return new HookSystem();
 	}
-	@Provides
-	public HooksTemlateFunction hooksTemplateFunction(HookSystem hooks) {
-		return new HooksTemlateFunction(hooks);
-	}
 }
