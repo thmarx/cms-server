@@ -28,6 +28,7 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
+import com.github.thmarx.cms.api.request.features.SitePropertiesFeature;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,6 +70,11 @@ public abstract class AbstractCurrentNodeFunction {
 		var url = sb.toString();
 
 		url = "".equals(url) ? "/" : url;
+		
+		var contextPath = context.get(SitePropertiesFeature.class).siteProperties().contextPath();
+		if (!"/".equals(contextPath)) {
+			url = contextPath + url;
+		}
 
 		return url + (isPreview() ? "?preview" : "");
 	}

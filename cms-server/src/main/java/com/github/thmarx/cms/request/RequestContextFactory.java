@@ -41,6 +41,7 @@ import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.RequestUtil;
 import com.google.inject.Injector;
 import java.io.IOException;
 import java.util.List;
@@ -66,7 +67,8 @@ public class RequestContextFactory {
 	public RequestContext create(
 			Request request) throws IOException {
 		
-		var uri = request.getHttpURI().getPath();
+//		var uri = request.getHttpURI().getPath();
+		var uri = RequestUtil.getContentPath(request);
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
 		
 		return create(uri, queryParameters);

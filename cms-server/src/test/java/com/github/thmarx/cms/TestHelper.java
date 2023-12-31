@@ -21,6 +21,7 @@ package com.github.thmarx.cms;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
@@ -30,6 +31,7 @@ import com.github.thmarx.cms.api.request.features.HookSystemFeature;
 import com.github.thmarx.cms.api.request.features.InjectorFeature;
 import com.github.thmarx.cms.api.request.features.RequestFeature;
 import com.github.thmarx.cms.api.request.features.SiteMediaServiceFeature;
+import com.github.thmarx.cms.api.request.features.SitePropertiesFeature;
 import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.request.RenderContext;
@@ -63,6 +65,10 @@ public abstract class TestHelper {
 		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(new FileMediaService(null)));
 		context.add(InjectorFeature.class, new InjectorFeature(Mockito.mock(Injector.class)));
 		context.add(HookSystemFeature.class, new HookSystemFeature(new HookSystem()));
+		
+		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(new SiteProperties(Map.of(
+				"context_path", "/"
+		))));
 
 		return context;
 	}
@@ -74,6 +80,9 @@ public abstract class TestHelper {
 		context.add(MarkdownRenderer.class, markdownRenderer);
 		context.add(ContentNodeMapper.class, contentMapper);
 		context.add(HookSystemFeature.class, new HookSystemFeature(new HookSystem()));
+		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(new SiteProperties(Map.of(
+				"context_path", "/"
+		))));
 
 		return context;
 	}

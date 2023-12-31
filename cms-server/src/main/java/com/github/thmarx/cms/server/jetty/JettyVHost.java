@@ -60,11 +60,11 @@ public class JettyVHost extends VHost {
 	}
 
 	public Handler httpHandler() {
-		
+
 		var contentHandler = injector.getInstance(JettyContentHandler.class);
 		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
 		var defaultHandlerSequence = new Handler.Sequence(taxonomyHandler, contentHandler);
-		
+
 		log.debug("create assets handler for site");
 		ResourceHandler assetsHandler = injector.getInstance(Key.get(ResourceHandler.class, Names.named("site")));
 
@@ -77,14 +77,17 @@ public class JettyVHost extends VHost {
 		pathMappingsHandler.addMapping(PathSpec.from("/"), defaultHandlerSequence);
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
-		
+
 		var assetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("site")));
 		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, assetsMediaManager);
 		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
-		
+
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
-		ContextHandler defaultContextHandler = new ContextHandler(pathMappingsHandler, "/");
+		ContextHandler defaultContextHandler = new ContextHandler(
+				pathMappingsHandler, 
+				injector.getInstance(SiteProperties.class).contextPath()
+		);
 		defaultContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
 
 		var moduleHandler = new JettyModuleMappingHandler(
@@ -92,7 +95,7 @@ public class JettyVHost extends VHost {
 		);
 		moduleHandler.init();
 		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, "/module");
-		
+
 		var extensionHandler = new JettyExtensionHandler(
 				injector.getInstance(RequestContextFactory.class)
 		);
@@ -103,13 +106,13 @@ public class JettyVHost extends VHost {
 				moduleContextHandler,
 				extensionContextHandler
 		);
-		
+
 		if (!injector.getInstance(Theme.class).empty()) {
 			contextCollection.addHandler(themeContextHandler());
 		}
 
 		JettyLoggingFilterHandler logContextHandler = new JettyLoggingFilterHandler(contextCollection, injector.getInstance(SiteProperties.class));
-		
+
 		GzipHandler gzipHandler = new GzipHandler(logContextHandler);
 		gzipHandler.setMinGzipSize(1024);
 		gzipHandler.addIncludedMimeTypes("text/plain");
@@ -119,17 +122,17 @@ public class JettyVHost extends VHost {
 
 		return gzipHandler;
 	}
-	
-	private ContextHandler themeContextHandler () {
+
+	private ContextHandler themeContextHandler() {
 		final MediaManager themeAssetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("theme")));
 		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, themeAssetsMediaManager);
 		JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("theme")));
 		ResourceHandler assetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));
-		
+
 		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
-		
+
 		return new ContextHandler(pathMappingsHandler, "/themes/" + injector.getInstance(Theme.class).getName());
 	}
 }

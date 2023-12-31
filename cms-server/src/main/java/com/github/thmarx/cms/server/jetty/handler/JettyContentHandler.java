@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.RequestUtil;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -45,10 +46,11 @@ import org.eclipse.jetty.util.Callback;
 public class JettyContentHandler extends Handler.Abstract {
 	private final ContentResolver contentResolver;
 	private final RequestContextFactory requestContextFactory;
-
+	
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		var uri = request.getHttpURI().getPath();
+//		var uri = request.getHttpURI().getPath();
+		var uri = RequestUtil.getContentPath(request);
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
 		try (
 				var requestContext = requestContextFactory.create(request)) {
