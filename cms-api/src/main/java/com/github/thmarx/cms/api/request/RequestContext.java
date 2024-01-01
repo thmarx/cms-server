@@ -21,10 +21,7 @@ package com.github.thmarx.cms.api.request;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.FeatureContainer;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 /**

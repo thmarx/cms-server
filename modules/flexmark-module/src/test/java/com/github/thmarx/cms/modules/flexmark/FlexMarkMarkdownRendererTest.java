@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.modules.marked;
+package com.github.thmarx.cms.modules.flexmark;
 
 /*-
  * #%L
- * markedjs-module
+ * flexmark-module
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +21,7 @@ package com.github.thmarx.cms.modules.marked;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
@@ -28,37 +29,26 @@ import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.request.features.SitePropertiesFeature;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Engine;
-import org.graalvm.polyglot.HostAccess;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  *
  * @author t.marx
  */
-public class MarkedMarkdownRendererTest {
-
-	private static Engine engine;
-	private static MarkedMarkdownRenderer sut;
+public class FlexMarkMarkdownRendererTest {
+	
+	private static FlexMarkMarkdownRenderer sut;
 
 	@BeforeAll
 	public static void setup() {
-		engine = Engine.create();
-		sut = new MarkedMarkdownRenderer(Context.newBuilder()
-				.allowAllAccess(true)
-				.allowHostClassLookup(className -> true)
-				.allowHostAccess(HostAccess.ALL)
-				.allowValueSharing(true)
-				.engine(engine).build());
+		sut = new FlexMarkMarkdownRenderer();
 	}
 
 	@AfterAll
 	public static void clean() {
 		sut.close();
-		engine.close();
 	}
 
 	@Test
@@ -73,6 +63,13 @@ public class MarkedMarkdownRendererTest {
 		var result = sut.render("[Link text Here](https://link-url-here.org)");
 
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><a href=\"https://link-url-here.org\">Link text Here</a></p>");
+	}
+	
+	@Test
+	public void test_link_escape() {
+		var result = sut.render("[Link text Here](https://link-url-here.org?test=true&demo=false)");
+
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><a href=\"https://link-url-here.org?test=true&amp;demo=false\">Link text Here</a></p>");
 	}
 
 	@Test
@@ -95,7 +92,7 @@ public class MarkedMarkdownRendererTest {
 		ThreadLocalRequestContext.REQUEST_CONTEXT.set(context);
 		try {
 			var result = sut.render("[Link text Here](/internal/url?hello=world)");
-			Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><a href=\"/internal/url?hello=world&preview\">Link text Here</a></p>");
+			Assertions.assertThat(result).isEqualToIgnoringWhitespace("<p><a href=\"/internal/url?hello=world&amp;preview\">Link text Here</a></p>");
 		} finally {
 			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
@@ -120,7 +117,7 @@ public class MarkedMarkdownRendererTest {
 	@Test
 	public void test_heading_id() {
 		var result = sut.render("# heading");
-		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<h1 id=\"heading\">heading</h1>");
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<h1><a href=\"#heading\" id=\"heading\">heading</a></h1>");
 
 	}
 	
@@ -152,4 +149,5 @@ public class MarkedMarkdownRendererTest {
 			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 	}
+	
 }

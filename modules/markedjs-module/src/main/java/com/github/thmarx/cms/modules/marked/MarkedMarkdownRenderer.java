@@ -81,10 +81,23 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 		return """
 			var ThreadLocalRequestContext = Java.type('com.github.thmarx.cms.api.request.ThreadLocalRequestContext');
             var IsPreviewFeature = Java.type('com.github.thmarx.cms.api.request.features.IsPreviewFeature');
-		
+			var SitePropertiesFeature = Java.type('com.github.thmarx.cms.api.request.features.SitePropertiesFeature');
+            
             let requestContext = ThreadLocalRequestContext.REQUEST_CONTEXT.get();
+            
          
-			if (requestContext != null && requestContext.has(IsPreviewFeature.class)) {
+            const addContextPath = (href) => {
+			   if (requestContext != null && requestContext.has(SitePropertiesFeature.class)) {
+                   let contextPath = requestContext.get(SitePropertiesFeature.class).siteProperties().contextPath();
+				   if (contextPath !== "/" && !href.startsWith(contextPath) && href.startsWith("/")) {
+				       href = contextPath + href;
+				   }
+               }
+
+               return href;
+			}
+         
+			
                 const cleanUrl = (href) => {
                   try {
                     href = encodeURI(href).replace(/%25/g, '%');
@@ -101,12 +114,15 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 					  }
 					  href = cleanHref;
                       // is relativ internal url
-                      if (!href.startsWith("http://") && !href.startsWith("https://")) {
-						if (href.includes("?")) {
-							href += "&preview"
-					    } else {
-							href += "?preview"
-						}
+					  if (!href.startsWith("http://") && !href.startsWith("https://")) {
+         			      if (requestContext != null && requestContext.has(IsPreviewFeature.class)) {
+							if (href.includes("?")) {
+								href += "&preview"
+							} else {
+								href += "?preview"
+							}
+						  }
+						  href = addContextPath(href);
 					  }
                       
 					  let out = '<a href="' + href + '"';
@@ -118,8 +134,6 @@ public class MarkedMarkdownRenderer implements MarkdownRenderer {
 					}
 				}
 				marked.use({ renderer });
-         
-			}
          """;
 	}
 
