@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.markdown.hello;
+package com.github.thmarx.cms.markdown;
 
 /*-
  * #%L
- * cms-server
+ * cms-markdown
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +22,22 @@ package com.github.thmarx.cms.markdown.hello;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author t.marx
  */
-public class Tokenizer {
+public class Options {
+	public List<BlockElementRule> blockElementRules = new ArrayList<>();
+	public List<InlineElementRule> inlineElementRules = new ArrayList<>();
 	
+	public void addBlockRule (final BlockElementRule blockElementRule) {
+		blockElementRules.add(blockElementRule);
+	}
+	
+	public void addInlineRule (final InlineElementRule inlineElementRule) {
+		inlineElementRules.add(inlineElementRule);
+	}
 }

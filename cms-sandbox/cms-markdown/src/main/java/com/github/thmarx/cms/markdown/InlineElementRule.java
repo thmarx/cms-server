@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.markdown.hello.token;
+package com.github.thmarx.cms.markdown;
 
 /*-
  * #%L
- * cms-server
+ * cms-markdown
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,7 +26,7 @@ package com.github.thmarx.cms.markdown.hello.token;
  *
  * @author t.marx
  */
-public interface Token {
-
-	Type getType ();
+public interface InlineElementRule {
+	
+	String render (final String md);
 }
