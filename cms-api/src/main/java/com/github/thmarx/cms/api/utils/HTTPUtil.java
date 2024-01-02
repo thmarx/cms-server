@@ -22,6 +22,9 @@ package com.github.thmarx.cms.api.utils;
  * #L%
  */
 
+import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
+import com.github.thmarx.cms.api.request.features.SitePropertiesFeature;
 import com.google.common.base.Strings;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +41,30 @@ import java.util.stream.Collectors;
  * @author t.marx
  */
 public class HTTPUtil {
+	
+	public static String modifyUrl (String url, final RequestContext requestContext) {
+		
+		// is external url
+		if (url.startsWith("http") || url.startsWith("https")) {
+			return url;
+		}
+		
+		var contextPath = requestContext.get(SitePropertiesFeature.class).siteProperties().contextPath();
+		if (!"/".equals(contextPath)) {
+			url = contextPath + url;
+		}
+		if (requestContext.has(IsPreviewFeature.class)) {
+			if (url.contains("?")) {
+				url += "&preview=true";
+			} else {
+				url += "?preview=true";
+			}
+					
+			
+		}
+		
+		return url;
+	}
 
 	public static Map<String, List<String>> queryParameters(String query) {
 		if (Strings.isNullOrEmpty(query)) {

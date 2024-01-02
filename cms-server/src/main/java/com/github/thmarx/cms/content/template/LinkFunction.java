@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.content.template;
 
 /*-
  * #%L
- * cms-markdown
+ * cms-server
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -22,22 +22,20 @@ package com.github.thmarx.cms.markdown.rules;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.InlineElementRule;
-import java.util.regex.Pattern;
+import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
+import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-public class BoldInlineRule implements InlineElementRule {
-	
-	Pattern bold = Pattern.compile("\\*{2}(.*?)\\*{2}");
+@RequiredArgsConstructor
+public class LinkFunction {
 
-	@Override
-	public String render(String md) {
-		var matcher = bold.matcher(md);
-		return matcher.replaceAll((result) -> "<strong>%s</strong>".formatted(result.group(1)));
+	private final RequestContext requestContext;
+	
+	public String createUrl (String url) {
+		return HTTPUtil.modifyUrl(url, requestContext);
 	}
-	
-	
 }

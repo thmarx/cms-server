@@ -6,11 +6,11 @@ baseurl: "http://localhost:1010"
 language: en
 test: Hallo1
 markdown:
-  engine: markedjs
+  engine: markedj
 theme: default
 modules:
   active:
-    - markedjs-module
+    - markedj-module
     - seo-module
     - forms-module
 media:

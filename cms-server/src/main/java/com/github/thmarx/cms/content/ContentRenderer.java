@@ -29,8 +29,6 @@ import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
-import com.github.thmarx.cms.api.hooks.HookSystem;
-import com.github.thmarx.cms.api.hooks.HooksTemlateFunction;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.InjectorFeature;
 import com.github.thmarx.cms.api.request.features.IsDevModeFeature;
@@ -44,6 +42,7 @@ import com.github.thmarx.cms.filesystem.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.features.HookSystemFeature;
+import com.github.thmarx.cms.content.template.LinkFunction;
 import com.github.thmarx.cms.filesystem.functions.query.QueryFunction;
 import com.github.thmarx.cms.filesystem.functions.taxonomy.TaxonomyFunction;
 import com.github.thmarx.cms.request.RenderContext;
@@ -130,6 +129,8 @@ public class ContentRenderer {
 		model.values.put("taxonomyFN", context.get(InjectorFeature.class).injector().getInstance(TaxonomyFunction.class));
 		
 		model.values.put("hooks", context.get(HookSystemFeature.class).hookSystem());
+		
+		model.values.put("links", new LinkFunction(context));
 		
 		model.values.put("PREVIEW_MODE", isPreview(context));
 		model.values.put("DEV_MODE", isDevMode(context));

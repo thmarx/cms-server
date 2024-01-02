@@ -17,6 +17,7 @@ target/
 .vscode/
 cms-server/hosts/marx-software
 cms-server/hosts/demo/modules_data/search-module/index
+cms-server/hosts/demo_de/modules_data/search-module/index
 cms-server/hosts/demo/temp
 cms-server/hosts/theme-demo/modules_data/search-module/index
 cms-server/modules/flexmark-module
@@ -29,3 +30,4 @@ cms-server/modules/pug-module
 cms-server/modules/search-module
 cms-server/modules/seo-module
 cms-server/modules/forms-module
+cms-server/modules/markedj-module
