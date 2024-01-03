@@ -1,5 +1,7 @@
 package com.github.thmarx.cms.api.messages;
 
+import java.util.List;
+
 /*-
  * #%L
  * cms-api
@@ -30,6 +32,6 @@ public interface MessageSource {
 
 	String getLabel(final String bundle, final String label);
 	
-	String getLabel(final String bundle, final String label, final Object... data);
+	String getLabel(final String bundle, final String label, final List<Object> data);
 	
 }

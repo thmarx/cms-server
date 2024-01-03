@@ -23,14 +23,9 @@ package com.github.thmarx.cms.api.messages;
  */
 
 import com.github.thmarx.cms.api.SiteProperties;
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -55,12 +50,12 @@ public class ThemeMessageSource extends DefaultMessageSource {
 			return message;
 		}
 		
-		return getLabel(bundle, label, new Object[]{});
+		return getLabel(bundle, label, List.of());
 	}
 	
 	
 	@Override
-	public String getLabel (final String bundle, final String label, final Object...data) {
+	public String getLabel (final String bundle, final String label, final List<Object> data) {
 		
 		var message = priorizedMessageSource.getLabel(bundle, bundle, data);
 		if (!("[" + label + "]").equals(label)) {

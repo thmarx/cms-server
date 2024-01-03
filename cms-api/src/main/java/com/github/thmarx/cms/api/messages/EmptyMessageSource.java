@@ -1,5 +1,7 @@
 package com.github.thmarx.cms.api.messages;
 
+import java.util.List;
+
 /*-
  * #%L
  * cms-api
@@ -28,7 +30,7 @@ package com.github.thmarx.cms.api.messages;
  */
 public class EmptyMessageSource implements MessageSource {
 	@Override
-	public String getLabel(String bundle, String label, Object... data) {
+	public String getLabel(String bundle, String label, List<Object> data) {
 		return "[" + label + "]";
 	}
 	

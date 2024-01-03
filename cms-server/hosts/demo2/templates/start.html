@@ -12,7 +12,7 @@
 
 {{ getHello.apply("thorsten") }}
 
-{{ messages.getLabel("labels", "contact.form.title") }}
+{{ messages.getLabel("labels", "contact.form.title", ['test']) }}
 
 <h3>test hooks</h3>
 {% for entry in hooks.call('test/content').results() %}

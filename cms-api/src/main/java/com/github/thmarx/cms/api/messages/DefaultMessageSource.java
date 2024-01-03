@@ -29,6 +29,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import lombok.RequiredArgsConstructor;
@@ -47,16 +48,16 @@ public class DefaultMessageSource implements MessageSource {
 	
 	@Override
 	public String getLabel (final String bundle, final String label) {
-		return getLabel(bundle, label, new Object[]{});
+		return getLabel(bundle, label, List.of());
 	}
 	
 	@Override
-	public String getLabel (final String bundle, final String label, final Object...data) {
+	public String getLabel (final String bundle, final String label, final List<Object> data) {
 		try {
 			var resourceBundle = fromClassLoader(bundle, siteProperties.locale());
 			if (resourceBundle != null) {
 				var messageFormat = new MessageFormat(resourceBundle.getString(label), siteProperties.locale());
-				return messageFormat.format(data);
+				return messageFormat.format(data.toArray());
 			}
 		} catch (Exception e) {
 			log.error("bundle not found", bundle);

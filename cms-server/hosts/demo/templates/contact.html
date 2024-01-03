@@ -16,7 +16,7 @@
 
 	
 	<div class="container" th:with="captchaKey=${forms.captcha.generateKey()}">
-		<h3 th:text="${messages.getLabel('labels', 'contact.form.title')}"></h3>
+		<h3 th:text="${messages.getLabel('labels', 'contact.form.title', {'Kontakt'})}"></h3>
 		<form class="row g-3" method="post" 
 			action="/module/forms-module/form/submit" 
 			enctype="multipart/form-data"
