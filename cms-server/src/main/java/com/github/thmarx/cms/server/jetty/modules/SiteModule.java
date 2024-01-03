@@ -34,6 +34,8 @@ import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.media.MediaService;
+import com.github.thmarx.cms.api.messages.DefaultMessageSource;
+import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.content.ContentRenderer;
@@ -92,14 +94,14 @@ public class SiteModule extends AbstractModule {
 	
 	@Provides
 	@Singleton
-	public Theme loadTheme(Configuration configuration) throws IOException {
+	public Theme loadTheme(Configuration configuration, MessageSource messageSource) throws IOException {
 
 		var siteProperties = configuration.get(SiteConfiguration.class).siteProperties();
 		var serverProperties = configuration.get(ServerConfiguration.class).serverProperties();
 		
 		if (siteProperties.theme() != null) {
 			Path themeFolder = serverProperties.getThemesFolder().resolve(siteProperties.theme());
-			return DefaultTheme.load(themeFolder);
+			return DefaultTheme.load(themeFolder, siteProperties, messageSource);
 		}
 
 		return DefaultTheme.EMPTY;
@@ -130,6 +132,13 @@ public class SiteModule extends AbstractModule {
 	@Singleton
 	public FileDB fileDb(DB db) throws IOException {
 		return (FileDB) db;
+	}
+	
+	@Provides
+	@Singleton
+	public MessageSource messages(SiteProperties site, DB db) throws IOException {
+		var messages = new DefaultMessageSource(site, db.getFileSystem().resolve("messages/"));
+		return messages;
 	}
 
 	@Provides

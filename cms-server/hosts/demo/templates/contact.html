@@ -14,7 +14,9 @@
 		<div class="container" th:utext="${content}"></div>
 	</div>
 
+	
 	<div class="container" th:with="captchaKey=${forms.captcha.generateKey()}">
+		<h3 th:text="${messages.getLabel('labels', 'contact.form.title')}"></h3>
 		<form class="row g-3" method="post" 
 			action="/module/forms-module/form/submit" 
 			enctype="multipart/form-data"
@@ -39,7 +41,7 @@
 				<input type="text" class="form-control" id="inputCaptcha" name="code" placeholder="captcha code here" />
 			</div>
 			<div class="col-12">
-				<button type="submit" class="btn btn-primary">Send request</button>
+				<button type="submit" class="btn btn-primary" th:text="${theme.getMessages().getLabel('labels','contact.form.button.submit')}">Send request</button>
 			</div>
 		</form>
 	</div>

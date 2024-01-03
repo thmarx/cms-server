@@ -29,6 +29,7 @@ import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
+import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.InjectorFeature;
 import com.github.thmarx.cms.api.request.features.IsDevModeFeature;
@@ -127,6 +128,7 @@ public class ContentRenderer {
 		model.values.put("mediaService", context.get(SiteMediaServiceFeature.class).mediaService());
 
 		model.values.put("taxonomyFN", context.get(InjectorFeature.class).injector().getInstance(TaxonomyFunction.class));
+		model.values.put("messages", context.get(InjectorFeature.class).injector().getInstance(MessageSource.class));
 		
 		model.values.put("hooks", context.get(HookSystemFeature.class).hookSystem());
 		

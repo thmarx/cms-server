@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.api.theme;
+package com.github.thmarx.cms.api.messages;
 
 /*-
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,35 +22,18 @@ package com.github.thmarx.cms.api.theme;
  * #L%
  */
 
-import com.github.thmarx.cms.api.ThemeProperties;
-import com.github.thmarx.cms.api.messages.MessageSource;
-import java.nio.file.Path;
-
 /**
  *
- * @author thmar
+ * @author t.marx
  */
-
-public interface Theme {
+public class EmptyMessageSource implements MessageSource {
+	@Override
+	public String getLabel(String bundle, String label, Object... data) {
+		return "[" + label + "]";
+	}
 	
-	MessageSource getMessages ();
-	
-	@Deprecated(since = "3.3.0")
-	Assets getAssets();
-	
-	String getName();
-	
-	Path templatesPath ();
-	
-	Path extensionsPath ();
-	
-	Path assetsPath ();
-	
-	ThemeProperties properties();
-	
-	/**
-	 * empty theme is used for sites without configured theme
-	 * @return 
-	 */
-	boolean empty();
+	@Override
+	public String getLabel(String bundle, String label) {
+		return "[" + label + "]";
+	}
 }

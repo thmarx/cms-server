@@ -22,7 +22,11 @@ package com.github.thmarx.cms.theme;
  * #L%
  */
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.ThemeProperties;
+import com.github.thmarx.cms.api.messages.EmptyMessageSource;
+import com.github.thmarx.cms.api.messages.MessageSource;
+import com.github.thmarx.cms.api.messages.ThemeMessageSource;
 import com.github.thmarx.cms.api.theme.Assets;
 import com.github.thmarx.cms.api.theme.Theme;
 import java.io.IOException;
@@ -43,26 +47,29 @@ import org.yaml.snakeyaml.Yaml;
 @RequiredArgsConstructor
 public class DefaultTheme implements Theme {
 
-	public static final Theme EMPTY = new DefaultTheme(null, new ThemeProperties(Collections.emptyMap()), true);
+	public static final Theme EMPTY = new DefaultTheme(null, new ThemeProperties(Collections.emptyMap()), true, new EmptyMessageSource());
 
 	private final Path themePath;
 	private final ThemeProperties properties;
+	private final MessageSource messages;
 	private boolean empty = false;
 	private Assets assets = new DefaultAssets();
 
-	private DefaultTheme(final Path templatePath, final ThemeProperties themeProperties, final boolean empty) {
-		this(templatePath, themeProperties);
+	private DefaultTheme(final Path templatePath, final ThemeProperties themeProperties, final boolean empty, final MessageSource messages) {
+		this(templatePath, themeProperties, messages);
 		this.empty = empty;
 	}
 
-	public static Theme load(Path themePath) throws IOException {
+	public static Theme load(Path themePath, SiteProperties siteProperties, MessageSource siteMessages) throws IOException {
 		Yaml yaml = new Yaml();
 		Path themeYaml = themePath.resolve("theme.yaml");
 
+		MessageSource messages = new ThemeMessageSource(siteProperties, themePath.resolve("messages/"), siteMessages);
+		
 		var content = Files.readString(themeYaml, StandardCharsets.UTF_8);
 		Map<String, Object> config = (Map<String, Object>) yaml.load(content);
 
-		return new DefaultTheme(themePath, new ThemeProperties(config));
+		return new DefaultTheme(themePath, new ThemeProperties(config), messages);
 	}
 
 	@Override
@@ -98,5 +105,10 @@ public class DefaultTheme implements Theme {
 	@Override
 	public Path extensionsPath() {
 		return themePath.resolve(Constants.Folders.EXTENSIONS);
+	}
+
+	@Override
+	public MessageSource getMessages() {
+		return messages;
 	}
 }

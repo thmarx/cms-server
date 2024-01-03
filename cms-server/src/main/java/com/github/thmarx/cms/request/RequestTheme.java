@@ -23,6 +23,7 @@ package com.github.thmarx.cms.request;
  */
 
 import com.github.thmarx.cms.api.ThemeProperties;
+import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.theme.Assets;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.theme.DefaultAssets;
@@ -33,6 +34,7 @@ import lombok.RequiredArgsConstructor;
  *
  * @author t.marx
  */
+@Deprecated(since = "3.3.0")
 @RequiredArgsConstructor
 public class RequestTheme implements Theme {
 	private final Theme wrapped;
@@ -44,6 +46,11 @@ public class RequestTheme implements Theme {
 		return assets;
 	}
 
+	@Override
+	public MessageSource getMessages() {
+		return wrapped.getMessages();
+	}
+	
 	@Override
 	public String getName() {
 		return wrapped.getName();

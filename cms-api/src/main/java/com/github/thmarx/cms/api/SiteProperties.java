@@ -23,6 +23,7 @@ package com.github.thmarx.cms.api;
  */
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -61,6 +62,13 @@ public class SiteProperties extends ThemeProperties {
 	
 	public String theme () {
 		return (String) properties.get("theme");
+	}
+	
+	public Locale locale () {
+		if (properties.containsKey("language")) {
+			Locale.forLanguageTag((String)properties.get("language"));
+		}
+		return Locale.getDefault();
 	}
 	
 	public String defaultContentType () {

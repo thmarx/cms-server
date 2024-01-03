@@ -23,6 +23,7 @@ package com.github.thmarx.cms.media;
  */
 
 import com.github.thmarx.cms.api.ThemeProperties;
+import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.theme.Assets;
 import com.github.thmarx.cms.api.theme.Theme;
 import java.nio.file.Path;
@@ -70,6 +71,11 @@ public class TestTheme implements Theme{
 	@Override
 	public boolean empty() {
 		return false;
+	}
+
+	@Override
+	public MessageSource getMessages() {
+		throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
 	}
 	
 }

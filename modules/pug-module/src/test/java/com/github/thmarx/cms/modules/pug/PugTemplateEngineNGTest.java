@@ -25,6 +25,7 @@ package com.github.thmarx.cms.modules.pug;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.ThemeProperties;
 import com.github.thmarx.cms.api.db.DBFileSystem;
+import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Assets;
 import com.github.thmarx.cms.api.theme.Theme;
@@ -104,6 +105,13 @@ public class PugTemplateEngineNGTest {
 			public Assets getAssets() {
 				throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
 			}
+
+			@Override
+			public MessageSource getMessages() {
+				throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+			}
+			
+			
 
 			@Override
 			public Path extensionsPath() {
