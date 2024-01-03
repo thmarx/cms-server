@@ -12,6 +12,8 @@
 
 {{ getHello.apply("thorsten") }}
 
+{{ messages.getLabel("labels", "contact.form.title") }}
+
 <h3>test hooks</h3>
 {% for entry in hooks.call('test/content').results() %}
 	<h2>{{entry | raw}}</h2>
