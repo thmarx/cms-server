@@ -5,8 +5,13 @@
 	<meta name="robots" content="noindex, nofollow" />
 	<th:block th:replace="libs/fragments.html :: header">
 	</th:block>
-	<script src="/themes/default/assets/search-1.js" defer></script>
-	<link rel="stylesheet" href="/themes/default/assets/search-1.css" defer />
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		const CONTEXT_PATH = /*[[${site.contextPath}]]*/ '/';
+		/*]]>*/
+	</script>
+	<script th:src="${links.createUrl('/themes/default/assets/search-1.js')}" defer></script>
+	<link rel="stylesheet" href="${'links.createUrl(/themes/default/assets/search-1.css')}" defer />
 </head>
 
 <body>
@@ -27,8 +32,8 @@
 		<div class="row">
 			<div class="panel panel-default">
 				<div class="panel-body">
-					<h6 class="nomargin" id="result_count">  
-						
+					<h6 class="nomargin" id="result_count">
+
 					</h6>
 					<hr class="nomargin-bottom margin-top-10">
 					<div id="search_results">

@@ -23,7 +23,6 @@ package com.github.thmarx.cms.server;
  */
 import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.api.SiteProperties;
-import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.configuration.Config;
 import com.github.thmarx.cms.api.module.CMSModuleContext;
 import com.github.thmarx.cms.api.configuration.Configuration;

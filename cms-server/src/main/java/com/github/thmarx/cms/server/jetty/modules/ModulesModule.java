@@ -27,7 +27,6 @@ import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
 import com.github.thmarx.cms.api.hooks.HookSystem;
-import com.github.thmarx.cms.api.hooks.HooksTemlateFunction;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.module.CMSModuleContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;

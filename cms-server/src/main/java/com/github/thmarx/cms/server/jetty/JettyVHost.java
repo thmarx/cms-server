@@ -21,7 +21,6 @@ package com.github.thmarx.cms.server.jetty;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.eventbus.EventBus;
@@ -94,12 +93,12 @@ public class JettyVHost extends VHost {
 				injector.getInstance(ModuleManager.class), getActiveModules()
 		);
 		moduleHandler.init();
-		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, "/module");
+		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, appendContextIfNeeded("/module"));
 
 		var extensionHandler = new JettyExtensionHandler(
 				injector.getInstance(RequestContextFactory.class)
 		);
-		ContextHandler extensionContextHandler = new ContextHandler(extensionHandler, "/extension");
+		ContextHandler extensionContextHandler = new ContextHandler(extensionHandler, appendContextIfNeeded("/extension"));
 
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection(
 				defaultContextHandler,
@@ -122,6 +121,16 @@ public class JettyVHost extends VHost {
 
 		return gzipHandler;
 	}
+	
+	private String appendContextIfNeeded (final String path) {
+		var contextPath = injector.getInstance(SiteProperties.class).contextPath();
+		
+		if ("/".equals(contextPath)) {
+			return path;
+		}
+		
+		return contextPath + path;
+	}
 
 	private ContextHandler themeContextHandler() {
 		final MediaManager themeAssetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("theme")));
@@ -133,6 +142,6 @@ public class JettyVHost extends VHost {
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
-		return new ContextHandler(pathMappingsHandler, "/themes/" + injector.getInstance(Theme.class).getName());
+		return new ContextHandler(pathMappingsHandler, appendContextIfNeeded("/themes/" + injector.getInstance(Theme.class).getName()));
 	}
 }

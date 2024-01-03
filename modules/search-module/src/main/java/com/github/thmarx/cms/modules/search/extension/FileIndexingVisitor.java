@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.module.CMSModuleContext;
 import com.github.thmarx.cms.api.module.features.ContentRenderFeature;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import com.github.thmarx.cms.modules.search.IndexDocument;
@@ -76,6 +77,7 @@ public class FileIndexingVisitor extends SimpleFileVisitor<Path> {
 			}
 			
 			var uri = PathUtil.toURI(file, contentBase);
+			uri = HTTPUtil.modifyUrl(uri, moduleContext.getSiteProperties());
 			
 			var content = getContent(file);
 

@@ -21,7 +21,7 @@ package com.github.thmarx.cms.api.utils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.request.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.request.features.SitePropertiesFeature;
@@ -41,28 +41,53 @@ import java.util.stream.Collectors;
  * @author t.marx
  */
 public class HTTPUtil {
-	
-	public static String modifyUrl (String url, final RequestContext requestContext) {
-		
+
+	/**
+	 * Adds the context according to the siteproperties and the preview to an url
+	 * 
+	 * @param url
+	 * @param requestContext
+	 * @return 
+	 */
+	public static String modifyUrl(String url, final RequestContext requestContext) {
+
 		// is external url
 		if (url.startsWith("http") || url.startsWith("https")) {
 			return url;
 		}
+
+		url = modifyUrl(url, requestContext.get(SitePropertiesFeature.class).siteProperties());
 		
-		var contextPath = requestContext.get(SitePropertiesFeature.class).siteProperties().contextPath();
-		if (!"/".equals(contextPath)) {
-			url = contextPath + url;
-		}
 		if (requestContext.has(IsPreviewFeature.class)) {
 			if (url.contains("?")) {
 				url += "&preview=true";
 			} else {
 				url += "?preview=true";
 			}
-					
-			
 		}
-		
+
+		return url;
+	}
+
+	/**
+	 * Adds the context according to the siteproperties to an url
+	 * 
+	 * @param url
+	 * @param siteProperties
+	 * @return 
+	 */
+	public static String modifyUrl(String url, final SiteProperties siteProperties) {
+
+		// is external url
+		if (url.startsWith("http") || url.startsWith("https")) {
+			return url;
+		}
+
+		var contextPath = siteProperties.contextPath();
+		if (!"/".equals(contextPath)) {
+			url = contextPath + url;
+		}
+
 		return url;
 	}
 

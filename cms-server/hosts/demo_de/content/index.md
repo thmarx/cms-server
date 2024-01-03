@@ -9,4 +9,4 @@ menu:
 
 # Demo Project DE
 
-![TestBild!](/media/images/test.jpg?format=small "Test bild")
+![TestBild!](/de/media/images/test.jpg?format=small "Test bild")

@@ -3,7 +3,7 @@ context_path: "/de"
 hostname: 
   - localhost
   - localhost1
-baseurl: "http://localhost:1010/de"
+baseurl: "http://localhost:1010/de/"
 language: en
 test: Hallo1
 markdown:

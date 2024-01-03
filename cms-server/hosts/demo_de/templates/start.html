@@ -37,7 +37,7 @@
 		<h2>MediaService</h2>
 		<th:block th:with="testMedia=${mediaService.get('images/test.jpg')}">
 			<div th:if="${testMedia.exists() == true}">
-				<img th:src="${'/media/' + testMedia.uri() + '?format=small'}" th:alt="${testMedia.meta.alt}" />
+				<img th:src="${links.createUrl('/media/' + testMedia.uri() + '?format=small')}" th:alt="${testMedia.meta.alt}" />
 			</div>
 		</th:block>
 	</div>

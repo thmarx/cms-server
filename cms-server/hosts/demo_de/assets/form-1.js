@@ -10,6 +10,14 @@ const generateString = (length) => {
     return result;
 }
 
+const getValidationUrl = () => {
+    if ("/" !== CONTEXT_PATH) {
+        return CONTEXT_PATH + "/module/forms-module/captcha/validate"
+    } else {
+        return "/module/forms-module/captcha/validate"
+    }
+}
+
 const validateCaptcha = async (event) => {
     event.preventDefault();
     let request = {
@@ -17,7 +25,7 @@ const validateCaptcha = async (event) => {
         key: document.getElementById("captchaKey").value
     }
 
-    const response = await fetch('/module/forms-module/captcha/validate', {
+    const response = await fetch(getValidationUrl(), {
         method: 'POST',
         body: JSON.stringify(request)
     })

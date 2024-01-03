@@ -10,11 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 })
 
+const getSearchUrl = () => {
+    if ("/" !== CONTEXT_PATH) {
+        return CONTEXT_PATH + "/module/search-module/search"
+    } else {
+        return "/module/search-module/search"
+    }
+}
+
 const performSearch =  async () => {
     let query = document.querySelector("#search-input").value
     console.log("search for ", query)
     if (query.length > 3) {
-        let result = await fetch("/module/search-module/search?query=" + query);
+        let result = await fetch( getSearchUrl() + "?query=" + query);
         let jsonResult = await result.json()
         
         let searchResults = ""
