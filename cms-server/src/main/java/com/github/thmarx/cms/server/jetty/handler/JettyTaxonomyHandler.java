@@ -22,8 +22,6 @@ package com.github.thmarx.cms.server.jetty.handler;
  * #L%
  */
 import com.github.thmarx.cms.api.content.TaxonomyResponse;
-import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.content.TaxonomyResolver;
 import com.github.thmarx.cms.request.RequestContextFactory;
