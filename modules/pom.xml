@@ -17,7 +17,6 @@
 		<module>thymeleaf-module</module>
 		<module>freemarker-module</module>
 		<module>markedjs-module</module>
-		<module>pug-module</module>
 		<module>search-module</module>
 		<module>seo-module</module>
 		<module>forms-module</module>
