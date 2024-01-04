@@ -24,6 +24,7 @@ package com.github.thmarx.cms.server.jetty.modules;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.eventbus.EventBus;
+import com.github.thmarx.cms.api.extensions.HookSystemRegisterExtentionPoint;
 import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
 import com.github.thmarx.cms.api.hooks.HookSystem;
@@ -145,7 +146,11 @@ public class ModulesModule extends AbstractModule {
 	 * @return 
 	 */
 	@Provides
-	public HookSystem hookSystem() {
-		return new HookSystem();
+	public HookSystem hookSystem(final ModuleManager moduleManager) {
+		var hookSystem = new HookSystem();
+		
+		moduleManager.extensions(HookSystemRegisterExtentionPoint.class).forEach(extensionPoint -> extensionPoint.register(hookSystem));
+		
+		return hookSystem;
 	}
 }
