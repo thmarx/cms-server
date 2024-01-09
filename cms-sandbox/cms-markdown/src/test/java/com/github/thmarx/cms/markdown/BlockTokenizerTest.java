@@ -42,7 +42,7 @@ public class BlockTokenizerTest extends MarkdownTest {
 
 	@Test
 	void test_single_line() throws IOException {
-		String content = load(BlockTokenizerTest.class, "block_single_line.md");
+		String content = load("block_single_line.md");
 		List<Block> blocks = sut.tokenize(content);
 
 		assertThat(blocks).hasSize(1);
@@ -51,7 +51,7 @@ public class BlockTokenizerTest extends MarkdownTest {
 
 	@Test
 	void test_two_lines() throws IOException {
-		String content = load(BlockTokenizerTest.class, "block_two_lines.md");
+		String content = load("block_two_lines.md");
 		List<Block> blocks = sut.tokenize(content);
 
 		assertThat(blocks).hasSize(1);
@@ -60,7 +60,7 @@ public class BlockTokenizerTest extends MarkdownTest {
 
 	@Test
 	void test_two_blocks() throws IOException {
-		String content = load(BlockTokenizerTest.class, "block_two_blocks.md");
+		String content = load("block_two_blocks.md");
 		List<Block> blocks = sut.tokenize(content);
 
 		assertThat(blocks).hasSize(2);

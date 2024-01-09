@@ -38,9 +38,9 @@ public abstract class MarkdownTest {
 		return html.replaceAll("<!--[\\s\\S]*?-->", "");
 	}
 	
-	protected String load (final Class clazz, final String file) throws IOException {
+	protected String load (final String file) throws IOException {
 		try {
-			return Files.readString(Path.of(clazz.getResource(file).toURI()), StandardCharsets.UTF_8);
+			return Files.readString(Path.of(MarkdownTest.class.getResource(file).toURI()), StandardCharsets.UTF_8);
 		} catch (URISyntaxException ex) {
 			throw new IOException(ex);
 		}

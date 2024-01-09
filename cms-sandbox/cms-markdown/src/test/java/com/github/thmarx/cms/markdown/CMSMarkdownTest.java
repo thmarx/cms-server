@@ -48,8 +48,8 @@ public class CMSMarkdownTest extends MarkdownTest {
 	@Test
 	public void test_1() throws IOException {
 		
-		var md = load(CMSMarkdownTest.class, "render/test_1.md");
-		var expected = load(CMSMarkdownTest.class, "render/test_1.html");
+		var md = load("render/test_1.md");
+		var expected = load("render/test_1.html");
 		expected = removeComments(expected);
 		
 		var result = SUT.render(md);
@@ -60,8 +60,8 @@ public class CMSMarkdownTest extends MarkdownTest {
 	@Test
 	public void test_2() throws IOException {
 		
-		var md = load(CMSMarkdownTest.class, "render/test_2.md");
-		var expected = load(CMSMarkdownTest.class, "render/test_2.html");
+		var md = load("render/test_2.md");
+		var expected = load("render/test_2.html");
 		expected = removeComments(expected);
 		
 		var result = SUT.render(md);
@@ -72,8 +72,8 @@ public class CMSMarkdownTest extends MarkdownTest {
 	@Test
 	public void test_3() throws IOException {
 		
-		var md = load(CMSMarkdownTest.class, "render/test_3.md");
-		var expected = load(CMSMarkdownTest.class, "render/test_3.html");
+		var md = load("render/test_3.md");
+		var expected = load("render/test_3.html");
 		expected = removeComments(expected);
 		
 		var result = SUT.render(md);
