@@ -22,22 +22,23 @@ package com.github.thmarx.cms.markdown.rules;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.InlineElementRule;
-import java.util.regex.Pattern;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 
 /**
  *
  * @author t.marx
  */
-public class NewlineInlineRule implements InlineElementRule {
+public class ImageInlineRuleTest {
 	
-	Pattern bold = Pattern.compile("^[ ]{2,}\\n", Pattern.MULTILINE);
+	ImageInlineRule SUT = new ImageInlineRule();
 
-	@Override
-	public String render(String md) {
-		var matcher = bold.matcher(md);
-		return matcher.replaceAll("<br/>");
+	@Test
+	public void test_image_rule() {
+		var result = SUT.render("![TestBild!](/assets/images/test.jpg)");
+		Assertions.assertThat(result)
+				.isEqualTo("<img src=\"/assets/images/test.jpg\" alt=\"TestBild!\" />");
 	}
-	
 	
 }

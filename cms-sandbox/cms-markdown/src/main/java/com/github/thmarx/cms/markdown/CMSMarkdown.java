@@ -51,8 +51,7 @@ public class CMSMarkdown {
 		
 		blocks.stream().forEach(block -> {
 			var blockRule = blockRules.stream().filter(rule -> rule.matches(block))
-					.findFirst()
-					;
+					.findFirst();
 			if (blockRule.isPresent()) {
 				final StringBuilder html = new StringBuilder(blockRule.get().render(block));
 				inlineRules.forEach(rule -> html.replace(0, html.length(), rule.render(html.toString())));

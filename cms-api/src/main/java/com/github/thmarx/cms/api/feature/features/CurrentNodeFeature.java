@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.api.feature.features;
 
 /*-
  * #%L
- * cms-markdown
+ * cms-api
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +22,13 @@ package com.github.thmarx.cms.markdown.rules;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.InlineElementRule;
-import java.util.regex.Pattern;
+import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.feature.Feature;
 
 /**
  *
  * @author t.marx
  */
-public class NewlineInlineRule implements InlineElementRule {
-	
-	Pattern bold = Pattern.compile("^[ ]{2,}\\n", Pattern.MULTILINE);
+public record CurrentNodeFeature(ContentNode node) implements Feature {
 
-	@Override
-	public String render(String md) {
-		var matcher = bold.matcher(md);
-		return matcher.replaceAll("<br/>");
-	}
-	
-	
 }

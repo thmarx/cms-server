@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.utils.PathUtil;
@@ -95,6 +96,7 @@ public class ViewResolver {
 		if (!contentNode.isView()) {
 			return Optional.empty();
 		}
+		context.add(CurrentNodeFeature.class, new CurrentNodeFeature(contentNode));
 
 		try {
 			var view = ViewParser.parse(contentFile);

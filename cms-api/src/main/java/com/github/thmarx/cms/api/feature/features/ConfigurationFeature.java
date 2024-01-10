@@ -22,7 +22,6 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
-import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.feature.Feature;
 

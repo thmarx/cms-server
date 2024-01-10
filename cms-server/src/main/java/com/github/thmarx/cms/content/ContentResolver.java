@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.utils.PathUtil;
@@ -125,6 +126,7 @@ public class ContentResolver {
 		} else if (!Constants.NodeType.PAGE.equals(contentNode.nodeType())) {
 			return Optional.empty();
 		}
+		context.add(CurrentNodeFeature.class, new CurrentNodeFeature(contentNode));
 		
 		try {
 			

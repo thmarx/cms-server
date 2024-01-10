@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.content.TaxonomyResponse;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
+import com.github.thmarx.cms.api.feature.features.CurrentTaxonomyFeature;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
@@ -103,6 +104,7 @@ public class TaxonomyResolver {
 			}
 			meta.put(Constants.MetaFields.TEMPLATE, template);
 
+			context.add(CurrentTaxonomyFeature.class, new CurrentTaxonomyFeature(taxonomy, value, meta, resultPage));
 			String content = contentRenderer.renderTaxonomy(taxonomy, value, context, meta, resultPage);
 
 			return Optional.of(new TaxonomyResponse(content, taxonomy));

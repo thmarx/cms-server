@@ -29,14 +29,14 @@ import java.util.regex.Pattern;
  *
  * @author t.marx
  */
-public class NewlineInlineRule implements InlineElementRule {
+public class LinkInlineRule implements InlineElementRule {
 	
-	Pattern bold = Pattern.compile("^[ ]{2,}\\n", Pattern.MULTILINE);
+	Pattern link = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
 
 	@Override
 	public String render(String md) {
-		var matcher = bold.matcher(md);
-		return matcher.replaceAll("<br/>");
+		var matcher = link.matcher(md);
+		return matcher.replaceAll((result) -> "<a href=\"%s\">%s</a>".formatted(result.group(2), result.group(1)));
 	}
 	
 	

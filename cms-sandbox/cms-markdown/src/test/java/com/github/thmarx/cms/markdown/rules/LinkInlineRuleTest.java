@@ -22,22 +22,24 @@ package com.github.thmarx.cms.markdown.rules;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.InlineElementRule;
-import java.util.regex.Pattern;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author t.marx
  */
-public class NewlineInlineRule implements InlineElementRule {
-	
-	Pattern bold = Pattern.compile("^[ ]{2,}\\n", Pattern.MULTILINE);
+public class LinkInlineRuleTest {
 
-	@Override
-	public String render(String md) {
-		var matcher = bold.matcher(md);
-		return matcher.replaceAll("<br/>");
+	LinkInlineRule SUT = new LinkInlineRule();
+
+	@Test
+	public void testSomeMethod() {
+		
+		var result = SUT.render("[google](https://google.de)");
+		
+		Assertions.assertThat(result)
+				.isEqualTo("<a href=\"https://google.de\">google</a>");
 	}
-	
-	
+
 }
