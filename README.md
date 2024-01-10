@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.1.0
+
+* **Feature** make current node and taxonomy accessible [#147](https://github.com/thmarx/cms/issues/147)
+
 ## 4.0.0
 
 * **MAINTENANCE** remove legacy theme assets [#145](https://github.com/thmarx/cms/issues/145)
