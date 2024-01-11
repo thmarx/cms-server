@@ -24,9 +24,8 @@ package com.github.thmarx.cms.server.jetty;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.configuration.ConfigurationManagement;
 import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
-import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
-import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,10 +34,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.server.HttpServer;
-import com.github.thmarx.cms.server.SiteConfigurationReloadTask;
-import java.util.Timer;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledExecutorService;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -58,10 +55,14 @@ public class JettyServer implements HttpServer {
 
 	private final ServerProperties properties;
 	private Server server;
-	private Timer timer = new Timer(true);
+	
+	private ScheduledExecutorService scheduledExecutorService;
 
 	@Override
 	public void startup() throws IOException {
+		
+		scheduledExecutorService = Executors.newScheduledThreadPool(1);
+		
 		List<JettyVHost> vhosts = new ArrayList<>();
 		Files.list(Path.of("hosts")).forEach((hostPath) -> {
 			var props = hostPath.resolve("site.yaml");
@@ -69,29 +70,11 @@ public class JettyServer implements HttpServer {
 				try {
 					Configuration configuration = new Configuration(hostPath);
 					configuration.add(ServerConfiguration.class, new ServerConfiguration(properties));
-					var host = new JettyVHost(hostPath, configuration);
+					var host = new JettyVHost(hostPath, configuration, scheduledExecutorService);
 					host.init(Path.of(Constants.Folders.MODULES));
 					vhosts.add(host);
 
-					final SiteConfigurationReloadTask siteConfigLoaderTask = host.getInjector().getInstance(SiteConfigurationReloadTask.class);
-					var taxoPath = hostPath.resolve("config/taxonomy.yaml");
-					siteConfigLoaderTask.addConfiguration(props, SiteConfiguration.class);
-					siteConfigLoaderTask.addConfiguration(taxoPath, TaxonomyConfiguration.class);
-
-					if (Files.exists(taxoPath.getParent())) {
-						Files.list(taxoPath.getParent())
-								.filter(path -> Constants.TAXONOMY_VALUE.matcher(path.getFileName().toString()).matches())
-								.forEach(path -> {
-									try {
-										siteConfigLoaderTask
-												.addConfiguration(path, TaxonomyConfiguration.class);
-									} catch (IOException ioe) {
-										log.error(null, ioe);
-									}
-								});
-					}
-
-					timer.schedule(siteConfigLoaderTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(1));
+					host.getInjector().getInstance(ConfigurationManagement.class).init();
 				} catch (IOException ex) {
 					log.error(null, ex);
 				}
@@ -112,7 +95,7 @@ public class JettyServer implements HttpServer {
 				log.debug("shutting down vhost : " + host.hostnames());
 				host.shutdown();
 			});
-			timer.cancel();
+			scheduledExecutorService.shutdownNow();
 		}));
 
 		HttpConfiguration httpConfig = new HttpConfiguration();

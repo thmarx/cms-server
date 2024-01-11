@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,12 +67,15 @@ public class VHost {
 
 	private final Path hostBase;
 
+	private final ScheduledExecutorService scheduledExecutorService;
+	
 	@Getter
 	protected Injector injector;
 
-	public VHost(final Path hostBase, final Configuration configuration) {
+	public VHost(final Path hostBase, final Configuration configuration, final ScheduledExecutorService scheduledExecutorService) {
 		this.hostBase = hostBase;
 		this.configuration = configuration;
+		this.scheduledExecutorService = scheduledExecutorService;
 	}
 
 	public void shutdown() {
@@ -95,7 +99,7 @@ public class VHost {
 	}
 
 	public void init(Path modulesPath) throws IOException {
-		this.injector = Guice.createInjector(new SiteModule(hostBase, configuration),
+		this.injector = Guice.createInjector(new SiteModule(hostBase, configuration, scheduledExecutorService),
 				new ModulesModule(modulesPath), new SiteHandlerModule(), new ThemeModule());
 
 		final CMSModuleContext cmsModuleContext = injector.getInstance(CMSModuleContext.class);

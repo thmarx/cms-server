@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.configuration.ConfigurationManagement;
 import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
@@ -50,7 +51,6 @@ import com.github.thmarx.cms.filesystem.functions.taxonomy.TaxonomyFunction;
 import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.request.RequestContextFactory;
-import com.github.thmarx.cms.server.SiteConfigurationReloadTask;
 import com.github.thmarx.cms.theme.DefaultTheme;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.AbstractModule;
@@ -60,6 +60,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.ScheduledExecutorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -73,19 +74,21 @@ public class SiteModule extends AbstractModule {
 
 	private final Path hostBase;
 	private final Configuration configuration;
+	private final ScheduledExecutorService scheduledExecutorService;
 
 	@Override
 	protected void configure() {
-			bind(Configuration.class).toInstance(configuration);
+		bind(Configuration.class).toInstance(configuration);
+		bind(ScheduledExecutorService.class).toInstance(scheduledExecutorService);
 		bind(EventBus.class).to(DefaultEventBus.class).in(Singleton.class);
 		bind(ContentParser.class).to(DefaultContentParser.class).in(Singleton.class);
 		bind(TaxonomyFunction.class).in(Singleton.class);
 		bind(ContentNodeMapper.class).in(Singleton.class);
 		bind(TaxonomyResolver.class).in(Singleton.class);
-		
-		bind(SiteConfigurationReloadTask.class).in(Singleton.class);
-	}
 
+		bind(ConfigurationManagement.class).in(Singleton.class);
+	}
+	
 	@Provides
 	public SiteProperties siteProperties(Configuration configuration) throws IOException {
 		return configuration.get(SiteConfiguration.class).siteProperties();
@@ -95,14 +98,14 @@ public class SiteModule extends AbstractModule {
 	public ServerProperties serverProperties(Configuration configuration) throws IOException {
 		return configuration.get(ServerConfiguration.class).serverProperties();
 	}
-	
+
 	@Provides
 	@Singleton
 	public Theme loadTheme(Configuration configuration, MessageSource messageSource) throws IOException {
 
 		var siteProperties = configuration.get(SiteConfiguration.class).siteProperties();
 		var serverProperties = configuration.get(ServerConfiguration.class).serverProperties();
-		
+
 		if (siteProperties.theme() != null) {
 			Path themeFolder = serverProperties.getThemesFolder().resolve(siteProperties.theme());
 			return DefaultTheme.load(themeFolder, siteProperties, messageSource);
@@ -137,7 +140,7 @@ public class SiteModule extends AbstractModule {
 	public FileDB fileDb(DB db) throws IOException {
 		return (FileDB) db;
 	}
-	
+
 	@Provides
 	@Singleton
 	public MessageSource messages(SiteProperties site, DB db) throws IOException {
@@ -183,44 +186,44 @@ public class SiteModule extends AbstractModule {
 	public MediaService mediaService(@Named("assets") Path assetBase) throws IOException {
 		return new FileMediaService(assetBase);
 	}
-	
+
 	@Provides
 	@Singleton
-	public RequestContextFactory requestContextFactory (
+	public RequestContextFactory requestContextFactory(
 			Injector injector, ExtensionManager extensionManager, Theme theme, SiteProperties siteProperties,
 			MediaService mediaService) {
 		return new RequestContextFactory(
-				() -> injector.getInstance(MarkdownRenderer.class), 
-				extensionManager, 
-				theme, 
-				siteProperties, 
+				() -> injector.getInstance(MarkdownRenderer.class),
+				extensionManager,
+				theme,
+				siteProperties,
 				mediaService,
 				injector
 		);
 	}
-	
+
 	@Provides
 	@Singleton
-	public ContentRenderer contentRenderer (ContentParser contentParser, Injector injector, FileDB db,
+	public ContentRenderer contentRenderer(ContentParser contentParser, Injector injector, FileDB db,
 			SiteProperties siteProperties, ModuleManager moduleManager) {
 		return new ContentRenderer(
-				contentParser, 
-				() -> injector.getInstance(TemplateEngine.class), 
-				db, 
-				siteProperties, 
+				contentParser,
+				() -> injector.getInstance(TemplateEngine.class),
+				db,
+				siteProperties,
 				moduleManager);
 	}
-	
+
 	@Provides
 	@Singleton
-	public ContentResolver contentResolver (@Named("content") Path contentBase, ContentRenderer contentRenderer,
+	public ContentResolver contentResolver(@Named("content") Path contentBase, ContentRenderer contentRenderer,
 			FileDB db) {
 		return new ContentResolver(contentBase, contentRenderer, db);
 	}
-	
+
 	@Provides
 	@Singleton
-	public ViewResolver viewResolver (@Named("content") Path contentBase, ContentRenderer contentRenderer,
+	public ViewResolver viewResolver(@Named("content") Path contentBase, ContentRenderer contentRenderer,
 			FileDB db) {
 		return new ViewResolver(contentBase, contentRenderer, db);
 	}

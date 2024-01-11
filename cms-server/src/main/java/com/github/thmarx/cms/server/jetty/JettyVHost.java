@@ -40,6 +40,7 @@ import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import java.nio.file.Path;
+import java.util.concurrent.ScheduledExecutorService;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.pathmap.PathSpec;
 import org.eclipse.jetty.server.Handler;
@@ -56,8 +57,8 @@ import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 @Slf4j
 public class JettyVHost extends VHost {
 
-	public JettyVHost(Path hostBase, Configuration configuration) {
-		super(hostBase, configuration);
+	public JettyVHost(Path hostBase, Configuration configuration, final ScheduledExecutorService scheduledExecutorService) {
+		super(hostBase, configuration, scheduledExecutorService);
 	}
 
 	public Handler httpHandler() {
