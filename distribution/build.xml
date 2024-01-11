@@ -7,7 +7,7 @@
 	<property name="markedjs.version">v1.0.0</property>
 	<property name="pebble.version">v1.0.0</property>
 	<property name="thymeleaf.version">v1.0.0</property>
-	<property name="seo.version">v1.0.0</property>
+	<property name="seo.version">v1.1.0</property>
 	<property name="search.version">v1.0.0</property>
 	<property name="forms.version">v1.0.0</property>
 		
