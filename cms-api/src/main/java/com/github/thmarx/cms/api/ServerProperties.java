@@ -36,7 +36,17 @@ public class ServerProperties extends YamlProperties {
 	}
 	
 	public boolean dev () {
-		return (Boolean) properties.getOrDefault("dev", true);
+		return !Constants.Environments.PROD.equals(env());
+	}
+	
+	public String env () {
+		if (System.getenv().containsKey("CMS_ENV")) {
+			return System.getenv("CMS_ENV");
+		}
+		if (System.getProperties().containsKey("cms.env")) {
+			return System.getProperty("cms.env");
+		}
+		return (String) properties.getOrDefault("env", Constants.Environments.PROD);
 	}
 	
 	public String serverIp () {

@@ -31,6 +31,11 @@ import java.util.regex.Pattern;
  */
 public abstract class Constants {
 	
+	public static class Environments {
+		public static final String DEV = "dev";
+		public static final String PROD = "prod";
+	}
+	
 	public static class MetaFields {
 		public static final String PUBLISHED = "published";
 		public static final String PUBLISH_DATE = "publish_date";

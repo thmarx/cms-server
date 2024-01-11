@@ -42,12 +42,12 @@ public class Startup {
 
 	public static void main(String[] args) throws Exception {
 
-		printStartup();
-		
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
 		ServerProperties properties = PropertiesLoader.serverProperties(Path.of("server.yaml"));
+		
+		printStartup(properties);
 		
 		ServerContext.IS_DEV = properties.dev();
 
@@ -76,13 +76,14 @@ public class Startup {
 		}));
 	}
 	
-	private static void printStartup () throws IOException {
+	private static void printStartup (ServerProperties properties) throws IOException {
 		try (var in = Startup.class.getResourceAsStream("application.properties")) {
 			Properties props = new Properties();
 			props.load(in);
 			
 			log.info("starting {} version {}", props.getProperty("name"), props.getProperty("version"));
 			log.info("build {}", props.getProperty("build.date"));
+			log.info("environment {}", properties.env());
 		}
 	}
 
