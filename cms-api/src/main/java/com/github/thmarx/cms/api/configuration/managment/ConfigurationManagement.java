@@ -23,6 +23,7 @@ package com.github.thmarx.cms.api.configuration;
  */
 
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.db.DB;
@@ -62,6 +63,13 @@ public class ConfigurationManagement implements Runnable {
 	public void init() throws IOException {
 		// init config files
 		addPathToWatch(db.getFileSystem().resolve("site.yaml"), SiteConfiguration.class);
+		
+		var env = configuration.get(ServerConfiguration.class).serverProperties().env();
+		var envFile = db.getFileSystem().resolve("site-%s.yaml".formatted(env));
+		if (Files.exists(envFile)) {
+			addPathToWatch(envFile, SiteConfiguration.class);
+		}
+		
 		var taxoPath = db.getFileSystem().resolve("config/taxonomy.yaml");
 		addPathToWatch(taxoPath, TaxonomyConfiguration.class);
 		if (Files.exists(taxoPath.getParent())) {

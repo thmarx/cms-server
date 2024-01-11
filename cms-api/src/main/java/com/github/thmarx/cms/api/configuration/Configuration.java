@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.configuration;
  * #L%
  */
 
+import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.configuration.loader.SiteConfigurationLoader;
@@ -58,9 +59,10 @@ public class Configuration {
 
 	public void reload(Class<? extends Config> configClass) {
 		try {
+			var env = get(ServerConfiguration.class).serverProperties().env();
 			log.debug("reload config + " + configClass.getSimpleName());
 			if (configClass.equals(SiteConfiguration.class)) {
-				new SiteConfigurationLoader(hostBase).reload((SiteConfiguration)configs.get(configClass));
+				new SiteConfigurationLoader(hostBase, env).reload((SiteConfiguration)configs.get(configClass));
 			} else if (configClass.equals(TaxonomyConfiguration.class)) {
 				new TaxonomyConfigurationLoader(hostBase).reload((TaxonomyConfiguration)configs.get(configClass));
 			}
@@ -74,7 +76,8 @@ public class Configuration {
 	private void loadConfig(Class<? extends Config> configClass) {
 		try {
 			if (configClass.equals(SiteConfiguration.class)) {
-				configs.put(configClass, new SiteConfigurationLoader(hostBase).load());
+				var env = get(ServerConfiguration.class).serverProperties().env();
+				configs.put(configClass, new SiteConfigurationLoader(hostBase, env).load());
 			} else if (configClass.equals(TaxonomyConfiguration.class)) {
 				configs.put(configClass, new TaxonomyConfigurationLoader(hostBase).load());
 			}

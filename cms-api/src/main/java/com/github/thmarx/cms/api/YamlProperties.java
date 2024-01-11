@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api;
  * #L%
  */
 
+import com.github.thmarx.cms.api.utils.MapUtil;
 import java.util.Collections;
 import java.util.Map;
 
@@ -37,7 +38,12 @@ public class YamlProperties {
 		this.properties = properties;
 	}
 	
+	public void merge (final Map<String, Object> updatedProperties) {
+		MapUtil.deepMerge(properties, updatedProperties);
+	}
+	
 	public void update (final Map<String, Object> updatedProperties) {
+		this.properties.clear();
 		this.properties.putAll(updatedProperties);
 	}
 	

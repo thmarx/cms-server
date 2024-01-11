@@ -23,11 +23,14 @@ package com.github.thmarx.cms.media;
  */
 
 import com.github.thmarx.cms.api.PropertiesLoader;
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.ThemeProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +46,8 @@ public class MediaManagerTest {
 	public static void setup () throws IOException {
 		
 		Configuration config = new Configuration(Path.of("src/test/resources"));
+		var serverConfig = new ServerConfiguration(new ServerProperties(Map.of()));
+		config.add(ServerConfiguration.class, serverConfig);
 		
 		mediaManager = new MediaManager(
 				Path.of("src/test/resources/assets"), 

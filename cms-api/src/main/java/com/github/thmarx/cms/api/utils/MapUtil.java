@@ -21,15 +21,19 @@ package com.github.thmarx.cms.api.utils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import com.google.common.base.Preconditions;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
  * @author t.marx
  */
 public class MapUtil {
+
 	public static Object getValue(final Map<String, Object> map, final String field) {
 		String[] keys = field.split("\\.");
 		Map subMap = map;
@@ -46,5 +50,54 @@ public class MapUtil {
 			subMap = (Map<String, Object>) subMap.getOrDefault(keys[i], Collections.emptyMap());
 		}
 		return (T) subMap.getOrDefault(keys[keys.length - 1], defaultValue);
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	public static void deepMerge(
+			Map original,
+			Map newMap) {
+
+		for (Map.Entry e : (Set<Map.Entry>) newMap.entrySet()) {
+			Object key = e.getKey(),
+					value = e.getValue();
+
+			// unfortunately, if null-values are allowed,
+			// we suffer the performance hit of double-lookup
+			if (original.containsKey(key)) {
+				Object originalValue = original.get(key);
+
+				if (Objects.equals(originalValue, value)) {
+					continue;
+				}
+
+				if (originalValue instanceof Collection) {
+					// this could be relaxed to simply to simply add instead of addAll
+					// IF it's not a collection (still addAll if it is),
+					// this would be a useful approach, but uncomfortably inconsistent, algebraically
+					Preconditions.checkArgument(value instanceof Collection,
+							"a non-collection collided with a collection: %s%n\t%s",
+							value, originalValue);
+
+					((Collection) originalValue).addAll((Collection) value);
+
+					continue;
+				}
+
+				if (originalValue instanceof Map) {
+					Preconditions.checkArgument(value instanceof Map,
+							"a non-map collided with a map: %s%n\t%s",
+							value, originalValue);
+
+					deepMerge((Map) originalValue, (Map) value);
+
+					continue;
+				}
+
+				original.put(key, value);
+
+			} else {
+				original.put(key, value);
+			}
+		}
 	}
 }
