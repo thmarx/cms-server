@@ -6,6 +6,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.2.0
+
+* **MAINTENANCE** update seo module [#150](https://github.com/thmarx/cms/issues/150)
+* **Feature** override site config per environment [#149](https://github.com/thmarx/cms/issues/149)
+
 ## 4.1.0
 
 * **Feature** make current node and taxonomy accessible [#147](https://github.com/thmarx/cms/issues/147)
