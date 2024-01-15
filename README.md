@@ -6,6 +6,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.3.0
+
+* **MAINTENANCE** update modules [#152](https://github.com/thmarx/cms/issues/152)
+* **FEATURE** add access to request context to modules [#148](https://github.com/thmarx/cms/issues/148)
+
 ## 4.2.0
 
 * **MAINTENANCE** update seo module [#150](https://github.com/thmarx/cms/issues/150)
