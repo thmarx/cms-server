@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 
 /**
  * The ModuleManager loads all modules from a given directoy.
@@ -64,9 +65,15 @@ public class ModuleManagerImpl implements ModuleManager {
 		private ModuleAPIClassLoader classLoader = null;
 		private ModuleInjector injector = null;
 		private boolean activateModulesOnStartup = false;
+		private ModuleRequestContextFactory requestContextFactory = null;
 
 		public Builder activateModulesOnStartup(boolean activate) {
 			this.activateModulesOnStartup = activate;
+			return this;
+		}
+		
+		public Builder requestContextFactory(ModuleRequestContextFactory requestContextFactory) {
+			this.requestContextFactory = requestContextFactory;
 			return this;
 		}
 
@@ -168,6 +175,8 @@ public class ModuleManagerImpl implements ModuleManager {
 	private final Context context;
 
 	final ModuleInjector injector;
+	
+	final ModuleRequestContextFactory requestContextFactory;
 
 	public ModuleManagerImpl() {
 		this.modulesDataPath = null;
@@ -176,6 +185,7 @@ public class ModuleManagerImpl implements ModuleManager {
 		this.moduleLoader = null;
 		this.context = null;
 		this.injector = null;
+		this.requestContextFactory = null;
 	}
 
 	private ModuleManagerImpl(final Builder builder) {
@@ -183,6 +193,7 @@ public class ModuleManagerImpl implements ModuleManager {
 		this.modulesDataPath = builder.modulesDataPath;
 		this.context = builder.context;
 		this.injector = builder.injector;
+		this.requestContextFactory = builder.requestContextFactory;
 
 		File config = new File(modulesDataPath, MODULE_CONFIGURATION_FILE);
 		if (config.exists()) {
@@ -191,7 +202,8 @@ public class ModuleManagerImpl implements ModuleManager {
 			this.configuration = new ManagerConfiguration();
 		}
 		this.globalClassLoader = builder.classLoader;
-		this.moduleLoader = new ModuleLoader(configuration, modulesPath, modulesDataPath, this.globalClassLoader, this.context, this.injector);
+		this.moduleLoader = new ModuleLoader(configuration, modulesPath, modulesDataPath, this.globalClassLoader, 
+				this.context, this.injector, this.requestContextFactory);
 
 		File[] moduleFiles = modulesPath.listFiles((File file) -> file.isDirectory());
 		File moduleData = modulesDataPath;
@@ -269,7 +281,8 @@ public class ModuleManagerImpl implements ModuleManager {
 	private void loadModules(File[] moduleFiles, File moduleData, Set<String> allUsedModuleIDs, Map<String, ModuleImpl> modules) {
 		for (File module : moduleFiles) {
 			try {
-				ModuleImpl mod = new ModuleImpl(module, moduleData, this.context, this.injector);
+				ModuleImpl mod = new ModuleImpl(module, moduleData, this.context, this.injector, this.requestContextFactory
+				);
 				allUsedModuleIDs.add(mod.getId());
 				modules.put(mod.getId(), mod);
 				if (configuration.get(mod.getId()) == null) {
@@ -321,7 +334,7 @@ public class ModuleManagerImpl implements ModuleManager {
 			try {
 				File moduleDir = new File(modulesPath, configuration.get(mc.getId()).getModuleDir());
 				File moduleData = modulesDataPath;
-				ModuleImpl module = new ModuleImpl(moduleDir, moduleData, this.context, this.injector);
+				ModuleImpl module = new ModuleImpl(moduleDir, moduleData, this.context, this.injector, this.requestContextFactory);
 				return module;
 			} catch (IOException ex) {
 				throw new RuntimeException(ex);
@@ -344,7 +357,7 @@ public class ModuleManagerImpl implements ModuleManager {
 		} else {
 			ManagerConfiguration.ModuleConfig mc = configuration.get(id);
 			File moduleDir = new File(modulesPath, configuration.get(mc.getId()).getModuleDir());
-			module = new ModuleImpl(moduleDir, null, this.context, this.injector);
+			module = new ModuleImpl(moduleDir, null, this.context, this.injector, this.requestContextFactory);
 		}
 
 		ModuleDescription description = new ModuleDescription();
@@ -411,7 +424,8 @@ public class ModuleManagerImpl implements ModuleManager {
 		Path tempDirectory = Files.createTempDirectory("modules");
 		File moduleTempDir = ModulePacker.unpackArchive(new File(moduleURI), tempDirectory.toFile());
 		File moduleData = modulesDataPath;
-		ModuleImpl tempModule = new ModuleImpl(moduleTempDir, moduleData, this.context, this.injector);
+		ModuleImpl tempModule = new ModuleImpl(moduleTempDir, moduleData, this.context, 
+				this.injector, this.requestContextFactory);
 		if (getModuleIds().contains(tempModule.getId())) {
 			deactivateModule(tempModule.getId());
 			uninstallModule(tempModule.getId(), false);
@@ -419,7 +433,8 @@ public class ModuleManagerImpl implements ModuleManager {
 		ModulePacker.moveDirectoy(moduleTempDir, new File(this.modulesPath, moduleTempDir.getName()));
 		File moduleDir = new File(this.modulesPath, moduleTempDir.getName());
 
-		ModuleImpl module = new ModuleImpl(moduleDir, moduleData, this.context, this.injector);
+		ModuleImpl module = new ModuleImpl(moduleDir, moduleData, this.context, 
+				this.injector, this.requestContextFactory);
 
 		ManagerConfiguration.ModuleConfig config = configuration.get(module.getId());
 		if (config == null) {

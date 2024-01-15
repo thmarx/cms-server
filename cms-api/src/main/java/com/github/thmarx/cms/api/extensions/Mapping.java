@@ -36,21 +36,21 @@ import org.eclipse.jetty.server.Handler;
  */
 public class Mapping {
 	
-	private Map<PathSpec, Handler> handlerMapping;
+	private Map<PathSpec, HttpHandler> handlerMapping;
 	
 	public Mapping () {
 		handlerMapping = new HashMap<>();
 	}
 	
-	public void add (PathSpec pathSpec, Handler handler) {
+	public void add (PathSpec pathSpec, HttpHandler handler) {
 		handlerMapping.put(pathSpec, handler);
 	}
 	
-	public Optional<Handler> getMatchingHandler (String uri) {
+	public Optional<HttpHandler> getMatchingHandler (String uri) {
 		return handlerMapping.entrySet().stream().filter(entry -> entry.getKey().matches(uri)).map(entry -> entry.getValue()).findFirst();
 	}
 	
-	public List<Handler> getHandlers () {
+	public List<HttpHandler> getHandlers () {
 		return new ArrayList<>(handlerMapping.values());
 	}
 }

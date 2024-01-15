@@ -1,10 +1,14 @@
-package com.github.thmarx.modules.api;
+package com.github.thmarx.cms.api.extensions;
+
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Callback;
 
 /*-
  * #%L
- * modules-api
+ * cms-api
  * %%
- * Copyright (C) 2023 Thorsten Marx
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +26,10 @@ package com.github.thmarx.modules.api;
  * #L%
  */
 
-
-
-
 /**
  *
- * @author marx
- * @param <C>
+ * @author t.marx
  */
-public interface ExtensionPoint<C extends Context, R extends ModuleRequestContext> {
-	void setConfiguration (ModuleConfiguration configuration);
-	
-	void setContext (C context);
-	
-	void setRequestContext (R context);
-	
-	void init ();
+public abstract class HttpRoutesExtensionPoint extends AbstractExtensionPoint {
+	abstract public Mapping getMapping();
 }

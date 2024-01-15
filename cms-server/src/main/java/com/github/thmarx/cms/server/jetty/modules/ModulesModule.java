@@ -35,6 +35,8 @@ import com.github.thmarx.cms.api.feature.features.ThemeFeature;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.module.CMSModuleContext;
+import com.github.thmarx.cms.api.module.CMSRequestContext;
+import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
@@ -50,6 +52,8 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.modules.api.ModuleRequestContext;
+import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 
 /**
  *
@@ -67,7 +71,7 @@ public class ModulesModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public ModuleManager moduleManager(Injector injector, CMSModuleContext context) {
+	public ModuleManager moduleManager(Injector injector, CMSModuleContext context, ModuleRequestContextFactory requestContextFactory) {
 		var classLoader = new ModuleAPIClassLoader(ClassLoader.getSystemClassLoader(),
 				List.of(
 						"org.slf4j",
@@ -85,7 +89,24 @@ public class ModulesModule extends AbstractModule {
 				.setModulesDataPath(injector.getInstance(FileDB.class).getFileSystem().resolve("modules_data").toFile())
 				.setModulesPath(modulesPath.toFile())
 				.setContext(context)
+				.requestContextFactory(requestContextFactory)
 				.build();
+	}
+	
+	@Provides
+	@Singleton
+	public ModuleRequestContextFactory requestContextFactory () {
+		return new ModuleRequestContextFactory() {
+			@Override
+			public ModuleRequestContext createContext() {
+				final CMSRequestContext requestContext = new CMSRequestContext();
+				var rc = ThreadLocalRequestContext.REQUEST_CONTEXT.get();
+				if (rc != null) {
+					requestContext.features.putAll(rc.features);
+				}
+				return requestContext;
+			}
+		};
 	}
 
 	@Provides

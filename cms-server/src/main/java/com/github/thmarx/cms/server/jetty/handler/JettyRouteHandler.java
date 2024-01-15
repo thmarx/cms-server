@@ -66,15 +66,4 @@ public class JettyRouteHandler extends Handler.Abstract {
 		}
 		return false;
 	}
-
-	private String getPath(Request request) {
-		var path = request.getHttpURI().getPath();
-		var contextPath = request.getContext().getContextPath();
-		path = path.replace(contextPath, "");
-		if (!path.startsWith("/")) {
-			path = "/" + path;
-		}
-		return path;
-	}
-
 }

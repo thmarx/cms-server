@@ -29,6 +29,7 @@ import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.ExtensionPoint;
 import com.github.thmarx.modules.api.Module.Priority;
 import com.github.thmarx.modules.api.ModuleConfiguration;
+import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -60,6 +61,7 @@ public class ModuleImpl implements Module {
 	private String author;
 	private Priority priority = Priority.NORMAL;
 	private final List<Dependency> dependencyList = new ArrayList<>();
+	private final ModuleRequestContextFactory requestContextFactory;
 
 	File moduleDir;
 
@@ -74,11 +76,13 @@ public class ModuleImpl implements Module {
 
 	Map<Class, List> extensions = new HashMap<>();
 
-	protected ModuleImpl(final File moduleDir, final File modulesDataDir, final Context context, final ModuleInjector injector) throws MalformedURLException, IOException {
+	protected ModuleImpl(final File moduleDir, final File modulesDataDir, final Context context, 
+			final ModuleInjector injector, final ModuleRequestContextFactory requestContextFactory) throws MalformedURLException, IOException {
 		this.moduleDir = moduleDir;
 		this.modulesDataDir = modulesDataDir;
 		this.context = context;
 		this.injector = injector;
+		this.requestContextFactory = requestContextFactory;
 
 		Properties properties = new Properties();
 		try (FileReader reader = new FileReader(new File(moduleDir, "module.properties"))) {
@@ -111,7 +115,6 @@ public class ModuleImpl implements Module {
 			lib = null;
 		}
 
-//		classloader = new URLClassLoader(urls.toArray(new URL[libs.length]), parentClassLoader);
 		classloader = new ModuledFirstURLClassLoader(urls.toArray(new URL[libs.length]), parentClassLoader);
 		urls.clear();
 		urls = null;
@@ -133,12 +136,16 @@ public class ModuleImpl implements Module {
 	@Override
 	public <T extends ExtensionPoint> List<T> extensions(Class<T> extensionClass) {
 
-		if (!extensions.containsKey(extensionClass)) {
+//		if (!extensions.containsKey(extensionClass)) {
 			ServiceLoader<T> loader = ServiceLoader.load(extensionClass, classloader);
 			List<T> extList = new ArrayList<>();
 			for (T ext : loader) {
 				ext.setContext(context);
 				ext.setConfiguration(configuration);
+				
+				if (requestContextFactory != null) {
+					ext.setRequestContext(requestContextFactory.createContext());
+				}
 				
 				if (injector != null) {
 					injector.inject(ext);
@@ -147,10 +154,11 @@ public class ModuleImpl implements Module {
 				ext.init();
 				extList.add(ext);
 			}
-			extensions.put(extensionClass, extList);
-		}
+			return extList;
+//			extensions.put(extensionClass, extList);
+//		}
 
-		return Collections.unmodifiableList(extensions.get(extensionClass));
+//		return Collections.unmodifiableList(extensions.get(extensionClass));
 	}
 
 	@Override

@@ -22,11 +22,15 @@ package com.github.thmarx.cms.modules.example;
  * #L%
  */
 
-import com.github.thmarx.cms.api.extensions.HttpRouteExtensionPoint;
-import com.github.thmarx.cms.api.feature.features.RequestFeature;
+import com.github.thmarx.cms.api.extensions.HttpHandler;
+import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
+import com.github.thmarx.cms.api.extensions.HttpRoutesExtensionPoint;
+import com.github.thmarx.cms.api.extensions.Mapping;
 import com.github.thmarx.modules.api.annotation.Extension;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import lombok.RequiredArgsConstructor;
+import org.eclipse.jetty.http.pathmap.PathSpec;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
@@ -35,26 +39,28 @@ import org.eclipse.jetty.util.Callback;
  *
  * @author t.marx
  */
-@Extension(HttpRouteExtensionPoint.class)
-public class ExampleJettyHttpRouteExtension extends HttpRouteExtensionPoint {
+@Extension(HttpRoutesExtensionPoint.class)
+public class ExampleJettyRoutesHandlerExtension extends HttpRoutesExtensionPoint {
 
 	@Override
-	public String getRoute() {
-		return "example/route";
-	}
-
-	@Override
-	public void handle(Request request, Response response, Callback callback) {
+	public Mapping getMapping() {
+		Mapping mapping = new Mapping();
+		mapping.add(PathSpec.from("/world1"), new ExampleHandler("Hello world1!"));
+		mapping.add(PathSpec.from("/people1"), new ExampleHandler("Hello people1!"));
 		
-		String message = "example route";
-		message += "\n";
-		if (requestContext != null && requestContext.has(RequestFeature.class)) {
-			var requestFeature = requestContext.get(RequestFeature.class);
-			message += "HELlO: " + requestFeature.getQueryParameter("name", "NO-NAME");
-		} else {
-			message += "no request feature";
+		return mapping;
+	}
+	
+	@RequiredArgsConstructor
+	public static class ExampleHandler implements HttpHandler {
+
+		private final String message;
+		
+		@Override
+		public boolean handle(Request request, Response response, Callback callback) throws Exception {
+			response.write(true, ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)), callback);
+			return true;
 		}
 		
-		response.write(true, ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)), callback);
 	}
 }

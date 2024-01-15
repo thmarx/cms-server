@@ -28,11 +28,13 @@ package com.github.thmarx.modules.api;
  * @author marx
  * @param <C>
  */
-public abstract class BaseExtension<C extends Context> implements ExtensionPoint<C> {
+public abstract class BaseExtension<C extends Context, R extends ModuleRequestContext> implements ExtensionPoint<C, R> {
 
 	protected ModuleConfiguration configuration;
 	
 	private C context;
+	
+	private R requestContext;
 
 	@Override
 	public void setContext(C context) {
@@ -41,6 +43,15 @@ public abstract class BaseExtension<C extends Context> implements ExtensionPoint
 	
 	public C getContext () {
 		return this.context;
+	}
+	
+	@Override
+	public void setRequestContext(R context) {
+		this.requestContext = requestContext;
+	}
+	
+	public R getRequestContext () {
+		return this.requestContext;
 	}
 	
 	@Override

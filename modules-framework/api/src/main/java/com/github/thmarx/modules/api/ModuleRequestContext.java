@@ -23,19 +23,10 @@ package com.github.thmarx.modules.api;
  */
 
 
-
-
 /**
+ * The Context is passed to the module. It can be used to inject implementation dependend objects or functionality
  *
  * @author marx
- * @param <C>
  */
-public interface ExtensionPoint<C extends Context, R extends ModuleRequestContext> {
-	void setConfiguration (ModuleConfiguration configuration);
-	
-	void setContext (C context);
-	
-	void setRequestContext (R context);
-	
-	void init ();
+public interface ModuleRequestContext {
 }

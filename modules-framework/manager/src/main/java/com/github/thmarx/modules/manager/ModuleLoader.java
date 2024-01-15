@@ -26,6 +26,7 @@ package com.github.thmarx.modules.manager;
 import com.github.thmarx.modules.api.Context;
 import com.github.thmarx.modules.api.ManagerConfiguration;
 import com.github.thmarx.modules.api.ModuleLifeCycleExtension;
+import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -50,14 +51,19 @@ public class ModuleLoader {
 
 	final Context context;
 	final ModuleInjector injector;
+	
+	final ModuleRequestContextFactory requestContextFactory;
 
-	protected ModuleLoader(final ManagerConfiguration configuration, final File modulesPath, final File modulesDataPath, final ClassLoader globalClassLoader, final Context context, final ModuleInjector injector) {
+	protected ModuleLoader(final ManagerConfiguration configuration, final File modulesPath, final File modulesDataPath, 
+			final ClassLoader globalClassLoader, final Context context, final ModuleInjector injector,
+			final ModuleRequestContextFactory requestContextFactory) {
 		this.configuration = configuration;
 		this.modulesPath = modulesPath;
 		this.modulesDataPath = modulesDataPath;
 		this.globalClassLoader = globalClassLoader;
 		this.context = context;
 		this.injector = injector;
+		this.requestContextFactory = requestContextFactory;
 	}
 
 	protected Map<String, ModuleImpl> activeModules() {
@@ -84,7 +90,7 @@ public class ModuleLoader {
 		File moduleData = modulesDataPath;
 //		File moduleData = activeModules().get(moduleId).getModulesDataDir();
 
-		ModuleImpl module = new ModuleImpl(moduleDir, moduleData, this.context, this.injector);
+		ModuleImpl module = new ModuleImpl(moduleDir, moduleData, this.context, this.injector, this.requestContextFactory);
 
 		if (areDependencyFulfilled(module)) {
 			ManagerConfiguration.ModuleConfig config = configuration.get(moduleId);

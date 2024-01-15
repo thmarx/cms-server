@@ -21,13 +21,13 @@ package com.github.thmarx.cms.server.jetty.handler;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
+import com.github.thmarx.cms.api.extensions.HttpRoutesExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
-import com.github.thmarx.modules.api.Module;
+import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
+import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.modules.api.ModuleManager;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import java.util.List;
+import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,75 +40,42 @@ import org.eclipse.jetty.util.Callback;
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__({
+	@Inject}))
 @Slf4j
-public class JettyModuleMappingHandler extends Handler.Abstract {
+public class JettyRoutesHandler extends Handler.Abstract {
 
+	private final RequestContextFactory requestContextFactory;
 	private final ModuleManager moduleManager;
-	private final List<String> activeModules;
-	
+
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		try {
-			String moduleId = getModuleID(request);
-			
-			if (!activeModules.contains(moduleId)) {
-				Response.writeError(request, response, callback, 404);
-				return false;
-			}
-			
-			var uri = getModuleUri(request);
-			
-			Optional<Mapping> firstMatch = moduleManager.module(moduleId).extensions(HttpHandlerExtensionPoint.class)
+
+		try (var requestContext = requestContextFactory.create(request)) {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
+
+			String route = "/" + RequestUtil.getContentPath(request);
+
+			Optional<Mapping> firstMatch = moduleManager.extensions(HttpRoutesExtensionPoint.class)
 					.stream()
-					.filter(extension -> extension.getMapping().getMatchingHandler(uri).isPresent())
+					.filter(extension -> extension.getMapping().getMatchingHandler(route).isPresent())
 					.map(extension -> extension.getMapping())
-					.findFirst()
-					;
+					.findFirst();
 
 			if (firstMatch.isPresent()) {
 				var mapping = firstMatch.get();
-				var handler = mapping.getMatchingHandler(uri).get();
+				var handler = mapping.getMatchingHandler(route).get();
 				return handler.handle(request, response, callback);
 			}
-			
+
 			Response.writeError(request, response, callback, 404);
 			return true;
 		} catch (Exception e) {
 			log.error(null, e);
 			callback.failed(e);
 			return true;
+		} finally {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
-
-	}
-
-	private String getModuleUri(Request request) {
-		var modulePath = getModulePath(request);
-		if (modulePath.contains("/")) {
-			return modulePath.substring(modulePath.indexOf("/"));
-		}
-		return modulePath;
-	}
-
-	private String getModuleID(Request request) {
-		var modulePath = getModulePath(request);
-		if (modulePath.contains("/")) {
-			return modulePath.split("/")[0];
-		}
-		return modulePath;
-	}
-
-	private String getModulePath(Request request) {
-		var path = request.getHttpURI().getPath();
-		var contextPath = request.getContext().getContextPath();
-		if (!"/".equals(contextPath) && path.startsWith(contextPath)) {
-			path = path.replaceFirst(contextPath, "");
-		}
-
-		if (path.startsWith("/")) {
-			path = path.substring(1);
-		}
-
-		return path;
 	}
 }

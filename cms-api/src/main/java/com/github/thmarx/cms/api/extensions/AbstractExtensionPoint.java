@@ -23,6 +23,7 @@ package com.github.thmarx.cms.api.extensions;
  */
 
 import com.github.thmarx.cms.api.module.CMSModuleContext;
+import com.github.thmarx.cms.api.module.CMSRequestContext;
 import com.github.thmarx.modules.api.ExtensionPoint;
 import com.github.thmarx.modules.api.ModuleConfiguration;
 import lombok.Getter;
@@ -31,11 +32,13 @@ import lombok.Getter;
  *
  * @author t.marx
  */
-public abstract class AbstractExtensionPoint implements ExtensionPoint<CMSModuleContext> {
+public abstract class AbstractExtensionPoint implements ExtensionPoint<CMSModuleContext, CMSRequestContext> {
 	@Getter
 	protected ModuleConfiguration moduleConfiguration;
 	@Getter
 	protected CMSModuleContext context;
+	@Getter
+	protected CMSRequestContext requestContext;
 
 	@Override
 	public void setConfiguration(ModuleConfiguration configuration) {
@@ -45,6 +48,10 @@ public abstract class AbstractExtensionPoint implements ExtensionPoint<CMSModule
 	@Override
 	public void setContext(CMSModuleContext context) {
 		this.context = context;
+	}
+	@Override
+	public void setRequestContext(CMSRequestContext requestContext) {
+		this.requestContext = requestContext;
 	}
 	
 	@Override

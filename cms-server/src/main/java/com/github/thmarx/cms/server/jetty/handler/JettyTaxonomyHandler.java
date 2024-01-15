@@ -47,8 +47,7 @@ public class JettyTaxonomyHandler extends Handler.Abstract {
 	
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		try (
-				var requestContext = requestContextFactory.create(request)) {
+		try (var requestContext = requestContextFactory.create(request)) {
 			
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
 			

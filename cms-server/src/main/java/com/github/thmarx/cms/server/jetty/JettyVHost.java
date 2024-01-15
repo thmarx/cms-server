@@ -34,6 +34,7 @@ import com.github.thmarx.cms.server.VHost;
 import com.github.thmarx.cms.server.jetty.handler.JettyMediaHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyModuleMappingHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyRouteHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyRoutesHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyTaxonomyHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyViewHandler;
 import com.github.thmarx.modules.api.ModuleManager;
@@ -62,13 +63,16 @@ public class JettyVHost extends VHost {
 	}
 
 	public Handler httpHandler() {
-
+		
 		var contentHandler = injector.getInstance(JettyContentHandler.class);
 		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
 		var viewHandler = injector.getInstance(JettyViewHandler.class);
 		var routeHandler = injector.getInstance(JettyRouteHandler.class);
+		var routesHandler = injector.getInstance(JettyRoutesHandler.class);
+		
 		var defaultHandlerSequence = new Handler.Sequence(
 				routeHandler, 
+				routesHandler,
 				viewHandler, 
 				taxonomyHandler, 
 				contentHandler
@@ -102,7 +106,6 @@ public class JettyVHost extends VHost {
 		var moduleHandler = new JettyModuleMappingHandler(
 				injector.getInstance(ModuleManager.class), getActiveModules()
 		);
-		moduleHandler.init();
 		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, appendContextIfNeeded("/module"));
 
 		var extensionHandler = new JettyExtensionHandler(

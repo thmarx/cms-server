@@ -4,7 +4,7 @@ package com.github.thmarx.modules.api;
  * #%L
  * modules-api
  * %%
- * Copyright (C) 2023 Thorsten Marx
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +22,11 @@ package com.github.thmarx.modules.api;
  * #L%
  */
 
-
-
-
 /**
  *
- * @author marx
- * @param <C>
+ * @author t.marx
  */
-public interface ExtensionPoint<C extends Context, R extends ModuleRequestContext> {
-	void setConfiguration (ModuleConfiguration configuration);
+public interface ModuleRequestContextFactory {
 	
-	void setContext (C context);
-	
-	void setRequestContext (R context);
-	
-	void init ();
+	ModuleRequestContext createContext ();
 }

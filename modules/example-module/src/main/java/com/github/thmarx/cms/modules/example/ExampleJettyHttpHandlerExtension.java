@@ -22,6 +22,7 @@ package com.github.thmarx.cms.modules.example;
  * #L%
  */
 
+import com.github.thmarx.cms.api.extensions.HttpHandler;
 import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
 import com.github.thmarx.modules.api.annotation.Extension;
@@ -29,7 +30,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.http.pathmap.PathSpec;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
@@ -51,7 +51,7 @@ public class ExampleJettyHttpHandlerExtension extends HttpHandlerExtensionPoint 
 	}
 	
 	@RequiredArgsConstructor
-	public static class ExampleHandler extends Handler.Abstract {
+	public static class ExampleHandler implements HttpHandler {
 
 		private final String message;
 		

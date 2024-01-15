@@ -1,10 +1,10 @@
-package com.github.thmarx.modules.api;
+package com.github.thmarx.cms.api.module;
 
 /*-
  * #%L
- * modules-api
+ * cms-api
  * %%
- * Copyright (C) 2023 Thorsten Marx
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +22,15 @@ package com.github.thmarx.modules.api;
  * #L%
  */
 
-
-
+import com.github.thmarx.cms.api.feature.FeatureContainer;
+import lombok.RequiredArgsConstructor;
+import com.github.thmarx.modules.api.ModuleRequestContext;
 
 /**
  *
- * @author marx
- * @param <C>
+ * @author t.marx
  */
-public interface ExtensionPoint<C extends Context, R extends ModuleRequestContext> {
-	void setConfiguration (ModuleConfiguration configuration);
+@RequiredArgsConstructor
+public class CMSRequestContext extends FeatureContainer implements ModuleRequestContext {
 	
-	void setContext (C context);
-	
-	void setRequestContext (R context);
-	
-	void init ();
 }
