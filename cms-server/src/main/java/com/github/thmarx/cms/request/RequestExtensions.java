@@ -24,6 +24,7 @@ package com.github.thmarx.cms.request;
 
 import com.github.thmarx.cms.api.extensions.http.ExtensionHttpHandler;
 import com.github.thmarx.cms.api.feature.Feature;
+import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
 import com.github.thmarx.cms.extensions.TemplateFunctionExtension;
@@ -56,7 +57,7 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	@Getter
 	private final List<TemplateFunctionExtension> registerTemplateFunctions = new ArrayList<>();
 	@Getter
-	private final Map<String, Function<ShortCodes.Parameter, String>> shortCodes = new HashMap<>();
+	private final Map<String, Function<Parameter, String>> shortCodes = new HashMap<>();
 	
 	private final Map<String, BiConsumer<Request, Response>> routes = new HashMap<>();
 
@@ -84,7 +85,7 @@ public class RequestExtensions implements AutoCloseable, Feature {
 		registerTemplateFunctions.add(new TemplateFunctionExtension(path, function));
 	}
 	
-	public void registerShortCode(final String shortCode, final Function<ShortCodes.Parameter, String> function) {
+	public void registerShortCode(final String shortCode, final Function<Parameter, String> function) {
 		shortCodes.put(shortCode, function);
 	}
 

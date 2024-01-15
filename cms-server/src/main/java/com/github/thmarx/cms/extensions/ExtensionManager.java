@@ -196,7 +196,7 @@ public class ExtensionManager implements AutoCloseable {
 			var themeExtPath = parentTheme.extensionsPath();
 			if (Files.exists(themeExtPath)) {
 				log.debug("load extensions from theme");
-				loadExtensions(themeExtPath, context::eval);
+				loadExtensions(themeExtPath, themeContext::eval);
 			}
 		}
 

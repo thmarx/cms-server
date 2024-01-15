@@ -68,8 +68,8 @@ public class JettyRoutesHandler extends Handler.Abstract {
 				return handler.handle(request, response, callback);
 			}
 
-			Response.writeError(request, response, callback, 404);
-			return true;
+			
+			return false;
 		} catch (Exception e) {
 			log.error(null, e);
 			callback.failed(e);

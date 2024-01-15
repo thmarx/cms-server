@@ -22,6 +22,7 @@ package com.github.thmarx.cms.content;
  * #L%
  */
 
+import com.github.thmarx.cms.api.model.Parameter;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -114,8 +115,5 @@ public class ShortCodes {
 		public Function<Parameter, String> get (final String codeName) {
 			return codes.getOrDefault(codeName, (params) -> "");
 		}
-	}
-	
-	public static class Parameter extends HashMap<String, Object> {
 	}
 }

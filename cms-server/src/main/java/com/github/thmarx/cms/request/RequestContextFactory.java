@@ -24,6 +24,7 @@ package com.github.thmarx.cms.request;
 import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.content.ContentParser;
+import com.github.thmarx.cms.api.extensions.RegisterShortCodesExtensionPoint;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -42,6 +43,7 @@ import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Injector;
 import java.io.IOException;
 import java.util.List;
@@ -83,7 +85,7 @@ public class RequestContextFactory {
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer.get(),
-				new ShortCodes(requestExtensions.getShortCodes()),
+				createShortCodes(requestExtensions),
 				theme);
 
 		var context = new RequestContext();
@@ -107,6 +109,15 @@ public class RequestContextFactory {
 		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
 
 		return context;
+	}
+	
+	private ShortCodes createShortCodes (RequestExtensions requestExtensions) {
+		var codes = requestExtensions.getShortCodes();
+		
+		injector.getInstance(ModuleManager.class).extensions(RegisterShortCodesExtensionPoint.class)
+				.forEach(extension -> codes.putAll(extension.shortCodes()));
+		
+		return new ShortCodes(codes);
 	}
 
 }
