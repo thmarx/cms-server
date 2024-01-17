@@ -29,6 +29,7 @@ import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoi
 import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
 import com.github.thmarx.cms.api.feature.features.DBFeature;
 import com.github.thmarx.cms.api.feature.features.EventBusFeature;
+import com.github.thmarx.cms.api.feature.features.ModuleManagerFeature;
 import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
@@ -82,7 +83,7 @@ public class ModulesModule extends AbstractModule {
 						"org.eclipse.jetty",
 						"jakarta.servlet"
 				));
-		return ModuleManagerImpl.builder()
+		var moduleManager = ModuleManagerImpl.builder()
 				.activateModulesOnStartup(false)
 				.setClassLoader(classLoader)
 				.setInjector((instance) -> injector.injectMembers(instance))
@@ -91,6 +92,10 @@ public class ModulesModule extends AbstractModule {
 				.setContext(context)
 				.requestContextFactory(requestContextFactory)
 				.build();
+		
+		context.add(ModuleManagerFeature.class, new ModuleManagerFeature(moduleManager));
+		
+		return moduleManager;
 	}
 	
 	@Provides

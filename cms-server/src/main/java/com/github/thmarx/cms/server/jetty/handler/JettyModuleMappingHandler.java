@@ -22,7 +22,11 @@ package com.github.thmarx.cms.server.jetty.handler;
  * #L%
  */
 import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
+import com.github.thmarx.cms.api.extensions.HttpRouteExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
+import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
+import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.common.collect.ArrayListMultimap;
@@ -46,10 +50,14 @@ public class JettyModuleMappingHandler extends Handler.Abstract {
 
 	private final ModuleManager moduleManager;
 	private final List<String> activeModules;
+	private final RequestContextFactory requestContextFactory;
 	
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		try {
+		
+		try (var requestContext = requestContextFactory.create(request)) {			
+			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
+			
 			String moduleId = getModuleID(request);
 			
 			if (!activeModules.contains(moduleId)) {
@@ -78,6 +86,8 @@ public class JettyModuleMappingHandler extends Handler.Abstract {
 			log.error(null, e);
 			callback.failed(e);
 			return true;
+		} finally {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 
 	}
