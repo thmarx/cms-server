@@ -25,6 +25,8 @@ package com.github.thmarx.cms.modules.example;
 import com.github.thmarx.cms.api.extensions.HttpHandler;
 import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
+import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.hooks.HookContext;
 import com.github.thmarx.modules.api.annotation.Extension;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +48,16 @@ public class ExampleJettyHttpHandlerExtension extends HttpHandlerExtensionPoint 
 		Mapping mapping = new Mapping();
 		mapping.add(PathSpec.from("/world"), new ExampleHandler("Hello world!"));
 		mapping.add(PathSpec.from("/people"), new ExampleHandler("Hello people!"));
+		mapping.add(PathSpec.from("/hook"), (request, response, callback) -> {
+			
+			HookContext hookContext = getRequestContext().get(HookSystemFeature.class).hookSystem().call("example/test");
+			
+			var content = (String)hookContext.results().get(0);
+			
+			response.write(true, ByteBuffer.wrap(content.getBytes(StandardCharsets.UTF_8)), callback);
+			
+			return true;
+		});
 		
 		return mapping;
 	}

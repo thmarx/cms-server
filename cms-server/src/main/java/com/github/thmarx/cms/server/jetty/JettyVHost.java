@@ -104,7 +104,9 @@ public class JettyVHost extends VHost {
 		defaultContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
 
 		var moduleHandler = new JettyModuleMappingHandler(
-				injector.getInstance(ModuleManager.class), getActiveModules()
+				injector.getInstance(ModuleManager.class), 
+				getActiveModules(),
+				injector.getInstance(RequestContextFactory.class)
 		);
 		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, appendContextIfNeeded("/module"));
 
