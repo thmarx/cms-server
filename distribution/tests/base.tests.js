@@ -15,7 +15,8 @@ export default function () {
         'http://localhost:1010/example/route',
         'http://localhost:1010/extension/test',
         'http://localhost:1010/module/seo-module/sitemap.xml',
-        'http://localhost:1010/module/example-module/world'
+        'http://localhost:1010/module/example-module/world',
+        'http://localhost:1010/module/example-module/hook'
     ]
 
     check_urls.forEach(url => {

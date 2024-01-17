@@ -6,6 +6,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.4.0
+
+* **FEATURE** example to use hook system in module [#143](https://github.com/thmarx/cms/issues/143)
+* **FEATURE** make ModuleManager accessible in module [#155](https://github.com/thmarx/cms/issues/155)
+
 ## 4.3.0
 
 * **MAINTENANCE** update modules [#152](https://github.com/thmarx/cms/issues/152)
