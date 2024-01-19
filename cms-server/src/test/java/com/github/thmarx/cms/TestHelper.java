@@ -21,6 +21,7 @@ package com.github.thmarx.cms;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
@@ -33,6 +34,7 @@ import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.InjectorFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
+import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.content.ShortCodes;
@@ -75,6 +77,8 @@ public abstract class TestHelper {
 		
 		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(new SiteProperties(Map.of(
 				"context_path", "/"
+		))));
+		context.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(new ServerProperties(Map.of(
 		))));
 
 		return context;

@@ -28,6 +28,7 @@ import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.extensions.RegisterShortCodesExtensionPoint;
+import com.github.thmarx.cms.api.feature.features.ConfigurationFeature;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.hooks.HookSystem;
@@ -112,6 +113,7 @@ public class RequestContextFactory {
 				context.add(IsPreviewFeature.class, new IsPreviewFeature());
 			}
 		}
+		context.add(ConfigurationFeature.class, new ConfigurationFeature(injector.getInstance(Configuration.class)));
 		context.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(
 				injector.getInstance(Configuration.class)
 				.get(ServerConfiguration.class).serverProperties()
