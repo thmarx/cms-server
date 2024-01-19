@@ -43,6 +43,7 @@ import com.github.thmarx.cms.filesystem.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.content.template.LinkFunction;
 import com.github.thmarx.cms.content.views.model.View;
 import com.github.thmarx.cms.filesystem.functions.query.QueryFunction;
@@ -153,6 +154,7 @@ public class ContentRenderer {
 		
 		model.values.put("PREVIEW_MODE", isPreview(context));
 		model.values.put("DEV_MODE", isDevMode(context));
+		model.values.put("ENV", context.get(ServerPropertiesFeature.class).serverProperties().env());
 
 		context.get(RequestExtensions.class).getRegisterTemplateSupplier().forEach(service -> {
 			model.values.put(service.name(), service.supplier());
@@ -186,17 +188,11 @@ public class ContentRenderer {
 	}
 
 	private boolean isPreview(final RequestContext context) {
-		if (context.has(IsPreviewFeature.class)) {
-			return context.has(IsPreviewFeature.class);
-		}
-		return false;
+		return context.has(IsPreviewFeature.class);
 	}
 
 	private boolean isDevMode(final RequestContext context) {
-		if (context.has(IsDevModeFeature.class)) {
-			return context.has(IsDevModeFeature.class);
-		}
-		return false;
+		return context.has(IsDevModeFeature.class);
 	}
 
 	private void extendModel(final TemplateEngine.Model model) {
