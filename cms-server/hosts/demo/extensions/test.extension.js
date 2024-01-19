@@ -5,7 +5,9 @@ import { $shortcodes } from 'system/shortcodes.mjs';
 import { getLogger } from 'system/logging.mjs';
 
 const logger = getLogger("extensions");
-logger.info("debug log from test extension");
+if (ENV === "dev"){
+	logger.info("dev debug log from test extension");
+}
 
 // callable via /extensions/test
 $http.get("/test", (request, response) => {

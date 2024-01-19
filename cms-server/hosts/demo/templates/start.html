@@ -11,6 +11,13 @@
 	<nav th:replace="libs/fragments.html :: navigation"></nav>
 
 	<div id="content">
+
+		<div th:if="${ENV == 'dev'}">
+			<div class="container" style="color: red;">
+				<h2>DEVELOPMENT</h2>
+			</div>
+		</div>
+
 		<div class="container" th:utext="${content}"></div>
 	</div>
 

@@ -21,6 +21,7 @@ package com.github.thmarx.cms.extensions;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.request.RequestExtensions;
@@ -55,12 +56,10 @@ public class ExtensionManager implements AutoCloseable {
 
 	private final DB db;
 	private final Theme parentTheme;
+	private final ServerProperties serverProperties;
 
 	@Getter
 	private Engine engine;
-
-	List<Source> sources = new ArrayList<>();
-	List<Source> theme_sources = new ArrayList<>();
 
 	private ClassLoader getClassLoader() throws IOException {
 		Path libs = db.getFileSystem().resolve("libs/");
@@ -85,19 +84,6 @@ public class ExtensionManager implements AutoCloseable {
 			engine = Engine.newBuilder("js")
 					.option("engine.WarnInterpreterOnly", "false")
 					.build();
-
-//			if (!parentTheme.empty()) {
-//				var themeExtPath = parentTheme.extensionsPath();
-//				if (Files.exists(themeExtPath)) {
-//					log.debug("load extensions from theme");
-//					loadExtensions(themeExtPath, theme_sources);
-//				}
-//			}
-//			var extPath = db.getFileSystem().resolve("extensions/");
-//			if (Files.exists(extPath)) {
-//				log.debug("load extensions from site");
-//				loadExtensions(extPath, sources);
-//			}
 		}
 	}
 
@@ -176,8 +162,8 @@ public class ExtensionManager implements AutoCloseable {
 		bindings.putMember("db", db);
 		bindings.putMember("theme", theme);
 		bindings.putMember("hooks", hookSystem);
+		bindings.putMember("ENV", serverProperties.env());
 
-//		sources.forEach(context::eval);
 		var extPath = db.getFileSystem().resolve("extensions/");
 		if (Files.exists(extPath)) {
 			log.debug("load extensions from site");
@@ -191,6 +177,7 @@ public class ExtensionManager implements AutoCloseable {
 			themeBindings.putMember("db", db);
 			themeBindings.putMember("theme", theme);
 			themeBindings.putMember("hooks", hookSystem);
+			themeBindings.putMember("ENV", serverProperties.env());
 
 //			theme_sources.forEach(themeContext::eval);
 			var themeExtPath = parentTheme.extensionsPath();

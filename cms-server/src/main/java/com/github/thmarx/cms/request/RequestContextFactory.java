@@ -22,7 +22,10 @@ package com.github.thmarx.cms.request;
  * #L%
  */
 import com.github.thmarx.cms.api.ServerContext;
+import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.extensions.RegisterShortCodesExtensionPoint;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
@@ -38,6 +41,7 @@ import com.github.thmarx.cms.api.feature.features.IsDevModeFeature;
 import com.github.thmarx.cms.api.feature.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
+import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
@@ -108,6 +112,10 @@ public class RequestContextFactory {
 				context.add(IsPreviewFeature.class, new IsPreviewFeature());
 			}
 		}
+		context.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(
+				injector.getInstance(Configuration.class)
+				.get(ServerConfiguration.class).serverProperties()
+		));
 		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
 
