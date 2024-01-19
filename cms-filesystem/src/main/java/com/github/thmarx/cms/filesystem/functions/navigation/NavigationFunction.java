@@ -26,6 +26,9 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
+import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
+import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -54,9 +57,9 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		super(
 				db,
 				currentNode,
-				context.get(ContentParser.class),
-				context.get(MarkdownRenderer.class),
-				context.get(ContentNodeMapper.class),
+				context.get(ContentParserFeature.class).contentParser(),
+				context.get(MarkdownRendererFeature.class).markdownRenderer(),
+				context.get(ContentNodeMapperFeature.class).contentNodeMapper(),
 				context);
 	}
 

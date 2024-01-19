@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
@@ -104,7 +105,7 @@ public class ViewResolver {
 			var page = view.getNodes(
 				db, 
 				contentFile, 
-				context.get(ContentParser.class), 
+				context.get(ContentParserFeature.class).contentParser(), 
 				context.get(RenderContext.class).markdownRenderer(), 
 				context.get(RequestExtensions.class).getContext(), 
 				context.get(RequestFeature.class).queryParameters(), context);

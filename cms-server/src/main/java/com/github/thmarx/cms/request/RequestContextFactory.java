@@ -25,6 +25,8 @@ import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.extensions.RegisterShortCodesExtensionPoint;
+import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
+import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -34,6 +36,7 @@ import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.InjectorFeature;
 import com.github.thmarx.cms.api.feature.features.IsDevModeFeature;
 import com.github.thmarx.cms.api.feature.features.IsPreviewFeature;
+import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
@@ -95,9 +98,9 @@ public class RequestContextFactory {
 		context.add(RequestExtensions.class, requestExtensions);
 		context.add(ThemeFeature.class, new ThemeFeature(theme));
 		context.add(RenderContext.class, renderContext);
-		context.add(MarkdownRenderer.class, renderContext.markdownRenderer());
-		context.add(ContentParser.class, injector.getInstance(ContentParser.class));
-		context.add(ContentNodeMapper.class, injector.getInstance(ContentNodeMapper.class));
+		context.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(renderContext.markdownRenderer()));
+		context.add(ContentParserFeature.class, new ContentParserFeature(injector.getInstance(ContentParser.class)));
+		context.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(injector.getInstance(ContentNodeMapper.class)));
 		if (ServerContext.IS_DEV) {
 			context.add(IsDevModeFeature.class, new IsDevModeFeature());
 

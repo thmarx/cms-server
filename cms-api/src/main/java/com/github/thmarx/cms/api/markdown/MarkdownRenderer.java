@@ -28,7 +28,7 @@ import com.github.thmarx.cms.api.feature.Feature;
  *
  * @author t.marx
  */
-public interface MarkdownRenderer extends AutoCloseable, Feature {
+public interface MarkdownRenderer extends AutoCloseable {
 
 	String excerpt(final String markdown, final int length);
 

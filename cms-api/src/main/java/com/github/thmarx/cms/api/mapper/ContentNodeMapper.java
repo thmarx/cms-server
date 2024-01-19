@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.feature.Feature;
+import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -47,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor = @__({
 	@Inject}))
 @Slf4j
-public class ContentNodeMapper implements Feature {
+public class ContentNodeMapper {
 
 	private final DB db;
 	private final ContentParser contentParser;
@@ -77,7 +78,7 @@ public class ContentNodeMapper implements Feature {
 		url = HTTPUtil.modifyUrl(url, context);
 		
 		var md = parse(temp_path);
-		var excerpt = NodeUtil.excerpt(node, md.get().content(), excerptLength, context.get(MarkdownRenderer.class));
+		var excerpt = NodeUtil.excerpt(node, md.get().content(), excerptLength, context.get(MarkdownRendererFeature.class).markdownRenderer());
 		return new ListNode(name, url, excerpt, node.data());
 
 	}

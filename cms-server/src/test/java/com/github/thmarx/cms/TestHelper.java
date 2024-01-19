@@ -23,12 +23,15 @@ package com.github.thmarx.cms;
  */
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.content.ContentParser;
+import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
+import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.InjectorFeature;
+import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
@@ -66,6 +69,10 @@ public abstract class TestHelper {
 		context.add(InjectorFeature.class, new InjectorFeature(Mockito.mock(Injector.class)));
 		context.add(HookSystemFeature.class, new HookSystemFeature(new HookSystem()));
 		
+		context.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(null));
+		context.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(null));
+		context.add(ContentParserFeature.class, new ContentParserFeature(null));
+		
 		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(new SiteProperties(Map.of(
 				"context_path", "/"
 		))));
@@ -76,9 +83,9 @@ public abstract class TestHelper {
 	public static RequestContext requestContext(String uri, ContentParser contentParser, MarkdownRenderer markdownRenderer, ContentNodeMapper contentMapper) {
 
 		RequestContext context = requestContext(uri);
-		context.add(ContentParser.class, contentParser);
-		context.add(MarkdownRenderer.class, markdownRenderer);
-		context.add(ContentNodeMapper.class, contentMapper);
+		context.add(ContentParserFeature.class, new ContentParserFeature(contentParser));
+		context.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(markdownRenderer));
+		context.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(contentMapper));
 		context.add(HookSystemFeature.class, new HookSystemFeature(new HookSystem()));
 		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(new SiteProperties(Map.of(
 				"context_path", "/"

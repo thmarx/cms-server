@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.content;
+package com.github.thmarx.cms.api.feature.features;
 
 /*-
  * #%L
@@ -22,23 +22,13 @@ package com.github.thmarx.cms.api.content;
  * #L%
  */
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Map;
+import com.github.thmarx.cms.api.feature.Feature;
+import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 
 /**
  *
  * @author t.marx
  */
-public interface ContentParser {
-	
-	void clearCache();
-	
-	Content parse(final Path contentFile) throws IOException;
-	
-	Map<String, Object> parseMeta(final Path contentFile) throws IOException;
-	
-	record ContentRecord(String content, String meta) {}
+public record MarkdownRendererFeature(MarkdownRenderer markdownRenderer) implements Feature {
 
-	record Content(String content, Map<String, Object> meta) {}
 }

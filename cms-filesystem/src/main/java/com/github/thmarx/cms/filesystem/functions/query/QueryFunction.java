@@ -25,6 +25,9 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
+import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
+import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
@@ -50,16 +53,16 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 		super(
 				db, 
 				currentNode, 
-				context.get(ContentParser.class), 
-				context.get(MarkdownRenderer.class), 
-				context.get(ContentNodeMapper.class),
+				context.get(ContentParserFeature.class).contentParser(), 
+				context.get(MarkdownRendererFeature.class).markdownRenderer(), 
+				context.get(ContentNodeMapperFeature.class).contentNodeMapper(),
 				context);
 	}
 	
 	private BiFunction<ContentNode, Integer, ListNode> nodeMapper() {
 		if (nodeMapper == null) {
 			nodeMapper = (node, excerptLength) -> {
-				return context.get(ContentNodeMapper.class).toListNode(node, context, excerptLength);
+				return context.get(ContentNodeMapperFeature.class).contentNodeMapper().toListNode(node, context, excerptLength);
 			};
 		}
 
