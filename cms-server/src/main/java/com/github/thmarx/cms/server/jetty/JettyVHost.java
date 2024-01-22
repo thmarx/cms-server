@@ -101,7 +101,6 @@ public class JettyVHost extends VHost {
 				pathMappingsHandler, 
 				injector.getInstance(SiteProperties.class).contextPath()
 		);
-		defaultContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
 
 		var moduleHandler = new JettyModuleMappingHandler(
 				injector.getInstance(ModuleManager.class), 
@@ -114,15 +113,23 @@ public class JettyVHost extends VHost {
 				injector.getInstance(RequestContextFactory.class)
 		);
 		ContextHandler extensionContextHandler = new ContextHandler(extensionHandler, appendContextIfNeeded("/extension"));
+		
 
+		defaultContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
+		moduleContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
+		extensionContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
+		
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection(
 				defaultContextHandler,
 				moduleContextHandler,
 				extensionContextHandler
 		);
+		
 
 		if (!injector.getInstance(Theme.class).empty()) {
-			contextCollection.addHandler(themeContextHandler());
+			var themeContextHandler = themeContextHandler();
+			themeContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
+			contextCollection.addHandler(themeContextHandler);
 		}
 
 		JettyLoggingFilterHandler logContextHandler = new JettyLoggingFilterHandler(contextCollection, injector.getInstance(SiteProperties.class));
