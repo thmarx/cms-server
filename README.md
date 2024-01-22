@@ -6,6 +6,15 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.5.1
+
+* **BUGFIX** vhost not set correctly for module handler [#159](https://github.com/thmarx/cms/issues/159)
+
+## 4.5.0
+
+* **FEATURE** User separate Feature class [#157](https://github.com/thmarx/cms/issues/157)
+* **FEATURE** Make environment accessible [#156](https://github.com/thmarx/cms/issues/156)
+
 ## 4.4.0
 
 * **FEATURE** example to use hook system in module [#143](https://github.com/thmarx/cms/issues/143)
