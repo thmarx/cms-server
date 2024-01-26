@@ -71,8 +71,7 @@ public class JettyModuleMappingHandler extends Handler.Abstract {
 					.stream()
 					.filter(extension -> extension.getMapping().getMatchingHandler(uri).isPresent())
 					.map(extension -> extension.getMapping())
-					.findFirst()
-					;
+					.findFirst();
 
 			if (firstMatch.isPresent()) {
 				var mapping = firstMatch.get();

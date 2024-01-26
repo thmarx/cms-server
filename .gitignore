@@ -18,8 +18,11 @@ target/
 cms-server/hosts/marx-software
 cms-server/hosts/demo/modules_data/search-module/index
 cms-server/hosts/demo_de/modules_data/search-module/index
+cms-server/hosts/demo/modules_data/ui-module
+cms-server/hosts/demo_de/modules_data/ui-module
 cms-server/hosts/demo/temp
 cms-server/hosts/theme-demo/modules_data/search-module/index
+cms-server/hosts/theme-demo/modules_data/ui-module
 cms-server/modules/flexmark-module
 cms-server/modules/markedjs-module
 cms-server/modules/pebble-module
