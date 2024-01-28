@@ -21,15 +21,12 @@ package com.github.thmarx.cms.filesystem.functions.query;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
-import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
-import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
