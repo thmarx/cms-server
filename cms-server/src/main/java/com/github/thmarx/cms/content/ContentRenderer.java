@@ -145,7 +145,7 @@ public class ContentRenderer {
 		model.values.put("site", siteProperties);
 		model.values.put("mediaService", context.get(SiteMediaServiceFeature.class).mediaService());
 
-		model.values.put("taxonomyFN", context.get(InjectorFeature.class).injector().getInstance(TaxonomyFunction.class));
+		model.values.put("taxonomies", context.get(InjectorFeature.class).injector().getInstance(TaxonomyFunction.class));
 		model.values.put("messages", context.get(InjectorFeature.class).injector().getInstance(MessageSource.class));
 		
 		model.values.put("hooks", context.get(HookSystemFeature.class).hookSystem());

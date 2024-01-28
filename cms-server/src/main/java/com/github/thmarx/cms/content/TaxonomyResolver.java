@@ -55,10 +55,7 @@ public class TaxonomyResolver {
 			return Optional.empty();
 		}
 		var parts = uri.split("/");
-		if (parts.length == 1){
-			return Optional.empty();
-		}
-		var slug = parts[1];
+		var slug = parts[0];
 		return db.getTaxonomies().forSlug(slug);
 	}
 
@@ -66,11 +63,11 @@ public class TaxonomyResolver {
 		return getTaxonomy(context).isPresent();
 	}
 
-	private Optional<String> getTaxonomyValue(final RequestContext context) {
+	protected Optional<String> getTaxonomyValue(final RequestContext context) {
 		var uri = context.get(RequestFeature.class).uri();
 		var uriParts = uri.split("/");
 
-		return uriParts.length == 3 ? Optional.of(uriParts[2]) : Optional.empty();
+		return uriParts.length > 1 ? Optional.of(uriParts[1]) : Optional.empty();
 	}
 
 	public Optional<TaxonomyResponse> getTaxonomyResponse(final RequestContext context) {

@@ -22,7 +22,7 @@
 		>
 			TAGS:
 			<div th:each="tag: ${meta.taxonomy.tags}">
-				<a th:href="${taxonomyFN.url('tags', tag)}" th:text="${taxonomyFN.getTitle('tags', tag)}" ></a>
+				<a th:href="${taxonomies.url('tags', tag)}" th:text="${taxonomies.getTitle('tags', tag)}" ></a>
 			</div>
 			
 		</div>
