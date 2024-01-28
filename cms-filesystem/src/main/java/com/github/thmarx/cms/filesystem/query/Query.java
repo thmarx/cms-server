@@ -157,13 +157,13 @@ public class Query<T> implements ContentQuery<T> {
 		int i_size = Constants.DEFAULT_PAGE_SIZE;
 		if (page instanceof Integer || page instanceof Long) {
 			i_page = ((Number) page).intValue();
-		} else if (page instanceof String) {
-			i_page = Integer.valueOf((String) page);
+		} else if (page instanceof String string) {
+			i_page = Integer.parseInt(string);
 		}
 		if (size instanceof Integer || size instanceof Long) {
 			i_size = ((Number) size).intValue();
-		} else if (size instanceof String) {
-			i_size = Integer.valueOf((String) size);
+		} else if (size instanceof String string) {
+			i_size = Integer.parseInt(string);
 		}
 		return page((int) i_page, (int) i_size);
 	}

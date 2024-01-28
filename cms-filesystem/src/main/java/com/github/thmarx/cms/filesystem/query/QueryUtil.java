@@ -21,7 +21,6 @@ package com.github.thmarx.cms.filesystem.query;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.utils.MapUtil;
 import com.github.thmarx.cms.filesystem.index.SecondaryIndex;
@@ -29,6 +28,7 @@ import com.google.common.base.Strings;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public final class QueryUtil {
-	
+
 	public static enum Operator {
 		CONTAINS,
 		CONTAINS_NOT,
@@ -54,87 +54,124 @@ public final class QueryUtil {
 		GT,
 		GTE,
 		LT,
-		LTE
-		;
+		LTE;
 	}
-	
-	public static Operator operator4String (final String operator) {
+
+	private static Map<Operator, Filter> filters = new HashMap<>();
+
+	static {
+		filters.put(Operator.EQ, (node_value, value) -> Objects.equals(node_value, value));
+		filters.put(Operator.NOT_EQ, (node_value, value) -> !Objects.equals(node_value, value));
+		filters.put(Operator.CONTAINS, (node_value, value) -> ((List) node_value).contains(value));
+		filters.put(Operator.CONTAINS_NOT, (node_value, value) -> !((List) node_value).contains(value));
+		filters.put(Operator.GT, (node_value, value) -> compare(node_value, value) > 0);
+		filters.put(Operator.GTE, (node_value, value) -> compare(node_value, value) >= 0);
+		filters.put(Operator.LT, (node_value, value) -> compare(node_value, value) < 0);
+		filters.put(Operator.LTE, (node_value, value) -> compare(node_value, value) <= 0);
+		filters.put(Operator.IN, (node_value, value) -> {
+			List<?> values = Collections.emptyList();
+			if (value instanceof List) {
+				values = (List<?>) value;
+			} else if (value.getClass().isArray()) {
+				values = Arrays.asList((Object[]) value);
+			}
+			return values.contains(node_value);
+		});
+		filters.put(Operator.NOT_IN, (node_value, value) -> {
+			List<?> values = Collections.emptyList();
+			if (value instanceof List) {
+				values = (List<?>) value;
+			} else if (value.getClass().isArray()) {
+				values = Arrays.asList((Object[]) value);
+			}
+			return !values.contains(node_value);
+		});
+	}
+
+	public static Operator operator4String(final String operator) {
 		if (Strings.isNullOrEmpty(operator)) {
 			return Operator.EQ;
 		}
 		return switch (operator) {
-			case "=" -> Operator.EQ;
-			case "!=" -> Operator.NOT_EQ;
-			case ">" -> Operator.GT;
-			case ">=" -> Operator.GTE;
-			case "<" -> Operator.LT;
-			case "<=" -> Operator.LTE;
-			default -> throw new IllegalArgumentException("unknown operator " + operator);
+			case "=" ->
+				Operator.EQ;
+			case "!=" ->
+				Operator.NOT_EQ;
+			case ">" ->
+				Operator.GT;
+			case ">=" ->
+				Operator.GTE;
+			case "<" ->
+				Operator.LT;
+			case "<=" ->
+				Operator.LTE;
+			default ->
+				throw new IllegalArgumentException("unknown operator " + operator);
 		};
 	}
 
-	protected static Map<Object, List<ContentNode>> groupby (final Stream<ContentNode> nodes, final String field) {
+	protected static Map<Object, List<ContentNode>> groupby(final Stream<ContentNode> nodes, final String field) {
 		return nodes.collect(Collectors.groupingBy((node) -> MapUtil.getValue(node.data(), field)));
 	}
-	
+
 	protected static QueryContext<?> sorted(final QueryContext<?> context, final String field, final boolean asc) {
-		
+
 		var tempNodes = context.getNodes().sorted(
 				(node1, node2) -> {
 					var value1 = MapUtil.getValue(node1.data(), field);
 					var value2 = MapUtil.getValue(node2.data(), field);
-					
+
 					return compare(value1, value2);
 				}
 		).toList();
-		
+
 		if (!asc) {
 			tempNodes = tempNodes.reversed();
 		}
-		
+
 		context.setNodes(tempNodes.stream());
-		
+
 		return context;
 	}
-	
-	private static int compare (Object o1, Object o2) {
+
+	private static int compare(Object o1, Object o2) {
 		if (Objects.equals(o1, o2)) {
 			return 0;
 		}
 		if (o1 == null) {
 			return -1;
 		}
-		if (o2 == null ) {
+		if (o2 == null) {
 			return 1;
 		}
-		
+
 		if (!o1.getClass().equals(o2.getClass())) {
 			return 0;
 		}
-				
+
 		if (o1 instanceof Float) {
-			return Float.compare((float)o1, (float)o2);
+			return Float.compare((float) o1, (float) o2);
 		} else if (o1 instanceof Double) {
-			return Double.compare((double)o1, (double)o2);
+			return Double.compare((double) o1, (double) o2);
 		} else if (o1 instanceof Short) {
-			return Short.compare((short)o1, (short)o2);
+			return Short.compare((short) o1, (short) o2);
 		} else if (o1 instanceof Integer) {
-			return Integer.compare((int)o1, (int)o2);
+			return Integer.compare((int) o1, (int) o2);
 		} else if (o1 instanceof Long) {
-			return Long.compare((long)o1, (long)o2);
+			return Long.compare((long) o1, (long) o2);
 		} else if (o1 instanceof String string) {
-			return string.compareTo((String)o2);
+			return string.compareTo((String) o2);
 		} else if (o1 instanceof Date date) {
-			return date.compareTo((Date)o2);
+			return date.compareTo((Date) o2);
 		}
-		
+
 		return 0;
 	}
 
 	protected static QueryContext<?> filteredWithIndex(final QueryContext<?> context, final String field, final Object value, final Operator operator) {
-		
+
 		if (Operator.EQ.equals(operator)) {
-			SecondaryIndex<Object> index = (SecondaryIndex<Object>) context.getIndexProviding().getOrCreateIndex(field, node -> MapUtil.getValue(node.data(), field));			
+			SecondaryIndex<Object> index = (SecondaryIndex<Object>) context.getIndexProviding().getOrCreateIndex(field, node -> MapUtil.getValue(node.data(), field));
 			context.setNodes(context.getNodes().filter(node -> index.eq(node, value)));
 			return context;
 		} else {
@@ -142,7 +179,7 @@ public final class QueryUtil {
 			return context;
 		}
 	}
-	
+
 	protected static QueryContext filtered(final QueryContext context, final String field, final Object value, final Operator operator) {
 		context.setNodes(context.getNodes().filter(createPredicate(field, value, operator)));
 		return context;
@@ -151,49 +188,18 @@ public final class QueryUtil {
 	private static Predicate<? super ContentNode> createPredicate(final String field, final Object value, final Operator operator) {
 		return (node) -> {
 			var node_value = MapUtil.getValue(node.data(), field);
-			
+
 			if (node_value == null) {
 				return false;
 			}
-			
-			if (Operator.EQ.equals(operator)) {
-				return Objects.equals(node_value, value);
-			} else if (Operator.NOT_EQ.equals(operator)) {
-				return !Objects.equals(node_value, value);
-			} else if (Operator.CONTAINS.equals(operator) && node_value instanceof List) {
-				return ((List)node_value).contains(value);
-			} else if (Operator.CONTAINS_NOT.equals(operator) && node_value instanceof List) {
-				return !((List)node_value).contains(value);
-			} else if (Operator.GT.equals(operator)) {
-				return compare(node_value, value) > 0;
-			} else if (Operator.GTE.equals(operator)) {
-				return compare(node_value, value) >= 0;
-			} else if (Operator.LT.equals(operator)) {
-				return compare(node_value, value) < 0;
-			} else if (Operator.LTE.equals(operator)) {
-				return compare(node_value, value) <= 0;
-			} else if (Operator.IN.equals(operator)) {
-				List<?> values = Collections.emptyList();
-				if (value instanceof List) {
-					values = (List<?>)value;
-				} else if (value.getClass().isArray()) {
-					values = Arrays.asList((Object[])value);
-				}
-				return values.contains(node_value);
-			} else if (Operator.NOT_IN.equals(operator)) {
-				List<?> values = Collections.emptyList();
-				if (value instanceof List) {
-					values = (List<?>)value;
-				} else if (value.getClass().isArray()) {
-					values = Arrays.asList((Object[])value);
-				}
-				return !values.contains(node_value);
+
+			if (filters.containsKey(operator)) {
+				return filters.get(operator).matches(node_value, value);
 			}
-			
+
 			log.error("unknown operation " + operator.name());
 			return false;
 		};
 	}
 
-	
 }
