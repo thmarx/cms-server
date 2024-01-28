@@ -6,6 +6,12 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.6.0
+
+* **MAINTENANCE** update markedj module [#164](https://github.com/thmarx/cms/issues/164)
+* **BUGFIX** fix broken taxonomies [#163](https://github.com/thmarx/cms/issues/163)
+* **MAINTENANCE** renaming of taxonomyfn [#162](https://github.com/thmarx/cms/issues/162)
+
 ## 4.5.1
 
 * **BUGFIX** vhost not set correctly for module handler [#159](https://github.com/thmarx/cms/issues/159)

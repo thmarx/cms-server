@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="distribution" default="distribution" basedir=".">
-	<property name="cms.version">4.5.1</property>
+	<property name="cms.version">4.6.0</property>
 	
-	<property name="markedj.version">v2.2.0</property>
+	<property name="markedj.version">v2.3.0</property>
 	<property name="flexmark.version">v1.1.0</property>
 	<property name="markedjs.version">v1.1.0</property>
 	<property name="pebble.version">v1.1.0</property>
