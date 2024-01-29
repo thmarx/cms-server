@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.7.0
+
+* **FEATURE** extend content queries with custom operator [#160](https://github.com/thmarx/cms/issues/160)
+
 ## 4.6.0
 
 * **MAINTENANCE** update markedj module [#164](https://github.com/thmarx/cms/issues/164)
