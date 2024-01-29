@@ -25,7 +25,6 @@ package com.github.thmarx.cms.request;
 import com.github.thmarx.cms.api.extensions.http.ExtensionHttpHandler;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.model.Parameter;
-import com.github.thmarx.cms.content.ShortCodes;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
 import com.github.thmarx.cms.extensions.TemplateFunctionExtension;
 import com.github.thmarx.cms.extensions.TemplateSupplierExtension;
@@ -34,13 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 import org.graalvm.polyglot.Context;
 
 /**
@@ -59,20 +56,21 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	@Getter
 	private final Map<String, Function<Parameter, String>> shortCodes = new HashMap<>();
 	
-	private final Map<String, BiConsumer<Request, Response>> routes = new HashMap<>();
+	@Getter
+	private final Map<String, BiPredicate<Object, Object>> queryOperations = new HashMap<>();
 
 	@Getter
 	private final Context context;
 	private final Context themeContext;
 	
+	public void registerQueryOperation (final String operation, final BiPredicate<Object, Object> predicate) {
+		queryOperations.put(operation, predicate);
+	}
+	
 	public void registerHttpExtension(final String method, final String path, final ExtensionHttpHandler handler) {
 		httpHandlerExtensions.add(new HttpHandlerExtension(method, path, handler));
 	}
 	
-	public void registerRoute(final String path, final BiConsumer<Request, Response> handler) {
-		routes.put(path, handler);
-	}
-
 	public Optional<HttpHandlerExtension> findHttpHandler (final String method, final String path) {
 		return httpHandlerExtensions.stream().filter(handler -> handler.method().equalsIgnoreCase(method) && handler.path().equalsIgnoreCase(path)).findFirst();
 	}

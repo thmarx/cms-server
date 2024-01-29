@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.filesystem.query;
+package com.github.thmarx.cms.modules.example;
 
 /*-
  * #%L
- * cms-filesystem
+ * example-module
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,34 +22,25 @@ package com.github.thmarx.cms.filesystem.query;
  * #L%
  */
 
-import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.filesystem.index.IndexProviding;
-import java.util.Map;
+import com.github.thmarx.cms.api.extensions.ContentQueryOperatorExtensionPoint;
+import com.github.thmarx.modules.api.annotation.Extension;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class QueryContext<T> {
+@Extension(ContentQueryOperatorExtensionPoint.class)
+public class AnyContentQueryOperator extends ContentQueryOperatorExtensionPoint {
 
-	private Stream<ContentNode> nodes;
+	@Override
+	public String getOperator() {
+		return "any";
+	}
 
-	private ExcerptMapperFunction<T> nodeMapper;
-
-	private IndexProviding indexProviding;
-
-	private boolean useSecondaryIndex = false;
+	@Override
+	public BiPredicate<Object, Object> getPredicate() {
+		return (node_value, value) -> true;
+	}
 	
-	private String contentType = Constants.DEFAULT_CONTENT_TYPE;
-	
-	private Map<String, BiPredicate<Object, Object>> queryOperations;
 }

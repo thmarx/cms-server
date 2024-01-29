@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,6 +89,14 @@ public final class QueryUtil {
 		});
 	}
 
+	private static List<String> operations = List.of(
+			"=" , "!=", ">", ">=", "<", "<=",
+			"in", "not in", "contains", "not contains"
+			);
+	public static boolean isDefaultOperation (final String operation) {
+		return operations.contains(operation);
+	}
+	
 	public static Operator operator4String(final String operator) {
 		if (Strings.isNullOrEmpty(operator)) {
 			return Operator.EQ;
@@ -210,4 +219,21 @@ public final class QueryUtil {
 		};
 	}
 
+	protected static QueryContext filter_extension(final QueryContext context, final String field, final Object value, final BiPredicate<Object, Object> predicate) {
+		context.setNodes(context.getNodes().filter(createExtensionPredicate(field, value, predicate)));
+		return context;
+	}
+
+	private static Predicate<? super ContentNode> createExtensionPredicate(final String field, final Object value, final BiPredicate<Object, Object> predicate) {
+		return (node) -> {
+			var node_value = MapUtil.getValue(node.data(), field);
+
+			if (node_value == null) {
+				return false;
+			}
+			
+			return predicate.test(node_value, value);
+		};
+	}
+	
 }

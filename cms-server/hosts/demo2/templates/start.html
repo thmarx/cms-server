@@ -10,6 +10,12 @@
 	<h2>{{entry.name}}</h2>
 {% endfor %}
 
+<h1>featured with in with operator</h1>
+{% set news = query.create("/blog").where('featured', "in", [true, false]).get() %}
+{% for entry in news %}
+	<h2>{{entry.name}}</h2>
+{% endfor %}
+
 {{ getHello.apply("thorsten") }}
 
 {{ messages.getLabel("labels", "contact.form.title", ['test']) }}

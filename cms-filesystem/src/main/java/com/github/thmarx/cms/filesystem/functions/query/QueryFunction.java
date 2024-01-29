@@ -30,9 +30,13 @@ import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.filesystem.query.Query;
 import com.google.common.base.Strings;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import lombok.Setter;
 
 /**
@@ -42,11 +46,19 @@ import lombok.Setter;
 public class QueryFunction extends AbstractCurrentNodeFunction {
 
 	BiFunction<ContentNode, Integer, ListNode> nodeMapper = null;
+	Map<String, BiPredicate<Object, Object>> extendedQueryOperations = new HashMap<>();
 	
 	@Setter
 	private String contentType;
 
 	public QueryFunction(DB db, Path currentNode, RequestContext context) {
+		this(
+				db, 
+				currentNode,
+				context, Map.of());
+	}
+	
+	public QueryFunction(DB db, Path currentNode, RequestContext context, final Map<String, BiPredicate<Object, Object>> queryOperations) {
 		super(
 				db, 
 				currentNode, 
@@ -54,6 +66,7 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 				context.get(MarkdownRendererFeature.class).markdownRenderer(), 
 				context.get(ContentNodeMapperFeature.class).contentNodeMapper(),
 				context);
+		this.extendedQueryOperations = queryOperations;
 	}
 	
 	private BiFunction<ContentNode, Integer, ListNode> nodeMapper() {
@@ -69,6 +82,7 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 	public ContentQuery create() {
 		
 		var query = db.getContent().query(nodeMapper());
+		((Query)query).setCustomOperators(extendedQueryOperations);
 		
 		if (!Strings.isNullOrEmpty(contentType)) {
 			query.contentType(contentType);
@@ -78,6 +92,7 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 
 	public ContentQuery create(final String startUri) {
 		var query = db.getContent().query(startUri, nodeMapper());
+		((Query)query).setCustomOperators(extendedQueryOperations);
 		if (!Strings.isNullOrEmpty(contentType)) {
 			query.contentType(contentType);
 		}

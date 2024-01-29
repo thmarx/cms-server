@@ -28,6 +28,7 @@ import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
+import com.github.thmarx.cms.api.extensions.ContentQueryOperatorExtensionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
 import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -43,6 +44,7 @@ import com.github.thmarx.cms.filesystem.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.api.utils.SectionUtil;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.feature.features.ModuleManagerFeature;
 import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.content.template.LinkFunction;
 import com.github.thmarx.cms.content.views.model.View;
@@ -59,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
@@ -170,7 +173,16 @@ public class ContentRenderer {
 	}
 
 	protected QueryFunction createQueryFunction(final Path contentFile, final RequestContext context) {
-		var queryFn = new QueryFunction(db, contentFile, context);
+		
+		Map<String, BiPredicate<Object, Object>> customOperators = new HashMap<>();
+		
+		customOperators.putAll(context.get(RequestExtensions.class).getQueryOperations());
+		
+		moduleManager
+				.extensions(ContentQueryOperatorExtensionPoint.class)
+				.forEach(extension -> customOperators.put(extension.getOperator(), extension.getPredicate()));
+		
+		var queryFn = new QueryFunction(db, contentFile, context, customOperators);
 		queryFn.setContentType(siteProperties.defaultContentType());
 		return queryFn;
 	}

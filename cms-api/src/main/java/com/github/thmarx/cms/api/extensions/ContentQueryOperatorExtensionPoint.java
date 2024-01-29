@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.filesystem.query;
+package com.github.thmarx.cms.api.extensions;
 
 /*-
  * #%L
- * cms-filesystem
+ * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,34 +22,29 @@ package com.github.thmarx.cms.filesystem.query;
  * #L%
  */
 
-import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.filesystem.index.IndexProviding;
-import java.util.Map;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class QueryContext<T> {
-
-	private Stream<ContentNode> nodes;
-
-	private ExcerptMapperFunction<T> nodeMapper;
-
-	private IndexProviding indexProviding;
-
-	private boolean useSecondaryIndex = false;
+public abstract class ContentQueryOperatorExtensionPoint extends AbstractExtensionPoint {
 	
-	private String contentType = Constants.DEFAULT_CONTENT_TYPE;
+	/**
+	 * The name of the operator
+	 * 
+	 * example: query.where("field", "operator", "value")
+	 * 
+	 * @return 
+	 */
+	public abstract String getOperator ();
 	
-	private Map<String, BiPredicate<Object, Object>> queryOperations;
+	/**
+	 * query.where("field", "operator", "value")
+	 * 
+	 * The BiPredicate test method is called with node value for field as first and value as second parameter
+	 * 
+	 * @return 
+	 */
+	public abstract BiPredicate<Object, Object> getPredicate ();
 }

@@ -77,7 +77,7 @@ public class QueryTest {
 		nodes.add(node);
 		node = new ContentNode("/test1", "test1.md", Map.of(
 				"featured", false,
-				"index", 1, 
+				"index", 1,
 				Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now().minus(1, ChronoUnit.DAYS)),
 				"tags", List.of("three", "four")
 		));
@@ -89,7 +89,7 @@ public class QueryTest {
 				"tags", List.of("one", "two"))
 		);
 		nodes.add(node);
-		
+
 		node = new ContentNode("/json", "test-json.md", Map.of(
 				"featured", false,
 				"index", 2,
@@ -101,10 +101,21 @@ public class QueryTest {
 	}
 
 	protected Query<ContentNode> createQuery() {
-		return new Query<>(nodes, indexProviding, (node, i) -> node);
+		var query = new Query<>(nodes, indexProviding, (node, i) -> node);
+		query.setCustomOperators(Map.of(
+				"none", (node_value, value) -> false
+		));
+
+		return query;
 	}
-	
-	
+
+	@Test
+	public void test_custom_operator() {
+		Query<ContentNode> query = createQuery();
+		var nodes = query.where("featured", "none", true).get();
+		Assertions.assertThat(nodes).hasSize(0);
+	}
+
 	@Test
 	public void test_eq() {
 		Query<ContentNode> query = createQuery();
@@ -182,7 +193,7 @@ public class QueryTest {
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
 	}
-	
+
 	@Test
 	public void test_not_contains() {
 		Query<ContentNode> query = createQuery();
@@ -190,7 +201,7 @@ public class QueryTest {
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
-	
+
 	@Test
 	public void test_not_contains_operator() {
 		Query<ContentNode> query = createQuery();
@@ -248,14 +259,14 @@ public class QueryTest {
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
 	}
-	
+
 	@Test
 	public void test_in_operator() {
 		Query<ContentNode> query = createQuery();
 		var nodes = query.where("index", "in", List.of(1, 2)).get();
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
-		
+
 		query = createQuery();
 		nodes = query.where("index", "in", List.of(1, 2).toArray()).get();
 		Assertions.assertThat(nodes).hasSize(2);
@@ -269,20 +280,20 @@ public class QueryTest {
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test2");
 	}
-	
+
 	@Test
 	public void test_not_in_operator() {
 		Query<ContentNode> query = createQuery();
 		var nodes = query.where("index", "not in", List.of(1, 3, 4)).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test2");
-		
+
 		query = createQuery();
 		nodes = query.where("index", "not in", List.of(1, 3, 4).toArray()).get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test2");
 	}
-	
+
 	@Test
 	public void test_json() {
 		Query<ContentNode> query = createQuery();
@@ -290,13 +301,13 @@ public class QueryTest {
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/json");
 	}
-	
+
 	@Test
 	public void test_where_not_null() {
 		Query<ContentNode> query = createQuery();
 		var nodes = query.where("index", "!=", null).get();
 		Assertions.assertThat(nodes).hasSize(2);
-		
+
 		query = createQuery();
 		query.where("index", "=", null).get();
 		Assertions.assertThat(nodes).hasSize(2);

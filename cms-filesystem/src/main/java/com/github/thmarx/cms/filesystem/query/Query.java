@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 /**
@@ -49,22 +50,19 @@ public class Query<T> implements ContentQuery<T> {
 		this(nodes.stream(), indexProviding, new ExcerptMapperFunction<>(nodeMapper));
 	}
 
-	public Query(Collection<ContentNode> nodes, IndexProviding indexProviding, ExcerptMapperFunction<T> nodeMapper) {
-		this(nodes.stream(), indexProviding, nodeMapper);
-	}
-
-	public Query(Stream<ContentNode> nodes, IndexProviding indexProviding, BiFunction<ContentNode, Integer, T> nodeMapper) {
-		this(nodes, indexProviding, new ExcerptMapperFunction<>(nodeMapper));
-	}
-
 	public Query(Stream<ContentNode> nodes, IndexProviding indexProviding, ExcerptMapperFunction<T> nodeMapper) {
-		this(new QueryContext(nodes, nodeMapper, indexProviding, false, Constants.DEFAULT_CONTENT_TYPE));
+		this(new QueryContext(nodes, nodeMapper, indexProviding, false, Constants.DEFAULT_CONTENT_TYPE, Map.of()));
 	}
 
 	public Query(QueryContext<T> context) {
 		this.context = context;
 	}
 
+	public Query<T> setCustomOperators (Map<String, BiPredicate<Object, Object>> queryOperations) {
+		context.setQueryOperations(queryOperations);
+		return this;
+	}
+	
 	@Override
 	public Query<T> excerpt(final long excerptLength) {
 		context.getNodeMapper().setExcerpt((int)excerptLength);
@@ -78,7 +76,12 @@ public class Query<T> implements ContentQuery<T> {
 
 	@Override
 	public Query<T> where(final String field, final String operator, final Object value) {
-		return where(field, QueryUtil.operator4String(operator), value);
+		if (QueryUtil.isDefaultOperation(operator)) {
+			return where(field, QueryUtil.operator4String(operator), value);
+		} else if (context.getQueryOperations().containsKey(operator)) {
+			return new Query<>(QueryUtil.filter_extension(context, field, value, context.getQueryOperations().get(operator)));
+		}
+		throw new IllegalArgumentException("unknown operator " + operator);
 	}
 
 	@Override
