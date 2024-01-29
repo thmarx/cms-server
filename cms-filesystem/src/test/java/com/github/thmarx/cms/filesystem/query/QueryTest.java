@@ -176,9 +176,25 @@ public class QueryTest {
 	}
 
 	@Test
-	public void test_contains_not() {
+	public void test_contains_operator() {
+		Query<ContentNode> query = createQuery();
+		var nodes = query.where("tags", "contains", "one").get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test2");
+	}
+	
+	@Test
+	public void test_not_contains() {
 		Query<ContentNode> query = createQuery();
 		var nodes = query.whereNotContains("tags", "one").get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
+	}
+	
+	@Test
+	public void test_not_contains_operator() {
+		Query<ContentNode> query = createQuery();
+		var nodes = query.where("tags", "not contains", "one").get();
 		Assertions.assertThat(nodes).hasSize(1);
 		Assertions.assertThat(nodes.get(0).uri()).isEqualTo("/test1");
 	}
@@ -232,13 +248,39 @@ public class QueryTest {
 		Assertions.assertThat(nodes).hasSize(2);
 		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
 	}
+	
+	@Test
+	public void test_in_operator() {
+		Query<ContentNode> query = createQuery();
+		var nodes = query.where("index", "in", List.of(1, 2)).get();
+		Assertions.assertThat(nodes).hasSize(2);
+		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
+		
+		query = createQuery();
+		nodes = query.where("index", "in", List.of(1, 2).toArray()).get();
+		Assertions.assertThat(nodes).hasSize(2);
+		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1", "/test2");
+	}
 
 	@Test
 	public void test_not_in() {
 		Query<ContentNode> query = createQuery();
-		var nodes = query.whereIn("index", 1, 3, 4).get();
+		var nodes = query.whereNotIn("index", 1, 3, 4).get();
 		Assertions.assertThat(nodes).hasSize(1);
-		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test1");
+		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test2");
+	}
+	
+	@Test
+	public void test_not_in_operator() {
+		Query<ContentNode> query = createQuery();
+		var nodes = query.where("index", "not in", List.of(1, 3, 4)).get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test2");
+		
+		query = createQuery();
+		nodes = query.where("index", "not in", List.of(1, 3, 4).toArray()).get();
+		Assertions.assertThat(nodes).hasSize(1);
+		Assertions.assertThat(nodes.stream().map(ContentNode::uri).toList()).contains("/test2");
 	}
 	
 	@Test

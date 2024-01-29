@@ -105,6 +105,14 @@ public final class QueryUtil {
 				Operator.LT;
 			case "<=" ->
 				Operator.LTE;
+			case "in" ->
+				Operator.IN;
+			case "not in" ->
+				Operator.NOT_IN;
+			case "contains" ->
+				Operator.CONTAINS;
+			case "not contains" ->
+				Operator.CONTAINS_NOT;
 			default ->
 				throw new IllegalArgumentException("unknown operator " + operator);
 		};
