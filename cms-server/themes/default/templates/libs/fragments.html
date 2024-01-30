@@ -13,10 +13,10 @@
 		/*]]>*/
 	</script>
 
-	<link rel="stylesheet" th:href="${links.createUrl('/themes/default/assets/bootstrap-5.3.2/css/bootstrap.min.css')}" defer />
-	<link th:href="${links.createUrl('/themes/default/assets/bootstrap-icons-1.11.1/bootstrap-icons.min.css')}" rel="stylesheet" />
-	<script th:src="${links.createUrl('/themes/default/assets/prism-1.29.0/prism.js')}" defer></script>
-	<link rel="stylesheet" th:href="${links.createUrl('/themes/default/assets/prism-1.29.0/prism.css')}" defer />
+	<link rel="stylesheet" th:href="${links.createUrl('/theme/assets/bootstrap-5.3.2/css/bootstrap.min.css')}" defer />
+	<link th:href="${links.createUrl('/theme/assets/bootstrap-icons-1.11.1/bootstrap-icons.min.css')}" rel="stylesheet" />
+	<script th:src="${links.createUrl('/theme/assets/prism-1.29.0/prism.js')}" defer></script>
+	<link rel="stylesheet" th:href="${links.createUrl('/theme/assets/prism-1.29.0/prism.css')}" defer />
 
 	<th:block th:each="header : ${hooks.call('theme/header').results()}">
 		<th:block th:utext="${header}"></th:block>
@@ -75,7 +75,7 @@
 	</div>
 
 	<th:block th:fragment="footer_scripts">
-		<script th:src="${links.createUrl('/themes/default/assets/bootstrap-5.3.2/js/bootstrap.bundle.min.js')}"></script>
+		<script th:src="${links.createUrl('/theme/assets/bootstrap-5.3.2/js/bootstrap.bundle.min.js')}"></script>
 	</th:block>
 
 </body>

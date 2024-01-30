@@ -22,9 +22,10 @@ package com.github.thmarx.cms.server.jetty.handler;
  * #L%
  */
 import com.github.thmarx.cms.api.content.TaxonomyResponse;
-import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.content.TaxonomyResolver;
 import com.github.thmarx.cms.request.RequestContextFactory;
+import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +48,8 @@ public class JettyTaxonomyHandler extends Handler.Abstract {
 	
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		try (var requestContext = requestContextFactory.create(request)) {
-			
-			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
+		var requestContext = (RequestContext) request.getAttribute(RequestContextFilter.REQUEST_CONTEXT);
+		try {
 			
 			if (!taxonomyResolver.isTaxonomy(requestContext)) {
 				return false;
@@ -65,8 +65,6 @@ public class JettyTaxonomyHandler extends Handler.Abstract {
 			
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 		return false;
 	}

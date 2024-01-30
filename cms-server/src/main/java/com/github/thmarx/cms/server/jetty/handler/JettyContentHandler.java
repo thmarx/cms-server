@@ -23,10 +23,11 @@ package com.github.thmarx.cms.server.jetty.handler;
  */
 import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.api.content.ContentResponse;
-import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -41,22 +42,22 @@ import org.eclipse.jetty.util.Callback;
  *
  * @author t.marx
  */
-@RequiredArgsConstructor(onConstructor = @__({@Inject}))
+@RequiredArgsConstructor(onConstructor = @__({
+	@Inject}))
 @Slf4j
 public class JettyContentHandler extends Handler.Abstract {
+
 	private final ContentResolver contentResolver;
 	private final RequestContextFactory requestContextFactory;
-	
+
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
 //		var uri = request.getHttpURI().getPath();
 		var uri = RequestUtil.getContentPath(request);
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
-		try (
-				var requestContext = requestContextFactory.create(request)) {
-			
-			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
-			
+		var requestContext = (RequestContext) request.getAttribute(RequestContextFilter.REQUEST_CONTEXT);
+
+		try {
 			Optional<ContentResponse> content = contentResolver.getContent(requestContext);
 			response.setStatus(200);
 
@@ -73,7 +74,7 @@ public class JettyContentHandler extends Handler.Abstract {
 				}
 
 			}
-			
+
 			var contentResponse = content.get();
 			if (contentResponse.isRedirect()) {
 				response.getHeaders().add("Location", contentResponse.node().getRedirectLocation());
@@ -83,14 +84,12 @@ public class JettyContentHandler extends Handler.Abstract {
 				response.getHeaders().add("Content-Type", "%s; charset=utf-8".formatted(content.get().contentType()));
 				Content.Sink.write(response, true, content.get().content(), callback);
 			}
-			
+
 		} catch (Exception e) {
 			log.error("", e);
 			response.setStatus(500);
 			response.getHeaders().add("Content-Type", "text/html; charset=utf-8");
 			callback.succeeded();
-		} finally {
-			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 		return true;
 	}

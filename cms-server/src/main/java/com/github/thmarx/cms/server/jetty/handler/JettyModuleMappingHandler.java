@@ -22,15 +22,8 @@ package com.github.thmarx.cms.server.jetty.handler;
  * #L%
  */
 import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
-import com.github.thmarx.cms.api.extensions.HttpRouteExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
-import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
-import com.github.thmarx.cms.api.utils.RequestUtil;
-import com.github.thmarx.cms.request.RequestContextFactory;
-import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.ModuleManager;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -48,25 +41,24 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class JettyModuleMappingHandler extends Handler.Abstract {
 
+	public static final String PATH = "module";
+	
 	private final ModuleManager moduleManager;
 	private final List<String> activeModules;
-	private final RequestContextFactory requestContextFactory;
-	
+
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		
-		try (var requestContext = requestContextFactory.create(request)) {			
-			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
-			
+
+		try {
 			String moduleId = getModuleID(request);
-			
+
 			if (!activeModules.contains(moduleId)) {
 				Response.writeError(request, response, callback, 404);
 				return false;
 			}
-			
+
 			var uri = getModuleUri(request);
-			
+
 			Optional<Mapping> firstMatch = moduleManager.module(moduleId).extensions(HttpHandlerExtensionPoint.class)
 					.stream()
 					.filter(extension -> extension.getMapping().getMatchingHandler(uri).isPresent())
@@ -78,31 +70,29 @@ public class JettyModuleMappingHandler extends Handler.Abstract {
 				var handler = mapping.getMatchingHandler(uri).get();
 				return handler.handle(request, response, callback);
 			}
-			
+
 			Response.writeError(request, response, callback, 404);
 			return true;
 		} catch (Exception e) {
 			log.error(null, e);
 			callback.failed(e);
 			return true;
-		} finally {
-			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 
 	}
 
 	private String getModuleUri(Request request) {
 		var modulePath = getModulePath(request);
-		if (modulePath.contains("/")) {
-			return modulePath.substring(modulePath.indexOf("/"));
-		}
-		return modulePath;
+		
+		var moduleID = getModuleID(request);
+		
+		return modulePath.replace(PATH + "/" + moduleID, "");
 	}
 
 	private String getModuleID(Request request) {
 		var modulePath = getModulePath(request);
 		if (modulePath.contains("/")) {
-			return modulePath.split("/")[0];
+			return modulePath.split("/")[1];
 		}
 		return modulePath;
 	}

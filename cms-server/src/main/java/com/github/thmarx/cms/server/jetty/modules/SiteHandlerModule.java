@@ -22,20 +22,28 @@ package com.github.thmarx.cms.server.jetty.modules;
  * #L%
  */
 import com.github.thmarx.cms.api.ServerProperties;
+import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
 import com.github.thmarx.cms.server.jetty.handler.JettyContentHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyExtensionHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyMediaHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyModuleMappingHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyRouteHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyRoutesHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyTaxonomyHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyViewHandler;
+import com.github.thmarx.cms.utils.SiteUtils;
+import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.handler.ResourceHandler;
@@ -55,6 +63,14 @@ public class SiteHandlerModule extends AbstractModule {
 		bind(JettyTaxonomyHandler.class).in(Singleton.class);
 		bind(JettyRouteHandler.class).in(Singleton.class);
 		bind(JettyRoutesHandler.class).in(Singleton.class);
+		
+		bind(JettyExtensionHandler.class).in(Singleton.class);
+	}
+	
+	@Provides
+	@Singleton
+	public JettyModuleMappingHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
+		return new JettyModuleMappingHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
 	}
 	
 	@Provides

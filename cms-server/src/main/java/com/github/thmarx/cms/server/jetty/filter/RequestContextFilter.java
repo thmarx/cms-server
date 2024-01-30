@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty;
+package com.github.thmarx.cms.server.jetty.filter;
 
 /*-
  * #%L
@@ -21,10 +21,9 @@ package com.github.thmarx.cms.server.jetty;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
+import com.github.thmarx.cms.request.RequestContextFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.ThreadContext;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -35,24 +34,31 @@ import org.eclipse.jetty.util.Callback;
  * @author t.marx
  */
 @Slf4j
-public class JettyLoggingFilterHandler extends Handler.Wrapper {
+public class RequestContextFilter extends Handler.Wrapper {
 
-	private final SiteProperties siteProperties;
+	private final RequestContextFactory requestContextFactory;
 	
-	public JettyLoggingFilterHandler (final Handler handler, final SiteProperties siteProperties) {
+	public static final String REQUEST_CONTEXT = "_requestContext";
+
+	public RequestContextFilter(final Handler handler, final RequestContextFactory requestContextFactory) {
 		super(handler);
-		this.siteProperties = siteProperties;
+		this.requestContextFactory = requestContextFactory;
 	}
-	
+
 	@Override
 	public boolean handle(Request rqst, Response rspns, Callback clbck) throws Exception {
-		try {
+		try (
+				var requestContext = requestContextFactory.create(rqst)) {
+
+			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
 			
-			ThreadContext.put("site", siteProperties.id());
+			rqst.setAttribute(REQUEST_CONTEXT, requestContext);
+
 			return super.handle(rqst, rspns, clbck);
-		}finally {
-			ThreadContext.clearAll();
+
+		} finally {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 	}
-	
+
 }

@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty.handler;
+package com.github.thmarx.cms.server.jetty.filter;
 
 /*-
  * #%L
@@ -21,42 +21,38 @@ package com.github.thmarx.cms.server.jetty.handler;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.extensions.HttpRouteExtensionPoint;
-import com.github.thmarx.cms.api.utils.RequestUtil;
-import com.github.thmarx.modules.api.ModuleManager;
-import java.util.Optional;
-import lombok.RequiredArgsConstructor;
+
+import com.github.thmarx.cms.api.SiteProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.ThreadContext;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
-import com.google.inject.Inject;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor(onConstructor = @__({
-	@Inject}))
 @Slf4j
-public class JettyRouteHandler extends Handler.Abstract {
+public class RequestLoggingFilter extends Handler.Wrapper {
 
-	private final ModuleManager moduleManager;
-
-	@Override
-	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-
-		String route = RequestUtil.getContentPath(request);
-
-		Optional<HttpRouteExtensionPoint> findRoute = moduleManager.extensions(HttpRouteExtensionPoint.class).stream()
-				.filter(extension -> extension.getRoute().equals(route)).findFirst();
-
-		if (findRoute.isPresent()) {
-			findRoute.get().handle(request, response, callback);
-			return true;
-		}
-
-		return false;
+	private final SiteProperties siteProperties;
+	
+	public RequestLoggingFilter (final Handler handler, final SiteProperties siteProperties) {
+		super(handler);
+		this.siteProperties = siteProperties;
 	}
+	
+	@Override
+	public boolean handle(Request rqst, Response rspns, Callback clbck) throws Exception {
+		try {
+			
+			ThreadContext.put("site", siteProperties.id());
+			return super.handle(rqst, rspns, clbck);
+		}finally {
+			ThreadContext.clearAll();
+		}
+	}
+	
 }

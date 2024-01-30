@@ -45,6 +45,7 @@ import com.github.thmarx.cms.server.jetty.modules.ModulesModule;
 import com.github.thmarx.cms.server.jetty.modules.SiteHandlerModule;
 import com.github.thmarx.cms.server.jetty.modules.SiteModule;
 import com.github.thmarx.cms.server.jetty.modules.ThemeModule;
+import com.github.thmarx.cms.utils.SiteUtils;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -149,12 +150,9 @@ public class VHost {
 	}
 
 	protected List<String> getActiveModules() {
-		List<String> activeModules = new ArrayList<>();
-		activeModules.addAll(injector.getInstance(SiteProperties.class).activeModules());
-		var theme = injector.getInstance(Theme.class);
-		if (!theme.empty()) {
-			activeModules.addAll(theme.properties().activeModules());
-		}
-		return activeModules;
+		return SiteUtils.getActiveModules(
+				injector.getInstance(SiteProperties.class), 
+				injector.getInstance(Theme.class)
+		);
 	}
 }

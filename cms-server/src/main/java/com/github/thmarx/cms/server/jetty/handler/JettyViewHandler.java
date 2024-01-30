@@ -22,9 +22,9 @@ package com.github.thmarx.cms.server.jetty.handler;
  * #L%
  */
 import com.github.thmarx.cms.api.content.ContentResponse;
-import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.content.ViewResolver;
-import com.github.thmarx.cms.request.RequestContextFactory;
+import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -39,19 +39,18 @@ import org.eclipse.jetty.util.Callback;
  *
  * @author t.marx
  */
-@RequiredArgsConstructor(onConstructor = @__({@Inject}))
+@RequiredArgsConstructor(onConstructor = @__({
+	@Inject}))
 @Slf4j
 public class JettyViewHandler extends Handler.Abstract {
+
 	private final ViewResolver viewResolver;
-	private final RequestContextFactory requestContextFactory;
-	
+
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-		try (
-				var requestContext = requestContextFactory.create(request)) {
-			
-			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
-			
+		var requestContext = (RequestContext) request.getAttribute(RequestContextFilter.REQUEST_CONTEXT);
+		try {
+
 			Optional<ContentResponse> viewResponse = viewResolver.getViewContent(requestContext);
 			if (viewResponse.isPresent()) {
 				response.setStatus(200);
@@ -59,11 +58,9 @@ public class JettyViewHandler extends Handler.Abstract {
 				Content.Sink.write(response, true, viewResponse.get().content(), callback);
 				return true;
 			}
-			
+
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 		return false;
 	}

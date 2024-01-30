@@ -23,9 +23,7 @@ package com.github.thmarx.cms.server.jetty.handler;
  */
 import com.github.thmarx.cms.api.extensions.HttpRoutesExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
-import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.utils.RequestUtil;
-import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Inject;
 import java.util.Optional;
@@ -45,15 +43,12 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class JettyRoutesHandler extends Handler.Abstract {
 
-	private final RequestContextFactory requestContextFactory;
 	private final ModuleManager moduleManager;
 
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
 
-		try (var requestContext = requestContextFactory.create(request)) {
-			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
-
+		try {
 			String route = "/" + RequestUtil.getContentPath(request);
 
 			Optional<Mapping> firstMatch = moduleManager.extensions(HttpRoutesExtensionPoint.class)
@@ -74,8 +69,6 @@ public class JettyRoutesHandler extends Handler.Abstract {
 			log.error(null, e);
 			callback.failed(e);
 			return true;
-		} finally {
-			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
 	}
 }

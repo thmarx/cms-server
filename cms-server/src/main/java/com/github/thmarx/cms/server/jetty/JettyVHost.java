@@ -21,6 +21,8 @@ package com.github.thmarx.cms.server.jetty;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.server.jetty.filter.RequestLoggingFilter;
+import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.eventbus.EventBus;
@@ -37,7 +39,6 @@ import com.github.thmarx.cms.server.jetty.handler.JettyRouteHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyRoutesHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyTaxonomyHandler;
 import com.github.thmarx.cms.server.jetty.handler.JettyViewHandler;
-import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import java.nio.file.Path;
@@ -63,18 +64,18 @@ public class JettyVHost extends VHost {
 	}
 
 	public Handler httpHandler() {
-		
+
 		var contentHandler = injector.getInstance(JettyContentHandler.class);
 		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
 		var viewHandler = injector.getInstance(JettyViewHandler.class);
 		var routeHandler = injector.getInstance(JettyRouteHandler.class);
 		var routesHandler = injector.getInstance(JettyRoutesHandler.class);
-		
+
 		var defaultHandlerSequence = new Handler.Sequence(
-				routeHandler, 
+				routeHandler,
 				routesHandler,
-				viewHandler, 
-				taxonomyHandler, 
+				viewHandler,
+				taxonomyHandler,
 				contentHandler
 		);
 
@@ -87,44 +88,37 @@ public class JettyVHost extends VHost {
 		faviconHandler.setBaseResource(new FileFolderPathResource(assetBase.resolve("favicon.ico")));
 
 		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
-		pathMappingsHandler.addMapping(PathSpec.from("/"), defaultHandlerSequence);
+		pathMappingsHandler.addMapping(
+				PathSpec.from("/"),
+				new RequestContextFilter(defaultHandlerSequence, injector.getInstance(RequestContextFactory.class))
+		);
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
 
 		var assetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("site")));
 		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, assetsMediaManager);
 		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
-
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
+		pathMappingsHandler.addMapping(
+				PathSpec.from("/" + JettyModuleMappingHandler.PATH + "/*"),
+				new RequestContextFilter(injector.getInstance(JettyModuleMappingHandler.class), injector.getInstance(RequestContextFactory.class))
+		);
+
+		pathMappingsHandler.addMapping(
+				PathSpec.from("/" + JettyExtensionHandler.PATH + "/*"),
+				new RequestContextFilter(injector.getInstance(JettyExtensionHandler.class), injector.getInstance(RequestContextFactory.class))
+		);
+
 		ContextHandler defaultContextHandler = new ContextHandler(
-				pathMappingsHandler, 
+				pathMappingsHandler,
 				injector.getInstance(SiteProperties.class).contextPath()
 		);
-
-		var moduleHandler = new JettyModuleMappingHandler(
-				injector.getInstance(ModuleManager.class), 
-				getActiveModules(),
-				injector.getInstance(RequestContextFactory.class)
-		);
-		ContextHandler moduleContextHandler = new ContextHandler(moduleHandler, appendContextIfNeeded("/module"));
-
-		var extensionHandler = new JettyExtensionHandler(
-				injector.getInstance(RequestContextFactory.class)
-		);
-		ContextHandler extensionContextHandler = new ContextHandler(extensionHandler, appendContextIfNeeded("/extension"));
-		
-
 		defaultContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
-		moduleContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
-		extensionContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
-		
+
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection(
-				defaultContextHandler,
-				moduleContextHandler,
-				extensionContextHandler
+				defaultContextHandler
 		);
-		
 
 		if (!injector.getInstance(Theme.class).empty()) {
 			var themeContextHandler = themeContextHandler();
@@ -132,7 +126,7 @@ public class JettyVHost extends VHost {
 			contextCollection.addHandler(themeContextHandler);
 		}
 
-		JettyLoggingFilterHandler logContextHandler = new JettyLoggingFilterHandler(contextCollection, injector.getInstance(SiteProperties.class));
+		RequestLoggingFilter logContextHandler = new RequestLoggingFilter(contextCollection, injector.getInstance(SiteProperties.class));
 
 		GzipHandler gzipHandler = new GzipHandler(logContextHandler);
 		gzipHandler.setMinGzipSize(1024);
@@ -143,14 +137,14 @@ public class JettyVHost extends VHost {
 
 		return gzipHandler;
 	}
-	
-	private String appendContextIfNeeded (final String path) {
+
+	private String appendContextIfNeeded(final String path) {
 		var contextPath = injector.getInstance(SiteProperties.class).contextPath();
-		
+
 		if ("/".equals(contextPath)) {
 			return path;
 		}
-		
+
 		return contextPath + path;
 	}
 
@@ -164,6 +158,6 @@ public class JettyVHost extends VHost {
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
-		return new ContextHandler(pathMappingsHandler, appendContextIfNeeded("/themes/" + injector.getInstance(Theme.class).getName()));
+		return new ContextHandler(pathMappingsHandler, appendContextIfNeeded("/theme"));
 	}
 }
