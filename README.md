@@ -6,6 +6,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.8.0
+
+* **MAINTENANCE** optimize request context creation [#165](https://github.com/thmarx/cms/issues/165)
+* **MAINTENANCE** refactor theme loading [#166](https://github.com/thmarx/cms/issues/166)
+
 ## 4.7.0
 
 * **FEATURE** extend content queries with custom operator [#160](https://github.com/thmarx/cms/issues/160)
