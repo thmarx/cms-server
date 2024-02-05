@@ -27,6 +27,9 @@ import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DBFileSystem;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.ContentChangedEvent;
+import com.github.thmarx.cms.api.eventbus.events.InvalidateContentCacheEvent;
+import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
+import com.github.thmarx.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.filesystem.query.Query;
@@ -46,6 +49,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -286,12 +291,21 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 			@Override
 			public void onNext(FileEvent item) {
 				eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
+				eventBus.publish(new InvalidateTemplateCacheEvent());
 			}
 		});
 
 		reInitFolder(contentBase);
 
 		fileWatcher.start();
+		
+		eventBus.register(ReIndexContentMetaDataEvent.class, (event) -> {
+			try {
+				swapMetaData();
+			} catch (IOException ex) {
+				log.error("error while reindex meta data", ex);
+			}
+		});
 	}
 
 	private void swapMetaData() throws IOException {
@@ -299,6 +313,7 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 		metaData.clear();
 		reInitFolder(contentBase);
 		eventBus.publish(new ContentChangedEvent(contentBase));
+		eventBus.publish(new InvalidateContentCacheEvent());
 	}
 
 	private void reInitFolder(final Path folder) throws IOException {

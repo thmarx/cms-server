@@ -24,6 +24,7 @@ package com.github.thmarx.cms.filesystem.taxonomy;
 
 import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +33,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -50,7 +52,9 @@ public class FileTaxonomiesTest {
 		
 		var config = new Configuration(Path.of("src/test/resources/"));
 		
-		fileSystem = new FileSystem(Path.of("src/test/resources"), null, (file) -> {
+		var eventBus = Mockito.mock(EventBus.class);
+		
+		fileSystem = new FileSystem(Path.of("src/test/resources"), eventBus, (file) -> {
 			try {
 				return new Yaml().load(Files.readString(file));
 			} catch (Exception e) {

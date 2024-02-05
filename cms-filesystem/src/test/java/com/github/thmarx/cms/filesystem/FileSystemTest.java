@@ -21,13 +21,14 @@ package com.github.thmarx.cms.filesystem;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.eventbus.EventBus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -37,10 +38,15 @@ import org.yaml.snakeyaml.Yaml;
 public class FileSystemTest {
 
 	static FileSystem fileSystem;
+	
+	
 
 	@BeforeAll
 	static void setup() throws IOException {
-		fileSystem = new FileSystem(Path.of("src/test/resources"), null, (file) -> {
+		
+		var eventBus = Mockito.mock(EventBus.class);
+		
+		fileSystem = new FileSystem(Path.of("src/test/resources"), eventBus, (file) -> {
 			try {
 				return new Yaml().load(Files.readString(file));
 			} catch (Exception e) {
