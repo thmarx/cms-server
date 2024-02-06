@@ -6,6 +6,12 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.9.0
+
+* **MAINTENANCE** update jetty dependency to 12.0.6 [#167](https://github.com/thmarx/cms/issues/167)
+* **MAINTENANCE** management events to clear caches and reindex meta data [#158](https://github.com/thmarx/cms/issues/158)
+* **BUGFIX** refactor theme loading [#168](https://github.com/thmarx/cms/issues/168)
+
 ## 4.8.0
 
 * **MAINTENANCE** optimize request context creation [#165](https://github.com/thmarx/cms/issues/165)
