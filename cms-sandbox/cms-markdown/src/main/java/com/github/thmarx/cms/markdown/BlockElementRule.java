@@ -27,6 +27,5 @@ package com.github.thmarx.cms.markdown;
  * @author t.marx
  */
 public interface BlockElementRule {
-	boolean matches (Block block);
-	String render (Block block);
+	Block next(String md);
 }

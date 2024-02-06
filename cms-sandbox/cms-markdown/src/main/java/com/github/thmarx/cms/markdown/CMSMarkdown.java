@@ -1,10 +1,5 @@
 package com.github.thmarx.cms.markdown;
 
-import com.github.thmarx.cms.markdown.rules.ParagraphBlockRule;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /*-
  * #%L
  * cms-markdown
@@ -26,39 +21,38 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.markdown.rules.ParagraphBlockRule;
+import java.io.IOException;
+import java.util.List;
 
 /**
  *
  * @author t.marx
  */
 public class CMSMarkdown {
-	
+
 	private final BlockTokenizer blockTokenizer;
-	
+
 	private final List<BlockElementRule> blockRules;
 	private final List<InlineElementRule> inlineRules;
-	
-	public CMSMarkdown (Options options) {
-		this.blockTokenizer = new BlockTokenizer();
+
+	public CMSMarkdown(Options options) {
+		this.blockTokenizer = new BlockTokenizer(options);
 		blockRules = options.blockElementRules;
 		blockRules.addLast(new ParagraphBlockRule());
 		inlineRules = options.inlineElementRules;
 	}
-	
-	public String render (final String md) throws IOException {
+
+	public String render(final String md) throws IOException {
 		final StringBuilder htmlBuilder = new StringBuilder();
 		List<Block> blocks = blockTokenizer.tokenize(md);
-		
+
 		blocks.stream().forEach(block -> {
-			var blockRule = blockRules.stream().filter(rule -> rule.matches(block))
-					.findFirst();
-			if (blockRule.isPresent()) {
-				final StringBuilder html = new StringBuilder(blockRule.get().render(block));
-				inlineRules.forEach(rule -> html.replace(0, html.length(), rule.render(html.toString())));
-				htmlBuilder.append(html);
-			}
+			final StringBuilder html = new StringBuilder(block.render());
+			inlineRules.forEach(rule -> html.replace(0, html.length(), rule.render(html.toString())));
+			htmlBuilder.append(html);
 		});
-		
+
 		return htmlBuilder.toString();
 	}
 }

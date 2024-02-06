@@ -22,15 +22,13 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-@Data
-public class Block {
-	private final String content;
+public interface Block {
+	int start();
+	int end();
+	
+	String render ();
 }

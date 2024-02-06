@@ -22,34 +22,29 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class BlockTokenizer {
-
-	private final Options options;
-    
-	protected List<Block> tokenize (final String original_md) throws IOException {
-		
-		var md = original_md.replaceAll("\r\n", "\n");
-		StringBuilder mdBuilder = new StringBuilder(md);
-		
-		final List<Block> blocks = new ArrayList<>();
-		
-		options.blockElementRules.forEach(blockRule -> {
-			Block block = null;
-			while ((block = blockRule.next(mdBuilder.toString())) != null) {
-				blocks.add(block);
-				mdBuilder.delete(block.start(), block.end());
-			}
-		});
-		return blocks;
-	}
+public class Example {
+	public static void main(String[] args) {
+        final String regex = "\\A(?<content>.+?)(^\\n|\\Z)";
+        final String string = """
+                              Hallo\nLeute\n\nNächster Absatz
+                              """;
+        
+        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL);
+        final Matcher matcher = pattern.matcher(string);
+        
+        if (matcher.find()) {
+            System.out.println("Full match: " + matcher.group(0));
+            
+            for (int i = 1; i <= matcher.groupCount(); i++) {
+                System.out.println("Group " + i + ": " + matcher.group(i));
+            }
+        }
+    }
 }

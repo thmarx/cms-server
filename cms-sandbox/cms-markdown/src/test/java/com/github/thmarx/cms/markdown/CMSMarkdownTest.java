@@ -48,7 +48,7 @@ public class CMSMarkdownTest extends MarkdownTest {
 	@Test
 	public void test_1() throws IOException {
 		
-		var md = load("render/test_1.md");
+		var md = load("render/test_1.md").trim();
 		var expected = load("render/test_1.html");
 		expected = removeComments(expected);
 		

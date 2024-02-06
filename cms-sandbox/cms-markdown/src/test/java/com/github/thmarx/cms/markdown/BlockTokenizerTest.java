@@ -21,6 +21,8 @@ package com.github.thmarx.cms.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.markdown.rules.CodeBlockRule;
+import com.github.thmarx.cms.markdown.rules.ParagraphBlockRule;
 import java.io.IOException;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
@@ -37,7 +39,10 @@ public class BlockTokenizerTest extends MarkdownTest {
 
 	@BeforeAll
 	public static void setup() {
-		sut = new BlockTokenizer();
+		Options options = new Options();
+		options.addBlockRule(new CodeBlockRule());
+		options.addBlockRule(new ParagraphBlockRule());
+		sut = new BlockTokenizer(options);
 	}
 
 	@Test
@@ -46,7 +51,9 @@ public class BlockTokenizerTest extends MarkdownTest {
 		List<Block> blocks = sut.tokenize(content);
 
 		assertThat(blocks).hasSize(1);
-		assertThat(blocks.get(0).getContent()).isEqualToIgnoringNewLines("Hallo");
+		assertThat(blocks.get(0)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
+		var pb = (ParagraphBlockRule.ParagraphBlock) blocks.get(0);
+		assertThat(pb.content()).isEqualToIgnoringNewLines("Hallo");
 	}
 
 	@Test
@@ -55,7 +62,9 @@ public class BlockTokenizerTest extends MarkdownTest {
 		List<Block> blocks = sut.tokenize(content);
 
 		assertThat(blocks).hasSize(1);
-		assertThat(blocks.get(0).getContent()).isEqualToIgnoringNewLines("Hallo\nLeute");
+		assertThat(blocks.get(0)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
+		var pb = (ParagraphBlockRule.ParagraphBlock) blocks.get(0);
+		assertThat(pb.content()).isEqualToIgnoringNewLines("Hallo\nLeute");
 	}
 
 	@Test
@@ -64,7 +73,27 @@ public class BlockTokenizerTest extends MarkdownTest {
 		List<Block> blocks = sut.tokenize(content);
 
 		assertThat(blocks).hasSize(2);
-		assertThat(blocks.get(0).getContent()).isEqualToIgnoringNewLines("Hallo");
-		assertThat(blocks.get(1).getContent()).isEqualToIgnoringNewLines("Leute");
+		assertThat(blocks.get(0)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
+		assertThat(blocks.get(1)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
+		var pb = (ParagraphBlockRule.ParagraphBlock) blocks.get(0);
+		assertThat(pb.content()).isEqualToIgnoringNewLines("Hallo");
+		pb = (ParagraphBlockRule.ParagraphBlock) blocks.get(1);
+		assertThat(pb.content()).isEqualToIgnoringNewLines("Leute");
+	}
+	
+	@Test
+	void test_code_paragraph() throws IOException {
+		String content = load("block_code_paragraph.md");
+		List<Block> blocks = sut.tokenize(content);
+
+		assertThat(blocks).hasSize(3);
+		assertThat(blocks.get(0)).isInstanceOf(CodeBlockRule.CodeBlock.class);
+		assertThat(blocks.get(1)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
+		assertThat(blocks.get(2)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
+		var cb = (CodeBlockRule.CodeBlock) blocks.get(0);
+		assertThat(cb.content()).isEqualToIgnoringNewLines("java.lang.System.out.println(\"Hello world!\");");
+		assertThat(cb.language()).isEqualToIgnoringNewLines("java");
+		var pb = (ParagraphBlockRule.ParagraphBlock) blocks.get(2);
+		assertThat(pb.content()).isEqualToIgnoringNewLines("Hallo");
 	}
 }

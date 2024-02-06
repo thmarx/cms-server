@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown;
+package com.github.thmarx.cms.markdown.rules;
 
 /*-
  * #%L
@@ -22,34 +22,26 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class BlockTokenizer {
+public class CodeBlockRuleTest {
 
-	private final Options options;
-    
-	protected List<Block> tokenize (final String original_md) throws IOException {
+	private CodeBlockRule CodeBlockRule = new CodeBlockRule();
+
+	@Test
+	public void testSomeMethod() {
 		
-		var md = original_md.replaceAll("\r\n", "\n");
-		StringBuilder mdBuilder = new StringBuilder(md);
+		String code = """
+                ```java
+                das ist der code
+                ```
+                """;
 		
-		final List<Block> blocks = new ArrayList<>();
-		
-		options.blockElementRules.forEach(blockRule -> {
-			Block block = null;
-			while ((block = blockRule.next(mdBuilder.toString())) != null) {
-				blocks.add(block);
-				mdBuilder.delete(block.start(), block.end());
-			}
-		});
-		return blocks;
+		CodeBlockRule.next(code.trim());
 	}
+	
 }

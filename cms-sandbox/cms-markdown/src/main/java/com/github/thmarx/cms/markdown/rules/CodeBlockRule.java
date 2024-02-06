@@ -21,6 +21,7 @@ package com.github.thmarx.cms.markdown.rules;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockElementRule;
 import java.util.regex.Matcher;
@@ -30,29 +31,32 @@ import java.util.regex.Pattern;
  *
  * @author t.marx
  */
-public class ParagraphBlockRule implements BlockElementRule {
+public class CodeBlockRule implements BlockElementRule {
 
-	private static final Pattern PATTERN = Pattern.compile(
-			"\\A(?<content>.+?)(^\\n|\\Z)",
+	protected static final Pattern PATTERN = Pattern.compile(
+			"^(`{3})(?<lang>[a-zA-Z0-9]*)?$(?<code>.*)^(`{3})$",
 			Pattern.MULTILINE | Pattern.DOTALL);
 	
-
 	@Override
-	public Block next(String md) {
+	public Block next(final String md) {
 		Matcher matcher = PATTERN.matcher(md);
 		if (matcher.find()) {
-			return new ParagraphBlock(matcher.start(), matcher.end(), matcher.group("content").trim());
+			return new CodeBlock(matcher.start(), matcher.end(), matcher.group("code"), matcher.group("lang"));
 		}
 		return null;
 	}
 
-	public static record ParagraphBlock(int start, int end, String content) implements Block {
+	
+	public static record CodeBlock (int start, int end, String content, String language) implements Block {
 
 		@Override
 		public String render() {
-			return "<p>%s</p>".formatted(content);
+			if (language == null || "".equals(language)) {
+				return "<pre><code>%s</code></pre>".formatted(content);
+			}
+			return "<pre><code class='lang-%s'>%s</code></pre>".formatted(content, language);
 		}
-
+		
 	}
-
+	
 }

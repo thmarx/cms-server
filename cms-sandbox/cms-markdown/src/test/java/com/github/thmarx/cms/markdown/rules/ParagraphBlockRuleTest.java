@@ -21,38 +21,43 @@ package com.github.thmarx.cms.markdown.rules;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.markdown.Block;
-import com.github.thmarx.cms.markdown.BlockElementRule;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author t.marx
  */
-public class ParagraphBlockRule implements BlockElementRule {
-
-	private static final Pattern PATTERN = Pattern.compile(
-			"\\A(?<content>.+?)(^\\n|\\Z)",
-			Pattern.MULTILINE | Pattern.DOTALL);
+public class ParagraphBlockRuleTest {
 	
+	ParagraphBlockRule paragraphRule = new ParagraphBlockRule();
 
-	@Override
-	public Block next(String md) {
-		Matcher matcher = PATTERN.matcher(md);
-		if (matcher.find()) {
-			return new ParagraphBlock(matcher.start(), matcher.end(), matcher.group("content").trim());
-		}
-		return null;
+	@Test
+	public void testSomeMethod() {
+		String content = """
+                   Hallo
+                   Leute
+                   """;
+		
+		var block = paragraphRule.next(content.trim());
+		
+		Assertions.assertThat(block).isNotNull();
+		
+		Assertions.assertThat(((ParagraphBlockRule.ParagraphBlock)block).content()).isEqualTo("Hallo\nLeute");
 	}
-
-	public static record ParagraphBlock(int start, int end, String content) implements Block {
-
-		@Override
-		public String render() {
-			return "<p>%s</p>".formatted(content);
-		}
-
+	
+	@Test
+	public void test_multiple() {
+		String content = """
+                   Hallo\n\nLeute
+                   """;
+		
+		var block = paragraphRule.next(content.trim());
+		
+		Assertions.assertThat(block).isNotNull();
+		
+		Assertions.assertThat(((ParagraphBlockRule.ParagraphBlock)block).content()).isEqualTo("Hallo");
 	}
-
+	
 }
