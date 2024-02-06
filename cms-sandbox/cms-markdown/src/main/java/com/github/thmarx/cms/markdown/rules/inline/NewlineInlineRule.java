@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -29,14 +29,14 @@ import java.util.regex.Pattern;
  *
  * @author t.marx
  */
-public class LinkInlineRule implements InlineElementRule {
+public class NewlineInlineRule implements InlineElementRule {
 	
-	Pattern link = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
+	Pattern bold = Pattern.compile("^[ ]{2,}\\n", Pattern.MULTILINE);
 
 	@Override
 	public String render(String md) {
-		var matcher = link.matcher(md);
-		return matcher.replaceAll((result) -> "<a href=\"%s\">%s</a>".formatted(result.group(2), result.group(1)));
+		var matcher = bold.matcher(md);
+		return matcher.replaceAll("<br/>");
 	}
 	
 	

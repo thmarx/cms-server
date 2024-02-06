@@ -22,8 +22,8 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.rules.BoldInlineRule;
-import com.github.thmarx.cms.markdown.rules.NewlineInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.BoldInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
 import java.io.IOException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

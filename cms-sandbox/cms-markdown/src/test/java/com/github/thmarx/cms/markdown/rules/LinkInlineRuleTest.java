@@ -22,6 +22,7 @@ package com.github.thmarx.cms.markdown.rules;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

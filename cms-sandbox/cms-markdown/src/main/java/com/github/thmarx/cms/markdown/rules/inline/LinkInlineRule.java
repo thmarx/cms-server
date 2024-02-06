@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -29,14 +29,14 @@ import java.util.regex.Pattern;
  *
  * @author t.marx
  */
-public class ImageInlineRule implements InlineElementRule {
+public class LinkInlineRule implements InlineElementRule {
 	
-	Pattern image = Pattern.compile("!\\[(.*?)\\]\\((.*?)\\)");
+	Pattern link = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
 
 	@Override
 	public String render(String md) {
-		var matcher = image.matcher(md);
-		return matcher.replaceAll((result) -> "<img src=\"%s\" alt=\"%s\" />".formatted(result.group(2), result.group(1)));
+		var matcher = link.matcher(md);
+		return matcher.replaceAll((result) -> "<a href=\"%s\">%s</a>".formatted(result.group(2), result.group(1)));
 	}
 	
 	

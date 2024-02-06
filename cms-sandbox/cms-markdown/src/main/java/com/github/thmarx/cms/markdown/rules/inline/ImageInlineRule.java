@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -21,38 +21,23 @@ package com.github.thmarx.cms.markdown.rules;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.markdown.Block;
-import com.github.thmarx.cms.markdown.BlockElementRule;
-import java.util.regex.Matcher;
+
+import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
 /**
  *
  * @author t.marx
  */
-public class ParagraphBlockRule implements BlockElementRule {
-
-	private static final Pattern PATTERN = Pattern.compile(
-			"\\A(?<content>.+?)(^\\n|\\Z)",
-			Pattern.MULTILINE | Pattern.DOTALL);
+public class ImageInlineRule implements InlineElementRule {
 	
+	Pattern image = Pattern.compile("!\\[(.*?)\\]\\((.*?)\\)");
 
 	@Override
-	public Block next(String md) {
-		Matcher matcher = PATTERN.matcher(md);
-		if (matcher.find()) {
-			return new ParagraphBlock(matcher.start(), matcher.end(), matcher.group("content").trim());
-		}
-		return null;
+	public String render(String md) {
+		var matcher = image.matcher(md);
+		return matcher.replaceAll((result) -> "<img src=\"%s\" alt=\"%s\" />".formatted(result.group(2), result.group(1)));
 	}
-
-	public static record ParagraphBlock(int start, int end, String content) implements Block {
-
-		@Override
-		public String render() {
-			return "<p>%s</p>".formatted(content);
-		}
-
-	}
-
+	
+	
 }

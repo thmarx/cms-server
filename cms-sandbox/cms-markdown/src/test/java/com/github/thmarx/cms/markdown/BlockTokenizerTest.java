@@ -21,8 +21,8 @@ package com.github.thmarx.cms.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.markdown.rules.CodeBlockRule;
-import com.github.thmarx.cms.markdown.rules.ParagraphBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.ParagraphBlockRule;
 import java.io.IOException;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;

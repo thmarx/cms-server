@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.block;
 
 /*-
  * #%L
@@ -21,23 +21,38 @@ package com.github.thmarx.cms.markdown.rules;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import com.github.thmarx.cms.markdown.InlineElementRule;
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.BlockElementRule;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  *
  * @author t.marx
  */
-public class NewlineInlineRule implements InlineElementRule {
+public class ParagraphBlockRule implements BlockElementRule {
+
+	private static final Pattern PATTERN = Pattern.compile(
+			"\\A(?<content>.+?)(^\\n|\\Z)",
+			Pattern.MULTILINE | Pattern.DOTALL);
 	
-	Pattern bold = Pattern.compile("^[ ]{2,}\\n", Pattern.MULTILINE);
 
 	@Override
-	public String render(String md) {
-		var matcher = bold.matcher(md);
-		return matcher.replaceAll("<br/>");
+	public Block next(String md) {
+		Matcher matcher = PATTERN.matcher(md);
+		if (matcher.find()) {
+			return new ParagraphBlock(matcher.start(), matcher.end(), matcher.group("content").trim());
+		}
+		return null;
 	}
-	
-	
+
+	public static record ParagraphBlock(int start, int end, String content) implements Block {
+
+		@Override
+		public String render() {
+			return "<p>%s</p>".formatted(content);
+		}
+
+	}
+
 }
