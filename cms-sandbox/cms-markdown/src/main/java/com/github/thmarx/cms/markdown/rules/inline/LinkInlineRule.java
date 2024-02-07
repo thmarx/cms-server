@@ -21,7 +21,10 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import com.github.slugify.Slugify;
+import com.github.thmarx.cms.api.feature.features.IsPreviewFeature;
+import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
+import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
@@ -30,14 +33,50 @@ import java.util.regex.Pattern;
  * @author t.marx
  */
 public class LinkInlineRule implements InlineElementRule {
-	
-	Pattern link = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
+
+	static final Slugify SLUG = Slugify.builder().build();
+
+	static final Pattern link = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
 
 	@Override
 	public String render(String md) {
 		var matcher = link.matcher(md);
-		return matcher.replaceAll((result) -> "<a href=\"%s\">%s</a>".formatted(result.group(2), result.group(1)));
+		return matcher.replaceAll((result) -> {
+			var href = result.group(2);
+			var title = result.group(1);
+
+			var id = SLUG.slugify(title);
+
+			var requestContext = ThreadLocalRequestContext.REQUEST_CONTEXT.get();
+
+			if (requestContext != null
+					&& isInternalUrl(href)) {
+
+				if (requestContext.has(SitePropertiesFeature.class)) {
+					var contextPath = requestContext.get(SitePropertiesFeature.class).siteProperties().contextPath();
+					if (!"/".equals(contextPath) && !href.startsWith(contextPath) && href.startsWith("/")) {
+						href = contextPath + href;
+					}
+				}
+				if (requestContext.has(IsPreviewFeature.class)) {
+					if (href.contains("?")) {
+						href += "&preview";
+					} else {
+						href += "?preview";
+					}
+				}
+			}
+
+			return "<a href=\"%s\" id=\"%s\">%s</a>".formatted(
+					href,
+					id,
+					title
+			);
+		});
 	}
 	
-	
+	private boolean isInternalUrl (final String href) {
+		return !href.startsWith("http") && !href.startsWith("https");
+	}
+
 }

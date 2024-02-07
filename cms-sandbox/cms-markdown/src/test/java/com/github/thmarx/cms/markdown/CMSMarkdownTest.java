@@ -22,7 +22,9 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.rules.inline.BoldInlineRule;
+import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
+import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
 import java.io.IOException;
 import org.assertj.core.api.Assertions;
@@ -40,8 +42,10 @@ public class CMSMarkdownTest extends MarkdownTest {
 	@BeforeAll
 	public static void setup () {
 		Options options = new Options();
-		options.addInlineRule(new BoldInlineRule());
+		options.addInlineRule(new StrongInlineRule());
 		options.addInlineRule(new NewlineInlineRule());
+		options.addBlockRule(new CodeBlockRule());
+		options.addBlockRule(new HeadingBlockRule());
 		SUT = new CMSMarkdown(options);
 	}
 	

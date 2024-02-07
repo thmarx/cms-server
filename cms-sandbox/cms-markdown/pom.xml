@@ -9,11 +9,22 @@
 	<artifactId>cms-markdown</artifactId>
 	<packaging>jar</packaging>
 	<dependencies>
+		
+		<dependency>
+			<groupId>com.github.thmarx.cms</groupId>
+			<artifactId>cms-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.github.slugify</groupId>
+			<artifactId>slugify</artifactId>
+			<version>3.0.6</version>
+		</dependency>
 	</dependencies>
 </project>

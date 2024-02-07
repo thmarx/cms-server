@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -22,25 +22,22 @@ package com.github.thmarx.cms.markdown.rules;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.github.thmarx.cms.markdown.InlineElementRule;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author t.marx
  */
-public class LinkInlineRuleTest {
+public class StrongInlineRule implements InlineElementRule {
+	
+	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{2}|\\*{2})(?<content>.*?)(\\k<selector>)");
 
-	LinkInlineRule SUT = new LinkInlineRule();
-
-	@Test
-	public void testSomeMethod() {
-		
-		var result = SUT.render("[google](https://google.de)");
-		
-		Assertions.assertThat(result)
-				.isEqualTo("<a href=\"https://google.de\" id=\"google\">google</a>");
+	@Override
+	public String render(String md) {
+		var matcher = PATTERN.matcher(md);
+		return matcher.replaceAll((result) -> "<strong>%s</strong>".formatted(result.group("content")));
 	}
-
+	
+	
 }

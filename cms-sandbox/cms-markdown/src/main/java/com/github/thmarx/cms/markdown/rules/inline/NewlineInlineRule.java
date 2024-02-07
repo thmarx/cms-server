@@ -31,11 +31,11 @@ import java.util.regex.Pattern;
  */
 public class NewlineInlineRule implements InlineElementRule {
 	
-	Pattern bold = Pattern.compile("^[ ]{2,}\\n", Pattern.MULTILINE);
+	private static final Pattern PATTERN = Pattern.compile("[ ]{2,}\\n", Pattern.MULTILINE);
 
 	@Override
 	public String render(String md) {
-		var matcher = bold.matcher(md);
+		var matcher = PATTERN.matcher(md);
 		return matcher.replaceAll("<br/>");
 	}
 	

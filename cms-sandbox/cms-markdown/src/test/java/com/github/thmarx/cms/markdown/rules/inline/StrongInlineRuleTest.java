@@ -22,22 +22,27 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.InlineElementRule;
-import java.util.regex.Pattern;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author t.marx
  */
-public class BoldInlineRule implements InlineElementRule {
+public class StrongInlineRuleTest {
 	
-	Pattern bold = Pattern.compile("\\*{2}(.*?)\\*{2}");
+	private StrongInlineRule sut = new StrongInlineRule();
 
-	@Override
-	public String render(String md) {
-		var matcher = bold.matcher(md);
-		return matcher.replaceAll((result) -> "<strong>%s</strong>".formatted(result.group(1)));
+	@Test
+	public void correct_pattern() {
+		Assertions.assertThat(sut.render("__bold__")).isEqualTo("<strong>bold</strong>");
+		Assertions.assertThat(sut.render("**bold**")).isEqualTo("<strong>bold</strong>");
 	}
 	
+	@Test
+	public void wrong_pattern() {
+		
+		Assertions.assertThat(sut.render("**bold__")).isEqualTo("**bold__");
+	}
 	
 }

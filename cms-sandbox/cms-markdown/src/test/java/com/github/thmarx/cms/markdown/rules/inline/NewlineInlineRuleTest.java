@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -22,7 +22,6 @@ package com.github.thmarx.cms.markdown.rules;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,17 +29,17 @@ import org.junit.jupiter.api.Test;
  *
  * @author t.marx
  */
-public class LinkInlineRuleTest {
-
-	LinkInlineRule SUT = new LinkInlineRule();
+public class NewlineInlineRuleTest {
+	
+	NewlineInlineRule sut = new NewlineInlineRule();
 
 	@Test
-	public void testSomeMethod() {
-		
-		var result = SUT.render("[google](https://google.de)");
-		
-		Assertions.assertThat(result)
-				.isEqualTo("<a href=\"https://google.de\" id=\"google\">google</a>");
+	public void test_line_with_2_spaces() {
+		Assertions.assertThat(sut.render("  \n")).isEqualTo("<br/>");
 	}
-
+	
+	@Test
+	public void test_line_ending_with_2_spaces() {
+		Assertions.assertThat(sut.render("the line  \n")).isEqualTo("the line<br/>");
+	}
 }
