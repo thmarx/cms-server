@@ -21,9 +21,10 @@ package com.github.thmarx.cms.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -35,21 +36,28 @@ import lombok.RequiredArgsConstructor;
 public class BlockTokenizer {
 
 	private final Options options;
-    
-	protected List<Block> tokenize (final String original_md) throws IOException {
-		
+
+	protected List<Block> tokenize(final String original_md) throws IOException {
+
 		var md = original_md.replaceAll("\r\n", "\n");
 		StringBuilder mdBuilder = new StringBuilder(md);
-		
+
 		final List<Block> blocks = new ArrayList<>();
-		
-		options.blockElementRules.forEach(blockRule -> {
+
+		for (var blockRule : options.blockElementRules) {
 			Block block = null;
 			while ((block = blockRule.next(mdBuilder.toString())) != null) {
+
+				if (block.start() != 0) {
+					var before = mdBuilder.substring(0, block.start());
+					blocks.addAll(tokenize(before));
+				}
+
 				blocks.add(block);
-				mdBuilder.delete(block.start(), block.end());
+				mdBuilder.delete(0, block.end());
 			}
-		});
+		}
+
 		return blocks;
 	}
 }

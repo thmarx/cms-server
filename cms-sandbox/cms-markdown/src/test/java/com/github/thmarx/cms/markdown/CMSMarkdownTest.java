@@ -24,6 +24,9 @@ package com.github.thmarx.cms.markdown;
 
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
+import com.github.thmarx.cms.markdown.rules.inline.EmphasisInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
 import java.io.IOException;
@@ -43,7 +46,10 @@ public class CMSMarkdownTest extends MarkdownTest {
 	public static void setup () {
 		Options options = new Options();
 		options.addInlineRule(new StrongInlineRule());
+		options.addInlineRule(new EmphasisInlineRule());
 		options.addInlineRule(new NewlineInlineRule());
+		options.addInlineRule(new LinkInlineRule());
+		options.addInlineRule(new ImageInlineRule());
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
 		SUT = new CMSMarkdown(options);
@@ -83,5 +89,17 @@ public class CMSMarkdownTest extends MarkdownTest {
 		var result = SUT.render(md);
 		
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+	}
+	
+	@Test
+	public void test_4() throws IOException {
+		
+		var md = load("render/test_4.md");
+		var expected = load("render/test_4.html");
+		expected = removeComments(expected);
+		
+		var result = SUT.render(md);
+		System.out.println(result);
+//		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
 }

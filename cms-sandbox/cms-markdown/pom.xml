@@ -8,6 +8,13 @@
 	</parent>
 	<artifactId>cms-markdown</artifactId>
 	<packaging>jar</packaging>
+	
+	<properties>
+		<module.id>cms-markdown-module</module.id>
+		<module.name>cms markdown module</module.name>
+		<module.priority>HIGH</module.priority>
+	</properties>
+	
 	<dependencies>
 		
 		<dependency>
@@ -26,5 +33,33 @@
 			<artifactId>slugify</artifactId>
 			<version>3.0.6</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.17.2</version>
+		</dependency>
 	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.6.0</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/assembly.xml</descriptor>
+					</descriptors>
+					<finalName>${module.id}</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

@@ -54,7 +54,7 @@ public class CodeBlockRule implements BlockElementRule {
 			if (language == null || "".equals(language)) {
 				return "<pre><code>%s</code></pre>".formatted(content);
 			}
-			return "<pre><code class='lang-%s'>%s</code></pre>".formatted(content, language);
+			return "<pre><code class='lang-%s'>%s</code></pre>".formatted(language, content);
 		}
 		
 	}
