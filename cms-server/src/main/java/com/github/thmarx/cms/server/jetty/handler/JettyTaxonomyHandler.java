@@ -44,7 +44,6 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class JettyTaxonomyHandler extends Handler.Abstract {
 	private final TaxonomyResolver taxonomyResolver;
-	private final RequestContextFactory requestContextFactory;
 	
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
