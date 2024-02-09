@@ -55,6 +55,10 @@ public class TaxonomyFunction {
 		return fileDB.getTaxonomies().values(taxonomy.get());
 	}
 	
+	public Set<String> values (Taxonomy taxonomy) {
+		return fileDB.getTaxonomies().values(taxonomy);
+	}
+	
 	public String url (final String taxonomy, final String value) {
 		return "/%s/%s".formatted(taxonomy, value);
 	}
