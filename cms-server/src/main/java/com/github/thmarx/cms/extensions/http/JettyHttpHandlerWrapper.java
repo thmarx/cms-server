@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty.extension;
+package com.github.thmarx.cms.extensions.http;
 
 /*-
  * #%L
@@ -22,10 +22,11 @@ package com.github.thmarx.cms.server.jetty.extension;
  * #L%
  */
 
-import com.github.thmarx.cms.api.extensions.http.Response;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
 
 /**
@@ -33,18 +34,16 @@ import org.eclipse.jetty.util.Callback;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class JettyResponse implements Response {
+public class JettyHttpHandlerWrapper extends Handler.Abstract {
 	
-	private final org.eclipse.jetty.server.Response original;
-	private final Callback callback;
+	private final ExtensionHttpHandler handler;
 
 	@Override
-	public void addHeader(String name, String value) {
-		original.getHeaders().add(name, value);
+	public boolean handle(Request request, Response response, Callback callback) throws Exception {
+		handler.execute(new JettyRequest(request), new JettyResponse(response, callback));
+		return true;
 	}
-
-	@Override
-	public void write(String content, Charset charset) {
-		original.write(true, ByteBuffer.wrap(content.getBytes(charset)), callback);
-	}
+	
+	
+	
 }

@@ -22,7 +22,7 @@ package com.github.thmarx.cms.request;
  * #L%
  */
 
-import com.github.thmarx.cms.api.extensions.http.ExtensionHttpHandler;
+import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;

@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty.extension;
+package com.github.thmarx.cms.extensions.http;
 
 /*-
  * #%L
@@ -21,7 +21,6 @@ package com.github.thmarx.cms.server.jetty.extension;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.extensions.http.Request;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -37,19 +36,17 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class JettyRequest implements Request {
+public class JettyRequest {
 
 	private final org.eclipse.jetty.server.Request original;
 
 	private String body = "";
 	public boolean bodyRead = false;
 
-	@Override
 	public String getBody() {
 		return getBody(StandardCharsets.UTF_8);
 	}
 
-	@Override
 	public String getBody(final Charset charset) {
 		if (!bodyRead) {
 			try (var inputStream = org.eclipse.jetty.server.Request.asInputStream(original)) {
@@ -63,7 +60,6 @@ public class JettyRequest implements Request {
 		return body;
 	}
 
-	@Override
 	public List<String> getQueryParamter(final String name) {
 		var queryParameters = HTTPUtil.queryParameters(original.getHttpURI().getQuery());
 		if (queryParameters.containsKey(name)) {
@@ -72,7 +68,6 @@ public class JettyRequest implements Request {
 		return Collections.emptyList();
 	}
 
-	@Override
 	public List<String> getQueryParamters() {
 		var queryParameters = HTTPUtil.queryParameters(original.getHttpURI().getQuery());
 		return new ArrayList<>(queryParameters.keySet());

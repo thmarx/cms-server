@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.extensions.http;
+package com.github.thmarx.cms.extensions.http;
 
 /*-
  * #%L
@@ -22,15 +22,11 @@ package com.github.thmarx.cms.api.extensions.http;
  * #L%
  */
 
-import java.nio.charset.Charset;
-
 /**
  *
  * @author t.marx
  */
-public interface Response {
+public interface ExtensionHttpHandler {
 	
-	public void addHeader (String name, String value);
-	
-	public void write (String content, Charset charset);
+	void execute (JettyRequest request, JettyResponse response);
 }
