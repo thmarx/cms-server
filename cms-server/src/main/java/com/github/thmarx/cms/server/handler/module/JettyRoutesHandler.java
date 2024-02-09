@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.handler.extensionpoints;
+package com.github.thmarx.cms.server.handler.module;
 
 /*-
  * #%L
@@ -21,9 +21,11 @@ package com.github.thmarx.cms.server.handler.extensionpoints;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.extensions.HttpRouteExtensionPoint;
+import com.github.thmarx.cms.api.extensions.HttpRoutesExtensionPoint;
+import com.github.thmarx.cms.api.extensions.Mapping;
 import com.github.thmarx.cms.api.utils.RequestUtil;
 import com.github.thmarx.modules.api.ModuleManager;
+import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +33,6 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Callback;
-import com.google.inject.Inject;
 
 /**
  *
@@ -40,23 +41,34 @@ import com.google.inject.Inject;
 @RequiredArgsConstructor(onConstructor = @__({
 	@Inject}))
 @Slf4j
-public class JettyRouteHandler extends Handler.Abstract {
+public class JettyRoutesHandler extends Handler.Abstract {
 
 	private final ModuleManager moduleManager;
 
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
 
-		String route = RequestUtil.getContentPath(request);
+		try {
+			String route = "/" + RequestUtil.getContentPath(request);
 
-		Optional<HttpRouteExtensionPoint> findRoute = moduleManager.extensions(HttpRouteExtensionPoint.class).stream()
-				.filter(extension -> extension.getRoute().equals(route)).findFirst();
+			Optional<Mapping> firstMatch = moduleManager.extensions(HttpRoutesExtensionPoint.class)
+					.stream()
+					.filter(extension -> extension.getMapping().getMatchingHandler(route).isPresent())
+					.map(extension -> extension.getMapping())
+					.findFirst();
 
-		if (findRoute.isPresent()) {
-			findRoute.get().handle(request, response, callback);
+			if (firstMatch.isPresent()) {
+				var mapping = firstMatch.get();
+				var handler = mapping.getMatchingHandler(route).get();
+				return handler.handle(request, response, callback);
+			}
+
+			
+			return false;
+		} catch (Exception e) {
+			log.error(null, e);
+			callback.failed(e);
 			return true;
 		}
-
-		return false;
 	}
 }

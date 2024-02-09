@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.handler.extensionpoints;
+package com.github.thmarx.cms.server.handler.module;
 
 /*-
  * #%L
