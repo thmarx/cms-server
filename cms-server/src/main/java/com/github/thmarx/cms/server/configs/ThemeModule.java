@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty.modules;
+package com.github.thmarx.cms.server.configs;
 
 /*-
  * #%L
@@ -22,28 +22,19 @@ package com.github.thmarx.cms.server.jetty.modules;
  * #L%
  */
 import com.github.thmarx.cms.api.ServerProperties;
-import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.eventbus.EventBus;
+import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
-import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
-import com.github.thmarx.cms.server.handler.extensions.JettyExtensionHandler;
 import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
-import com.github.thmarx.cms.server.handler.module.JettyHttpHandlerHandler;
-import com.github.thmarx.cms.server.handler.module.JettyRouteHandler;
-import com.github.thmarx.cms.server.handler.module.JettyRoutesHandler;
-import com.github.thmarx.cms.server.handler.content.JettyTaxonomyHandler;
-import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
-import com.github.thmarx.cms.utils.SiteUtils;
-import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.handler.ResourceHandler;
@@ -53,46 +44,36 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class SiteHandlerModule extends AbstractModule {
+public class ThemeModule extends AbstractModule {
 
-	@Override
-	protected void configure() {
-		
-		bind(JettyViewHandler.class).in(Singleton.class);
-		bind(JettyContentHandler.class).in(Singleton.class);
-		bind(JettyTaxonomyHandler.class).in(Singleton.class);
-		bind(JettyRouteHandler.class).in(Singleton.class);
-		bind(JettyRoutesHandler.class).in(Singleton.class);
-		
-		bind(JettyExtensionHandler.class).in(Singleton.class);
+	@Provides
+	@Singleton
+	@Named("theme")
+	public MediaManager themeMediaManager (Theme theme, Configuration configuration, DB db, EventBus eventBus) throws IOException {
+		var mediaManager =  new MediaManager(theme.assetsPath(), db.getFileSystem().resolve("temp"), theme, configuration);
+		eventBus.register(SitePropertiesChanged.class, mediaManager);
+		return mediaManager;
 	}
 	
 	@Provides
 	@Singleton
-	public JettyHttpHandlerHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
-		return new JettyHttpHandlerHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
-	}
-	
-	@Provides
-	@Singleton
-	@Named("site")
-	public JettyMediaHandler mediaHandler(@Named("site") MediaManager mediaManager) throws IOException {
+	@Named("theme")
+	public JettyMediaHandler themeMediaHandler(@Named("theme") MediaManager mediaManager) throws IOException {
 		return new JettyMediaHandler(mediaManager);
 	}
 
 	@Provides
 	@Singleton
-	@Named("site")
-	public ResourceHandler resourceHander (@Named("assets") Path assetBase, ServerProperties serverProperties) throws IOException {
+	@Named("theme")
+	public ResourceHandler resourceHandler(Theme theme, ServerProperties serverProperties) {
 		ResourceHandler assetsHandler = new ResourceHandler();
 		assetsHandler.setDirAllowed(false);
-		assetsHandler.setBaseResource(new FileFolderPathResource(assetBase));
+		assetsHandler.setBaseResource(new FileFolderPathResource(theme.assetsPath()));
 		if (serverProperties.dev()) {
 			assetsHandler.setCacheControl("no-cache");
 		} else {
 			assetsHandler.setCacheControl("max-age=" + TimeUnit.HOURS.toSeconds(24));
 		}
-		
 		return assetsHandler;
 	}
 }
