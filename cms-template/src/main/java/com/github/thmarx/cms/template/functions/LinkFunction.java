@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.content.template;
+package com.github.thmarx.cms.template.functions;
 
 /*-
  * #%L

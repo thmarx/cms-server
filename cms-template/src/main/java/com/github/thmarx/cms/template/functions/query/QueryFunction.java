@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.filesystem.functions.query;
+package com.github.thmarx.cms.template.functions.query;
 
 /*-
  * #%L
@@ -27,7 +27,7 @@ import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
-import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.filesystem.query.Query;

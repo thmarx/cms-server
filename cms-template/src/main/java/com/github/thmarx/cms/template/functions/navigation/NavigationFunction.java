@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.filesystem.functions.navigation;
+package com.github.thmarx.cms.template.functions.navigation;
 
 /*-
  * #%L
@@ -33,7 +33,7 @@ import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.PathUtil;
-import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.utils.NodeUtil;
 import java.nio.file.Path;
 import java.util.ArrayList;

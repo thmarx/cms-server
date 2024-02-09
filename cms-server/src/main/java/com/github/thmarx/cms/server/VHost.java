@@ -31,18 +31,28 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.github.thmarx.cms.api.eventbus.events.ConfigurationFileChanged;
-import com.github.thmarx.cms.api.eventbus.events.ContentChangedEvent;
 import com.github.thmarx.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
-import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.feature.features.ContentRenderFeature;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
+import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.module.RenderContentFunction;
 import com.github.thmarx.cms.request.RequestContextFactory;
+import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
+import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
+import com.github.thmarx.cms.server.jetty.filter.RequestLoggingFilter;
+import com.github.thmarx.cms.server.jetty.handler.JettyContentHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyExtensionHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyMediaHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyModuleMappingHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyRouteHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyRoutesHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyTaxonomyHandler;
+import com.github.thmarx.cms.server.jetty.handler.JettyViewHandler;
 import com.github.thmarx.cms.server.jetty.modules.ModulesModule;
 import com.github.thmarx.cms.server.jetty.modules.SiteHandlerModule;
 import com.github.thmarx.cms.server.jetty.modules.SiteModule;
@@ -51,13 +61,21 @@ import com.github.thmarx.cms.utils.SiteUtils;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.http.pathmap.PathSpec;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.PathMappingsHandler;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 
 /**
  *
@@ -156,5 +174,103 @@ public class VHost {
 				injector.getInstance(SiteProperties.class), 
 				injector.getInstance(Theme.class)
 		);
+	}
+	
+	public Handler httpHandler() {
+
+		var contentHandler = injector.getInstance(JettyContentHandler.class);
+		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
+		var viewHandler = injector.getInstance(JettyViewHandler.class);
+		var routeHandler = injector.getInstance(JettyRouteHandler.class);
+		var routesHandler = injector.getInstance(JettyRoutesHandler.class);
+
+		var defaultHandlerSequence = new Handler.Sequence(
+				routeHandler,
+				routesHandler,
+				viewHandler,
+				taxonomyHandler,
+				contentHandler
+		);
+
+		log.debug("create assets handler for site");
+		ResourceHandler assetsHandler = injector.getInstance(Key.get(ResourceHandler.class, Names.named("site")));
+
+		ResourceHandler faviconHandler = new ResourceHandler();
+		faviconHandler.setDirAllowed(false);
+		var assetBase = this.injector.getInstance(Key.get(Path.class, Names.named("assets")));
+		faviconHandler.setBaseResource(new FileFolderPathResource(assetBase.resolve("favicon.ico")));
+
+		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
+		pathMappingsHandler.addMapping(
+				PathSpec.from("/"),
+				new RequestContextFilter(defaultHandlerSequence, injector.getInstance(RequestContextFactory.class))
+		);
+		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
+		pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
+
+		var assetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("site")));
+		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, assetsMediaManager);
+		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
+		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
+
+		pathMappingsHandler.addMapping(
+				PathSpec.from("/" + JettyModuleMappingHandler.PATH + "/*"),
+				new RequestContextFilter(injector.getInstance(JettyModuleMappingHandler.class), injector.getInstance(RequestContextFactory.class))
+		);
+
+		pathMappingsHandler.addMapping(
+				PathSpec.from("/" + JettyExtensionHandler.PATH + "/*"),
+				new RequestContextFilter(injector.getInstance(JettyExtensionHandler.class), injector.getInstance(RequestContextFactory.class))
+		);
+
+		ContextHandler defaultContextHandler = new ContextHandler(
+				pathMappingsHandler,
+				injector.getInstance(SiteProperties.class).contextPath()
+		);
+		defaultContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
+
+		ContextHandlerCollection contextCollection = new ContextHandlerCollection(
+				defaultContextHandler
+		);
+
+		if (!injector.getInstance(Theme.class).empty()) {
+			var themeContextHandler = themeContextHandler();
+			themeContextHandler.setVirtualHosts(injector.getInstance(SiteProperties.class).hostnames());
+			contextCollection.addHandler(themeContextHandler);
+		}
+
+		RequestLoggingFilter logContextHandler = new RequestLoggingFilter(contextCollection, injector.getInstance(SiteProperties.class));
+
+		GzipHandler gzipHandler = new GzipHandler(logContextHandler);
+		gzipHandler.setMinGzipSize(1024);
+		gzipHandler.addIncludedMimeTypes("text/plain");
+		gzipHandler.addIncludedMimeTypes("text/html");
+		gzipHandler.addIncludedMimeTypes("text/css");
+		gzipHandler.addIncludedMimeTypes("application/javascript");
+
+		return gzipHandler;
+	}
+
+	private String appendContextIfNeeded(final String path) {
+		var contextPath = injector.getInstance(SiteProperties.class).contextPath();
+
+		if ("/".equals(contextPath)) {
+			return path;
+		}
+
+		return contextPath + path;
+	}
+
+	private ContextHandler themeContextHandler() {
+		final MediaManager themeAssetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("theme")));
+		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, themeAssetsMediaManager);
+		JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("theme")));
+		ResourceHandler assetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));
+
+		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
+		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
+		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
+
+		return new ContextHandler(pathMappingsHandler, appendContextIfNeeded("/theme"));
 	}
 }

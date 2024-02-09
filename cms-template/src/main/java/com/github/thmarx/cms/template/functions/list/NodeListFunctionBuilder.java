@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.filesystem.functions.list;
+package com.github.thmarx.cms.template.functions.list;
 
 /*-
  * #%L
@@ -34,7 +34,7 @@ import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
-import com.github.thmarx.cms.filesystem.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.utils.NodeUtil;
 import java.nio.file.Path;
 import java.util.Comparator;

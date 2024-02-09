@@ -32,7 +32,6 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.api.model.ListNode;
-import com.github.thmarx.cms.filesystem.functions.list.NodeListFunctionBuilder;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Collectors;

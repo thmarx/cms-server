@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.github.thmarx.cms.server.HttpServer;
+import com.github.thmarx.cms.server.VHost;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.eclipse.jetty.server.CustomRequestLog;
@@ -51,26 +51,25 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class JettyServer implements HttpServer {
+public class JettyServer implements AutoCloseable {
 
 	private final ServerProperties properties;
 	private Server server;
 	
 	private ScheduledExecutorService scheduledExecutorService;
 
-	@Override
 	public void startup() throws IOException {
 		
 		scheduledExecutorService = Executors.newScheduledThreadPool(1);
 		
-		List<JettyVHost> vhosts = new ArrayList<>();
+		List<VHost> vhosts = new ArrayList<>();
 		Files.list(Path.of("hosts")).forEach((hostPath) -> {
 			var props = hostPath.resolve("site.yaml");
 			if (Files.exists(props)) {
 				try {
 					Configuration configuration = new Configuration(hostPath);
 					configuration.add(ServerConfiguration.class, new ServerConfiguration(properties));
-					var host = new JettyVHost(hostPath, configuration, scheduledExecutorService);
+					var host = new VHost(hostPath, configuration, scheduledExecutorService);
 					host.init(Path.of(Constants.Folders.MODULES));
 					vhosts.add(host);
 
