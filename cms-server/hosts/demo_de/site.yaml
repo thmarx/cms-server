@@ -8,7 +8,7 @@ language: en
 test: Hallo1
 markdown:
   engine: markedjs
-theme: default
+theme: test
 modules:
   active:
     - markedjs-module

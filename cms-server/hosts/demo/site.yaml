@@ -7,7 +7,7 @@ language: en
 test: Hallo
 markdown:
   engine: markedj
-theme: default
+theme: test
 modules:
   active:
     - markedj-module
