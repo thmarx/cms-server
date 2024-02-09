@@ -22,7 +22,7 @@ package com.github.thmarx.cms.request;
  * #L%
  */
 
-import com.github.thmarx.cms.content.ShortCodes;
+import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.theme.Theme;

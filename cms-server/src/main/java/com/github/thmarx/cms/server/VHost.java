@@ -45,14 +45,14 @@ import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
 import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.github.thmarx.cms.server.jetty.filter.RequestLoggingFilter;
-import com.github.thmarx.cms.server.jetty.handler.JettyContentHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyExtensionHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyMediaHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyModuleMappingHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyRouteHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyRoutesHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyTaxonomyHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyViewHandler;
+import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
+import com.github.thmarx.cms.server.handler.extensions.JettyExtensionHandler;
+import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
+import com.github.thmarx.cms.server.handler.extensionpoints.JettyHttpHandlerHandler;
+import com.github.thmarx.cms.server.handler.extensionpoints.JettyRouteHandler;
+import com.github.thmarx.cms.server.handler.extensionpoints.JettyRoutesHandler;
+import com.github.thmarx.cms.server.handler.content.JettyTaxonomyHandler;
+import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
 import com.github.thmarx.cms.server.jetty.modules.ModulesModule;
 import com.github.thmarx.cms.server.jetty.modules.SiteHandlerModule;
 import com.github.thmarx.cms.server.jetty.modules.SiteModule;
@@ -213,9 +213,8 @@ public class VHost {
 		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
-		pathMappingsHandler.addMapping(
-				PathSpec.from("/" + JettyModuleMappingHandler.PATH + "/*"),
-				new RequestContextFilter(injector.getInstance(JettyModuleMappingHandler.class), injector.getInstance(RequestContextFactory.class))
+		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerHandler.PATH + "/*"),
+				new RequestContextFilter(injector.getInstance(JettyHttpHandlerHandler.class), injector.getInstance(RequestContextFactory.class))
 		);
 
 		pathMappingsHandler.addMapping(

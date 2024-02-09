@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty.handler;
+package com.github.thmarx.cms.server.handler.extensionpoints;
 
 /*-
  * #%L
@@ -39,7 +39,7 @@ import org.eclipse.jetty.util.Callback;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class JettyModuleMappingHandler extends Handler.Abstract {
+public class JettyHttpHandlerHandler extends Handler.Abstract {
 
 	public static final String PATH = "module";
 	

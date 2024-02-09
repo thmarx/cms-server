@@ -29,7 +29,7 @@ import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
-import com.github.thmarx.cms.server.jetty.handler.JettyMediaHandler;
+import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;

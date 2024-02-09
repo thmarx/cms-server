@@ -26,14 +26,14 @@ import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
-import com.github.thmarx.cms.server.jetty.handler.JettyContentHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyExtensionHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyMediaHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyModuleMappingHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyRouteHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyRoutesHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyTaxonomyHandler;
-import com.github.thmarx.cms.server.jetty.handler.JettyViewHandler;
+import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
+import com.github.thmarx.cms.server.handler.extensions.JettyExtensionHandler;
+import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
+import com.github.thmarx.cms.server.handler.extensionpoints.JettyHttpHandlerHandler;
+import com.github.thmarx.cms.server.handler.extensionpoints.JettyRouteHandler;
+import com.github.thmarx.cms.server.handler.extensionpoints.JettyRoutesHandler;
+import com.github.thmarx.cms.server.handler.content.JettyTaxonomyHandler;
+import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
 import com.github.thmarx.cms.utils.SiteUtils;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.AbstractModule;
@@ -69,8 +69,8 @@ public class SiteHandlerModule extends AbstractModule {
 	
 	@Provides
 	@Singleton
-	public JettyModuleMappingHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
-		return new JettyModuleMappingHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
+	public JettyHttpHandlerHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
+		return new JettyHttpHandlerHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
 	}
 	
 	@Provides

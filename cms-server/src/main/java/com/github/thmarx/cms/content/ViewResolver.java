@@ -30,6 +30,8 @@ import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.utils.PathUtil;
+import com.github.thmarx.cms.content.ContentRenderer;
+import com.github.thmarx.cms.content.views.ViewParser;
 import com.github.thmarx.cms.content.views.ViewParser;
 import com.github.thmarx.cms.request.RenderContext;
 import com.github.thmarx.cms.request.RequestExtensions;

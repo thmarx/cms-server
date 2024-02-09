@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty.handler;
+package com.github.thmarx.cms.server.handler.content;
 
 /*-
  * #%L
@@ -21,14 +21,16 @@ package com.github.thmarx.cms.server.jetty.handler;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.extensions.HttpRoutesExtensionPoint;
-import com.github.thmarx.cms.api.extensions.Mapping;
-import com.github.thmarx.cms.api.utils.RequestUtil;
-import com.github.thmarx.modules.api.ModuleManager;
+import com.github.thmarx.cms.api.content.TaxonomyResponse;
+import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.content.TaxonomyResolver;
+import com.github.thmarx.cms.request.RequestContextFactory;
+import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -38,37 +40,32 @@ import org.eclipse.jetty.util.Callback;
  *
  * @author t.marx
  */
-@RequiredArgsConstructor(onConstructor = @__({
-	@Inject}))
+@RequiredArgsConstructor(onConstructor = @__({@Inject}))
 @Slf4j
-public class JettyRoutesHandler extends Handler.Abstract {
-
-	private final ModuleManager moduleManager;
-
+public class JettyTaxonomyHandler extends Handler.Abstract {
+	private final TaxonomyResolver taxonomyResolver;
+	
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
-
+		var requestContext = (RequestContext) request.getAttribute(RequestContextFilter.REQUEST_CONTEXT);
 		try {
-			String route = "/" + RequestUtil.getContentPath(request);
-
-			Optional<Mapping> firstMatch = moduleManager.extensions(HttpRoutesExtensionPoint.class)
-					.stream()
-					.filter(extension -> extension.getMapping().getMatchingHandler(route).isPresent())
-					.map(extension -> extension.getMapping())
-					.findFirst();
-
-			if (firstMatch.isPresent()) {
-				var mapping = firstMatch.get();
-				var handler = mapping.getMatchingHandler(route).get();
-				return handler.handle(request, response, callback);
-			}
-
 			
-			return false;
+			if (!taxonomyResolver.isTaxonomy(requestContext)) {
+				return false;
+			}
+			
+			Optional<TaxonomyResponse> taxonomyResponse = taxonomyResolver.getTaxonomyResponse(requestContext);
+			if (taxonomyResponse.isPresent()) {
+				response.setStatus(200);
+				response.getHeaders().add("Content-Type", "%s; charset=utf-8".formatted(taxonomyResponse.get().contentType()));
+				Content.Sink.write(response, true, taxonomyResponse.get().content(), callback);
+				return true;
+			}
+			
 		} catch (Exception e) {
-			log.error(null, e);
-			callback.failed(e);
-			return true;
+			log.error("", e);
 		}
+		return false;
 	}
+
 }

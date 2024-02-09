@@ -47,7 +47,7 @@ import com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
 import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.cms.content.ShortCodes;
+import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;

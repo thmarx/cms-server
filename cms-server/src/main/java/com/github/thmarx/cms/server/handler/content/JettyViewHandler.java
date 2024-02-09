@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.server.jetty.handler;
+package com.github.thmarx.cms.server.handler.content;
 
 /*-
  * #%L
