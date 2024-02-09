@@ -25,7 +25,9 @@ package com.github.thmarx.cms.filesystem.functions.taxonomy;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.google.inject.Inject;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -37,8 +39,20 @@ public class TaxonomyFunction {
 	
 	private final FileDB fileDB;
 	
-	public List<Taxonomy> taxonomies () {
+	public List<Taxonomy> all () {
 		return fileDB.getTaxonomies().all();
+	}
+	
+	public Taxonomy get (String slug) {
+		return fileDB.getTaxonomies().forSlug(slug).orElse(null);
+	}
+	
+	public Set<String> values (String slug) {
+		var taxonomy = fileDB.getTaxonomies().forSlug(slug);
+		if (taxonomy.isEmpty()) {
+			return Collections.emptySet();
+		}
+		return fileDB.getTaxonomies().values(taxonomy.get());
 	}
 	
 	public String url (final String taxonomy, final String value) {
