@@ -19,13 +19,12 @@
 			<directory>${project.basedir}/hosts</directory>
 			<includes>
 				<include>demo/**/*</include>
-				<include>theme-demo/**/*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
 			<directory>${project.basedir}/themes</directory>
 			<includes>
-				<include>default/**/*</include>
+				<include>demo/**/*</include>
 			</includes>
 		</fileSet>
 		<fileSet>
