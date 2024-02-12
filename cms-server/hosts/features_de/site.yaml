@@ -1,15 +1,18 @@
-id: demo-site
+id: feature-site-de
+context_path: "/de"
 hostname: 
-  - localhost
-baseurl: "http://localhost:1010"
+  - localhost2
+baseurl: "http://localhost2:1010/de/"
 language: en
+test: Hallo1
 markdown:
-  engine: markedj
-theme: demo
+  engine: markedjs
+theme: test
 modules:
   active:
-    - markedj-module
+    - markedjs-module
     - seo-module
+    - forms-module
 media:
   formats:
     - name: small
