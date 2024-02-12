@@ -16,7 +16,8 @@ build
 target/
 .vscode/
 cms-server/hosts/marx-software
-cms-server/hosts/demo/modules_data/
+cms-server/hosts/demo/modules_data/search-module/index
+cms-server/hosts/demo/modules_data/ui-module
 cms-server/hosts/demo/temp/
 cms-server/hosts/features/modules_data/
 cms-server/hosts/features/temp
