@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.10.0
+
+* **FEATURE** Make taxonomies better accessible in template code [#169](https://github.com/thmarx/cms/issues/169)
+
 ## 4.9.0
 
 * **MAINTENANCE** update jetty dependency to 12.0.6 [#167](https://github.com/thmarx/cms/issues/167)
