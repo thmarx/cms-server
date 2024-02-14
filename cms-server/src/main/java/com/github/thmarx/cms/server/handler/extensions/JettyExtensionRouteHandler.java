@@ -63,7 +63,6 @@ public class JettyExtensionRouteHandler extends Handler.Abstract {
 		if (!contextPath.endsWith("/")) {
 			contextPath += "/";
 		}
-		contextPath = contextPath + "/";
 
 		path = path.replace(contextPath, "");
 		if (!path.startsWith("/")) {
