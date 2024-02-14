@@ -35,6 +35,8 @@ import java.math.BigDecimal;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  *
@@ -106,5 +108,26 @@ public class CMSMarkdownTest extends MarkdownTest {
 		var result = SUT.render(md);
 		System.out.println(result);
 //		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+	}
+	
+	@ParameterizedTest
+	@CsvSource({
+		"\\!test\\!,<p>&#33;test&#33;</p>",
+		"\\|test\\|,<p>&#124;test&#124;</p>",
+		"\\.test\\.,<p>&#46;test&#46;</p>",
+		"\\-test\\-,<p>&#45;test&#45;</p>",
+		"\\+test\\+,<p>&#43;test&#43;</p>",
+		"\\(test\\),<p>&#40;test&#41;</p>",
+		"\\<test\\>,<p>&#60;test&#62;</p>",
+		"\\[test\\],<p>&#91;test&#93;</p>",
+		"\\{test\\},<p>&#123;test&#125;</p>",
+		"\\#test\\#,<p>&#35;test&#35;</p>",
+		"\\_test\\_,<p>&#95;test&#95;</p>",
+		"\\`test\\`,<p>&#96;test&#96;</p>",
+		"\\*test\\*,<p>&#42;test&#42;</p>"
+	})
+	void test_escape (final String input, final String expected) throws IOException {
+		var result = SUT.render(input);
+		Assertions.assertThat(result).isEqualTo(expected);
 	}
 }
