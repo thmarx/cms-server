@@ -34,6 +34,7 @@ import com.github.thmarx.cms.server.handler.module.JettyRouteHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRoutesHandler;
 import com.github.thmarx.cms.server.handler.content.JettyTaxonomyHandler;
 import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
+import com.github.thmarx.cms.server.handler.extensions.JettyExtensionRouteHandler;
 import com.github.thmarx.cms.utils.SiteUtils;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.AbstractModule;
@@ -63,6 +64,7 @@ public class SiteHandlerModule extends AbstractModule {
 		bind(JettyRoutesHandler.class).in(Singleton.class);
 		
 		bind(JettyExtensionHandler.class).in(Singleton.class);
+		bind(JettyExtensionRouteHandler.class).in(Singleton.class);
 	}
 	
 	@Provides

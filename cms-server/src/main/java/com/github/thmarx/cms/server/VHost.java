@@ -57,6 +57,7 @@ import com.github.thmarx.cms.server.configs.ModulesModule;
 import com.github.thmarx.cms.server.configs.SiteHandlerModule;
 import com.github.thmarx.cms.server.configs.SiteModule;
 import com.github.thmarx.cms.server.configs.ThemeModule;
+import com.github.thmarx.cms.server.handler.extensions.JettyExtensionRouteHandler;
 import com.github.thmarx.cms.utils.SiteUtils;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Guice;
@@ -183,10 +184,12 @@ public class VHost {
 		var viewHandler = injector.getInstance(JettyViewHandler.class);
 		var routeHandler = injector.getInstance(JettyRouteHandler.class);
 		var routesHandler = injector.getInstance(JettyRoutesHandler.class);
+		var extensionRouteHandler = injector.getInstance(JettyExtensionRouteHandler.class);
 
 		var defaultHandlerSequence = new Handler.Sequence(
 				routeHandler,
 				routesHandler,
+				extensionRouteHandler,
 				viewHandler,
 				taxonomyHandler,
 				contentHandler

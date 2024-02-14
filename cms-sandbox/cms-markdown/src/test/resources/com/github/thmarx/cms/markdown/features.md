@@ -5,6 +5,11 @@ this is a paragraph
 another paragraph
 over multiple lines
 
+## a horizontal line
+
+---
+
+
 ## an unordered list
 
 * ul item 1

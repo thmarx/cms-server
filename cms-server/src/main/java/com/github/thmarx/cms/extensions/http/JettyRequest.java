@@ -46,6 +46,10 @@ public class JettyRequest {
 	public String getBody() {
 		return getBody(StandardCharsets.UTF_8);
 	}
+	
+	public String getMethod () {
+		return original.getMethod();
+	}
 
 	public String getBody(final Charset charset) {
 		if (!bodyRead) {

@@ -24,6 +24,7 @@ package com.github.thmarx.cms.markdown;
 
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.EmphasisInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
@@ -58,6 +59,7 @@ public class CMSMarkdownTest extends MarkdownTest {
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new ListBlockRule());
+		options.addBlockRule(new HorizontalRuleBlockRule());
 		
 		SUT = new CMSMarkdown(options);
 	}
@@ -129,5 +131,22 @@ public class CMSMarkdownTest extends MarkdownTest {
 	void test_escape (final String input, final String expected) throws IOException {
 		var result = SUT.render(input);
 		Assertions.assertThat(result).isEqualTo(expected);
+	}
+	
+	@Test
+	void test_horizontal_rule_with_before() throws IOException {
+		
+		String input = """
+                 before
+                 
+                 ---
+                 
+                 after
+                 """;
+		
+		
+		var result = SUT.render(input);
+
+		Assertions.assertThat(result).isEqualTo("<p>before</p><hr /><p>after</p><p></p>");
 	}
 }

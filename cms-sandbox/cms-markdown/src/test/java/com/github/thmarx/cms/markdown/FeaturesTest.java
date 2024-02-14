@@ -24,6 +24,7 @@ package com.github.thmarx.cms.markdown;
 
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.EmphasisInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
@@ -54,6 +55,7 @@ public class FeaturesTest extends MarkdownTest {
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new ListBlockRule());
+		options.addBlockRule(new HorizontalRuleBlockRule());
 		SUT = new CMSMarkdown(options);
 	}
 	

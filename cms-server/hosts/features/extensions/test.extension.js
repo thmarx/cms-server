@@ -1,5 +1,6 @@
 import { UTF_8 } from 'system/charsets.mjs';
 import { $http } from 'system/http.mjs';
+import { $routes } from 'system/routes.mjs';
 import { $template } from 'system/template.mjs';
 import { $shortcodes } from 'system/shortcodes.mjs';
 import { getLogger } from 'system/logging.mjs';
@@ -22,6 +23,10 @@ $http.post("/form", (request, response) => {
 	response.write("ich bin einen test extension!öäü", UTF_8)
 })
 
+$routes.get("/hello-extension", (request, response) => {
+	response.addHeader("Content-Type", "text/html; charset=utf-8")
+	response.write("extension route", UTF_8)
+})
 
 $template.registerTemplateSupplier(
 	"myName",

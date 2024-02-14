@@ -50,6 +50,8 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	@Getter
 	private final List<HttpHandlerExtension> httpHandlerExtensions = new ArrayList<>();
 	@Getter
+	private final List<HttpHandlerExtension> httpRouteHandlerExtensions = new ArrayList<>();
+	@Getter
 	private final List<TemplateSupplierExtension> registerTemplateSupplier = new ArrayList<>();
 	@Getter
 	private final List<TemplateFunctionExtension> registerTemplateFunctions = new ArrayList<>();
@@ -73,6 +75,14 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	
 	public Optional<HttpHandlerExtension> findHttpHandler (final String method, final String path) {
 		return httpHandlerExtensions.stream().filter(handler -> handler.method().equalsIgnoreCase(method) && handler.path().equalsIgnoreCase(path)).findFirst();
+	}
+	
+	public void registerHttpRouteExtension(final String method, final String path, final ExtensionHttpHandler handler) {
+		httpRouteHandlerExtensions.add(new HttpHandlerExtension(method, path, handler));
+	}
+	
+	public Optional<HttpHandlerExtension> findHttpRouteHandler (final String method, final String path) {
+		return httpRouteHandlerExtensions.stream().filter(handler -> handler.method().equalsIgnoreCase(method) && handler.path().equalsIgnoreCase(path)).findFirst();
 	}
 	
 	public void registerTemplateSupplier(final String path, final Supplier<?> supplier) {
