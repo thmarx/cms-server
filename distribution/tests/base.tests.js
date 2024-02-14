@@ -11,12 +11,13 @@ export const options = {
 export default function () {
 
     const check_urls = [
-        'http://localhost:1010',
-        'http://localhost:1010/example/route',
-        'http://localhost:1010/extension/test',
-        'http://localhost:1010/module/seo-module/sitemap.xml',
-        'http://localhost:1010/module/example-module/world',
-        'http://localhost:1010/module/example-module/hook'
+        'http://localhost2:1010',
+        'http://localhost2:1010/example/route',
+        'http://localhost2:1010/extension/test',
+        'http://localhost2:1010/module/seo-module/sitemap.xml',
+        'http://localhost2:1010/module/example-module/world',
+        'http://localhost2:1010/module/example-module/hook',
+        'http://localhost2:1010/hello-extension',
     ]
 
     check_urls.forEach(url => {
