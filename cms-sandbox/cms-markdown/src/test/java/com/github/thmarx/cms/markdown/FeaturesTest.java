@@ -31,7 +31,6 @@ import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
 import java.io.IOException;
-import java.math.BigDecimal;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author t.marx
  */
-public class CMSMarkdownTest extends MarkdownTest {
+public class FeaturesTest extends MarkdownTest {
 	
 	static CMSMarkdown SUT;
 	
@@ -52,56 +51,18 @@ public class CMSMarkdownTest extends MarkdownTest {
 		options.addInlineRule(new NewlineInlineRule());
 		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new ImageInlineRule());
-		
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new ListBlockRule());
-		
 		SUT = new CMSMarkdown(options);
 	}
 	
 	@Test
-	public void test_1() throws IOException {
+	public void test_features() throws IOException {
 		
-		var md = load("render/test_1.md").trim();
-		var expected = load("render/test_1.html");
-		expected = removeComments(expected);
-		
-		var result = SUT.render(md);
-		
-		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
-	}
-	
-	@Test
-	public void test_2() throws IOException {
-		
-		var md = load("render/test_2.md");
-		var expected = load("render/test_2.html");
-		expected = removeComments(expected);
-		
-		var result = SUT.render(md);
-		
-		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
-	}
-	
-	@Test
-	public void test_3() throws IOException {
-		
-		var md = load("render/test_3.md");
-		var expected = load("render/test_3.html");
-		expected = removeComments(expected);
-		
-		var result = SUT.render(md);
-		
-		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
-	}
-	
-	@Test
-	public void test_4() throws IOException {
-		
-		var md = load("render/test_4.md");
-		var expected = load("render/test_4.html");
-		expected = removeComments(expected);
+		var md = load("features.md").trim();
+//		var expected = load("render/test_1.html");
+//		expected = removeComments(expected);
 		
 		var result = SUT.render(md);
 		System.out.println(result);

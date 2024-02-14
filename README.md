@@ -6,6 +6,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.11.0
+
+* **MAINTENANCE** Code refactorings [#170](https://github.com/thmarx/cms/issues/170)
+* **MAINTENANCE** New minimal demo project to getting started faster [#171](https://github.com/thmarx/cms/issues/171)
+
 ## 4.10.0
 
 * **FEATURE** Make taxonomies better accessible in template code [#169](https://github.com/thmarx/cms/issues/169)
