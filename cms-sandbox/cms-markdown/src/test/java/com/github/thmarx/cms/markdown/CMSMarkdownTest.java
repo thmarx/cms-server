@@ -27,7 +27,7 @@ import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
-import com.github.thmarx.cms.markdown.rules.inline.EmphasisInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
@@ -52,7 +52,7 @@ public class CMSMarkdownTest extends MarkdownTest {
 	public static void setup () {
 		Options options = new Options();
 		options.addInlineRule(new StrongInlineRule());
-		options.addInlineRule(new EmphasisInlineRule());
+		options.addInlineRule(new ItalicInlineRule());
 		options.addInlineRule(new NewlineInlineRule());
 		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new ImageInlineRule());

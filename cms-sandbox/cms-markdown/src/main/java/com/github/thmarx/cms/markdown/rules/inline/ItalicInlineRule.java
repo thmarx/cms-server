@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  *
  * @author t.marx
  */
-public class EmphasisInlineRule implements InlineElementRule {
+public class ItalicInlineRule implements InlineElementRule {
 	
 	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{1}|\\*{1})(?<content>.*?)(\\k<selector>)");
 
