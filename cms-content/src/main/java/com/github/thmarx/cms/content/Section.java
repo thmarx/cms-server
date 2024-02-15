@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.request;
+package com.github.thmarx.cms.content;
 
 /*-
  * #%L
- * cms-server
+ * cms-content
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +22,16 @@ package com.github.thmarx.cms.request;
  * #L%
  */
 
-import com.github.thmarx.cms.content.shortcodes.ShortCodes;
-import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
-import com.github.thmarx.cms.api.feature.Feature;
-import com.github.thmarx.cms.api.theme.Theme;
-import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.Constants;
+
 
 /**
  *
  * @author t.marx
  */
-@Slf4j
-public record RenderContext(MarkdownRenderer markdownRenderer, ShortCodes shortCodes, Theme theme) 
-		implements AutoCloseable, Feature {
+public record Section(String name, int index, String content) {
 
-	@Override
-	public void close() throws Exception {
-		markdownRenderer.close();
+	public Section(String name, String content) {
+		this(name, Constants.DEFAULT_SECTION_ORDERED_INDEX, content);
 	}
-	
-	
 }

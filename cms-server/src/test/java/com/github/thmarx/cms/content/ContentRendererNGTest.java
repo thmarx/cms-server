@@ -50,7 +50,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class ContentRendererNGTest extends TemplateEngineTest {
 	
-	static ContentRenderer contentRenderer;
+	static DefaultContentRenderer contentRenderer;
 	static MarkdownRenderer markdownRenderer;
 	
 	static ModuleManager moduleManager = new MockModuleManager();
@@ -71,7 +71,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(db);
 		
-		contentRenderer = new ContentRenderer(contentParser, 
+		contentRenderer = new DefaultContentRenderer(contentParser, 
 				() -> templates, 
 				db, 
 				new SiteProperties(Map.of()), 

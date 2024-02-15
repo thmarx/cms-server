@@ -64,7 +64,7 @@ public class ContentResolverTest {
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(db);
 
-		contentRenderer = new ContentRenderer(contentParser,
+		contentRenderer = new DefaultContentRenderer(contentParser,
 				() -> templates,
 				db,
 				new SiteProperties(Map.of()),

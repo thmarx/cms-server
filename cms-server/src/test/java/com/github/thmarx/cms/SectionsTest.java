@@ -22,7 +22,7 @@ package com.github.thmarx.cms;
  * #L%
  */
 import com.github.thmarx.cms.content.DefaultContentParser;
-import com.github.thmarx.cms.content.ContentRenderer;
+import com.github.thmarx.cms.content.DefaultContentRenderer;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.ContentNode;
@@ -30,6 +30,7 @@ import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
+import com.github.thmarx.cms.content.Section;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.template.TemplateEngineTest;
 import java.io.IOException;
@@ -47,7 +48,7 @@ import org.junit.jupiter.api.Test;
  */
 public class SectionsTest extends TemplateEngineTest {
 
-	static ContentRenderer contentRenderer;
+	static DefaultContentRenderer contentRenderer;
 	static MarkdownRenderer markdownRenderer;
 	static FileDB db;
 
@@ -66,7 +67,7 @@ public class SectionsTest extends TemplateEngineTest {
 		markdownRenderer = TestHelper.getRenderer();
 		TemplateEngine templates = new TestTemplateEngine(db);
 
-		contentRenderer = new ContentRenderer(contentParser,
+		contentRenderer = new DefaultContentRenderer(contentParser,
 				() -> templates,
 				db,
 				new SiteProperties(Map.of()),
@@ -79,7 +80,7 @@ public class SectionsTest extends TemplateEngineTest {
 		List<ContentNode> listSections = db.getContent().listSections(db.getFileSystem().resolve("content/page.md"));
 		Assertions.assertThat(listSections).hasSize(4);
 
-		Map<String, List<ContentRenderer.Section>> renderSections = contentRenderer.renderSections(listSections, TestHelper.requestContext());
+		Map<String, List<Section>> renderSections = contentRenderer.renderSections(listSections, TestHelper.requestContext());
 
 		Assertions.assertThat(renderSections)
 				.hasSize(1)

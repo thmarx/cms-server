@@ -22,14 +22,13 @@ package com.github.thmarx.cms.content;
  * #L%
  */
 
-import com.github.thmarx.cms.content.TaxonomyResolver;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.request.RequestContext;
-import com.github.thmarx.cms.content.ContentRenderer;
+import com.github.thmarx.cms.content.DefaultContentRenderer;
 import java.util.Map;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
@@ -51,7 +50,7 @@ public class TaxonomyResolverTest {
 	DB db;
 	
 	@Mock
-	ContentRenderer contentRenderer;
+	DefaultContentRenderer contentRenderer;
 	
 	@Mock
 	ContentNodeMapper contentNodeMapper;

@@ -30,6 +30,7 @@ import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.utils.PathUtil;
+import com.github.thmarx.cms.content.Section;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -132,7 +133,7 @@ public class ContentResolver {
 			
 			List<ContentNode> sections = db.getContent().listSections(contentFile);
 			
-			Map<String, List<ContentRenderer.Section>> renderedSections = contentRenderer.renderSections(sections, context);
+			Map<String, List<Section>> renderedSections = contentRenderer.renderSections(sections, context);
 			
 			var content = contentRenderer.render(contentFile, context, renderedSections);
 			

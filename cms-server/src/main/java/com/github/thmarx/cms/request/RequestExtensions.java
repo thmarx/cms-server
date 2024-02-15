@@ -57,7 +57,6 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	private final List<TemplateFunctionExtension> registerTemplateFunctions = new ArrayList<>();
 	@Getter
 	private final Map<String, Function<Parameter, String>> shortCodes = new HashMap<>();
-	
 	@Getter
 	private final Map<String, BiPredicate<Object, Object>> queryOperations = new HashMap<>();
 

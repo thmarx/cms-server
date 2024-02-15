@@ -40,6 +40,7 @@ import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.content.ContentRenderer;
+import com.github.thmarx.cms.content.DefaultContentRenderer;
 import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.content.TaxonomyResolver;
@@ -206,7 +207,7 @@ public class SiteModule extends AbstractModule {
 	@Singleton
 	public ContentRenderer contentRenderer(ContentParser contentParser, Injector injector, FileDB db,
 			SiteProperties siteProperties, ModuleManager moduleManager) {
-		return new ContentRenderer(
+		return new DefaultContentRenderer(
 				contentParser,
 				() -> injector.getInstance(TemplateEngine.class),
 				db,

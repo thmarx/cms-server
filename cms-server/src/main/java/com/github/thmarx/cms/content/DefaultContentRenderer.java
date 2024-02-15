@@ -21,7 +21,6 @@ package com.github.thmarx.cms.content;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
@@ -49,7 +48,6 @@ import com.github.thmarx.cms.template.functions.LinkFunction;
 import com.github.thmarx.cms.content.views.model.View;
 import com.github.thmarx.cms.template.functions.query.QueryFunction;
 import com.github.thmarx.cms.template.functions.taxonomy.TaxonomyFunction;
-import com.github.thmarx.cms.request.RenderContext;
 import com.github.thmarx.cms.request.RequestExtensions;
 import com.github.thmarx.modules.api.ModuleManager;
 import java.io.IOException;
@@ -72,7 +70,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class ContentRenderer {
+public class DefaultContentRenderer implements ContentRenderer {
 
 	private final ContentParser contentParser;
 	private final Supplier<TemplateEngine> templates;
@@ -80,11 +78,13 @@ public class ContentRenderer {
 	private final SiteProperties siteProperties;
 	private final ModuleManager moduleManager;
 
+	@Override
 	public String render(final Path contentFile, final RequestContext context) throws IOException {
 		return render(contentFile, context, Collections.emptyMap());
 	}
 
-	public String render(final Path contentFile, final RequestContext context, final Map<String, List<ContentRenderer.Section>> sections) throws IOException {
+	@Override
+	public String render(final Path contentFile, final RequestContext context, final Map<String, List<Section>> sections) throws IOException {
 		var content = contentParser.parse(contentFile);
 
 		var markdownContent = content.content();
@@ -94,6 +94,7 @@ public class ContentRenderer {
 		});
 	}
 
+	@Override
 	public String renderTaxonomy(final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, final Map<String, Object> meta, final Page<ListNode> page) throws IOException {
 		var contentFile = db.getFileSystem().resolve("content").resolve("index.md");
 
@@ -108,6 +109,7 @@ public class ContentRenderer {
 		});
 	}
 	
+	@Override
 	public String renderView(final Path viewFile, final View view, final ContentNode contentNode, final RequestContext requestContext, final Page<ListNode> page) throws IOException {
 		return render(viewFile, requestContext, Collections.emptyMap(), 
 				contentNode.data(), "", (model) -> {
@@ -124,8 +126,9 @@ public class ContentRenderer {
 		});
 	}
 
+	@Override
 	public String render(final Path contentFile, final RequestContext context,
-			final Map<String, List<ContentRenderer.Section>> sections,
+			final Map<String, List<Section>> sections,
 			final Map<String, Object> meta, final String markdownContent, final Consumer<TemplateEngine.Model> modelExtending
 	) throws IOException {
 		var uri = PathUtil.toRelativeFile(contentFile, db.getFileSystem().resolve("content/"));
@@ -210,6 +213,7 @@ public class ContentRenderer {
 		moduleManager.extensions(TemplateModelExtendingExtentionPoint.class).forEach(extensionPoint -> extensionPoint.extendModel(model));
 	}
 
+	@Override
 	public Map<String, List<Section>> renderSections(final List<ContentNode> sectionNodes, final RequestContext context) throws IOException {
 
 		if (sectionNodes.isEmpty()) {
@@ -237,15 +241,9 @@ public class ContentRenderer {
 
 		});
 
-		sections.values().forEach(list -> list.sort((s1, s2) -> Integer.compare(s1.index, s2.index)));
+		sections.values().forEach(list -> list.sort((s1, s2) -> Integer.compare(s1.index(), s2.index())));
 
 		return sections;
 	}
 
-	public static record Section(String name, int index, String content) {
-
-		public Section(String name, String content) {
-			this(name, Constants.DEFAULT_SECTION_ORDERED_INDEX, content);
-		}
-	}
 }
