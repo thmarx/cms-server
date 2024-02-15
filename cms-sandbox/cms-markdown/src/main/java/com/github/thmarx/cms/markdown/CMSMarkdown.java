@@ -24,6 +24,7 @@ package com.github.thmarx.cms.markdown;
 import com.github.thmarx.cms.markdown.rules.block.ParagraphBlockRule;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  *
@@ -47,16 +48,32 @@ public class CMSMarkdown {
 		final StringBuilder htmlBuilder = new StringBuilder();
 		List<Block> blocks = blockTokenizer.tokenize(escape(md));
 
-		blocks.stream().forEach(block -> {
-			final StringBuilder html = new StringBuilder(block.render());
-			inlineRules.forEach(rule -> html.replace(0, html.length(), rule.render(html.toString())));
-			htmlBuilder.append(html);
-		});
+		blocks.stream()
+				.map(block -> {
+
+					if (block instanceof BlockContainer) {
+						final Function<String, String> renderContainer = (content) -> {
+							try {
+								return this.render(content);
+							} catch (IOException e) {
+							}
+							return "";
+						};
+						return ((BlockContainer) block).render(renderContainer);
+					} else {
+						return block.render();
+					}
+				})
+				.forEach(blockHtml -> {
+					final StringBuilder html = new StringBuilder(blockHtml);
+					inlineRules.forEach(rule -> html.replace(0, html.length(), rule.render(html.toString())));
+					htmlBuilder.append(html);
+				});
 
 		return htmlBuilder.toString();
 	}
-	
-	private String escape (final String md) {
+
+	private String escape(final String md) {
 		return md
 				.replaceAll("\\\\#", "&#35;")
 				.replaceAll("\\\\\\*", "&#42;")
@@ -74,7 +91,6 @@ public class CMSMarkdown {
 				.replaceAll("\\\\-", "&#45;")
 				.replaceAll("\\\\\\.", "&#46;")
 				.replaceAll("\\\\!", "&#33;")
-				.replaceAll("\\\\\\|", "&#124;")
-				;
+				.replaceAll("\\\\\\|", "&#124;");
 	}
 }

@@ -22,6 +22,7 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.rules.block.BlockquoteBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
@@ -60,6 +61,7 @@ public class CMSMarkdownTest extends MarkdownTest {
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new ListBlockRule());
 		options.addBlockRule(new HorizontalRuleBlockRule());
+		options.addBlockRule(new BlockquoteBlockRule());
 		
 		SUT = new CMSMarkdown(options);
 	}
@@ -148,5 +150,24 @@ public class CMSMarkdownTest extends MarkdownTest {
 		var result = SUT.render(input);
 
 		Assertions.assertThat(result).isEqualTo("<p>before</p><hr /><p>after</p><p></p>");
+	}
+	
+	@Test
+	void test_blockquote() throws IOException {
+		
+		String input = "before\n\n> line 1\n> line 2\n\nafter";
+		
+		var result = SUT.render(input);
+		Assertions.assertThat(result).isEqualToIgnoringNewLines("<p>before</p><blockquote><p>line 1\nline 2</p><p></p></blockquote><p>after</p>");
+	}
+	
+	@Test
+	void test_blockquote_nested_heading() throws IOException {
+		
+		String input = "before\n\n> ### line 1\n>\n> line 2\n\nafter";
+		
+		var result = SUT.render(input);
+		System.out.println(result);
+		Assertions.assertThat(result).isEqualToIgnoringNewLines("<p>before</p><blockquote><h3>line 1</h3><p>line 2</p><p></p></blockquote><p>after</p>");
 	}
 }
