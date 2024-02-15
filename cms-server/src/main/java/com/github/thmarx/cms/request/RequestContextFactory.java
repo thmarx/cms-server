@@ -22,7 +22,6 @@ package com.github.thmarx.cms.request;
  * #L%
  */
 import com.github.thmarx.cms.api.ServerContext;
-import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
