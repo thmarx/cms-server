@@ -40,7 +40,7 @@ import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.content.RenderContext;
-import com.github.thmarx.cms.request.RequestExtensions;
+import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.github.thmarx.cms.theme.DefaultTheme;
 import com.google.inject.Injector;
 import java.util.Map;

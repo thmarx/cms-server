@@ -48,7 +48,7 @@ import com.github.thmarx.cms.template.functions.LinkFunction;
 import com.github.thmarx.cms.content.views.model.View;
 import com.github.thmarx.cms.template.functions.query.QueryFunction;
 import com.github.thmarx.cms.template.functions.taxonomy.TaxonomyFunction;
-import com.github.thmarx.cms.request.RequestExtensions;
+import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.github.thmarx.modules.api.ModuleManager;
 import java.io.IOException;
 import java.nio.file.Path;

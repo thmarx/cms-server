@@ -28,7 +28,6 @@ import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.request.RequestContext;
-import com.github.thmarx.cms.content.DefaultContentRenderer;
 import java.util.Map;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;

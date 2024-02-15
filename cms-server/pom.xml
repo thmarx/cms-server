@@ -45,6 +45,10 @@
 			<groupId>com.github.thmarx.cms</groupId>
 			<artifactId>cms-content</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.github.thmarx.cms</groupId>
+			<artifactId>cms-extensions</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.yaml</groupId>

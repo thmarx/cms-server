@@ -24,6 +24,7 @@
 		<module>cms-sandbox</module>
 	 <module>cms-template</module>
 	 <module>cms-content</module>
+	 <module>cms-extensions</module>
 	</modules>
 	<inceptionYear>2023</inceptionYear>
 	<organization>
@@ -57,6 +58,11 @@
 			<dependency>
 				<groupId>com.github.thmarx.cms</groupId>
 				<artifactId>cms-content</artifactId>
+				<version>${project.version}</version>            
+			</dependency>
+			<dependency>
+				<groupId>com.github.thmarx.cms</groupId>
+				<artifactId>cms-extensions</artifactId>
 				<version>${project.version}</version>            
 			</dependency>
 			<dependency>

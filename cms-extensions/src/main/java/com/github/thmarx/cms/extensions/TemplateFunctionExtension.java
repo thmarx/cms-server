@@ -23,7 +23,6 @@ package com.github.thmarx.cms.extensions;
  */
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  *

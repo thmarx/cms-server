@@ -6,10 +6,11 @@
 		<artifactId>cms-parent</artifactId>
 		<version>4.11.0</version>
 	</parent>
-	<artifactId>cms-content</artifactId>
+	<artifactId>cms-extensions</artifactId>
 	<packaging>jar</packaging>
-    
+	
 	<dependencies>
+		
 		<dependency>
 			<groupId>com.github.thmarx.cms</groupId>
 			<artifactId>cms-api</artifactId>
@@ -18,18 +19,23 @@
 			<groupId>com.github.thmarx.cms</groupId>
 			<artifactId>cms-filesystem</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.github.thmarx.cms</groupId>
-			<artifactId>cms-template</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.github.thmarx.cms</groupId>
-			<artifactId>cms-extensions</artifactId>
-		</dependency>
+		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>polyglot</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.graalvm.js</groupId>
+			<artifactId>js-language</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
 		</dependency>
 	</dependencies>
 </project>
