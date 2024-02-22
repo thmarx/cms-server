@@ -84,7 +84,6 @@ public class ModulesModule extends AbstractModule {
 						"jakarta.servlet"
 				));
 		var moduleManager = ModuleManagerImpl.builder()
-				.activateModulesOnStartup(false)
 				.setClassLoader(classLoader)
 				.setInjector((instance) -> injector.injectMembers(instance))
 				.setModulesDataPath(injector.getInstance(FileDB.class).getFileSystem().resolve("modules_data").toFile())

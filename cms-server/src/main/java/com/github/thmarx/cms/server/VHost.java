@@ -147,16 +147,16 @@ public class VHost {
 					}
 				});
 
-		moduleManager.getModuleIds().stream()
-				.filter(id -> !activeModules.contains(id))
-				.forEach((module_id) -> {
-					try {
-						log.debug("deactivate module {}", module_id);
-						moduleManager.deactivateModule(module_id);
-					} catch (IOException ex) {
-						log.error(null, ex);
-					}
-				});
+//		moduleManager.getModuleIds().stream()
+//				.filter(id -> !activeModules.contains(id))
+//				.forEach((module_id) -> {
+//					try {
+//						log.debug("deactivate module {}", module_id);
+//						moduleManager.deactivateModule(module_id);
+//					} catch (IOException ex) {
+//						log.error(null, ex);
+//					}
+//				});
 
 		injector.getInstance(EventBus.class).register(InvalidateContentCacheEvent.class, (EventListener<InvalidateContentCacheEvent>) (InvalidateContentCacheEvent event) -> {
 			log.debug("invalidate content cache");
