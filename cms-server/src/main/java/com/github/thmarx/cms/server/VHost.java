@@ -90,7 +90,7 @@ public class VHost {
 	private final Path hostBase;
 
 	private final ScheduledExecutorService scheduledExecutorService;
-	
+
 	@Getter
 	protected Injector injector;
 
@@ -147,17 +147,6 @@ public class VHost {
 					}
 				});
 
-//		moduleManager.getModuleIds().stream()
-//				.filter(id -> !activeModules.contains(id))
-//				.forEach((module_id) -> {
-//					try {
-//						log.debug("deactivate module {}", module_id);
-//						moduleManager.deactivateModule(module_id);
-//					} catch (IOException ex) {
-//						log.error(null, ex);
-//					}
-//				});
-
 		injector.getInstance(EventBus.class).register(InvalidateContentCacheEvent.class, (EventListener<InvalidateContentCacheEvent>) (InvalidateContentCacheEvent event) -> {
 			log.debug("invalidate content cache");
 			injector.getInstance(ContentParser.class).clearCache();
@@ -172,11 +161,11 @@ public class VHost {
 
 	protected List<String> getActiveModules() {
 		return SiteUtils.getActiveModules(
-				injector.getInstance(SiteProperties.class), 
+				injector.getInstance(SiteProperties.class),
 				injector.getInstance(Theme.class)
 		);
 	}
-	
+
 	public Handler httpHandler() {
 
 		var contentHandler = injector.getInstance(JettyContentHandler.class);
