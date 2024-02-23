@@ -29,3 +29,5 @@ java.lang.System.out.println("Hello world!");
 1. ol item 1
 1. ol item 2
 1. ol item 3
+
+Testing some inline elements like ~~strikethrough~~, ^superscript^, =subscript=, ==mark==, _italic_ and __bold__

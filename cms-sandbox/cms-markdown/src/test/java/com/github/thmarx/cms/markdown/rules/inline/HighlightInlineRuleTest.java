@@ -22,22 +22,20 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.InlineElementRule;
-import java.util.regex.Pattern;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author t.marx
  */
-public class ItalicInlineRule implements InlineElementRule {
+public class HighlightInlineRuleTest {
 	
-	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{1}|\\*{1})(?<content>.*?)(\\k<selector>)");
+	private HighlightInlineRule sut = new HighlightInlineRule();
 
-	@Override
-	public String render(String md) {
-		var matcher = PATTERN.matcher(md);
-		return matcher.replaceAll((result) -> "<em>%s</em>".formatted(result.group("content")));
+	@Test
+	public void correct_pattern() {
+		Assertions.assertThat(sut.render("this is ==important==")).isEqualTo("this is <mark>important</mark>");
 	}
-	
 	
 }

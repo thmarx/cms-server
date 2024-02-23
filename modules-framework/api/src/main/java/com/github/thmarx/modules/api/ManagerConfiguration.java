@@ -23,15 +23,6 @@ package com.github.thmarx.modules.api;
  */
 
 
-import com.google.gson.Gson;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -65,30 +56,7 @@ public class ManagerConfiguration {
 	public void remove (final String moduleId) {
 		modules.remove(moduleId);
 	}
-	
 
-	public static void store(final File file, final ManagerConfiguration config) {
-		
-        final String yamlConfiguration = new Gson().toJson(config);
-		
-		try (BufferedWriter buffer = Files.newBufferedWriter(Paths.get(file.toURI()), Charset.forName("UTF-8"))){
-			buffer.write(yamlConfiguration);
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		}
-		
-	}
-	
-	public static ManagerConfiguration load (final File file) {
-		try {
-			return new Gson().fromJson(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")), ManagerConfiguration.class);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	
-	
 	public static class ModuleConfig {
 		
 		private boolean active = false;

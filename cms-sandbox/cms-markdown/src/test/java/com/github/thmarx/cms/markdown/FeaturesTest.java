@@ -26,14 +26,19 @@ import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
+import com.github.thmarx.cms.markdown.rules.inline.HighlightInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.StrikethroughInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.SubscriptInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.SuperscriptInlineRule;
 import java.io.IOException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -52,6 +57,11 @@ public class FeaturesTest extends MarkdownTest {
 		options.addInlineRule(new NewlineInlineRule());
 		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new ImageInlineRule());
+		options.addInlineRule(new StrikethroughInlineRule());
+		options.addInlineRule(new HighlightInlineRule());
+		options.addInlineRule(new SubscriptInlineRule());
+		options.addInlineRule(new SuperscriptInlineRule());
+		
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new ListBlockRule());
@@ -59,15 +69,15 @@ public class FeaturesTest extends MarkdownTest {
 		SUT = new CMSMarkdown(options);
 	}
 	
-	@Test
+	@RepeatedTest(10)
 	public void test_features() throws IOException {
 		
 		var md = load("features.md").trim();
-//		var expected = load("render/test_1.html");
-//		expected = removeComments(expected);
+		var expected = load("features.html");
+		expected = removeComments(expected);
 		
 		var result = SUT.render(md);
-		System.out.println(result);
-//		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+		result = "<div>" + result + "</div>";
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
 }

@@ -29,14 +29,14 @@ import java.util.regex.Pattern;
  *
  * @author t.marx
  */
-public class ItalicInlineRule implements InlineElementRule {
+public class StrikethroughInlineRule implements InlineElementRule {
 	
-	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{1}|\\*{1})(?<content>.*?)(\\k<selector>)");
+	private static final Pattern PATTERN = Pattern.compile("(~{2})(?<content>.*?)(~{2})");
 
 	@Override
 	public String render(String md) {
 		var matcher = PATTERN.matcher(md);
-		return matcher.replaceAll((result) -> "<em>%s</em>".formatted(result.group("content")));
+		return matcher.replaceAll((result) -> "<del>%s</del>".formatted(result.group("content")));
 	}
 	
 	
