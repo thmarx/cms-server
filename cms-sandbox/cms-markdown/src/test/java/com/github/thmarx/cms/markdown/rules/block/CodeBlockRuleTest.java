@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.block;
 
 /*-
  * #%L
@@ -23,6 +23,7 @@ package com.github.thmarx.cms.markdown.rules;
  */
 
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -36,13 +37,11 @@ public class CodeBlockRuleTest {
 	@Test
 	public void testSomeMethod() {
 		
-		String code = """
-                ```java
-                das ist der code
-                ```
-                """;
+		String code = "```java\ndas ist java code\n```\n\n```php\ndas ist php code\n```";
 		
-		CodeBlockRule.next(code.trim());
+		var codeBlock = (CodeBlockRule.CodeBlock)CodeBlockRule.next(code.trim());
+		Assertions.assertThat(codeBlock.language()).isEqualTo("java");
+		Assertions.assertThat(codeBlock.content()).isEqualTo("das ist java code");
 	}
 	
 }

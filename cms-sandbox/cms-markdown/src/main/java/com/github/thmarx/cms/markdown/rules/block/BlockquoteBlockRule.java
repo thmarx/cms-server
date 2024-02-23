@@ -24,12 +24,9 @@ package com.github.thmarx.cms.markdown.rules.block;
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockContainer;
 import com.github.thmarx.cms.markdown.BlockElementRule;
-import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *

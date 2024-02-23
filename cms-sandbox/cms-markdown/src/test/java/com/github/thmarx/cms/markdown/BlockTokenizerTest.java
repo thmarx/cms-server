@@ -86,10 +86,11 @@ public class BlockTokenizerTest extends MarkdownTest {
 		String content = load("block_code_paragraph.md");
 		List<Block> blocks = sut.tokenize(content);
 
-		assertThat(blocks).hasSize(3);
+		assertThat(blocks).hasSize(4);
 		assertThat(blocks.get(0)).isInstanceOf(CodeBlockRule.CodeBlock.class);
 		assertThat(blocks.get(1)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
 		assertThat(blocks.get(2)).isInstanceOf(ParagraphBlockRule.ParagraphBlock.class);
+		assertThat(blocks.get(3)).isInstanceOf(CodeBlockRule.CodeBlock.class);
 		var cb = (CodeBlockRule.CodeBlock) blocks.get(0);
 		assertThat(cb.content()).isEqualToIgnoringNewLines("java.lang.System.out.println(\"Hello world!\");");
 		assertThat(cb.language()).isEqualToIgnoringNewLines("java");
