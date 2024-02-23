@@ -22,6 +22,7 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.rules.block.BlockquoteBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
@@ -66,6 +67,7 @@ public class FeaturesTest extends MarkdownTest {
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new ListBlockRule());
 		options.addBlockRule(new HorizontalRuleBlockRule());
+		options.addBlockRule(new BlockquoteBlockRule());
 		SUT = new CMSMarkdown(options);
 	}
 	
