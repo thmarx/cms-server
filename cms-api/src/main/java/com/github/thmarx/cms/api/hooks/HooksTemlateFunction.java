@@ -22,7 +22,6 @@ package com.github.thmarx.cms.api.hooks;
  * #L%
  */
 
-import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
