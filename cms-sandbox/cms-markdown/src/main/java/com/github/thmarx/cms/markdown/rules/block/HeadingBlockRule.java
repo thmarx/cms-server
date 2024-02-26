@@ -23,6 +23,7 @@ package com.github.thmarx.cms.markdown.rules.block;
  */
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockElementRule;
+import com.github.thmarx.cms.markdown.InlineRenderer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,8 +51,12 @@ public class HeadingBlockRule implements BlockElementRule {
 	public static record HeadingBlock(int start, int end, String heading, int level) implements Block {
 
 		@Override
-		public String render() {
-			return "<h%d>%s</h%d>".formatted(level, heading, level);
+		public String render(InlineRenderer inlineRenderer) {
+			return "<h%d>%s</h%d>".formatted(
+					level, 
+					heading, 
+					level
+			);
 		}
 
 	}

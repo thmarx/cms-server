@@ -22,6 +22,7 @@ package com.github.thmarx.cms.markdown;
  * #L%
  */
 import com.github.thmarx.cms.markdown.rules.block.ParagraphBlockRule;
+import com.github.thmarx.cms.markdown.rules.inline.TextInlineRule;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
@@ -34,19 +35,45 @@ public class CMSMarkdown {
 
 	private final BlockTokenizer blockTokenizer;
 
+	private final InlineElementTokenizer inlineTokenizer;
+
 	private final List<BlockElementRule> blockRules;
 	private final List<InlineElementRule> inlineRules;
 
 	public CMSMarkdown(Options options) {
 		this.blockTokenizer = new BlockTokenizer(options);
+		this.inlineTokenizer = new InlineElementTokenizer(options);
 		blockRules = options.blockElementRules;
 		blockRules.addLast(new ParagraphBlockRule());
 		inlineRules = options.inlineElementRules;
+		inlineRules.addLast(new TextInlineRule());
+	}
+
+	private String renderInlineElements(final String inline_md) throws IOException {
+		final StringBuilder htmlBuilder = new StringBuilder();
+		List<InlineBlock> blocks = inlineTokenizer.tokenize(inline_md);
+
+		blocks.stream()
+				.map(block -> block.render())
+				.forEach(blockHtml -> {
+					htmlBuilder.append(blockHtml);
+				});
+
+		return htmlBuilder.toString();
 	}
 
 	public String render(final String md) throws IOException {
 		final StringBuilder htmlBuilder = new StringBuilder();
 		List<Block> blocks = blockTokenizer.tokenize(escape(md));
+
+		InlineRenderer inlineRenderer = (content) -> {
+			try {
+				return renderInlineElements(content);
+			} catch (IOException ioe) {
+				// nothing
+			}
+			return "";
+		};
 
 		blocks.stream()
 				.map(block -> {
@@ -61,13 +88,11 @@ public class CMSMarkdown {
 						};
 						return ((BlockContainer) block).render(renderContainer);
 					} else {
-						return block.render();
+						return block.render(inlineRenderer);
 					}
 				})
 				.forEach(blockHtml -> {
-					final StringBuilder html = new StringBuilder(blockHtml);
-					inlineRules.forEach(rule -> html.replace(0, html.length(), rule.render(html.toString())));
-					htmlBuilder.append(html);
+					htmlBuilder.append(blockHtml);
 				});
 
 		return htmlBuilder.toString();

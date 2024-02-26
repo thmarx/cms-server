@@ -35,7 +35,7 @@ public class StrikethroughInlineRuleTest {
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.render("this is ~~not~~ correct")).isEqualTo("this is <del>not</del> correct");
+		Assertions.assertThat(sut.next("this is ~~not~~ correct").render()).isEqualTo("<del>not</del>");
 	}
 	
 }

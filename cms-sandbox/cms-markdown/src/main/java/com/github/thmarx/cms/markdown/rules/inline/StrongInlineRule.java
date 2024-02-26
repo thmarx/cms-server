@@ -22,6 +22,8 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
@@ -34,10 +36,20 @@ public class StrongInlineRule implements InlineElementRule {
 	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{2}|\\*{2})(?<content>.*?)(\\k<selector>)");
 
 	@Override
-	public String render(String md) {
+	public InlineBlock next(String md) {
 		var matcher = PATTERN.matcher(md);
-		return matcher.replaceAll((result) -> "<strong>%s</strong>".formatted(result.group("content")));
+		if (matcher.find()) {
+			return new StrongInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));
+		}
+		return null;
 	}
 	
+	public static record StrongInlineBlock(int start, int end, String content) implements InlineBlock {
+
+		@Override
+		public String render() {
+			return "<strong>%s</strong>".formatted(content);
+		}
+	}
 	
 }

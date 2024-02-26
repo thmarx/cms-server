@@ -23,6 +23,7 @@ package com.github.thmarx.cms.markdown.rules.block;
  */
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockElementRule;
+import com.github.thmarx.cms.markdown.InlineRenderer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +36,7 @@ public class ParagraphBlockRule implements BlockElementRule {
 	private static final Pattern PATTERN = Pattern.compile(
 			"(\\A|^\\n|\\Z)(?<content>.+?)(^\\n|\\Z)",
 			Pattern.MULTILINE | Pattern.DOTALL);
+	
 	
 
 	@Override
@@ -49,8 +51,8 @@ public class ParagraphBlockRule implements BlockElementRule {
 	public static record ParagraphBlock(int start, int end, String content) implements Block {
 
 		@Override
-		public String render() {
-			return "<p>%s</p>".formatted(content);
+		public String render(InlineRenderer inlineRenderer) {
+			return "<p>%s</p>".formatted(inlineRenderer.render(content));
 		}
 
 	}

@@ -1,7 +1,5 @@
 package com.github.thmarx.cms.markdown;
 
-import java.util.function.Function;
-
 /*-
  * #%L
  * cms-markdown
@@ -28,9 +26,8 @@ import java.util.function.Function;
  *
  * @author t.marx
  */
-public interface Block {
-	int start();
-	int end();
+public interface InlineRenderer {
 	
-	String render (InlineRenderer inlineRenderer);
+	String render (String inline_md);
+	
 }

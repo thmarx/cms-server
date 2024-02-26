@@ -24,6 +24,7 @@ package com.github.thmarx.cms.markdown.rules.block;
 
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockElementRule;
+import com.github.thmarx.cms.markdown.InlineRenderer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +51,7 @@ public class CodeBlockRule implements BlockElementRule {
 	public static record CodeBlock (int start, int end, String content, String language) implements Block {
 
 		@Override
-		public String render() {
+		public String render(InlineRenderer inlineRenderer) {
 			if (language == null || "".equals(language)) {
 				return "<pre><code>%s</code></pre>".formatted(content);
 			}

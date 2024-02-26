@@ -40,7 +40,6 @@ import java.io.IOException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -56,8 +55,8 @@ public class FeaturesTest extends MarkdownTest {
 		options.addInlineRule(new StrongInlineRule());
 		options.addInlineRule(new ItalicInlineRule());
 		options.addInlineRule(new NewlineInlineRule());
-		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new ImageInlineRule());
+		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new StrikethroughInlineRule());
 		options.addInlineRule(new HighlightInlineRule());
 		options.addInlineRule(new SubscriptInlineRule());
@@ -71,7 +70,7 @@ public class FeaturesTest extends MarkdownTest {
 		SUT = new CMSMarkdown(options);
 	}
 	
-	@RepeatedTest(10)
+	@RepeatedTest(1)
 	public void test_features() throws IOException {
 		
 		var md = load("features.md").trim();

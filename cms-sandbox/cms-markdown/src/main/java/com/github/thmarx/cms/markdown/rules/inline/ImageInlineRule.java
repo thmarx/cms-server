@@ -22,7 +22,11 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
+import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -31,13 +35,25 @@ import java.util.regex.Pattern;
  */
 public class ImageInlineRule implements InlineElementRule {
 	
-	Pattern image = Pattern.compile("!\\[(.*?)\\]\\((.*?)\\)");
+	public static final Pattern PATTERN = Pattern.compile("!\\[(.*?)\\]\\((.*?)\\)");
 
 	@Override
-	public String render(String md) {
-		var matcher = image.matcher(md);
-		return matcher.replaceAll((result) -> "<img src=\"%s\" alt=\"%s\" />".formatted(result.group(2), result.group(1)));
+	public InlineBlock next(String md) {
+		Matcher matcher = PATTERN.matcher(md);
+		if (matcher.find()) {
+			return new ImageInlineRule.ImageInlineBlock(matcher.start(), matcher.end(), 
+					matcher.group(2).trim(), matcher.group(1).trim());
+		}
+		return null;
 	}
 	
+	public static record ImageInlineBlock(int start, int end, String src, String alt) implements InlineBlock {
+
+		@Override
+		public String render() {
+			return "<img src=\"%s\" alt=\"%s\" />".formatted(src, alt);
+		}
+		
+	}
 	
 }

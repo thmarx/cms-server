@@ -21,7 +21,8 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
@@ -32,12 +33,22 @@ import java.util.regex.Pattern;
 public class StrikethroughInlineRule implements InlineElementRule {
 	
 	private static final Pattern PATTERN = Pattern.compile("(~{2})(?<content>.*?)(~{2})");
-
+	
 	@Override
-	public String render(String md) {
+	public InlineBlock next(String md) {
 		var matcher = PATTERN.matcher(md);
-		return matcher.replaceAll((result) -> "<del>%s</del>".formatted(result.group("content")));
+		if (matcher.find()) {
+			return new StrikethroughInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));
+		}
+		return null;
 	}
 	
+	public static record StrikethroughInlineBlock(int start, int end, String content) implements InlineBlock {
+
+		@Override
+		public String render() {
+			return "<del>%s</del>".formatted(content);
+		}
+	}
 	
 }

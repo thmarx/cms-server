@@ -37,9 +37,9 @@ public class LinkInlineRuleTest {
 	@Test
 	public void testSomeMethod() {
 		
-		var result = SUT.render("[google](https://google.de)");
+		var result = SUT.next("[google](https://google.de)");
 		
-		Assertions.assertThat(result)
+		Assertions.assertThat(result.render())
 				.isEqualTo("<a href=\"https://google.de\" id=\"google\">google</a>");
 	}
 

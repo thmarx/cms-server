@@ -28,9 +28,9 @@ import java.util.function.Function;
  *
  * @author t.marx
  */
-public interface Block {
+public interface InlineBlock {
 	int start();
 	int end();
 	
-	String render (InlineRenderer inlineRenderer);
+	String render ();
 }

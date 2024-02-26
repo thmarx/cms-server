@@ -35,7 +35,7 @@ public class HighlightInlineRuleTest {
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.render("this is ==important==")).isEqualTo("this is <mark>important</mark>");
+		Assertions.assertThat(sut.next("this is ==important==").render()).isEqualTo("<mark>important</mark>");
 	}
 	
 }

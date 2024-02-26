@@ -21,14 +21,41 @@ package com.github.thmarx.cms.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import java.util.function.Function;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-public interface BlockContainer {
+@RequiredArgsConstructor
+public class InlineElementTokenizer {
 
-	public String render(Function<String, String> blockRenderer);
+	private final Options options;
+
+	protected List<InlineBlock> tokenize(final String original_md) throws IOException {
+
+		var md = original_md.replaceAll("\r\n", "\n");
+		StringBuilder mdBuilder = new StringBuilder(md);
+
+		final List<InlineBlock> blocks = new ArrayList<>();
+
+		for (var blockRule : options.inlineElementRules) {
+			InlineBlock block = null;
+			while ((block = blockRule.next(mdBuilder.toString())) != null) {
+
+				if (block.start() != 0) {
+					var before = mdBuilder.substring(0, block.start());
+					blocks.addAll(tokenize(before));
+				}
+
+				blocks.add(block);
+				mdBuilder.delete(0, block.end());
+			}
+		}
+
+		return blocks;
+	}
 }

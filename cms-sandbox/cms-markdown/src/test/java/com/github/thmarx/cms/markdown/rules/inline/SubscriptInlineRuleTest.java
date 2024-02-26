@@ -35,7 +35,7 @@ public class SubscriptInlineRuleTest {
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.render("H=2=O")).isEqualTo("H<sub>2</sub>O");
+		Assertions.assertThat(sut.next("H=2=O").render()).isEqualTo("<sub>2</sub>");
 	}
 	
 }

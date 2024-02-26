@@ -1,6 +1,4 @@
-package com.github.thmarx.cms.markdown;
-
-import java.util.function.Function;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -24,13 +22,30 @@ import java.util.function.Function;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
+import com.github.thmarx.cms.markdown.InlineElementRule;
+import com.google.common.base.Strings;
+import java.util.regex.Pattern;
+
 /**
  *
  * @author t.marx
  */
-public interface Block {
-	int start();
-	int end();
+public class TextInlineRule implements InlineElementRule {
 	
-	String render (InlineRenderer inlineRenderer);
+	@Override
+	public InlineBlock next(String md) {
+		if (Strings.isNullOrEmpty(md)) {
+			return null;
+		}
+		return new TextBlock(0, md.length(), md);
+	}
+	
+	public static record TextBlock(int start, int end, String content) implements InlineBlock {
+		@Override
+		public String render() {
+			return content;
+		}
+	}
 }

@@ -35,7 +35,7 @@ public class SuperscriptInlineRuleTest {
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.render("x^2^")).isEqualTo("x<sup>2</sup>");
+		Assertions.assertThat(sut.next("x^2^").render()).isEqualTo("<sup>2</sup>");
 	}
 	
 }

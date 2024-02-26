@@ -23,6 +23,7 @@ package com.github.thmarx.cms.markdown.rules.block;
  */
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockElementRule;
+import com.github.thmarx.cms.markdown.InlineRenderer;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,11 +73,13 @@ public class ListBlockRule implements BlockElementRule {
 	public static record ListBlock(int start, int end, List<String> items, boolean ordered) implements Block {
 
 		@Override
-		public String render() {
+		public String render(InlineRenderer inlineRenderer) {
 			if (ordered) {
-				return "<ol>%s</ol>".formatted(items.stream().map(item -> "<li>" + item + "</li>").collect(Collectors.joining()));
+				return "<ol>%s</ol>".formatted(
+						items.stream().map(item -> "<li>" + inlineRenderer.render(item) + "</li>").collect(Collectors.joining()));
 			} else {
-				return "<ul>%s</ul>".formatted(items.stream().map(item -> "<li>" + item + "</li>").collect(Collectors.joining()));
+				return "<ul>%s</ul>".formatted(
+						items.stream().map(item -> "<li>" + inlineRenderer.render(item) + "</li>").collect(Collectors.joining()));
 			}
 		}
 

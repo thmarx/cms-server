@@ -35,11 +35,11 @@ public class NewlineInlineRuleTest {
 
 	@Test
 	public void test_line_with_2_spaces() {
-		Assertions.assertThat(sut.render("  \n")).isEqualTo("<br/>");
+		Assertions.assertThat(sut.next("  \n").render()).isEqualTo("<br/>");
 	}
 	
 	@Test
 	public void test_line_ending_with_2_spaces() {
-		Assertions.assertThat(sut.render("the line  \n")).isEqualTo("the line<br/>");
+		Assertions.assertThat(sut.next("the line  \n").render()).isEqualTo("<br/>");
 	}
 }

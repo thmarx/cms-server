@@ -49,7 +49,7 @@ public class HorizontalRuleBlockRuleTest {
 				.isNotNull()
 				.isInstanceOf(HorizontalRuleBlockRule.HRBlock.class);
 
-		Assertions.assertThat(next.render()).isEqualTo("<hr />");
+		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<hr />");
 	}
 	
 	@Test
@@ -68,7 +68,7 @@ public class HorizontalRuleBlockRuleTest {
 				.isNotNull()
 				.isInstanceOf(HorizontalRuleBlockRule.HRBlock.class);
 
-		Assertions.assertThat(next.render()).isEqualTo("<hr />");
+		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<hr />");
 	}
 	
 	@Test

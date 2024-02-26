@@ -35,14 +35,14 @@ public class StrongInlineRuleTest {
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.render("__bold__")).isEqualTo("<strong>bold</strong>");
-		Assertions.assertThat(sut.render("**bold**")).isEqualTo("<strong>bold</strong>");
+		Assertions.assertThat(sut.next("__bold__").render()).isEqualTo("<strong>bold</strong>");
+		Assertions.assertThat(sut.next("**bold**").render()).isEqualTo("<strong>bold</strong>");
 	}
 	
 	@Test
 	public void wrong_pattern() {
 		
-		Assertions.assertThat(sut.render("**bold__")).isEqualTo("**bold__");
+		Assertions.assertThat(sut.next("**bold__")).isNull();
 	}
 	
 }

@@ -22,6 +22,8 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
@@ -34,10 +36,19 @@ public class ItalicInlineRule implements InlineElementRule {
 	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{1}|\\*{1})(?<content>.*?)(\\k<selector>)");
 
 	@Override
-	public String render(String md) {
+	public InlineBlock next(String md) {
 		var matcher = PATTERN.matcher(md);
-		return matcher.replaceAll((result) -> "<em>%s</em>".formatted(result.group("content")));
+		if (matcher.find()) {
+			return new ItalicInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));
+		}
+		return null;
 	}
 	
+	public static record ItalicInlineBlock(int start, int end, String content) implements InlineBlock {
+		@Override
+		public String render() {
+			return "<em>%s</em>".formatted(content);
+		}
+	}
 	
 }

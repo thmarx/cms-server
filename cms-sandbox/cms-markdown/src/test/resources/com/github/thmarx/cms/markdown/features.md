@@ -34,3 +34,6 @@ Testing some inline elements like ~~strikethrough~~, ^superscript^, =subscript=,
 
 > Here comes
 > a block quote
+
+
+![TestBild!](/media/images/test.jpg?format=small)

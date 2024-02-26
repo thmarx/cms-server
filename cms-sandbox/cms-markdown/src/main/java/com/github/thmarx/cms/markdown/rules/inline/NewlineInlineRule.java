@@ -22,6 +22,8 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
@@ -33,11 +35,21 @@ public class NewlineInlineRule implements InlineElementRule {
 	
 	private static final Pattern PATTERN = Pattern.compile("[ ]{2,}\\n", Pattern.MULTILINE);
 
+	
 	@Override
-	public String render(String md) {
+	public InlineBlock next(String md) {
 		var matcher = PATTERN.matcher(md);
-		return matcher.replaceAll("<br/>");
+		if (matcher.find()) {
+			return new NewlineInlineBlock(matcher.start(), matcher.end());
+		}
+		return null;
 	}
 	
+	public static record NewlineInlineBlock(int start, int end) implements InlineBlock {
+		@Override
+		public String render() {
+			return "<br/>";
+		}
+	}
 	
 }

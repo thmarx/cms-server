@@ -22,6 +22,8 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
@@ -33,11 +35,20 @@ public class SuperscriptInlineRule implements InlineElementRule {
 	
 	private static final Pattern PATTERN = Pattern.compile("(\\^{1})(?<content>.*?)(\\^{1})");
 
+	
 	@Override
-	public String render(String md) {
+	public InlineBlock next(String md) {
 		var matcher = PATTERN.matcher(md);
-		return matcher.replaceAll((result) -> "<sup>%s</sup>".formatted(result.group("content")));
+		if (matcher.find()) {
+			return new SuperscriptBlock(matcher.start(), matcher.end(), matcher.group("content"));
+		}
+		return null;
 	}
 	
-	
+	public static record SuperscriptBlock(int start, int end, String content) implements InlineBlock {
+		@Override
+		public String render() {
+			return "<sup>%s</sup>".formatted(content);
+		}
+	}
 }

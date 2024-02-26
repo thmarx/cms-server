@@ -25,6 +25,8 @@ import com.github.slugify.Slugify;
 import com.github.thmarx.cms.api.feature.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
+import com.github.thmarx.cms.markdown.Block;
+import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import java.util.regex.Pattern;
 
@@ -36,14 +38,17 @@ public class LinkInlineRule implements InlineElementRule {
 
 	static final Slugify SLUG = Slugify.builder().build();
 
-	static final Pattern link = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
+	static final Pattern PATTERN = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
 
+	
+	
 	@Override
-	public String render(String md) {
-		var matcher = link.matcher(md);
-		return matcher.replaceAll((result) -> {
-			var href = result.group(2);
-			var title = result.group(1);
+	public InlineBlock next(String md) {
+		var matcher = PATTERN.matcher(md);
+		
+		if (matcher.find()) {
+			var href = matcher.group(2);
+			var title = matcher.group(1);
 
 			var id = SLUG.slugify(title);
 
@@ -67,16 +72,23 @@ public class LinkInlineRule implements InlineElementRule {
 				}
 			}
 
-			return "<a href=\"%s\" id=\"%s\">%s</a>".formatted(
-					href,
-					id,
-					title
-			);
-		});
+			return new LinkBlock(matcher.start(), matcher.end(), href, id, title);
+		}
+		
+		return null;
 	}
 	
 	private boolean isInternalUrl (final String href) {
 		return !href.startsWith("http") && !href.startsWith("https");
 	}
 
+	public static record LinkBlock(int start, int end, String href, String id, String title) implements InlineBlock {
+		@Override
+		public String render() {
+			return "<a href=\"%s\" id=\"%s\">%s</a>".formatted(
+					href,
+					id,
+					title);
+		}
+	}
 }

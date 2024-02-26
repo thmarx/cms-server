@@ -28,5 +28,5 @@ package com.github.thmarx.cms.markdown;
  */
 public interface InlineElementRule {
 	
-	String render (final String md);
+	InlineBlock next (final String md);
 }
