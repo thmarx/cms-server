@@ -57,11 +57,11 @@ public class CMSMarkdownRenderer implements MarkdownRenderer {
 	public CMSMarkdownRenderer() {
 		Options options = new Options();
 		
+		options.addInlineRule(new ImageInlineRule());
+		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new StrongInlineRule());
 		options.addInlineRule(new ItalicInlineRule());
 		options.addInlineRule(new NewlineInlineRule());
-		options.addInlineRule(new LinkInlineRule());
-		options.addInlineRule(new ImageInlineRule());
 		options.addInlineRule(new StrikethroughInlineRule());
 		options.addInlineRule(new HighlightInlineRule());
 		options.addInlineRule(new SubscriptInlineRule());

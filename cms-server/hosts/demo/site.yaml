@@ -3,12 +3,9 @@ hostname:
   - localhost
 baseurl: "http://localhost:1010"
 language: en
-markdown:
-  engine: markedj
 theme: demo
 modules:
   active:
-    - markedj-module
     - seo-module
 media:
   formats:

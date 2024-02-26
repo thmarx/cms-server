@@ -41,6 +41,7 @@ import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
+import com.github.thmarx.cms.markdown.module.CMSMarkdownRenderer;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
 import com.github.thmarx.modules.manager.ModuleManagerImpl;
@@ -126,6 +127,12 @@ public class ModulesModule extends AbstractModule {
 		return cmsModuleContext;
 	}
 
+	@Provides
+	@Singleton
+	public CMSMarkdownRenderer defaultMarkdownRenderer () {
+		return new CMSMarkdownRenderer();
+	}
+	
 	/**
 	 * The markedjs markdown renderer is implemented using graaljs, so we need a fresh instance for every request
 	 * @param siteProperties
@@ -133,7 +140,8 @@ public class ModulesModule extends AbstractModule {
 	 * @return 
 	 */
 	@Provides
-	public MarkdownRenderer markdownRenderer(SiteProperties siteProperties, ModuleManager moduleManager) {
+	public MarkdownRenderer markdownRenderer(SiteProperties siteProperties, ModuleManager moduleManager,
+			CMSMarkdownRenderer defaultMarkdownRenderer) {
 		var engine = siteProperties.markdownEngine();
 
 		List<MarkdownRendererProviderExtentionPoint> extensions = moduleManager.extensions(MarkdownRendererProviderExtentionPoint.class);
@@ -141,9 +149,9 @@ public class ModulesModule extends AbstractModule {
 
 		if (extOpt.isPresent()) {
 			return extOpt.get().getRenderer();
-		} else {
-			throw new RuntimeException("no markdown renderer found");
 		}
+		
+		return defaultMarkdownRenderer;
 	}
 
 	private String getTemplateEngine(SiteProperties siteProperties, Theme theme) {

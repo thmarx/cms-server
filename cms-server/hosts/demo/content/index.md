@@ -7,4 +7,4 @@ search:
 
 # Demo Project
 
-![TestBild!](/media/images/test.jpg?format=small "Test Bild")
+![TestBild!](/media/images/test.jpg?format=small)

@@ -62,6 +62,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.github.thmarx.cms</groupId>
+				<artifactId>cms-markdown</artifactId>
+				<version>${project.version}</version>            
+			</dependency>
+			<dependency>
+				<groupId>com.github.thmarx.cms</groupId>
 				<artifactId>cms-extensions</artifactId>
 				<version>${project.version}</version>            
 			</dependency>
