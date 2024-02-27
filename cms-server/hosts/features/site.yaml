@@ -4,12 +4,9 @@ hostname:
 baseurl: "http://localhost2:1010"
 language: en
 test: Hallo
-markdown:
-  engine: markedj
 theme: test
 modules:
   active:
-    - markedj-module
     - seo-module
     - forms-module
 media:

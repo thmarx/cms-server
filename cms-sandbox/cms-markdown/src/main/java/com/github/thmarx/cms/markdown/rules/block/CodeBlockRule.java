@@ -25,6 +25,7 @@ package com.github.thmarx.cms.markdown.rules.block;
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockElementRule;
 import com.github.thmarx.cms.markdown.InlineRenderer;
+import com.google.common.html.HtmlEscapers;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,9 +54,13 @@ public class CodeBlockRule implements BlockElementRule {
 		@Override
 		public String render(InlineRenderer inlineRenderer) {
 			if (language == null || "".equals(language)) {
-				return "<pre><code>%s</code></pre>".formatted(content);
+				return "<pre><code>%s</code></pre>".formatted(escape(content));
 			}
-			return "<pre><code class='lang-%s'>%s</code></pre>".formatted(language, content);
+			return "<pre><code class='lang-%s'>%s</code></pre>".formatted(language, escape(content));
+		}
+		
+		private String escape (String html) {
+			return HtmlEscapers.htmlEscaper().escape(html);
 		}
 		
 	}

@@ -74,19 +74,18 @@ public class CMSMarkdown {
 			}
 			return "";
 		};
+		BlockRenderer blockRenderer = (content) -> {
+			try {
+				return this.render(content);
+			} catch (IOException e) {
+			}
+			return "";
+		};
 
 		blocks.stream()
 				.map(block -> {
-
 					if (block instanceof BlockContainer) {
-						final Function<String, String> renderContainer = (content) -> {
-							try {
-								return this.render(content);
-							} catch (IOException e) {
-							}
-							return "";
-						};
-						return ((BlockContainer) block).render(renderContainer);
+						return ((BlockContainer) block).render(blockRenderer);
 					} else {
 						return block.render(inlineRenderer);
 					}

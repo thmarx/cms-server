@@ -44,4 +44,13 @@ public class CodeBlockRuleTest {
 		Assertions.assertThat(codeBlock.content()).isEqualTo("das ist java code");
 	}
 	
+	@Test
+	public void test_html() {
+		
+		String code = "```html\n<h2>heading</h2>\n```";
+		
+		var codeBlock = (CodeBlockRule.CodeBlock)CodeBlockRule.next(code.trim());
+		Assertions.assertThat(codeBlock.language()).isEqualTo("html");
+		Assertions.assertThat(codeBlock.content()).isEqualTo("<h2>heading</h2>");
+	}
 }

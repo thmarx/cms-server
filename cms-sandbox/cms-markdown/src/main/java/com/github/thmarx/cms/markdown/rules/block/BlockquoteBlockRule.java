@@ -24,6 +24,7 @@ package com.github.thmarx.cms.markdown.rules.block;
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockContainer;
 import com.github.thmarx.cms.markdown.BlockElementRule;
+import com.github.thmarx.cms.markdown.BlockRenderer;
 import com.github.thmarx.cms.markdown.InlineRenderer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -61,8 +62,8 @@ public class BlockquoteBlockRule implements BlockElementRule {
 		}
 
 		@Override
-		public String render(Function<String, String> blockRenderer) {
-			return "<blockquote>%s</blockquote>".formatted(blockRenderer.apply(content));
+		public String render(BlockRenderer blockRenderer) {
+			return "<blockquote>%s</blockquote>".formatted(blockRenderer.render(content));
 		}
 
 	}

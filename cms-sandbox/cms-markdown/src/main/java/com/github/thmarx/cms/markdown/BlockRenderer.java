@@ -26,7 +26,8 @@ package com.github.thmarx.cms.markdown;
  *
  * @author t.marx
  */
-public interface BlockContainer {
-
-	public String render(BlockRenderer blockRenderer);
+public interface BlockRenderer {
+	
+	String render (String block_md);
+	
 }

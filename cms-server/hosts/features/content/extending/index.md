@@ -31,11 +31,13 @@ $http.get("/test", (request, response) => {
 The endpoint is available at http://your_host:your_port/extensions/test
 
 ### Modules
+
 To structure your extension code, you can create modules. 
 But keep in mind, your modules must use the .mjs extension. 
 Otherwise our js engine will not load your modules correctly.
 
 ### System modules
+
 cms-server comes with some system modules.
 All system modules are in the _systems_ package, so you can not use _system_ as folder name for custom modules.
 
