@@ -22,10 +22,8 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
-import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

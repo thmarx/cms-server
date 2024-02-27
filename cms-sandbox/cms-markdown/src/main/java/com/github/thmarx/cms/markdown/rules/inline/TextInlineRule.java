@@ -22,11 +22,9 @@ package com.github.thmarx.cms.markdown.rules.inline;
  * #L%
  */
 
-import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
 import com.google.common.base.Strings;
-import java.util.regex.Pattern;
 
 /**
  *

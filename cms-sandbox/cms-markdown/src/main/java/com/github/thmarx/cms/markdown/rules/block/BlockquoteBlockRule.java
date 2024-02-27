@@ -26,7 +26,6 @@ import com.github.thmarx.cms.markdown.BlockContainer;
 import com.github.thmarx.cms.markdown.BlockElementRule;
 import com.github.thmarx.cms.markdown.BlockRenderer;
 import com.github.thmarx.cms.markdown.InlineRenderer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

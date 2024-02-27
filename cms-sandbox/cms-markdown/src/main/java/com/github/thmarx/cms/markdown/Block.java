@@ -1,7 +1,5 @@
 package com.github.thmarx.cms.markdown;
 
-import java.util.function.Function;
-
 /*-
  * #%L
  * cms-markdown

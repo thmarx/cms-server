@@ -25,7 +25,6 @@ import com.github.thmarx.cms.markdown.rules.block.ParagraphBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.TextInlineRule;
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  *
