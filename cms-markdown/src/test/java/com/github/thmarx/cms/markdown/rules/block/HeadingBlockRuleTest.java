@@ -25,6 +25,7 @@ package com.github.thmarx.cms.markdown.rules.block;
 import com.github.thmarx.cms.markdown.Block;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -58,4 +59,18 @@ public class HeadingBlockRuleTest {
 				.hasFieldOrPropertyWithValue("heading", heading);
 	}
 
+	@Test
+	void test_h_blocks() {
+		
+		String md = "# Heading\nnext paragraph";
+		String heading = "Heading";
+
+		Block next = sut.next(md);
+
+		Assertions.assertThat(next)
+				.isNotNull()
+				.isInstanceOf(HeadingBlockRule.HeadingBlock.class)
+				.asInstanceOf(InstanceOfAssertFactories.type(HeadingBlockRule.HeadingBlock.class))
+				.hasFieldOrPropertyWithValue("heading", heading);
+	}
 }

@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 public class HeadingBlockRule implements BlockElementRule {
 
 	private static final Pattern PATTERN = Pattern.compile(
-			"(?<level>^#{1,6})(?<heading>.+?)(^\\n|\\Z)",
+			"(?<level>^#{1,6})(?<heading>.+?)(\\n|\\Z)",
 			Pattern.MULTILINE | Pattern.DOTALL);
 	
 
