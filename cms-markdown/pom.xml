@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.github.thmarx.cms</groupId>
-		<artifactId>cms-sandbox</artifactId>
+		<artifactId>cms-parent</artifactId>
 		<version>4.12.0</version>
 	</parent>
 	<artifactId>cms-markdown</artifactId>
@@ -36,7 +36,6 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.17.2</version>
 		</dependency>
 	</dependencies>
 	

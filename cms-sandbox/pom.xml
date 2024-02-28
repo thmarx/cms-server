@@ -9,6 +9,5 @@
     <artifactId>cms-sandbox</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>cms-markdown</module>
     </modules>
 </project>
