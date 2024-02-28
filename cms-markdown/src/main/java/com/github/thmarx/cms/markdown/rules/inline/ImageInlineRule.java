@@ -33,22 +33,25 @@ import java.util.regex.Pattern;
  */
 public class ImageInlineRule implements InlineElementRule {
 	
-	public static final Pattern PATTERN = Pattern.compile("!\\[(.*?)\\]\\((.*?)\\)");
+	public static final Pattern PATTERN = Pattern.compile("!\\[(?<alt>.*?)\\]\\((?<url>.*?)( \"(?<title>.*)\")?\\)");
 
 	@Override
 	public InlineBlock next(String md) {
 		Matcher matcher = PATTERN.matcher(md);
 		if (matcher.find()) {
 			return new ImageInlineRule.ImageInlineBlock(matcher.start(), matcher.end(), 
-					matcher.group(2).trim(), matcher.group(1).trim());
+					matcher.group("url").trim(), matcher.group("alt").trim(), matcher.group("title"));
 		}
 		return null;
 	}
 	
-	public static record ImageInlineBlock(int start, int end, String src, String alt) implements InlineBlock {
+	public static record ImageInlineBlock(int start, int end, String src, String alt, String title) implements InlineBlock {
 
 		@Override
 		public String render() {
+			if (title != null && !"".equals(title.trim())) {
+				return "<img src=\"%s\" alt=\"%s\" title=\"%s\" />".formatted(src, alt, title);
+			}
 			return "<img src=\"%s\" alt=\"%s\" />".formatted(src, alt);
 		}
 		

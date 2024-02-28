@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -35,7 +35,7 @@ public class LinkInlineRuleTest {
 	LinkInlineRule SUT = new LinkInlineRule();
 
 	@Test
-	public void testSomeMethod() {
+	public void test_link() {
 		
 		var result = SUT.next("[google](https://google.de)");
 		
@@ -43,4 +43,12 @@ public class LinkInlineRuleTest {
 				.isEqualTo("<a href=\"https://google.de\" id=\"google\">google</a>");
 	}
 
+	@Test
+	public void test_link_title() {
+		
+		var result = SUT.next("[google](https://google.de \"The Google\")");
+		
+		Assertions.assertThat(result.render())
+				.isEqualTo("<a href=\"https://google.de\" id=\"google\" title=\"The Google\">google</a>");
+	}
 }

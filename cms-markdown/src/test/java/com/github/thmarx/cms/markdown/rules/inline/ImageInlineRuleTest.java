@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.markdown.rules;
+package com.github.thmarx.cms.markdown.rules.inline;
 
 /*-
  * #%L
@@ -42,11 +42,11 @@ public class ImageInlineRuleTest {
 				.isEqualTo("<img src=\"/assets/images/test.jpg\" alt=\"TestBild!\" />");
 	}
 	
-//	@Test
-//	public void test_image_rule_alt_text() {
-//		var result = SUT.render("![TestBild!](/media/images/test.jpg?format=small \"Test Bild\")");
-//		Assertions.assertThat(result)
-//				.isEqualTo("<img src=\"/assets/images/test.jpg\" alt=\"TestBild!\" title=\"Test Bild\" />");
-//	}
+	@Test
+	public void test_image_rule_title() {
+		var result = SUT.next("![TestBild!](/assets/images/test.jpg \"Test Bild\")");
+		Assertions.assertThat(result.render())
+				.isEqualTo("<img src=\"/assets/images/test.jpg\" alt=\"TestBild!\" title=\"Test Bild\" />");
+	}
 	
 }

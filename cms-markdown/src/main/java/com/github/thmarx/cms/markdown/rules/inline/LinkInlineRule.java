@@ -37,7 +37,8 @@ public class LinkInlineRule implements InlineElementRule {
 
 	static final Slugify SLUG = Slugify.builder().build();
 
-	static final Pattern PATTERN = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
+//	static final Pattern PATTERN = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
+	static final Pattern PATTERN = Pattern.compile("\\[(?<text>.*?)\\]\\((?<url>.*?)( \"(?<title>.*)\")?\\)");
 
 	
 	
@@ -46,10 +47,11 @@ public class LinkInlineRule implements InlineElementRule {
 		var matcher = PATTERN.matcher(md);
 		
 		if (matcher.find()) {
-			var href = matcher.group(2);
-			var title = matcher.group(1);
+			var href = matcher.group("url");
+			var text = matcher.group("text");
+			var title = matcher.group("title");
 
-			var id = SLUG.slugify(title);
+			var id = SLUG.slugify(text);
 
 			var requestContext = ThreadLocalRequestContext.REQUEST_CONTEXT.get();
 
@@ -71,7 +73,7 @@ public class LinkInlineRule implements InlineElementRule {
 				}
 			}
 
-			return new LinkBlock(matcher.start(), matcher.end(), href, id, title);
+			return new LinkBlock(matcher.start(), matcher.end(), href, id, text, title);
 		}
 		
 		return null;
@@ -81,13 +83,22 @@ public class LinkInlineRule implements InlineElementRule {
 		return !href.startsWith("http") && !href.startsWith("https");
 	}
 
-	public static record LinkBlock(int start, int end, String href, String id, String title) implements InlineBlock {
+	public static record LinkBlock(int start, int end, String href, String id, String text, String title) implements InlineBlock {
 		@Override
 		public String render() {
+			
+			if (title != null && !"".equals(title)) {
+				return "<a href=\"%s\" id=\"%s\" title=\"%s\">%s</a>".formatted(
+					href,
+					id,
+					title,
+					text);
+			}
+			
 			return "<a href=\"%s\" id=\"%s\">%s</a>".formatted(
 					href,
 					id,
-					title);
+					text);
 		}
 	}
 }
