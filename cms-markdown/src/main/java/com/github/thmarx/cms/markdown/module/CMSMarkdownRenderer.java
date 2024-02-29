@@ -33,6 +33,7 @@ import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.HighlightInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.ImageLinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrikethroughInlineRule;
@@ -57,6 +58,7 @@ public class CMSMarkdownRenderer implements MarkdownRenderer {
 	public CMSMarkdownRenderer() {
 		Options options = new Options();
 		
+		options.addInlineRule(new ImageLinkInlineRule());
 		options.addInlineRule(new ImageInlineRule());
 		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new StrongInlineRule());

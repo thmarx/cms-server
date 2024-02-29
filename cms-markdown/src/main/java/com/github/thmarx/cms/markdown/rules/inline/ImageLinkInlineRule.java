@@ -27,18 +27,19 @@ import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.markdown.InlineBlock;
 import com.github.thmarx.cms.markdown.InlineElementRule;
+import com.github.thmarx.cms.markdown.InlineRenderer;
 import java.util.regex.Pattern;
 
 /**
  *
  * @author t.marx
  */
-public class LinkInlineRule implements InlineElementRule {
+public class ImageLinkInlineRule implements InlineElementRule {
 
 	static final Slugify SLUG = Slugify.builder().build();
 
-//	static final Pattern PATTERN = Pattern.compile("\\[(.*?)\\]\\((.*?)\\)");
-	static final Pattern PATTERN = Pattern.compile("\\[(?<text>.*?)\\]\\((?<url>.*?)( \"(?<title>.*)\")?\\)");
+	static final String IMAGE_PATTERN = "!\\[(?<alt>.*?)\\]\\((?<image>.*?)( \"(?<title>.*)\")?\\)";
+	static final Pattern PATTERN = Pattern.compile("\\[(" + IMAGE_PATTERN + ")\\]\\((?<url>.*?)\\)");
 
 	
 	
@@ -48,10 +49,12 @@ public class LinkInlineRule implements InlineElementRule {
 		
 		if (matcher.find()) {
 			var href = matcher.group("url");
-			var text = matcher.group("text");
 			var title = matcher.group("title");
+			var imageSrc = matcher.group("image");
+			var alt = matcher.group("alt");
+			
 
-			var id = SLUG.slugify(text);
+			var id = SLUG.slugify(alt);
 
 			var requestContext = ThreadLocalRequestContext.REQUEST_CONTEXT.get();
 
@@ -73,7 +76,7 @@ public class LinkInlineRule implements InlineElementRule {
 				}
 			}
 
-			return new LinkBlock(matcher.start(), matcher.end(), href, id, text, title);
+			return new ImageLinkBlock(matcher.start(), matcher.end(), href, id, imageSrc, alt, title);
 		}
 		
 		return null;
@@ -83,23 +86,25 @@ public class LinkInlineRule implements InlineElementRule {
 		return !href.startsWith("http") && !href.startsWith("https");
 	}
 
-	public static record LinkBlock(int start, int end, String href, String id, String text, String title) 
+	public static record ImageLinkBlock(int start, int end, String href, String id, String imageSrc, String alt, String title) 
 			implements InlineBlock {
 		@Override
 		public String render() {
 			
 			if (title != null && !"".equals(title)) {
-				return "<a href=\"%s\" id=\"%s\" title=\"%s\">%s</a>".formatted(
+				return "<a href=\"%s\" id=\"%s\" ><img src=\"%s\" alt=\"%s\" title=\"%s\" /></a>".formatted(
 					href,
 					id,
-					title,
-					text);
+					imageSrc,
+					alt,
+					title);
 			}
 			
-			return "<a href=\"%s\" id=\"%s\">%s</a>".formatted(
+			return "<a href=\"%s\" id=\"%s\" ><img src=\"%s\" alt=\"%s\" /></a>".formatted(
 					href,
 					id,
-					text);
+					imageSrc,
+					alt);
 		}
 	}
 }

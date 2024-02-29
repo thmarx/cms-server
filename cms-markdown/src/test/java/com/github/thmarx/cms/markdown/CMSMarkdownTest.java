@@ -21,7 +21,6 @@ package com.github.thmarx.cms.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.markdown.rules.block.BlockquoteBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
@@ -30,6 +29,7 @@ import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.HighlightInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.ImageLinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
@@ -48,79 +48,80 @@ import org.junit.jupiter.params.provider.CsvSource;
  * @author t.marx
  */
 public class CMSMarkdownTest extends MarkdownTest {
-	
+
 	static CMSMarkdown SUT;
-	
+
 	@BeforeAll
-	public static void setup () {
+	public static void setup() {
 		Options options = new Options();
 		options.addInlineRule(new StrongInlineRule());
 		options.addInlineRule(new ItalicInlineRule());
 		options.addInlineRule(new NewlineInlineRule());
-		options.addInlineRule(new ImageInlineRule());
+		options.addInlineRule(new ImageLinkInlineRule());
 		options.addInlineRule(new LinkInlineRule());
+		options.addInlineRule(new ImageInlineRule());
 		options.addInlineRule(new StrikethroughInlineRule());
 		options.addInlineRule(new HighlightInlineRule());
 		options.addInlineRule(new SubscriptInlineRule());
 		options.addInlineRule(new SuperscriptInlineRule());
-		
+
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new ListBlockRule());
 		options.addBlockRule(new HorizontalRuleBlockRule());
 		options.addBlockRule(new BlockquoteBlockRule());
-		
+
 		SUT = new CMSMarkdown(options);
 	}
-	
+
 	@Test
 	public void test_1() throws IOException {
-		
+
 		var md = load("render/test_1.md").trim();
 		var expected = load("render/test_1.html");
 		expected = removeComments(expected);
-		
+
 		var result = SUT.render(md);
-		
+
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
-	
+
 	@Test
 	public void test_2() throws IOException {
-		
+
 		var md = load("render/test_2.md");
 		var expected = load("render/test_2.html");
 		expected = removeComments(expected);
-		
+
 		var result = SUT.render(md);
-		
+
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
-	
+
 	@Test
 	public void test_3() throws IOException {
-		
+
 		var md = load("render/test_3.md");
 		var expected = load("render/test_3.html");
 		expected = removeComments(expected);
-		
+
 		var result = SUT.render(md);
-		
+
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
-	
+
 	@Test
 	public void test_4() throws IOException {
-		
+
 		var md = load("render/test_4.md");
 		var expected = load("render/test_4.html");
 		expected = removeComments(expected);
-		
+
 		var result = SUT.render(md);
 		System.out.println(result);
 //		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
-	
+
 	@ParameterizedTest
 	@CsvSource({
 		"\\!test\\!,<p>&#33;test&#33;</p>",
@@ -137,14 +138,14 @@ public class CMSMarkdownTest extends MarkdownTest {
 		"\\`test\\`,<p>&#96;test&#96;</p>",
 		"\\*test\\*,<p>&#42;test&#42;</p>"
 	})
-	void test_escape (final String input, final String expected) throws IOException {
+	void test_escape(final String input, final String expected) throws IOException {
 		var result = SUT.render(input);
 		Assertions.assertThat(result).isEqualTo(expected);
 	}
-	
+
 	@Test
 	void test_horizontal_rule_with_before() throws IOException {
-		
+
 		String input = """
                  before
                  
@@ -152,29 +153,47 @@ public class CMSMarkdownTest extends MarkdownTest {
                  
                  after
                  """;
-		
-		
+
 		var result = SUT.render(input);
 
 		Assertions.assertThat(result).isEqualTo("<p>before</p><hr /><p>after</p><p></p>");
 	}
-	
+
 	@Test
 	void test_blockquote() throws IOException {
-		
+
 		String input = "before\n\n> line 1\n> line 2\n\nafter";
-		
+
 		var result = SUT.render(input);
 		Assertions.assertThat(result).isEqualToIgnoringNewLines("<p>before</p><blockquote><p>line 1\nline 2</p><p></p></blockquote><p>after</p>");
 	}
-	
+
 	@Test
 	void test_blockquote_nested_heading() throws IOException {
-		
+
 		String input = "before\n\n> ### line 1\n>\n> line 2\n\nafter";
-		
+
 		var result = SUT.render(input);
 		System.out.println(result);
 		Assertions.assertThat(result).isEqualToIgnoringNewLines("<p>before</p><blockquote><h3>line 1</h3><p>line 2</p><p></p></blockquote><p>after</p>");
+	}
+
+	@Test
+	void test_image_link() throws IOException {
+
+		String input = "[![An old rock in the desert](/assets/images/shiprock.jpg \"Shiprock, New Mexico by Beau Rogers\")](https://www.flickr.com)";
+
+		var result = SUT.render(input);
+		System.out.println(result);
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace(
+				"""
+    <p>
+    <a href="https://www.flickr.com" id="an-old-rock-in-the-desert">
+    <img src="/assets/images/shiprock.jpg" alt="An old rock in the desert" title="Shiprock, New Mexico by Beau Rogers" />
+    
+      </a>
+    </p>
+    """
+		);
 	}
 }

@@ -69,7 +69,6 @@ public class CMSMarkdown {
 			try {
 				return renderInlineElements(content);
 			} catch (IOException ioe) {
-				// nothing
 			}
 			return "";
 		};
