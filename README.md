@@ -6,6 +6,11 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.12.0
+
+* **FEATURE** New default markdown renderer [#175](https://github.com/thmarx/cms/issues/175)
+* **MAINTENANCE** Do not store unused module config [#173](https://github.com/thmarx/cms/issues/173)
+
 ## 4.11.0
 
 * **MAINTENANCE** Code refactorings [#170](https://github.com/thmarx/cms/issues/170)
