@@ -4,16 +4,10 @@
 	<parent>
 		<groupId>com.github.thmarx.cms</groupId>
 		<artifactId>cms-parent</artifactId>
-		<version>4.12.0</version>
+		<version>4.13.0</version>
 	</parent>
 	<artifactId>cms-markdown</artifactId>
 	<packaging>jar</packaging>
-	
-	<properties>
-		<module.id>cms-markdown-module</module.id>
-		<module.name>cms markdown module</module.name>
-		<module.priority>HIGH</module.priority>
-	</properties>
 	
 	<dependencies>
 		
