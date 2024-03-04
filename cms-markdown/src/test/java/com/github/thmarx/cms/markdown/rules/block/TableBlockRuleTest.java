@@ -24,7 +24,6 @@ package com.github.thmarx.cms.markdown.rules.block;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -49,18 +48,18 @@ public class TableBlockRuleTest {
                     <table>
 						<thead>
 							<tr>
-                                <th style="">header1</th>
-                                <th style="">header2</th>
+                                <th>header1</th>
+                                <th>header2</th>
 							</tr>
                         </thead>
 						<tbody>
 							<tr>
-                                <td style="">r1 / c1</td>
-                                <td style="">r1 / c2</td>
+                                <td>r1 / c1</td>
+                                <td>r1 / c2</td>
 							</tr>
 							<tr>
-                                <td style="">r2 / c1</td>
-                                <td style="">r2 / c2</td>
+                                <td>r2 / c1</td>
+                                <td>r2 / c2</td>
 							</tr>
                         </tbody>
                     </table>

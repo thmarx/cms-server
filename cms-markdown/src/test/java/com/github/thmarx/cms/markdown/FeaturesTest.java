@@ -27,6 +27,7 @@ import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.TableBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.HighlightInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
@@ -67,6 +68,7 @@ public class FeaturesTest extends MarkdownTest {
 		options.addBlockRule(new ListBlockRule());
 		options.addBlockRule(new HorizontalRuleBlockRule());
 		options.addBlockRule(new BlockquoteBlockRule());
+		options.addBlockRule(new TableBlockRule());
 		SUT = new CMSMarkdown(options);
 	}
 	
@@ -75,6 +77,18 @@ public class FeaturesTest extends MarkdownTest {
 		
 		var md = load("features.md").trim();
 		var expected = load("features.html");
+		expected = removeComments(expected);
+		
+		var result = SUT.render(md);
+		result = "<div>" + result + "</div>";
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+	}
+	
+	@RepeatedTest(1)
+	public void test_tables() throws IOException {
+		
+		var md = load("features.tables.md").trim();
+		var expected = load("features.tables.html");
 		expected = removeComments(expected);
 		
 		var result = SUT.render(md);

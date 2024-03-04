@@ -27,6 +27,7 @@ import com.github.thmarx.cms.markdown.BlockElementRule;
 import com.github.thmarx.cms.markdown.BlockRenderer;
 import com.github.thmarx.cms.markdown.InlineRenderer;
 import com.github.thmarx.cms.markdown.utils.StringUtils;
+import com.google.common.base.Strings;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -174,6 +175,14 @@ public class TableBlockRule implements BlockElementRule {
 			return "";
 		}
 		
+		private String renderStyle (int index) {
+			var align = renderAlign(index);
+			if (Strings.isNullOrEmpty(align)) {
+				return "";
+			}
+			return "style=\"%s\"".formatted(align);
+		}
+		
 		@Override
 		public String render(InlineRenderer inlineRenderer) {
 			StringBuilder sb = new StringBuilder();
@@ -184,7 +193,7 @@ public class TableBlockRule implements BlockElementRule {
 				sb.append("<tr>");
 				AtomicInteger index = new AtomicInteger(0);
 				table.header.values.forEach((header) -> {
-					sb.append("<th style=\"").append(renderAlign(index.getAndIncrement())).append("\">");
+					sb.append("<th ").append(renderStyle(index.getAndIncrement())).append(">");
 					sb.append(inlineRenderer.render(header));
 					sb.append("</th>");
 				});
@@ -198,7 +207,7 @@ public class TableBlockRule implements BlockElementRule {
 				AtomicInteger index = new AtomicInteger(0);
 				sb.append("<tr>");
 				row.values.forEach(items -> {
-					sb.append("<td style=\"").append(renderAlign(index.getAndIncrement())).append("\">");
+					sb.append("<td ").append(renderStyle(index.getAndIncrement())).append(">");
 					sb.append(inlineRenderer.render(items));
 					sb.append("</td>");
 				});
