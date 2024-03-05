@@ -24,6 +24,7 @@ package com.github.thmarx.cms.markdown;
 
 import com.github.thmarx.cms.markdown.rules.block.BlockquoteBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.DefinitionListBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
@@ -69,6 +70,7 @@ public class FeaturesTest extends MarkdownTest {
 		options.addBlockRule(new HorizontalRuleBlockRule());
 		options.addBlockRule(new BlockquoteBlockRule());
 		options.addBlockRule(new TableBlockRule());
+		options.addBlockRule(new DefinitionListBlockRule());
 		SUT = new CMSMarkdown(options);
 	}
 	
@@ -89,6 +91,18 @@ public class FeaturesTest extends MarkdownTest {
 		
 		var md = load("features.tables.md").trim();
 		var expected = load("features.tables.html");
+		expected = removeComments(expected);
+		
+		var result = SUT.render(md);
+		result = "<div>" + result + "</div>";
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+	}
+	
+	@RepeatedTest(1)
+	public void test_definition_lists() throws IOException {
+		
+		var md = load("features.dl.md").trim();
+		var expected = load("features.dl.html");
 		expected = removeComments(expected);
 		
 		var result = SUT.render(md);

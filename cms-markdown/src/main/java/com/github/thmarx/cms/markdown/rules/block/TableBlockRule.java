@@ -22,9 +22,7 @@ package com.github.thmarx.cms.markdown.rules.block;
  * #L%
  */
 import com.github.thmarx.cms.markdown.Block;
-import com.github.thmarx.cms.markdown.BlockContainer;
 import com.github.thmarx.cms.markdown.BlockElementRule;
-import com.github.thmarx.cms.markdown.BlockRenderer;
 import com.github.thmarx.cms.markdown.InlineRenderer;
 import com.github.thmarx.cms.markdown.utils.StringUtils;
 import com.google.common.base.Strings;
