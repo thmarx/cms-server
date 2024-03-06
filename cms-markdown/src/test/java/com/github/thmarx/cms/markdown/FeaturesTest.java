@@ -21,7 +21,6 @@ package com.github.thmarx.cms.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.markdown.rules.block.BlockquoteBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.DefinitionListBlockRule;
@@ -29,6 +28,7 @@ import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.TableBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.TaskListBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.HighlightInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
@@ -48,11 +48,11 @@ import org.junit.jupiter.api.RepeatedTest;
  * @author t.marx
  */
 public class FeaturesTest extends MarkdownTest {
-	
+
 	static CMSMarkdown SUT;
-	
+
 	@BeforeAll
-	public static void setup () {
+	public static void setup() {
 		Options options = new Options();
 		options.addInlineRule(new StrongInlineRule());
 		options.addInlineRule(new ItalicInlineRule());
@@ -63,9 +63,10 @@ public class FeaturesTest extends MarkdownTest {
 		options.addInlineRule(new HighlightInlineRule());
 		options.addInlineRule(new SubscriptInlineRule());
 		options.addInlineRule(new SuperscriptInlineRule());
-		
+
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
+		options.addBlockRule(new TaskListBlockRule());
 		options.addBlockRule(new ListBlockRule());
 		options.addBlockRule(new HorizontalRuleBlockRule());
 		options.addBlockRule(new BlockquoteBlockRule());
@@ -73,38 +74,50 @@ public class FeaturesTest extends MarkdownTest {
 		options.addBlockRule(new DefinitionListBlockRule());
 		SUT = new CMSMarkdown(options);
 	}
-	
+
 	@RepeatedTest(1)
 	public void test_features() throws IOException {
-		
+
 		var md = load("features.md").trim();
 		var expected = load("features.html");
 		expected = removeComments(expected);
-		
+
 		var result = SUT.render(md);
 		result = "<div>" + result + "</div>";
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
-	
+
 	@RepeatedTest(1)
 	public void test_tables() throws IOException {
-		
+
 		var md = load("features.tables.md").trim();
 		var expected = load("features.tables.html");
 		expected = removeComments(expected);
-		
+
 		var result = SUT.render(md);
 		result = "<div>" + result + "</div>";
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
-	
+
 	@RepeatedTest(1)
 	public void test_definition_lists() throws IOException {
-		
+
 		var md = load("features.dl.md").trim();
 		var expected = load("features.dl.html");
 		expected = removeComments(expected);
-		
+
+		var result = SUT.render(md);
+		result = "<div>" + result + "</div>";
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+	}
+
+	@RepeatedTest(1)
+	public void test_tasklist() throws IOException {
+
+		var md = load("features.tasklist.md").trim();
+		var expected = load("features.tasklist.html");
+		expected = removeComments(expected);
+
 		var result = SUT.render(md);
 		result = "<div>" + result + "</div>";
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
