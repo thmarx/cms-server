@@ -72,6 +72,31 @@ public class HorizontalRuleBlockRuleTest {
 	}
 	
 	@Test
+	void test_horizontal_rule() {
+		
+		String input = """
+                 
+                 ---
+                 
+                 """;
+		
+		String expected = """
+                    <hr />
+                    """;
+		
+		Block next = sut.next(input);
+
+		Assertions.assertThat(next)
+				.isNotNull()
+				.isInstanceOf(HorizontalRuleBlockRule.HRBlock.class);
+
+		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<hr />");
+		
+		Assertions.assertThat(next.render(value -> value)).isEqualToIgnoringWhitespace(expected);
+	}
+	
+	
+	@Test
 	void test_horizontal_rule_issue() {
 		
 		String input = """
