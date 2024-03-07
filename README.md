@@ -6,6 +6,12 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.13.0
+
+* **FEATURE** support for markdown task lists [#178](https://github.com/thmarx/cms/issues/178)
+* **FEATURE** support for markdown table [#176](https://github.com/thmarx/cms/issues/176)
+* **FEATURE** support for markdown definition lists [#177](https://github.com/thmarx/cms/issues/177)
+
 ## 4.12.0
 
 * **FEATURE** New default markdown renderer [#175](https://github.com/thmarx/cms/issues/175)
