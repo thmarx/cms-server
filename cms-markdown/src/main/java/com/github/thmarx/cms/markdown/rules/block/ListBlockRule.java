@@ -51,7 +51,7 @@ public class ListBlockRule implements BlockElementRule {
 			var listContent = matcher.group(0);
 			var items = listContent.split("\n");
 
-			var listItems = Stream.of(items).map(item -> item.replaceFirst("\\A^[0-9].*\\. ", "")).toList();
+			var listItems = Stream.of(items).map(item -> item.replaceFirst("\\A^[0-9]?\\. ", "")).toList();
 
 			return new ListBlock(matcher.start(), matcher.end(),
 					listItems, true);

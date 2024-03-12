@@ -21,21 +21,6 @@ package com.github.thmarx.cms.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.markdown.rules.block.BlockquoteBlockRule;
-import com.github.thmarx.cms.markdown.rules.block.CodeBlockRule;
-import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
-import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
-import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
-import com.github.thmarx.cms.markdown.rules.inline.HighlightInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.ImageInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.ImageLinkInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.StrikethroughInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.SubscriptInlineRule;
-import com.github.thmarx.cms.markdown.rules.inline.SuperscriptInlineRule;
 import java.io.IOException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -53,25 +38,7 @@ public class CMSMarkdownTest extends MarkdownTest {
 
 	@BeforeAll
 	public static void setup() {
-		Options options = new Options();
-		options.addInlineRule(new StrongInlineRule());
-		options.addInlineRule(new ItalicInlineRule());
-		options.addInlineRule(new NewlineInlineRule());
-		options.addInlineRule(new ImageLinkInlineRule());
-		options.addInlineRule(new LinkInlineRule());
-		options.addInlineRule(new ImageInlineRule());
-		options.addInlineRule(new StrikethroughInlineRule());
-		options.addInlineRule(new HighlightInlineRule());
-		options.addInlineRule(new SubscriptInlineRule());
-		options.addInlineRule(new SuperscriptInlineRule());
-
-		options.addBlockRule(new CodeBlockRule());
-		options.addBlockRule(new HeadingBlockRule());
-		options.addBlockRule(new ListBlockRule());
-		options.addBlockRule(new HorizontalRuleBlockRule());
-		options.addBlockRule(new BlockquoteBlockRule());
-
-		SUT = new CMSMarkdown(options);
+		SUT = new CMSMarkdown(Options.all());
 	}
 
 	@Test

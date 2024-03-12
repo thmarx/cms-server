@@ -114,4 +114,20 @@ public class ListBlockRuleTest {
 
 		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<ul><li>ul item 1</li><li>ul item 2</li></ul>");
 	}
+	
+	@Test
+	void test_dot_issue_183() {
+
+		String md = "1. first sentence. second sentence.\n1. item 2";
+
+		Block next = sut.next(md);
+
+		Assertions.assertThat(next)
+				.isNotNull()
+				.isInstanceOf(ListBlockRule.ListBlock.class)
+				.asInstanceOf(InstanceOfAssertFactories.type(ListBlockRule.ListBlock.class))
+				.hasFieldOrPropertyWithValue("items", List.of("first sentence. second sentence.", "item 2"));
+
+		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<ol><li>first sentence. second sentence.</li><li>item 2</li></ol>");
+	}
 }
