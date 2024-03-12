@@ -12,9 +12,6 @@
 	<property name="forms.version">v1.2.0</property>
 		
 	<target name="download-modules" description="--> download modules">
-		<get src="https://github.com/thmarx/markedj-module/releases/download/${markedj.version}/markedj-module-bin.zip" dest="temp/markedj-module-bin.zip"></get>
-		<get src="https://github.com/thmarx/flexmark-module/releases/download/${flexmark.version}/flexmark-module-bin.zip" dest="temp/flexmark-module-bin.zip"></get>
-		<get src="https://github.com/thmarx/markedjs-module/releases/download/${markedjs.version}/markedjs-module-bin.zip" dest="temp/markedjs-module-bin.zip"></get>
 		<get src="https://github.com/thmarx/pebble-module/releases/download/${pebble.version}/pebble-module-bin.zip" dest="temp/pebble-module-bin.zip"></get>
 		<get src="https://github.com/thmarx/thymeleaf-module/releases/download/${thymeleaf.version}/thymeleaf-module-bin.zip" dest="temp/thymeleaf-module-bin.zip"></get>
 		<get src="https://github.com/thmarx/seo-module/releases/download/${seo.version}/seo-module-bin.zip" dest="temp/seo-module-bin.zip"></get>
@@ -23,9 +20,6 @@
 	</target>
 	
 	<target name="unzip-modules">
-		<unzip src="temp/markedj-module-bin.zip" dest="build/modules/" />
-		<unzip src="temp/markedjs-module-bin.zip" dest="build/modules/" />
-		<unzip src="temp/flexmark-module-bin.zip" dest="build/modules/" />
 		<unzip src="temp/thymeleaf-module-bin.zip" dest="build/modules/" />
 		<unzip src="temp/pebble-module-bin.zip" dest="build/modules/" />
 		<unzip src="temp/seo-module-bin.zip" dest="build/modules/" />
