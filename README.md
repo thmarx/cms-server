@@ -6,6 +6,12 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.14.0
+
+* **BUGFIX** Markdown list block does not render content correct if content contains unescaped dot [#183](https://github.com/thmarx/cms/issues/183)
+* **MAINTENANCE** remove optional markdown renderer from distribution [#179](https://github.com/thmarx/cms/issues/179 )
+* **MAINTENANCE** update dependencies [#180](https://github.com/thmarx/cms/issues/180)
+
 ## 4.13.0
 
 * **FEATURE** support for markdown task lists [#178](https://github.com/thmarx/cms/issues/178)
