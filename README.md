@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.14.1
+
+* **BUGFIX** TaxonomyResolver does not set page properties correctly [#184](https://github.com/thmarx/cms/issues/184)
+
 ## 4.14.0
 
 * **BUGFIX** Markdown list block does not render content correct if content contains unescaped dot [#183](https://github.com/thmarx/cms/issues/183)

@@ -90,6 +90,10 @@ public class TaxonomyResolver {
 			Optional<String> value = getTaxonomyValue(context);
 			Page<ListNode> resultPage = Page.EMPTY;
 			if (value.isPresent()) {
+				resultPage = new Page<>();
+				resultPage.setPage(page);
+				resultPage.setSize(size);
+				
 				template = taxonomy.getSingleTemplate();
 				meta.put(Constants.MetaFields.TITLE, taxonomy.getTitle() + " - " + taxonomy.getValueTitle(value.get()));
 				var contentPage = db.getTaxonomies().withValue(taxonomy, value.get(), page, size);
