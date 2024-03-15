@@ -85,7 +85,7 @@ public class FileTaxonomies implements Taxonomies {
 
 	@Override
 	public List<ContentNode> withValue(final Taxonomy taxonomy, final Object value) {
-		List<ContentNode> nodes = Collections.emptyList();
+		List<ContentNode> nodes;
 		if (taxonomy.isArray()) {
 			nodes = fileSystem
 					.query((node, index) -> node).whereContains(taxonomy.getField(), value)
