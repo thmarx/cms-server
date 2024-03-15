@@ -30,6 +30,7 @@ import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.utils.MapUtil;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -84,11 +85,18 @@ public class FileTaxonomies implements Taxonomies {
 
 	@Override
 	public List<ContentNode> withValue(final Taxonomy taxonomy, final Object value) {
-		List<ContentNode> nodes = null;
+		List<ContentNode> nodes = Collections.emptyList();
 		if (taxonomy.isArray()) {
-			nodes = fileSystem.query((node, index) -> node).whereContains(taxonomy.getField(), value).get();
+			nodes = fileSystem
+					.query((node, index) -> node).whereContains(taxonomy.getField(), value)
+					.orderby("title").asc()
+					.get();
 		} else {
-			nodes = fileSystem.query((node, index) -> node).where(taxonomy.getField(), value).get();
+			nodes = fileSystem
+					.query((node, index) -> node)
+					.where(taxonomy.getField(), value)
+					.orderby("title").asc()
+					.get();
 		}
 
 		return nodes;
@@ -98,10 +106,14 @@ public class FileTaxonomies implements Taxonomies {
 	public Page<ContentNode> withValue(Taxonomy taxonomy, Object value, long page, long size) {
 		
 		if (taxonomy.isArray()) {
-			return fileSystem.query((node, index) -> node).whereContains(taxonomy.getField(), value)
+			return fileSystem.query((node, index) -> node)
+					.whereContains(taxonomy.getField(), value)
+					.orderby("title").asc()
 					.page(page, size);
 		} else {
-			return fileSystem.query((node, index) -> node).where(taxonomy.getField(), value)
+			return fileSystem.query((node, index) -> node)
+					.where(taxonomy.getField(), value)
+					.orderby("title").asc()
 					.page(page, size);
 		}
 	}

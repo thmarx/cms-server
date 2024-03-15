@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.15.1
+
+* **BUGFIX** TaxonomyResolver does not set total of items correctly [#187](https://github.com/thmarx/cms/issues/187)
+
 ## 4.15.0
 
 * **FEATURE** Cache ResourceBundles in messages [#185](https://github.com/thmarx/cms/issues/185)

@@ -101,6 +101,7 @@ public class TaxonomyResolver {
 					return contentNodeMapper.toListNode(node, context);
 				}).filter(node -> node != null).toList();
 				resultPage.setItems(nodes);
+				resultPage.setTotal(contentPage.getTotal());	
 			} else {
 				meta.put(Constants.MetaFields.TITLE, taxonomy.getTitle());
 			}
