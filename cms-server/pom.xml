@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.thmarx.cms</groupId>
 		<artifactId>cms-parent</artifactId>
-		<version>4.15.1</version>
+		<version>4.16.0</version>
 	</parent>
 	<artifactId>cms-server</artifactId>
 	<packaging>jar</packaging>
@@ -12,7 +12,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
-		<exec.mainClass>com.github.thmarx.cms.Startup</exec.mainClass>
+		<exec.mainClass>com.github.thmarx.cms.cli.CMSCli</exec.mainClass>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 	</properties>
 	<inceptionYear>2023</inceptionYear>
@@ -103,6 +103,12 @@
 		<dependency>
 			<groupId>com.github.thmarx.cms.module.framework</groupId>
 			<artifactId>modules-manager</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>4.7.5</version>
 		</dependency>
 
 		<dependency>

@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.media.MediaManager;
+import com.github.thmarx.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
 import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyExtensionHandler;
@@ -65,6 +66,8 @@ public class SiteHandlerModule extends AbstractModule {
 		
 		bind(JettyExtensionHandler.class).in(Singleton.class);
 		bind(JettyExtensionRouteHandler.class).in(Singleton.class);
+		
+		bind(JettyAuthenticationHandler.class).in(Singleton.class);
 	}
 	
 	@Provides

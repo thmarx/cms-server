@@ -1,0 +1,2 @@
+GET http://localhost:1010/secret
+Authorization: Basic dGVzdDpkZW1v
