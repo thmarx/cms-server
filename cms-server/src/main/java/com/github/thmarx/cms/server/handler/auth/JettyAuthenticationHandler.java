@@ -21,6 +21,9 @@ package com.github.thmarx.cms.server.handler.auth;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.thmarx.cms.api.utils.RequestUtil;
 import com.github.thmarx.cms.auth.services.AuthService;
 import com.github.thmarx.cms.auth.services.UserService;
@@ -29,7 +32,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.StringTokenizer;
 import com.google.inject.Inject;
+import java.net.InetSocketAddress;
+import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpHeader;
@@ -50,11 +60,26 @@ public class JettyAuthenticationHandler extends Handler.Abstract {
 	private final AuthService authService;
 	private final UserService userService;
 
+	LoadingCache<String, AtomicInteger> loginFails = Caffeine.newBuilder()
+			.maximumSize(10_000)
+			.expireAfterWrite(Duration.ofMinutes(1))
+			.expireAfterAccess(Duration.ofMinutes(1))
+			.build(key -> new AtomicInteger(0));
+
+	static final int ATTEMPTS_TO_BLOCK = 3;
+
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
 
+		AtomicInteger atomicInteger = getClientLoginCounter(request);
+		if (atomicInteger.get() > ATTEMPTS_TO_BLOCK) {
+			response.setStatus(403);
+			callback.succeeded();
+			return true;
+		}
+
 		var uri = "/" + RequestUtil.getContentPath(request);
-		
+
 		Optional<AuthService.Auth> authOpt = authService.load();
 		if (authOpt.isEmpty()) {
 			return false;
@@ -81,18 +106,19 @@ public class JettyAuthenticationHandler extends Handler.Abstract {
 							String password = credentials.substring(p + 1).trim();
 
 							var userOpt = userService.login(UserService.Realm.of(authPath.getRealm()), username, password);
-							
-							if (userOpt.isEmpty()){
-								unauthorized(response, callback, authPath.getRealm());
+
+							if (userOpt.isEmpty()) {
+								unauthorized(request, response, callback, authPath.getRealm());
 								return true;
 							}
-							
+
 							if (authPath.allowed(userOpt.get())) {
+								loginFails.invalidate(clientAddress(request));
 								return false;
 							}
-							
+
 						} else {
-							unauthorized(response, callback, authPath.getRealm());
+							unauthorized(request, response, callback, authPath.getRealm());
 							return true;
 						}
 					} catch (UnsupportedEncodingException e) {
@@ -101,14 +127,26 @@ public class JettyAuthenticationHandler extends Handler.Abstract {
 				}
 			}
 		}
-		unauthorized(response, callback, authPath.getRealm());
+		unauthorized(request, response, callback, authPath.getRealm());
 		return true;
 	}
 
-	private void unauthorized(Response response, Callback callback, String realm) throws IOException {
+	private void unauthorized(Request request, Response response, Callback callback, String realm) throws IOException {
+
+		getClientLoginCounter(request).incrementAndGet();
+
 		response.getHeaders().add("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
 		response.setStatus(401);
 		callback.succeeded();
+	}
+
+	private String clientAddress(Request request) {
+		return ((InetSocketAddress) request.getConnectionMetaData().getRemoteSocketAddress())
+				.getAddress().getHostAddress();
+	}
+
+	private AtomicInteger getClientLoginCounter(Request request) {
+		return loginFails.get(clientAddress(request));
 	}
 
 }
