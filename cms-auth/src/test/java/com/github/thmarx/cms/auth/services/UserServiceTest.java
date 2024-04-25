@@ -50,11 +50,28 @@ public class UserServiceTest {
 	@Test
 	public void testSomeMethod() throws IOException {
 		
-		Assertions.assertThat(userService.login("test", "demo","users")).isEmpty();
+		var realm = UserService.Realm.of("users");
 		
-		userService.addUser("users", "test", "demo", new String[]{"eins","zwei"});
+		Assertions.assertThat(userService.login(realm, "test", "demo")).isEmpty();
 		
-		Assertions.assertThat(userService.login("test", "demo", "users")).isPresent();
+		userService.addUser(realm, "test", "demo", new String[]{"eins","zwei"});
+		
+		Assertions.assertThat(userService.login(realm, "test", "demo")).isPresent();
+		
+		userService.removeUser(realm, "test");
+		
+		Assertions.assertThat(userService.login(realm, "test", "demo")).isEmpty();
+	}
+	
+	@Test
+	public void test_multiple_users() throws IOException {
+		
+		var realm = UserService.Realm.of("musers");
+		
+		userService.addUser(realm, "test1", "demo", new String[]{"eins","zwei"});
+		userService.addUser(realm, "test2", "demo", new String[]{"eins","zwei"});
+		Assertions.assertThat(userService.login(realm,  "test1", "demo")).isPresent();
+		Assertions.assertThat(userService.login(realm, "test1", "demo")).isPresent();
 	}
 	
 }

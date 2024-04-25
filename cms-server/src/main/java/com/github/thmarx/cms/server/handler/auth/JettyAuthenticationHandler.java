@@ -80,7 +80,7 @@ public class JettyAuthenticationHandler extends Handler.Abstract {
 							String username = credentials.substring(0, p).trim();
 							String password = credentials.substring(p + 1).trim();
 
-							var userOpt = userService.login(username, password, authPath.getRealm());
+							var userOpt = userService.login(UserService.Realm.of(authPath.getRealm()), username, password);
 							
 							if (userOpt.isEmpty()){
 								unauthorized(response, callback, authPath.getRealm());

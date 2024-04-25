@@ -50,8 +50,17 @@ public class UserService {
 	
 	private final Path hostBase;
 	
-	public void addUser (String realm, String username, String password, String [] groups) throws IOException {
-		saveUser(new User(username, SecurityUtil.hash(password), groups), realm);
+	public void addUser (Realm realm, String username, String password, String [] groups) throws IOException {
+		var users = loadUsers(realm);
+		users = new ArrayList<>(users.stream().filter(user -> !user.username.equals(username)).toList());
+		users.add(new User(username, SecurityUtil.hash(password), groups));
+		saveUsers(realm, users);
+	}
+	
+	public void removeUser (Realm realm, String username) throws IOException {
+		var users = loadUsers(realm);
+		users = new ArrayList<>(users.stream().filter(user -> !user.username.equals(username)).toList());
+		saveUsers(realm, users);
 	}
 	
 	private static User fromString(final String userString) {
@@ -64,8 +73,8 @@ public class UserService {
 		return new User(username, passwordHash, groups);
 	}
 	
-	private List<User> loadUsers(final String realm) throws IOException {
-		Path usersFile = hostBase.resolve("config/" + FILENAME_PATTERN.formatted(realm));
+	private List<User> loadUsers(final Realm realm) throws IOException {
+		Path usersFile = hostBase.resolve("config/" + FILENAME_PATTERN.formatted(realm.name));
 		List<User> users = new ArrayList<>();
 		if (Files.exists(usersFile)) {
 			List<String> lines = Files.readAllLines(usersFile, StandardCharsets.UTF_8);
@@ -84,7 +93,7 @@ public class UserService {
 		return users;
 	}
 	
-	public Optional<User> login(final String username, final String password, final String realm) {
+	public Optional<User> login(final Realm realm, final String username, final String password) {
 		try {
 			final String hashedPassword = SecurityUtil.hash(password);
 			
@@ -102,13 +111,16 @@ public class UserService {
 		return Optional.empty();
 	}
 	
-	private void saveUser(User user, final String realm) throws IOException {
-		Path usersFile = hostBase.resolve("config/" + FILENAME_PATTERN.formatted(realm));
-		if (Files.exists(usersFile)) {
-			Files.createFile(usersFile);
-		}
+	
+	private void saveUsers(Realm realm, List<User> users) throws IOException {
+		Path usersFile = hostBase.resolve("config/" + FILENAME_PATTERN.formatted(realm.name));
+		Files.deleteIfExists(usersFile);
 		
-		Files.writeString(usersFile, user.line(), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+		StringBuilder userContent = new StringBuilder();
+		users.forEach(user -> userContent.append(user.line()));
+		
+		Files.writeString(usersFile, "# users file", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+		Files.writeString(usersFile, userContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 	}
 	
 	public static record User (String username, String passwordHash, String[] groups) {
@@ -119,6 +131,12 @@ public class UserService {
 					passwordHash,
 					groups!= null ? String.join(",", groups) : ""
 			);
+		}
+	}
+	
+	public static record Realm (String name) {
+		public static Realm of (String name) {
+			return new Realm(name);
 		}
 	}
 }

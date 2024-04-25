@@ -22,6 +22,7 @@ package com.github.thmarx.cms.cli;
  * #L%
  */
 import com.github.thmarx.cms.cli.commands.AddUser;
+import com.github.thmarx.cms.cli.commands.RemoveUser;
 import com.github.thmarx.cms.cli.commands.Startup;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -31,7 +32,7 @@ import picocli.CommandLine;
  * @author t.marx
  */
 @CommandLine.Command(name = "server", subcommands = {
-	Startup.class, AddUser.class})
+	Startup.class, AddUser.class, RemoveUser.class})
 @Slf4j
 public class ServerCommand implements Runnable {
 
