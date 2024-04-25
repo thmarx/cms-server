@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.cli;
+package com.github.thmarx.cms.auth.utils;
 
 /*-
  * #%L
- * cms-server
+ * cms-api
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -22,14 +22,21 @@ package com.github.thmarx.cms.cli;
  * #L%
  */
 
-import picocli.CommandLine;
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
+import java.security.SecureRandom;
 
 /**
  *
  * @author t.marx
  */
-public class CMSCli {
-	public static void main(String[] args) {
-        new CommandLine(new ServerCommand()).execute(args);
-    }
+public class SecurityUtil {
+
+	private static final SecureRandom RANDOM = new SecureRandom();
+	
+	public static String hash (final String value) {
+		return Hashing.sha256()
+				.hashString(value, Charsets.UTF_8)
+				.toString();
+	}
 }

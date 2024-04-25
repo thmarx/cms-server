@@ -39,6 +39,8 @@ import com.github.thmarx.cms.api.messages.DefaultMessageSource;
 import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
+import com.github.thmarx.cms.auth.services.AuthService;
+import com.github.thmarx.cms.auth.services.UserService;
 import com.github.thmarx.cms.content.ContentRenderer;
 import com.github.thmarx.cms.content.DefaultContentRenderer;
 import com.github.thmarx.cms.content.ContentResolver;
@@ -115,6 +117,18 @@ public class SiteModule extends AbstractModule {
 		return DefaultTheme.EMPTY;
 	}
 
+	@Provides
+	@Singleton
+	public UserService userService(DB db) {
+		return new UserService(db.getFileSystem().base());
+	}
+	
+	@Provides
+	@Singleton
+	public AuthService authService(DB db) {
+		return new AuthService(db.getFileSystem().base());
+	}
+	
 	@Provides
 	@Singleton
 	@Named("assets")

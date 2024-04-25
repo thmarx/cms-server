@@ -22,14 +22,12 @@ package com.github.thmarx.cms.filesystem;
  * #L%
  */
 
-import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.DBFileSystem;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
 import com.github.thmarx.cms.api.eventbus.EventBus;
-import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.filesystem.taxonomy.FileTaxonomies;
 import java.io.IOException;
 import java.nio.file.Path;

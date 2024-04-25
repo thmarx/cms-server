@@ -24,8 +24,6 @@ package com.github.thmarx.cms.api.db;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -34,6 +32,9 @@ import java.util.List;
  * @author thmar
  */
 public interface DBFileSystem {
+	
+	Path base();
+	
 	Path resolve(String path);
 	
 	String loadContent(final Path file) throws IOException;

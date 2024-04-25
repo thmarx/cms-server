@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.cli;
+package com.github.thmarx.cms.auth.services;
 
 /*-
  * #%L
- * cms-server
+ * cms-auth
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -22,14 +22,38 @@ package com.github.thmarx.cms.cli;
  * #L%
  */
 
-import picocli.CommandLine;
+import java.nio.file.Path;
+import java.util.Optional;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 
 /**
  *
  * @author t.marx
  */
-public class CMSCli {
-	public static void main(String[] args) {
-        new CommandLine(new ServerCommand()).execute(args);
-    }
+public class AuthServiceTest {
+
+	@Test
+	public void no_auth() {
+		
+		var authService = new AuthService(Path.of("src/test/resources/hosts/none"));
+		
+		var auth = authService.load();
+		Assertions.assertThat(auth).isEmpty();
+	}
+	
+	@Test
+	public void load_auth() {
+		
+		var authService = new AuthService(Path.of("src/test/resources/hosts/demo"));
+		
+		var auth = authService.load();
+		Assertions.assertThat(auth).isPresent();
+		
+		Optional<AuthService.AuthPath> find = auth.get().find("/secured");
+		
+		Assertions.assertThat(find).isPresent();
+	}
 }

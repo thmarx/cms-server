@@ -21,12 +21,16 @@ package com.github.thmarx.cms.server.handler.auth;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.cms.auth.services.AuthService;
+import com.github.thmarx.cms.auth.services.UserService;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.StringTokenizer;
+import com.google.inject.Inject;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Handler;
@@ -39,56 +43,69 @@ import org.eclipse.jetty.util.Callback;
  * @author t.marx
  */
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__({
+	@Inject}))
 public class JettyAuthenticationHandler extends Handler.Abstract {
 
-	private String realm = "";
+	private final AuthService authService;
+	private final UserService userService;
 
 	@Override
 	public boolean handle(Request request, Response response, Callback callback) throws Exception {
 
-		var uri = RequestUtil.getContentPath(request);
-		var username = "test";
-		var password = "demo";
+		var uri = "/" + RequestUtil.getContentPath(request);
+		
+		Optional<AuthService.Auth> authOpt = authService.load();
+		if (authOpt.isEmpty()) {
+			return false;
+		}
+		Optional<AuthService.AuthPath> authPathOpt = authOpt.get().find(uri);
+		if (authPathOpt.isEmpty()) {
+			return false;
+		}
+		var authPath = authPathOpt.get();
 
-		if (uri.startsWith("secret")) {
-			String authHeader = request.getHeaders().get(HttpHeader.AUTHORIZATION);
-			if (authHeader != null) {
-				StringTokenizer st = new StringTokenizer(authHeader);
-				if (st.hasMoreTokens()) {
-					String basic = st.nextToken();
+		String authHeader = request.getHeaders().get(HttpHeader.AUTHORIZATION);
+		if (authHeader != null) {
+			StringTokenizer st = new StringTokenizer(authHeader);
+			if (st.hasMoreTokens()) {
+				String basic = st.nextToken();
 
-					if (basic.equalsIgnoreCase("Basic")) {
-						try {
-							String credentials = new String(Base64.getDecoder().decode(st.nextToken()));
-							log.info("Credentials: " + credentials);
-							System.out.println("credentials: " + credentials);
-							int p = credentials.indexOf(":");
-							if (p != -1) {
-								String _username = credentials.substring(0, p).trim();
-								String _password = credentials.substring(p + 1).trim();
+				if (basic.equalsIgnoreCase("Basic")) {
+					try {
+						String credentials = new String(Base64.getDecoder().decode(st.nextToken()));
 
-								if (!username.equals(_username) || !password.equals(_password)) {
-									unauthorized(response, callback);
-								}
-							} else {
-								unauthorized(response, callback);
+						int p = credentials.indexOf(":");
+						if (p != -1) {
+							String username = credentials.substring(0, p).trim();
+							String password = credentials.substring(p + 1).trim();
+
+							var userOpt = userService.login(username, password, authPath.getRealm());
+							
+							if (userOpt.isEmpty()){
+								unauthorized(response, callback, authPath.getRealm());
 								return true;
 							}
-						} catch (UnsupportedEncodingException e) {
-							throw new Error("Couldn't retrieve authentication", e);
+							
+							if (authPath.allowed(userOpt.get())) {
+								return false;
+							}
+							
+						} else {
+							unauthorized(response, callback, authPath.getRealm());
+							return true;
 						}
+					} catch (UnsupportedEncodingException e) {
+						throw new Error("Couldn't retrieve authentication", e);
 					}
 				}
-			} else {
-				unauthorized(response, callback);
-				return true;
 			}
 		}
-
-		return false;
+		unauthorized(response, callback, authPath.getRealm());
+		return true;
 	}
 
-	private void unauthorized(Response response, Callback callback) throws IOException {
+	private void unauthorized(Response response, Callback callback, String realm) throws IOException {
 		response.getHeaders().add("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
 		response.setStatus(401);
 		callback.succeeded();

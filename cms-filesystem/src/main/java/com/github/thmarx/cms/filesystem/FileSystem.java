@@ -74,6 +74,11 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 	@Getter
 	private final MetaData metaData = new MetaData();
 
+	@Override
+	public Path base () {
+		return hostBaseDirectory;
+	}
+	
 	public <T> Query<T> query(final BiFunction<ContentNode, Integer, T> nodeMapper) {
 		return new Query(new ArrayList<>(metaData.nodes().values()), metaData, nodeMapper);
 	}

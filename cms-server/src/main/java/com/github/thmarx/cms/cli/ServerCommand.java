@@ -21,15 +21,22 @@ package com.github.thmarx.cms.cli;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import com.github.thmarx.cms.cli.commands.AddUser;
+import com.github.thmarx.cms.cli.commands.Startup;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 /**
  *
  * @author t.marx
  */
-public class CMSCli {
-	public static void main(String[] args) {
-        new CommandLine(new ServerCommand()).execute(args);
-    }
+@CommandLine.Command(name = "server", subcommands = {
+	Startup.class, AddUser.class})
+@Slf4j
+public class ServerCommand implements Runnable {
+
+	@Override
+	public void run() {
+		System.out.println("server command");
+	}
 }
