@@ -29,6 +29,8 @@ import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.extensions.ContentQueryOperatorExtensionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
+import com.github.thmarx.cms.api.feature.Feature;
+import com.github.thmarx.cms.api.feature.features.AuthFeature;
 import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.InjectorFeature;
@@ -60,9 +62,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringSubstitutor;
 
 /**
  *
@@ -87,10 +91,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 	public String render(final Path contentFile, final RequestContext context, final Map<String, List<Section>> sections) throws IOException {
 		var content = contentParser.parse(contentFile);
 
-		var markdownContent = content.content();
-		markdownContent = context.get(RenderContext.class).shortCodes().replace(markdownContent);
-
-		return render(contentFile, context, sections, content.meta(), markdownContent, (model) -> {
+		return render(contentFile, context, sections, content.meta(), content.content(), (model) -> {
 		});
 	}
 
@@ -105,41 +106,60 @@ public class DefaultContentRenderer implements ContentRenderer {
 				model.values.put("taxonomy_value", taxonomyValue.get());
 			}
 			model.values.put("page", page);
-			
+
 		});
 	}
-	
+
 	@Override
 	public String renderView(final Path viewFile, final View view, final ContentNode contentNode, final RequestContext requestContext, final Page<ListNode> page) throws IOException {
-		return render(viewFile, requestContext, Collections.emptyMap(), 
+		return render(viewFile, requestContext, Collections.emptyMap(),
 				contentNode.data(), "", (model) -> {
-					model.values.put("page", page);
-//			model.values.put("nodes", view.getNodes(
-//				db, 
-//				viewFile, 
-//				contentParser, 
-//				requestContext.get(RenderContext.class).markdownRenderer(), 
-//				requestContext.get(RequestExtensions.class).getContext(), 
-//				requestContext.get(RequestFeature.class).queryParameters(), requestContext)
-//			);
-			
+			model.values.put("page", page);
 		});
+	}
+
+	private <F extends Feature> Object getFeatureValueOrDefault(RequestContext context,
+			Class<F> feature, Function<F, Object> valueFunction, Object defaultValue) {
+		if (context.has(feature)) {
+			return valueFunction.apply(context.get(feature));
+		}
+		return defaultValue;
+	}
+
+	private String renderMarkdown(final String rawContent, final RequestContext context) {
+		Map<String, Object> map = new HashMap<>();
+
+		map.put("USERNAME", getFeatureValueOrDefault(
+				context,
+				AuthFeature.class,
+				(feature) -> feature.username(),
+				"")
+		);
+
+		// replace shortcodes
+		var content = context.get(RenderContext.class).shortCodes().replace(rawContent);
+		// replace
+		content = StringSubstitutor.replace(rawContent, map);
+
+		return context.get(RenderContext.class).markdownRenderer().render(content);
 	}
 
 	@Override
 	public String render(final Path contentFile, final RequestContext context,
 			final Map<String, List<Section>> sections,
-			final Map<String, Object> meta, final String markdownContent, final Consumer<TemplateEngine.Model> modelExtending
+			final Map<String, Object> meta, final String rawContent, final Consumer<TemplateEngine.Model> modelExtending
 	) throws IOException {
 		var uri = PathUtil.toRelativeFile(contentFile, db.getFileSystem().resolve("content/"));
 		Optional<ContentNode> contentNode = db.getContent().byUri(uri);
 
 		TemplateEngine.Model model = new TemplateEngine.Model(contentFile, contentNode.isPresent() ? contentNode.get() : null);
-		
+
 		modelExtending.accept(model);
-		
+
 		model.values.put("meta", meta);
-		model.values.put("content", context.get(RenderContext.class).markdownRenderer().render(markdownContent));
+		model.values.put("content",
+				renderMarkdown(rawContent, context)
+		);
 		model.values.put("sections", sections);
 
 		model.values.put("navigation", createNavigationFunction(contentFile, context));
@@ -152,14 +172,18 @@ public class DefaultContentRenderer implements ContentRenderer {
 
 		model.values.put("taxonomies", context.get(InjectorFeature.class).injector().getInstance(TaxonomyFunction.class));
 		model.values.put("messages", context.get(InjectorFeature.class).injector().getInstance(MessageSource.class));
-		
+
 		model.values.put("hooks", context.get(HookSystemFeature.class).hookSystem());
-		
+
 		model.values.put("links", new LinkFunction(context));
-		
+
 		model.values.put("PREVIEW_MODE", isPreview(context));
 		model.values.put("DEV_MODE", isDevMode(context));
 		model.values.put("ENV", context.get(ServerPropertiesFeature.class).serverProperties().env());
+
+		if (context.has(AuthFeature.class)) {
+			model.values.put("USERNAME", context.get(AuthFeature.class).username());
+		}
 
 		context.get(RequestExtensions.class).getRegisterTemplateSupplier().forEach(service -> {
 			model.values.put(service.name(), service.supplier());
@@ -175,15 +199,15 @@ public class DefaultContentRenderer implements ContentRenderer {
 	}
 
 	protected QueryFunction createQueryFunction(final Path contentFile, final RequestContext context) {
-		
+
 		Map<String, BiPredicate<Object, Object>> customOperators = new HashMap<>();
-		
+
 		customOperators.putAll(context.get(RequestExtensions.class).getQueryOperations());
-		
+
 		moduleManager
 				.extensions(ContentQueryOperatorExtensionPoint.class)
 				.forEach(extension -> customOperators.put(extension.getOperator(), extension.getPredicate()));
-		
+
 		var queryFn = new QueryFunction(db, contentFile, context, customOperators);
 		queryFn.setContentType(siteProperties.defaultContentType());
 		return queryFn;

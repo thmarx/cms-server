@@ -21,12 +21,14 @@ package com.github.thmarx.cms.server.handler.auth;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.github.thmarx.cms.api.feature.features.AuthFeature;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.RequestUtil;
 import com.github.thmarx.cms.auth.services.AuthService;
 import com.github.thmarx.cms.auth.services.UserService;
+import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
@@ -34,11 +36,7 @@ import java.util.StringTokenizer;
 import com.google.inject.Inject;
 import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -113,6 +111,10 @@ public class JettyAuthenticationHandler extends Handler.Abstract {
 							}
 
 							if (authPath.allowed(userOpt.get())) {
+								
+								var requestContext = (RequestContext) request.getAttribute(RequestContextFilter.REQUEST_CONTEXT);
+								requestContext.add(AuthFeature.class, new AuthFeature(username));
+								
 								loginFails.invalidate(clientAddress(request));
 								return false;
 							}

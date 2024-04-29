@@ -21,6 +21,9 @@
 	<div class="container" th:utext="${content}"></div>
 
 	<div class="container">
+		<div th:if="USERNAME != null">
+			Hallo <span th:text="${USERNAME}"></span>
+		</div>
 		<div class="row">
 			<div class="input-group mb-3">
 				<input type="text" class="form-control" id="search-input" placeholder="Search query"

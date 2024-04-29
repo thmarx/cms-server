@@ -7,3 +7,5 @@ menu:
 ---
 
 ## Search
+
+Hallo ${USERNAME}
