@@ -6,6 +6,13 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.16.0
+
+* **FEATURE** Access variables in markdown [#190](https://github.com/thmarx/cms/issues/190)
+* **FEATURE** Simple authentication on folders [#189](https://github.com/thmarx/cms/issues/189)
+* **FEATURE** Basic CLI [#8](https://github.com/thmarx/cms/issues/8)
+* **MAINTENANCE** Update jetty dependency [#188](https://github.com/thmarx/cms/issues/188)
+
 ## 4.15.1
 
 * **BUGFIX** TaxonomyResolver does not set total of items correctly [#187](https://github.com/thmarx/cms/issues/187)
