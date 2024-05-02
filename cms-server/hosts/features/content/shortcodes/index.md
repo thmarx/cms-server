@@ -16,3 +16,5 @@ Or call a shortcode provided by the default theme
 Or call a shortcode provided by a module
 
 [[example /]]
+
+\[\[example /\]\]

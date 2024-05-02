@@ -1,5 +1,10 @@
 package com.github.thmarx.cms.markdown.utils;
 
+import com.google.common.hash.Hasher;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 /*-
  * #%L
  * cms-markdown
@@ -27,6 +32,41 @@ package com.github.thmarx.cms.markdown.utils;
  * @author t.marx
  */
 public class StringUtils {
+	
+	private static final Map<String, String> ESCAPE = new HashMap<>();
+	
+	private static final String AMP_PLACEHOLDER = "AMP#PLACE#HOLDER";
+	
+	static {
+		ESCAPE.put("\\\\#", AMP_PLACEHOLDER + "#35;");
+		ESCAPE.put("\\\\\\*", AMP_PLACEHOLDER + "#42;");
+		ESCAPE.put("\\\\`", AMP_PLACEHOLDER + "#96;");
+		ESCAPE.put("\\\\_", AMP_PLACEHOLDER + "#95;");
+		ESCAPE.put("\\\\\\{", AMP_PLACEHOLDER + "#123;");
+		ESCAPE.put("\\\\\\}", AMP_PLACEHOLDER + "#125;");
+		ESCAPE.put("\\\\\\[", AMP_PLACEHOLDER + "#91;");
+		ESCAPE.put("\\\\\\]", AMP_PLACEHOLDER + "#93;");
+		ESCAPE.put("\\\\<", AMP_PLACEHOLDER + "#60;");
+		ESCAPE.put("\\\\>", AMP_PLACEHOLDER + "#62;");
+		ESCAPE.put("\\\\\\(", AMP_PLACEHOLDER + "#40;");
+		ESCAPE.put("\\\\\\)", AMP_PLACEHOLDER + "#41;");
+		ESCAPE.put("\\\\\\+", AMP_PLACEHOLDER + "#43;");
+		ESCAPE.put("\\\\-", AMP_PLACEHOLDER + "#45;");
+		ESCAPE.put("\\\\\\.", AMP_PLACEHOLDER +"#46;");
+		ESCAPE.put("\\\\!", AMP_PLACEHOLDER +"#33;");
+		ESCAPE.put("\\\\\\|", AMP_PLACEHOLDER +"#124;");
+	}
+	
+	public static String unescape (String html) {
+		return html.replaceAll(AMP_PLACEHOLDER, "&");
+	}
+	public static String escape (String md) {
+		AtomicReference<String> escaped = new AtomicReference<>(md);
+		ESCAPE.entrySet().forEach(entry -> {
+			escaped.updateAndGet(value -> value.replaceAll(entry.getKey(), entry.getValue()));
+		});
+		return escaped.get();
+	}
 
 	public static String removeLeadingPipe(String s) {
 		return s.replaceAll("^\\|+(?!$)", "");

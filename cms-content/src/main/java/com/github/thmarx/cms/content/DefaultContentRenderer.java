@@ -136,12 +136,16 @@ public class DefaultContentRenderer implements ContentRenderer {
 				"")
 		);
 
-		// replace shortcodes
-		var content = context.get(RenderContext.class).shortCodes().replace(rawContent);
-		// replace
-		content = StringSubstitutor.replace(rawContent, map);
+		// replace variables
+		String content = StringSubstitutor.replace(rawContent, map);
 
-		return context.get(RenderContext.class).markdownRenderer().render(content);
+		// render markdown
+		content = context.get(RenderContext.class).markdownRenderer().render(content);
+		
+		// replace shortcodes
+		content = context.get(RenderContext.class).shortCodes().replace(content);
+		
+		return content;
 	}
 
 	@Override

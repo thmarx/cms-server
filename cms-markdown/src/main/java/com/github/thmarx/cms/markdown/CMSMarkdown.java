@@ -23,6 +23,7 @@ package com.github.thmarx.cms.markdown;
  */
 import com.github.thmarx.cms.markdown.rules.block.ParagraphBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.TextInlineRule;
+import com.github.thmarx.cms.markdown.utils.StringUtils;
 import java.io.IOException;
 import java.util.List;
 
@@ -63,7 +64,9 @@ public class CMSMarkdown {
 
 	public String render(final String md) throws IOException {
 		final StringBuilder htmlBuilder = new StringBuilder();
-		List<Block> blocks = blockTokenizer.tokenize(escape(md));
+		List<Block> blocks = blockTokenizer.tokenize(
+				StringUtils.escape(md)
+		);
 
 		InlineRenderer inlineRenderer = (content) -> {
 			try {
@@ -92,27 +95,6 @@ public class CMSMarkdown {
 					htmlBuilder.append(blockHtml);
 				});
 
-		return htmlBuilder.toString();
-	}
-
-	private String escape(final String md) {
-		return md
-				.replaceAll("\\\\#", "&#35;")
-				.replaceAll("\\\\\\*", "&#42;")
-				.replaceAll("\\\\`", "&#96;")
-				.replaceAll("\\\\_", "&#95;")
-				.replaceAll("\\\\\\{", "&#123;")
-				.replaceAll("\\\\\\}", "&#125;")
-				.replaceAll("\\\\\\[", "&#91;")
-				.replaceAll("\\\\\\]", "&#93;")
-				.replaceAll("\\\\<", "&#60;")
-				.replaceAll("\\\\>", "&#62;")
-				.replaceAll("\\\\\\(", "&#40;")
-				.replaceAll("\\\\\\)", "&#41;")
-				.replaceAll("\\\\\\+", "&#43;")
-				.replaceAll("\\\\-", "&#45;")
-				.replaceAll("\\\\\\.", "&#46;")
-				.replaceAll("\\\\!", "&#33;")
-				.replaceAll("\\\\\\|", "&#124;");
+		return StringUtils.unescape(htmlBuilder.toString());
 	}
 }
