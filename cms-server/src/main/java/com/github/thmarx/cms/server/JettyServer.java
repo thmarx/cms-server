@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.server.VHost;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -43,6 +44,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.QoSHandler;
+import org.eclipse.jetty.server.handler.ThreadLimitHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 /**
@@ -114,7 +117,22 @@ public class JettyServer implements AutoCloseable {
 
 		server.addConnector(connector);
 
-		server.setHandler(handlers);
+		var apm = properties.apm();
+		if (apm.enabled()) {
+			log.info("enable application performance management");
+			ThreadLimitHandler threadLimitHandler = new ThreadLimitHandler(HttpHeader.X_FORWARDED_FOR.asString());
+			threadLimitHandler.setThreadLimit(apm.thread_limit());
+			threadLimitHandler.setHandler(handlers);
+			
+			QoSHandler qosHandler = new QoSHandler(threadLimitHandler);
+			qosHandler.setMaxRequestCount(apm.max_requests());
+			qosHandler.setMaxSuspend(apm.max_suspend());
+			
+			server.setHandler(qosHandler);
+		} else {
+			server.setHandler(handlers);
+		}
+		
 		try {
 			server.start();
 		} catch (Exception ex) {

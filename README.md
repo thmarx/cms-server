@@ -8,6 +8,7 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 ## 4.16.0
 
+* **FEATURE** Application performance management [#191](https://github.com/thmarx/cms/issues/191)
 * **FEATURE** Access variables in markdown [#190](https://github.com/thmarx/cms/issues/190)
 * **FEATURE** Simple authentication on folders [#189](https://github.com/thmarx/cms/issues/189)
 * **FEATURE** Basic CLI [#8](https://github.com/thmarx/cms/issues/8)

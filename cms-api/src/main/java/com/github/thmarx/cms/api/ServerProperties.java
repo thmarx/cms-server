@@ -59,4 +59,8 @@ public class ServerProperties extends YamlProperties {
 	public Path getThemesFolder () {
 		return Path.of("themes/");
 	}
+	
+	public APMProperties apm () {
+		return new APMProperties(getSubMap("apm"));
+	}
 }
