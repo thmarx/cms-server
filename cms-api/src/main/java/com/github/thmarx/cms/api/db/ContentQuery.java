@@ -22,13 +22,13 @@ package com.github.thmarx.cms.api.db;
  * #L%
  */
 
-import com.github.thmarx.cms.api.db.ContentNode;
 import java.util.List;
 import java.util.Map;
 
 /**
  *
  * @author t.marx
+ * @param <T>
  */
 public interface ContentQuery<T> {
 

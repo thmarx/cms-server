@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 /**
  *
  * @author t.marx
+ * @param <T>
  */
 public class Query<T> implements ContentQuery<T> {
 
