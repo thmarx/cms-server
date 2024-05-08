@@ -11,7 +11,7 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<exec.mainClass>com.github.thmarx.cms.Startup</exec.mainClass>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-		<jetty.version>12.0.8</jetty.version>
+		<jetty.version>12.0.9</jetty.version>
 	</properties>
 	<modules>
 		<module>cms-api</module>
