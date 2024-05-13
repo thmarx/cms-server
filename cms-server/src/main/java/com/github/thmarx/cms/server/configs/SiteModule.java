@@ -206,9 +206,9 @@ public class SiteModule extends AbstractModule {
 	@Singleton
 	public RequestContextFactory requestContextFactory(
 			Injector injector, ExtensionManager extensionManager, Theme theme, SiteProperties siteProperties,
-			MediaService mediaService) {
+			MediaService mediaService, MarkdownRenderer markdownRenderer) {
 		return new RequestContextFactory(
-				() -> injector.getInstance(MarkdownRenderer.class),
+				markdownRenderer,
 				extensionManager,
 				theme,
 				siteProperties,

@@ -40,7 +40,7 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.media.MediaManager;
-import com.github.thmarx.cms.module.RenderContentFunction;
+import com.github.thmarx.cms.module.DefaultRenderContentFunction;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
 import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
@@ -132,7 +132,7 @@ public class VHost {
 
 		cmsModuleContext.add(
 				ContentRenderFeature.class,
-				new ContentRenderFeature(new RenderContentFunction(() -> contentResolver, () -> requestContextFactory))
+				new ContentRenderFeature(new DefaultRenderContentFunction(contentResolver, requestContextFactory))
 		);
 
 		moduleManager.initModules();

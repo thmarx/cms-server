@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.api.feature.features;
+package com.github.thmarx.cms.api.content;
 
 /*-
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +22,6 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
-import com.github.thmarx.cms.api.content.ContentResponse;
-import com.github.thmarx.cms.api.content.RenderContentFunction;
-import com.github.thmarx.cms.api.feature.Feature;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,10 +30,6 @@ import java.util.Optional;
  *
  * @author t.marx
  */
-public record ContentRenderFeature(RenderContentFunction renderContentFunction) implements Feature {
-
-	public Optional<ContentResponse> renderContentNode (String uri, Map<String, List<String>> params) {
-		return renderContentFunction().render(uri, params);
-	}
-
+public interface RenderContentFunction {
+	Optional<ContentResponse> render(String uri, Map<String, List<String>> parameters);
 }

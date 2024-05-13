@@ -57,7 +57,6 @@ import com.google.inject.Injector;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.Request;
 
@@ -68,7 +67,7 @@ import org.eclipse.jetty.server.Request;
 @RequiredArgsConstructor
 public class RequestContextFactory {
 
-	private final Supplier<MarkdownRenderer> markdownRenderer;
+	private final MarkdownRenderer markdownRenderer;
 	private final ExtensionManager extensionManager;
 	private final Theme theme;
 	private final SiteProperties siteProperties;
@@ -93,7 +92,7 @@ public class RequestContextFactory {
 		RequestExtensions requestExtensions = extensionManager.newContext(theme, hookSystem);
 
 		RenderContext renderContext = new RenderContext(
-				markdownRenderer.get(),
+				markdownRenderer,
 				createShortCodes(requestExtensions),
 				theme);
 

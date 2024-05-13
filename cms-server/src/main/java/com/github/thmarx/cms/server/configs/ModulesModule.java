@@ -137,6 +137,7 @@ public class ModulesModule extends AbstractModule {
 	 * The markedjs markdown renderer is implemented using graaljs, so we need a fresh instance for every request
 	 * @param siteProperties
 	 * @param moduleManager
+	 * @param defaultMarkdownRenderer
 	 * @return 
 	 */
 	@Provides
