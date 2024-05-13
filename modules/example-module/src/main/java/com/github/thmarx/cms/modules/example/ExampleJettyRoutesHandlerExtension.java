@@ -23,7 +23,6 @@ package com.github.thmarx.cms.modules.example;
  */
 
 import com.github.thmarx.cms.api.extensions.HttpHandler;
-import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
 import com.github.thmarx.cms.api.extensions.HttpRoutesExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
 import com.github.thmarx.modules.api.annotation.Extension;
