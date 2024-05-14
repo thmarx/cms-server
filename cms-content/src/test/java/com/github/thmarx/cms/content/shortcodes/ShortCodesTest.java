@@ -22,7 +22,6 @@ package com.github.thmarx.cms.content.shortcodes;
  * #L%
  */
 
-import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -152,5 +151,26 @@ public class ShortCodesTest {
                 """;
 		
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+	}
+	
+	@Test
+	void multiple_hello () {
+		var input = """
+              [[hello_from name='Thorsten',from='Bochum']][[/hello_from]][[hello_from name='Thorsten',from='Bochum']][[/hello_from]]
+              """;
+		var expected = """
+              <p><h3>Thorsten</h3><small>from Bochum</small></p><p><h3>Thorsten</h3><small>from Bochum</small></p>
+              """;
+		var result = shortCodes.replace(input);
+		Assertions.assertThat(result).isEqualTo(expected);
+		
+		input = """
+              [[hello_from name='Thorsten',from='Bochum'/]][[hello_from name='Thorsten',from='Bochum'/]]
+              """;
+		expected = """
+              <p><h3>Thorsten</h3><small>from Bochum</small></p><p><h3>Thorsten</h3><small>from Bochum</small></p>
+              """;
+		result = shortCodes.replace(input);
+		Assertions.assertThat(result).isEqualTo(expected);
 	}
 }

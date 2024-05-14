@@ -56,26 +56,7 @@ public class CMSMarkdownRenderer implements MarkdownRenderer {
 	final CMSMarkdown renderer;
 	
 	public CMSMarkdownRenderer() {
-		Options options = new Options();
-		
-		options.addInlineRule(new ImageLinkInlineRule());
-		options.addInlineRule(new ImageInlineRule());
-		options.addInlineRule(new LinkInlineRule());
-		options.addInlineRule(new StrongInlineRule());
-		options.addInlineRule(new ItalicInlineRule());
-		options.addInlineRule(new NewlineInlineRule());
-		options.addInlineRule(new StrikethroughInlineRule());
-		options.addInlineRule(new HighlightInlineRule());
-		options.addInlineRule(new SubscriptInlineRule());
-		options.addInlineRule(new SuperscriptInlineRule());
-		
-		options.addBlockRule(new CodeBlockRule());
-		options.addBlockRule(new HeadingBlockRule());
-		options.addBlockRule(new ListBlockRule());
-		options.addBlockRule(new HorizontalRuleBlockRule());
-		options.addBlockRule(new BlockquoteBlockRule());
-		
-		renderer = new CMSMarkdown(options);
+		renderer = new CMSMarkdown(Options.all());
 	}
 
 	@Override

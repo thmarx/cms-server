@@ -35,6 +35,9 @@ import java.util.Set;
 public class MapUtil {
 
 	public static Object getValue(final Map<String, Object> map, final String field) {
+		if (!field.contains(".")) {
+			return map.get(field);
+		}
 		String[] keys = field.split("\\.");
 		Map subMap = map;
 		for (int i = 0; i < keys.length - 1; i++) {
@@ -44,6 +47,9 @@ public class MapUtil {
 	}
 
 	public static <T> T getValue(final Map<String, Object> map, final String field, final T defaultValue) {
+		if (!field.contains(".")) {
+			return (T)map.getOrDefault(field, defaultValue);
+		}
 		String[] keys = field.split("\\.");
 		Map<String, Object> subMap = map;
 		for (int i = 0; i < keys.length - 1; i++) {

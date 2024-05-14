@@ -28,6 +28,7 @@ import com.github.thmarx.cms.markdown.rules.block.DefinitionListBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HeadingBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.HorizontalRuleBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.ListBlockRule;
+import com.github.thmarx.cms.markdown.rules.block.ShortCodeBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.TableBlockRule;
 import com.github.thmarx.cms.markdown.rules.block.TaskListBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.HighlightInlineRule;
@@ -36,6 +37,7 @@ import com.github.thmarx.cms.markdown.rules.inline.ImageLinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.ItalicInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.LinkInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.NewlineInlineRule;
+import com.github.thmarx.cms.markdown.rules.inline.ShortCodeInlineBlockRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrikethroughInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.StrongInlineRule;
 import com.github.thmarx.cms.markdown.rules.inline.SubscriptInlineRule;
@@ -51,17 +53,19 @@ public class Options {
 	
 	public static Options all () {
 		Options options = new Options();
+		options.addInlineRule(new ShortCodeInlineBlockRule());
 		options.addInlineRule(new StrongInlineRule());
 		options.addInlineRule(new ItalicInlineRule());
 		options.addInlineRule(new NewlineInlineRule());
 		options.addInlineRule(new ImageLinkInlineRule());
-		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new ImageInlineRule());
+		options.addInlineRule(new LinkInlineRule());
 		options.addInlineRule(new StrikethroughInlineRule());
 		options.addInlineRule(new HighlightInlineRule());
 		options.addInlineRule(new SubscriptInlineRule());
 		options.addInlineRule(new SuperscriptInlineRule());
 
+		options.addBlockRule(new ShortCodeBlockRule());
 		options.addBlockRule(new CodeBlockRule());
 		options.addBlockRule(new HeadingBlockRule());
 		options.addBlockRule(new TaskListBlockRule());

@@ -28,7 +28,6 @@ import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
-import com.github.thmarx.cms.content.Section;
 import com.github.thmarx.cms.content.views.model.View;
 import java.io.IOException;
 import java.nio.file.Path;

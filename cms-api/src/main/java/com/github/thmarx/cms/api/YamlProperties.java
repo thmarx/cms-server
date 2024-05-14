@@ -48,15 +48,14 @@ public class YamlProperties {
 	}
 	
 	public Object get(final String name) {
-		return properties.get(name);
+		return MapUtil.getValue(properties, name);
 	}
 
 	public <T> T getOrDefault(final String name, final T defaultValue) {
-		return (T) properties.getOrDefault(name, defaultValue);
+		return MapUtil.getValue(properties, name, defaultValue);
 	}
 
 	protected Map<String, Object> getSubMap(final String name) {
 		return (Map<String, Object>) properties.getOrDefault(name, Collections.emptyMap());
 	}
-	
 }

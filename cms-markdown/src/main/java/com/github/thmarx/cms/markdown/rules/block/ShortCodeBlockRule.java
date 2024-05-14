@@ -21,9 +21,11 @@ package com.github.thmarx.cms.markdown.rules.block;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.github.thmarx.cms.markdown.Block;
 import com.github.thmarx.cms.markdown.BlockElementRule;
 import com.github.thmarx.cms.markdown.InlineRenderer;
+import com.google.common.html.HtmlEscapers;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,29 +33,39 @@ import java.util.regex.Pattern;
  *
  * @author t.marx
  */
-public class ParagraphBlockRule implements BlockElementRule {
+public class ShortCodeBlockRule implements BlockElementRule {
 
-	private static final Pattern PATTERN = Pattern.compile(
-			"(\\A|^\\n|\\Z)(?<content>.+?)(^\\n|\\Z)",
-			Pattern.MULTILINE | Pattern.DOTALL);
+	public static final Pattern TAG_PARAMS_PATTERN_SHORT = Pattern.compile("^(\\[{2})(?<tag>[a-z_A-Z0-9]+)( (?<params>.*?))?\\p{Blank}*/\\]{2}",
+			Pattern.MULTILINE | Pattern.DOTALL | Pattern.UNIX_LINES);
+	public static final Pattern TAG_PARAMS_PATTERN_LONG = Pattern.compile("^(\\[{2})(?<tag>[a-z_A-Z0-9]+)( (?<params>.*?))?\\]{2}(?<content>.*)\\[{2}/\\k<tag>\\]{2}",
+			Pattern.MULTILINE | Pattern.DOTALL | Pattern.UNIX_LINES);
 	
-	
-
 	@Override
-	public Block next(String md) {
-		Matcher matcher = PATTERN.matcher(md);
+	public Block next(final String md) {
+		Matcher matcher = TAG_PARAMS_PATTERN_SHORT.matcher(md);
 		if (matcher.find()) {
-			return new ParagraphBlock(matcher.start(), matcher.end(), matcher.group("content").trim());
+			return new ShortCodeBlock(matcher.start(), matcher.end(), 
+					matcher.group("tag"), matcher.group("params"), ""
+			);
+		}
+		matcher = TAG_PARAMS_PATTERN_LONG.matcher(md);
+		if (matcher.find()) {
+			return new ShortCodeBlock(matcher.start(), matcher.end(), 
+					matcher.group("tag"), matcher.group("params"), matcher.group("content")
+			);
 		}
 		return null;
 	}
 
-	public static record ParagraphBlock(int start, int end, String content) implements Block {
+	
+	public static record ShortCodeBlock (int start, int end, String tag, String params, String content) implements Block {
 
 		@Override
 		public String render(InlineRenderer inlineRenderer) {
-			return "<p>%s</p>".formatted(inlineRenderer.render(content));
+			return "[[%s %s]]%s[[/%s]]".formatted(tag, params, content, tag);
 		}
+		
+		
 	}
-
+	
 }
