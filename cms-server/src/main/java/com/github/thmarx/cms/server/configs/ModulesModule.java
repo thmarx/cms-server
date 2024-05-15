@@ -145,6 +145,7 @@ public class ModulesModule extends AbstractModule {
 	 * @return 
 	 */
 	@Provides
+	@Singleton
 	public MarkdownRenderer markdownRenderer(SiteProperties siteProperties, ModuleManager moduleManager,
 			CMSMarkdownRenderer defaultMarkdownRenderer) {
 		var engine = siteProperties.markdownEngine();
