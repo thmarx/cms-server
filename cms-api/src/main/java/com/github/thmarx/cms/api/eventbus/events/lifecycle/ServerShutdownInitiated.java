@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.eventbus.events;
+package com.github.thmarx.cms.api.eventbus.events.lifecycle;
 
 /*-
  * #%L

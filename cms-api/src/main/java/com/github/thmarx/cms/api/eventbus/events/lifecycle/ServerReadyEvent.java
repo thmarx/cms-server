@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.eventbus.events;
+package com.github.thmarx.cms.api.eventbus.events.lifecycle;
 
 /*-
  * #%L
@@ -27,5 +27,5 @@ import com.github.thmarx.cms.api.eventbus.Event;
  *
  * @author t.marx
  */
-public record HostReadyEvent(String id) implements Event {
+public record ServerReadyEvent() implements Event {
 }

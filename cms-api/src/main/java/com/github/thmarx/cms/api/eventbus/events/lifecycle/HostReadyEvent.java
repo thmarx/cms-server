@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.ipc;
+package com.github.thmarx.cms.api.eventbus.events.lifecycle;
 
 /*-
  * #%L
  * cms-server
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,21 +21,11 @@ package com.github.thmarx.cms.ipc;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.eventbus.Event;
-import com.github.thmarx.cms.api.eventbus.events.lifecycle.ServerShutdownInitiated;
-import java.util.function.Consumer;
-import lombok.RequiredArgsConstructor;
 
-
-@RequiredArgsConstructor
-public class IPCProtocol {
-
-	private final Consumer<Event> eventConsumer;
-
-	public void processInput(final String theInput) {
-		if ("shutdown".equals(theInput)) {
-			eventConsumer.accept(new ServerShutdownInitiated());
-		}
-	}
+/**
+ *
+ * @author t.marx
+ */
+public record HostReadyEvent(String id) implements Event {
 }

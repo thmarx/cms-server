@@ -34,6 +34,7 @@ import com.github.thmarx.cms.api.eventbus.events.ConfigurationFileChanged;
 import com.github.thmarx.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
+import com.github.thmarx.cms.api.eventbus.events.lifecycle.HostStoppedEvent;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.feature.features.ContentRenderFeature;
 import com.github.thmarx.cms.api.template.TemplateEngine;
@@ -107,6 +108,7 @@ public class VHost {
 
 	public void shutdown() {
 		try {
+			injector.getInstance(EventBus.class).syncPublish(new HostStoppedEvent(id()));
 			injector.getInstance(FileDB.class).close();
 			injector.getInstance(ExtensionManager.class).close();
 		} catch (Exception ex) {

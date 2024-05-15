@@ -21,7 +21,6 @@ package com.github.thmarx.cms.eventbus;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.Event;
@@ -35,20 +34,20 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DefaultEventBus implements EventBus {
-	
+
 	public final Multimap<Class<? extends Event>, EventListener> listeners;
-	
-	public DefaultEventBus () {
+
+	public DefaultEventBus() {
 		listeners = ArrayListMultimap.create();
 	}
-	
+
 	@Override
-	public <T extends Event> void register (Class<T> eventClass, EventListener<T> listener) {
+	public <T extends Event> void register(Class<T> eventClass, EventListener<T> listener) {
 		listeners.put(eventClass, listener);
 	}
-	
+
 	@Override
-	public <T extends Event> void publish (final T event) {
+	public <T extends Event> void publish(final T event) {
 		listeners.get(event.getClass()).forEach(listener -> {
 			Thread.startVirtualThread(() -> {
 				try {
@@ -57,6 +56,17 @@ public class DefaultEventBus implements EventBus {
 					log.error(null, e);
 				}
 			});
+		});
+	}
+
+	@Override
+	public <T extends Event> void syncPublish(T event) {
+		listeners.get(event.getClass()).forEach(listener -> {
+			try {
+				listener.consum(event);
+			} catch (Exception e) {
+				log.error(null, e);
+			}
 		});
 	}
 }
