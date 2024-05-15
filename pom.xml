@@ -25,7 +25,6 @@
 		<module>cms-template</module>
 		<module>cms-content</module>
 		<module>cms-extensions</module>
-		<module>cms-markdown</module>
 		<module>cms-auth</module>
 	</modules>
 	<inceptionYear>2023</inceptionYear>
@@ -65,11 +64,6 @@
 			<dependency>
 				<groupId>com.github.thmarx.cms</groupId>
 				<artifactId>cms-content</artifactId>
-				<version>${project.version}</version>            
-			</dependency>
-			<dependency>
-				<groupId>com.github.thmarx.cms</groupId>
-				<artifactId>cms-markdown</artifactId>
 				<version>${project.version}</version>            
 			</dependency>
 			<dependency>

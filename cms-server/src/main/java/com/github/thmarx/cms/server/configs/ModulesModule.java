@@ -43,7 +43,7 @@ import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
-import com.github.thmarx.cms.markdown.module.CMSMarkdownRenderer;
+import com.github.thmarx.cms.content.markdown.module.CMSMarkdownRenderer;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
 import com.github.thmarx.modules.manager.ModuleManagerImpl;
