@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.cli;
+package com.github.thmarx.cms.ipc;
 
 /*-
  * #%L
@@ -21,24 +21,27 @@ package com.github.thmarx.cms.cli;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.cli.commands.AddUser;
-import com.github.thmarx.cms.cli.commands.RemoveUser;
-import com.github.thmarx.cms.cli.commands.Startup;
-import com.github.thmarx.cms.cli.commands.Stop;
-import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
+
+import java.io.PrintWriter;
+import java.net.Socket;
+import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@CommandLine.Command(name = "server", subcommands = {
-	Startup.class, AddUser.class, RemoveUser.class, Stop.class})
-@Slf4j
-public class ServerCommand implements Runnable {
+@RequiredArgsConstructor
+public class IPCClient {
 
-	@Override
-	public void run() {
-		System.out.println("server command");
+	private final int port;
+
+	public void send(String command) throws Exception {
+		try (Socket kkSocket = new Socket("localhost", port); PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);) {
+			out.write(command);
+		}
+	}
+	
+	public static void main (String...args) throws Exception {
+		new IPCClient(6868).send("shutdown");
 	}
 }

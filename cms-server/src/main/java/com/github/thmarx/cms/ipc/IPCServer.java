@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.cli;
+package com.github.thmarx.cms.ipc;
 
 /*-
  * #%L
@@ -21,24 +21,37 @@ package com.github.thmarx.cms.cli;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.cli.commands.AddUser;
-import com.github.thmarx.cms.cli.commands.RemoveUser;
-import com.github.thmarx.cms.cli.commands.Startup;
-import com.github.thmarx.cms.cli.commands.Stop;
-import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
+
+import com.github.thmarx.cms.api.eventbus.Event;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@CommandLine.Command(name = "server", subcommands = {
-	Startup.class, AddUser.class, RemoveUser.class, Stop.class})
-@Slf4j
-public class ServerCommand implements Runnable {
+@RequiredArgsConstructor
+public class IPCServer extends Thread {
 
+	private final int port;
+	private final Consumer<Event> eventConsumer;
+	boolean listening = true;
+	
 	@Override
 	public void run() {
-		System.out.println("server command");
+
+		try (ServerSocket serverSocket = new ServerSocket(port)) {
+			while (listening) {
+				new IPCServerThread(serverSocket.accept(), eventConsumer).start();
+			}
+		} catch (IOException e) {
+			System.exit(-1);
+		}
+	}
+	
+	public void stopListening () {
+		listening = false;
 	}
 }

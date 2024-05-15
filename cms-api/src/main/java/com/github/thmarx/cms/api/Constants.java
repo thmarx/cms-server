@@ -31,6 +31,8 @@ import java.util.regex.Pattern;
  */
 public abstract class Constants {
 	
+	public static final String PID_FILE = "cms.pid";
+	
 	public static class Environments {
 		public static final String DEV = "dev";
 		public static final String PROD = "prod";

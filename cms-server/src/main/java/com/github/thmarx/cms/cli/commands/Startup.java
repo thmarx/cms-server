@@ -22,10 +22,12 @@ package com.github.thmarx.cms.cli.commands;
  * #L%
  */
 
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.git.RepositoryManager;
+import com.github.thmarx.cms.ipc.IPCServer;
 import com.github.thmarx.cms.server.jetty.JettyServer;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,12 +57,23 @@ public class Startup implements Runnable {
 			ServerContext.IS_DEV = properties.dev();
 
 			initGitRepositoryManager();
-
+			
 			var server = new JettyServer(properties);
+			
+			var ipcServer = new IPCServer(properties.ipc_port(), server::fireServerEvent);
+			ipcServer.start();
+
 			server.startup();
+			writePidFile();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	
+	private static void writePidFile () throws IOException {
+		Files.deleteIfExists(Path.of(Constants.PID_FILE));
+		Files.writeString(Path.of(Constants.PID_FILE), String.valueOf(ProcessHandle.current().pid()));
 	}
 
 	private static void initGitRepositoryManager() throws IOException {

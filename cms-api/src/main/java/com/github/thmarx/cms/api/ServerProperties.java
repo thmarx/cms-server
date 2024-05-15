@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api;
  * #L%
  */
 
+import com.github.thmarx.cms.api.utils.MapUtil;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -62,5 +63,9 @@ public class ServerProperties extends YamlProperties {
 	
 	public APMProperties apm () {
 		return new APMProperties(getSubMap("apm"));
+	}
+	
+	public int ipc_port () {
+		return MapUtil.getValue(properties, "ipc.port", 6868);
 	}
 }

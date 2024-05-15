@@ -26,6 +26,12 @@ import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.configuration.ConfigurationManagement;
 import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
+import com.github.thmarx.cms.api.eventbus.Event;
+import com.github.thmarx.cms.api.eventbus.EventBus;
+import com.github.thmarx.cms.api.eventbus.events.HostReadyEvent;
+import com.github.thmarx.cms.api.eventbus.events.ServerReadyEvent;
+import com.github.thmarx.cms.api.eventbus.events.ServerShutdownInitiated;
+import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.server.VHost;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -60,6 +67,12 @@ public class JettyServer implements AutoCloseable {
 	private Server server;
 	
 	private ScheduledExecutorService scheduledExecutorService;
+	
+	private EventBus serverEventBus = new DefaultEventBus();
+	
+	public void fireServerEvent (Event event) {
+		serverEventBus.publish(event);
+	}
 
 	public void startup() throws IOException {
 		
@@ -90,6 +103,10 @@ public class JettyServer implements AutoCloseable {
 			handlers.addHandler(httpHandler);
 		});
 
+		serverEventBus.register(ServerShutdownInitiated.class, (event) -> {
+			System.exit(0);
+		});
+		
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			log.debug("shutting down");
 
@@ -98,6 +115,8 @@ public class JettyServer implements AutoCloseable {
 				host.shutdown();
 			});
 			scheduledExecutorService.shutdownNow();
+			
+			log.debug("exit");
 		}));
 
 		HttpConfiguration httpConfig = new HttpConfiguration();
@@ -135,6 +154,12 @@ public class JettyServer implements AutoCloseable {
 		
 		try {
 			server.start();
+			
+			vhosts.forEach(host -> {
+				host.getInjector().getInstance(EventBus.class).publish(new HostReadyEvent(host.id()));
+				host.getInjector().getInstance(EventBus.class).publish(new ServerReadyEvent());
+			});
+			
 		} catch (Exception ex) {
 			log.error(null, ex);
 		}

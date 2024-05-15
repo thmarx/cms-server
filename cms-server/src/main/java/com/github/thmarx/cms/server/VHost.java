@@ -100,6 +100,10 @@ public class VHost {
 		this.configuration = configuration;
 		this.scheduledExecutorService = scheduledExecutorService;
 	}
+	
+	public String id () {
+		return configuration.get(SiteConfiguration.class).siteProperties().id();
+	}
 
 	public void shutdown() {
 		try {

@@ -36,6 +36,7 @@ cms-server/modules/search-module
 cms-server/modules/seo-module
 cms-server/modules/forms-module
 cms-server/modules/markedj-module
+cms-server/cms.pid
 /distribution/temp/
 /distribution/build/
 /distribution/dist/

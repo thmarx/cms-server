@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.cli;
+package com.github.thmarx.cms.ipc;
 
 /*-
  * #%L
@@ -21,24 +21,21 @@ package com.github.thmarx.cms.cli;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.cli.commands.AddUser;
-import com.github.thmarx.cms.cli.commands.RemoveUser;
-import com.github.thmarx.cms.cli.commands.Startup;
-import com.github.thmarx.cms.cli.commands.Stop;
-import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
 
-/**
- *
- * @author t.marx
- */
-@CommandLine.Command(name = "server", subcommands = {
-	Startup.class, AddUser.class, RemoveUser.class, Stop.class})
-@Slf4j
-public class ServerCommand implements Runnable {
+import com.github.thmarx.cms.api.eventbus.Event;
+import com.github.thmarx.cms.api.eventbus.events.ServerShutdownInitiated;
+import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 
-	@Override
-	public void run() {
-		System.out.println("server command");
+
+@RequiredArgsConstructor
+public class IPCProtocol {
+
+	private final Consumer<Event> eventConsumer;
+
+	public void processInput(final String theInput) {
+		if ("shutdown".equals(theInput)) {
+			eventConsumer.accept(new ServerShutdownInitiated());
+		}
 	}
 }
