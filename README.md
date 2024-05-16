@@ -6,6 +6,13 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.17.0
+
+* **MAINTENANCE** Refactor request processing [#136](https://github.com/thmarx/cms/issues/136)
+* **BUGFIX** Problem with shortcodes in markdown rendering bug [#193](https://github.com/thmarx/cms/issues/193)
+* **FEATURE** CLI Stop command [#194](https://github.com/thmarx/cms/issues/194)
+* **FEATURE** Application and Site Events [#195](https://github.com/thmarx/cms/issues/195)
+
 ## 4.16.0
 
 * **FEATURE** Application performance management [#191](https://github.com/thmarx/cms/issues/191)
