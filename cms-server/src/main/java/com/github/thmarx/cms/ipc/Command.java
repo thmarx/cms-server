@@ -22,11 +22,10 @@ package com.github.thmarx.cms.ipc;
  * #L%
  */
 
-import com.github.thmarx.cms.api.IPCProperties;
-import com.github.thmarx.cms.api.eventbus.Event;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.function.Consumer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -34,25 +33,18 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class IPCServer extends Thread {
-
-	private final IPCProperties properties;
-	private final Consumer<Event> eventConsumer;
-	boolean listening = true;
+public class Command {
 	
-	@Override
-	public void run() {
-
-		try (ServerSocket serverSocket = new ServerSocket(properties.port())) {
-			while (listening) {
-				new IPCServerThread(serverSocket.accept(), eventConsumer, properties).start();
-			}
-		} catch (IOException e) {
-			System.exit(-1);
-		}
+	private Map<String, Object> headers = new HashMap<>();
+	
+	@Getter
+	public final String command;
+	
+	public Optional<Object> getHeader (String name) {
+		return Optional.ofNullable(headers.get(name));
 	}
 	
-	public void stopListening () {
-		listening = false;
+	public void setHeader (String name, Object value) {
+		headers.put(name, value);
 	}
 }

@@ -22,8 +22,10 @@ package com.github.thmarx.cms.ipc;
  * #L%
  */
 
+import com.github.thmarx.cms.api.IPCProperties;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -33,15 +35,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IPCClient {
 
-	private final int port;
+	private final IPCProperties properties;
+	
+	private final IPCCommands IPCCOMMANDS = new IPCCommands();
 
-	public void send(String command) throws Exception {
-		try (Socket kkSocket = new Socket("localhost", port); PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);) {
-			out.write(command);
+	public void send(Command command) throws Exception {
+		try (Socket kkSocket = new Socket("localhost", properties.port()); 
+				PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);) {
+			
+			if (properties.password().isPresent()) {
+				command.setHeader("ipc.auth", properties.password().get());
+			}
+			
+			out.write(IPCCOMMANDS.toJsonString(command));
 		}
 	}
 	
 	public static void main (String...args) throws Exception {
-		new IPCClient(6868).send("shutdown");
+		new IPCClient(new IPCProperties(
+				Map.of("port", 6868, "password", "test_pwd")
+		)).send(new Command("shutdown"));
 	}
 }

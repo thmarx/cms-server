@@ -60,7 +60,7 @@ public class Startup implements Runnable {
 			
 			var server = new JettyServer(properties);
 			
-			var ipcServer = new IPCServer(properties.ipc_port(), server::fireServerEvent);
+			var ipcServer = new IPCServer(properties.ipc(), server::fireServerEvent);
 			ipcServer.start();
 
 			server.startup();

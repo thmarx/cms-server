@@ -22,6 +22,7 @@ package com.github.thmarx.cms.ipc;
  * #L%
  */
 
+import com.github.thmarx.cms.api.IPCProperties;
 import com.github.thmarx.cms.api.eventbus.Event;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,11 +43,11 @@ public class IPCServerThread extends Thread {
 	private Consumer<Event> eventConsumer;
 	private IPCProtocol protocol;
 
-	public IPCServerThread(Socket socket, Consumer<Event> eventConsumer) {
+	public IPCServerThread(Socket socket, Consumer<Event> eventConsumer, IPCProperties properties) {
 		super("IPCServerThread");
 		this.socket = socket;
 		this.eventConsumer = eventConsumer;
-		protocol = new IPCProtocol(eventConsumer);
+		protocol = new IPCProtocol(eventConsumer, properties);
 	}
 
 	public void run() {

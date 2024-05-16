@@ -22,19 +22,43 @@ package com.github.thmarx.cms.ipc;
  * #L%
  */
 
+import com.github.thmarx.cms.api.IPCProperties;
 import com.github.thmarx.cms.api.eventbus.Event;
 import com.github.thmarx.cms.api.eventbus.events.lifecycle.ServerShutdownInitiated;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j
 @RequiredArgsConstructor
 public class IPCProtocol {
 
 	private final Consumer<Event> eventConsumer;
+	
+	private final IPCProperties properties;
+	
+	private final IPCCommands ipcCommands = new IPCCommands();
 
 	public void processInput(final String theInput) {
-		if ("shutdown".equals(theInput)) {
+		
+		var commandOpt = ipcCommands.parse(theInput);
+		if (commandOpt.isEmpty()) {
+			return;
+		}
+		var command = commandOpt.get();
+		if (properties.password().isPresent()) {
+			if (command.getHeader("ipc.auth").isEmpty()) {
+				log.warn("no ipc.auth header set");
+				return;
+			} else if (!command.getHeader("ipc.auth").get().equals(properties.password().get())) {
+				log.warn("unauthorized ipc call");
+				return;
+			}
+		}
+				
+		
+		if ("shutdown".equals(command.getCommand())) {
 			eventConsumer.accept(new ServerShutdownInitiated());
 		}
 	}

@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.ipc;
+package com.github.thmarx.cms.api;
 
 /*-
  * #%L
- * cms-server
+ * cms-api
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -22,37 +22,25 @@ package com.github.thmarx.cms.ipc;
  * #L%
  */
 
-import com.github.thmarx.cms.api.IPCProperties;
-import com.github.thmarx.cms.api.eventbus.Event;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.function.Consumer;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 /**
+ * Application Performance Management Properties
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class IPCServer extends Thread {
-
-	private final IPCProperties properties;
-	private final Consumer<Event> eventConsumer;
-	boolean listening = true;
+public class IPCProperties {
+	private final Map<String, Object> properties;
 	
-	@Override
-	public void run() {
-
-		try (ServerSocket serverSocket = new ServerSocket(properties.port())) {
-			while (listening) {
-				new IPCServerThread(serverSocket.accept(), eventConsumer, properties).start();
-			}
-		} catch (IOException e) {
-			System.exit(-1);
-		}
+	public int port () {
+		return (int) properties.getOrDefault("port", 6868);
 	}
 	
-	public void stopListening () {
-		listening = false;
+	public Optional<String> password () {
+		return Optional.ofNullable((String)properties.get("password"));
 	}
+	
 }

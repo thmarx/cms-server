@@ -22,37 +22,29 @@ package com.github.thmarx.cms.ipc;
  * #L%
  */
 
-import com.github.thmarx.cms.api.IPCProperties;
-import com.github.thmarx.cms.api.eventbus.Event;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.function.Consumer;
-import lombok.RequiredArgsConstructor;
+import com.google.gson.Gson;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class IPCServer extends Thread {
+@Slf4j
+public class IPCCommands {
 
-	private final IPCProperties properties;
-	private final Consumer<Event> eventConsumer;
-	boolean listening = true;
+	public static final Gson GSON = new Gson();
 	
-	@Override
-	public void run() {
-
-		try (ServerSocket serverSocket = new ServerSocket(properties.port())) {
-			while (listening) {
-				new IPCServerThread(serverSocket.accept(), eventConsumer, properties).start();
-			}
-		} catch (IOException e) {
-			System.exit(-1);
+	public Optional<Command> parse (String commandJson) {
+		try {
+			return Optional.of(GSON.fromJson(commandJson, Command.class));
+		} catch (Exception e) {
+			log.error("", e);
 		}
+		return Optional.empty();
 	}
 	
-	public void stopListening () {
-		listening = false;
+	public String toJsonString (Command command) {
+		return GSON.toJson(command);
 	}
 }

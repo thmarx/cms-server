@@ -65,7 +65,7 @@ public class ServerProperties extends YamlProperties {
 		return new APMProperties(getSubMap("apm"));
 	}
 	
-	public int ipc_port () {
-		return MapUtil.getValue(properties, "ipc.port", 6868);
+	public IPCProperties ipc () {
+		return new IPCProperties(getSubMap("ipc"));
 	}
 }

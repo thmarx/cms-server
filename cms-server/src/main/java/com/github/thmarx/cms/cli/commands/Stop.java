@@ -25,9 +25,8 @@ package com.github.thmarx.cms.cli.commands;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.ServerProperties;
+import com.github.thmarx.cms.ipc.Command;
 import com.github.thmarx.cms.ipc.IPCClient;
-import com.sun.jdi.Bootstrap;
-import com.sun.jdi.VirtualMachine;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -52,9 +51,9 @@ public class Stop implements Runnable {
 				System.out.println("can not find cms process");
 			} else {
 				ServerProperties properties = PropertiesLoader.serverProperties(Path.of("server.yaml"));
-				IPCClient ipcClient = new IPCClient(properties.ipc_port());
+				IPCClient ipcClient = new IPCClient(properties.ipc());
 				
-				ipcClient.send("shutdown");
+				ipcClient.send(new Command("shutdown"));
 				
 				Files.deleteIfExists(Path.of(Constants.PID_FILE));
 			}

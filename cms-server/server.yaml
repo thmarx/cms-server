@@ -2,6 +2,9 @@ server:
     port: 1010
     ip: "127.0.0.1"
 env: dev
+ipc:
+  port: 6868
+  password: test_pwd
 apm:
   enabled: true
   max_requests: 100
