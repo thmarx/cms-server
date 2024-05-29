@@ -1,0 +1,96 @@
+package com.github.thmarx.cms.extensions;
+
+/*-
+ * #%L
+ * cms-extensions
+ * %%
+ * Copyright (C) 2023 - 2024 Marx-Software
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+import com.github.thmarx.cms.api.ServerProperties;
+import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.hooks.HookSystem;
+import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.api.theme.Theme;
+import com.github.thmarx.cms.filesystem.FileSystem;
+import java.io.IOException;
+import java.nio.file.Path;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+/**
+ *
+ * @author t.marx
+ */
+@ExtendWith(MockitoExtension.class)
+public class ExtensionManagerTest {
+	
+	@Mock
+	DB db;
+	@Mock
+	Theme theme;
+	@Mock
+	ServerProperties properties;
+	@Mock
+	FileSystem fileSystem;
+	
+	
+	ExtensionManager extensionManager;
+	
+	@BeforeEach
+	public void setup () throws Exception {
+		
+		Mockito.when(fileSystem.resolve("libs/"))
+				.thenReturn(Path.of("src/test/resources/site/libs"));
+		Mockito.when(fileSystem.resolve("extensions/"))
+				.thenReturn(Path.of("src/test/resources/site/extensions"));
+		Mockito.when(db.getFileSystem()).thenReturn(fileSystem);
+		Mockito.when(theme.extensionsPath())
+				.thenReturn(Path.of("src/test/resources/theme/extensions"));
+		
+		extensionManager = new ExtensionManager(db, theme, properties);
+		extensionManager.init();
+	}
+	
+	@AfterEach
+	public void shutdown () throws Exception {
+		extensionManager.close();
+	}
+
+	@Test
+	public void testSomeMethod() throws IOException {
+		
+		var requestContext = new RequestContext();
+		final HookSystem hookSystem = new HookSystem();
+		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
+		extensionManager.newContext(theme, requestContext);
+		
+		Assertions.assertThat(hookSystem.call("test").results())
+				.hasSize(1)
+				.containsExactly("hallo")
+				;
+	}
+	
+}

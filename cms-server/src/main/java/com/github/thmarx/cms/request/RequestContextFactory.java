@@ -89,39 +89,42 @@ public class RequestContextFactory {
 
 		var hookSystem = injector.getInstance(HookSystem.class);
 		
-		RequestExtensions requestExtensions = extensionManager.newContext(theme, hookSystem);
+		var requestContext = new RequestContext();
+		requestContext.add(InjectorFeature.class, new InjectorFeature(injector));
+		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
+		requestContext.add(RequestFeature.class, new RequestFeature(uri, queryParameters));
+		requestContext.add(ThemeFeature.class, new ThemeFeature(theme));
+		requestContext.add(ContentParserFeature.class, new ContentParserFeature(injector.getInstance(ContentParser.class)));
+		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(injector.getInstance(ContentNodeMapper.class)));
+		if (ServerContext.IS_DEV) {
+			requestContext.add(IsDevModeFeature.class, new IsDevModeFeature());
+
+			if (queryParameters.containsKey("preview")) {
+				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
+			}
+		}
+		requestContext.add(ConfigurationFeature.class, new ConfigurationFeature(injector.getInstance(Configuration.class)));
+		requestContext.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(
+				injector.getInstance(Configuration.class)
+				.get(ServerConfiguration.class).serverProperties()
+		));
+		requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
+		requestContext.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
+		
+		RequestExtensions requestExtensions = extensionManager.newContext(theme, requestContext);
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer,
 				createShortCodes(requestExtensions),
 				theme);
+		requestContext.add(RenderContext.class, renderContext);
+		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(renderContext.markdownRenderer()));
 
-		var context = new RequestContext();
-		context.add(InjectorFeature.class, new InjectorFeature(injector));
-		context.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
-		context.add(RequestFeature.class, new RequestFeature(uri, queryParameters));
-		context.add(RequestExtensions.class, requestExtensions);
-		context.add(ThemeFeature.class, new ThemeFeature(theme));
-		context.add(RenderContext.class, renderContext);
-		context.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(renderContext.markdownRenderer()));
-		context.add(ContentParserFeature.class, new ContentParserFeature(injector.getInstance(ContentParser.class)));
-		context.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(injector.getInstance(ContentNodeMapper.class)));
-		if (ServerContext.IS_DEV) {
-			context.add(IsDevModeFeature.class, new IsDevModeFeature());
+		
+		requestContext.add(RequestExtensions.class, requestExtensions);
+		
 
-			if (queryParameters.containsKey("preview")) {
-				context.add(IsPreviewFeature.class, new IsPreviewFeature());
-			}
-		}
-		context.add(ConfigurationFeature.class, new ConfigurationFeature(injector.getInstance(Configuration.class)));
-		context.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(
-				injector.getInstance(Configuration.class)
-				.get(ServerConfiguration.class).serverProperties()
-		));
-		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
-		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
-
-		return context;
+		return requestContext;
 	}
 	
 	private ShortCodes createShortCodes (RequestExtensions requestExtensions) {

@@ -62,10 +62,10 @@
 		<!--Logger name="org.eclipse.jetty.server.RequestLog" level="info" additivity="false">
 			<AppenderRef ref="console"/>
 		</Logger-->
-		<!--
+		
 		<Root level="error">
 			<AppenderRef ref="console"/>
 		</Root>
-		-->
+		
 	</Loggers>
 </Configuration>

@@ -48,7 +48,7 @@ public class IPCServer extends Thread {
 				new IPCServerThread(serverSocket.accept(), eventConsumer, properties).start();
 			}
 		} catch (IOException e) {
-			System.exit(-1);
+			throw new RuntimeException(e);
 		}
 	}
 	

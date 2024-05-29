@@ -23,10 +23,10 @@ package com.github.thmarx.cms.extensions;
  */
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.hooks.HookSystem;
+import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.cms.extensions.ExtensionFileSystem;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -129,7 +129,7 @@ public class ExtensionManager implements AutoCloseable {
 				.forEach(loader);
 	}
 
-	public RequestExtensions newContext(Theme theme, final HookSystem hookSystem) throws IOException {
+	public RequestExtensions newContext(Theme theme, RequestContext requestContext) throws IOException {
 		var context = Context.newBuilder()
 				.allowAllAccess(true)
 				.allowHostClassLookup(className -> true)
@@ -155,15 +155,10 @@ public class ExtensionManager implements AutoCloseable {
 					.engine(engine).build();
 		}
 
-		RequestExtensions holder = new RequestExtensions(context, themeContext);
+		RequestExtensions requestExtensions = new RequestExtensions(context, themeContext);
 
 		final Value bindings = context.getBindings("js");
-		bindings.putMember("extensions", holder);
-		bindings.putMember("fileSystem", db.getFileSystem());
-		bindings.putMember("db", db);
-		bindings.putMember("theme", theme);
-		bindings.putMember("hooks", hookSystem);
-		bindings.putMember("ENV", serverProperties.env());
+		setUpBinding(bindings, requestExtensions, theme, requestContext);
 
 		var extPath = db.getFileSystem().resolve("extensions/");
 		if (Files.exists(extPath)) {
@@ -173,12 +168,7 @@ public class ExtensionManager implements AutoCloseable {
 
 		if (!theme.empty()) {
 			final Value themeBindings = themeContext.getBindings("js");
-			themeBindings.putMember("extensions", holder);
-			themeBindings.putMember("fileSystem", db.getFileSystem());
-			themeBindings.putMember("db", db);
-			themeBindings.putMember("theme", theme);
-			themeBindings.putMember("hooks", hookSystem);
-			themeBindings.putMember("ENV", serverProperties.env());
+			setUpBinding(themeBindings, requestExtensions, theme, requestContext);
 
 //			theme_sources.forEach(themeContext::eval);
 			var themeExtPath = parentTheme.extensionsPath();
@@ -188,7 +178,19 @@ public class ExtensionManager implements AutoCloseable {
 			}
 		}
 
-		return holder;
+		return requestExtensions;
+	}
+	
+	private void setUpBinding (Value bindings, 
+			RequestExtensions requestExtensions, Theme theme, RequestContext requestContext) {
+		bindings.putMember("extensions", requestExtensions);
+		bindings.putMember("fileSystem", db.getFileSystem());
+		bindings.putMember("db", db);
+		bindings.putMember("theme", theme);
+		// for backword compability
+//		bindings.putMember("hooks", requestContext.get(HookSystemFeature.class).hookSystem());
+		bindings.putMember("requestContext", requestContext);
+		bindings.putMember("ENV", serverProperties.env());
 	}
 
 	@Override

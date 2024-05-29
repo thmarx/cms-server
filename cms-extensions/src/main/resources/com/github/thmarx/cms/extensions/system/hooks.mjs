@@ -1,3 +1,7 @@
+import { HookSystemFeature } from 'system/features.mjs';
+
+const hooks = requestContext.get(HookSystemFeature).hookSystem()
+
 export const $hooks = {
 	register : (name, fun, priority) => {
 		if (priority) {
