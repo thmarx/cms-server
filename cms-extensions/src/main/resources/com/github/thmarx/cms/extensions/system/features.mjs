@@ -18,3 +18,9 @@ export const ServerPropertiesFeature = Java.type("com.github.thmarx.cms.api.feat
 export const SiteMediaServiceFeature = Java.type("com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature").class
 export const SitePropertiesFeature = Java.type("com.github.thmarx.cms.api.feature.features.SitePropertiesFeature").class
 export const ThemeFeature = Java.type("com.github.thmarx.cms.api.feature.features.ThemeFeature").class
+
+export const $features = {
+	get : (feature) => {
+		return requestContext.get(feature)
+	}
+}

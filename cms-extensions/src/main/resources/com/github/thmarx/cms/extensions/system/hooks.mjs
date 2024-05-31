@@ -1,6 +1,7 @@
-import { HookSystemFeature } from 'system/features.mjs';
+import { HookSystemFeature, $features } from 'system/features.mjs';
 
-const hooks = requestContext.get(HookSystemFeature).hookSystem()
+
+const hooks = $features.get(HookSystemFeature).hookSystem()
 
 export const $hooks = {
 	register : (name, fun, priority) => {
