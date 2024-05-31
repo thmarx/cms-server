@@ -25,9 +25,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.common.value.qual.ArrayLen;
 
 /**
  *
@@ -38,27 +40,73 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HookSystem {
 
-	Multimap<String, Hook> hooks = ArrayListMultimap.create();
+	Multimap<String, Action> actions = ArrayListMultimap.create();
+	
+	Multimap<String, Filter> filters = ArrayListMultimap.create();
 
-	public void register(final String name, final Function<HookContext, Object> hookFunction) {
+	@Deprecated(since = "4.18.0", forRemoval = true)
+	public void register(final String name, final Function<ActionContext<Object>, Object> hookFunction) {
 		register(name, hookFunction, 10);
 	}
 
-	public void register(final String name, final Function<HookContext, Object> hookFunction, int priority) {
-		hooks.put(name, new Hook(name, priority, hookFunction));
+	@Deprecated(since = "4.18.0", forRemoval = true)
+	public void register(final String name, final Function<ActionContext<Object>, Object> hookFunction, int priority) {
+		actions.put(name, new Action(name, priority, hookFunction));
 	}
 
-	public HookContext call(final String name) {
-		return call(name, Map.of());
+	public void registerAction(final String name, final Function<ActionContext<Object>, Object> hookFunction) {
+		registerAction(name, hookFunction, 10);
+	}
+
+	public void registerAction(final String name, final Function<ActionContext<Object>, Object> hookFunction, int priority) {
+		actions.put(name, new Action(name, priority, hookFunction));
 	}
 	
-	public HookContext call(final String name, final Map<String, Object> arguments) {
-		var context = new HookContext(new HashMap<String, Object>(arguments), new ArrayList<Object>());
-		hooks.get(name).stream()
+	public void registerFilter(final String name, final Function<FilterContext<Object>, List<Object>> hookFunction) {
+		registerFilter(name, hookFunction, 10);
+	}
+
+	public void registerFilter(final String name, final Function<FilterContext<Object>, List<Object>> hookFunction, int priority) {
+		filters.put(name, new Filter(name, priority, hookFunction));
+	}
+	
+	public ActionContext<Object> execute(final String name) {
+		return execute(name, Map.of());
+	}
+	
+	
+	public ActionContext<Object> execute(final String name, final Map<String, Object> arguments) {
+		var context = new ActionContext(new HashMap<>(arguments), new ArrayList<>());
+		actions.get(name).stream()
 				.sorted((h1, h2) -> Integer.compare(h1.priority(), h2.priority()))
 				.map(action -> action.function().apply(context))
 				.forEach(context.results()::add);
 
 		return context;
+	}
+	
+	/**
+	 * calls all filters with the given parameters,
+	 * if no filter is executed, the original parameters are returned
+	 * 
+	 * @param <T>
+	 * @param name
+	 * @param parameters
+	 * @return 
+	 */
+	public <T> FilterContext<T> filter(final String name, final List<T> parameters) {
+		final FilterContext<T> returnContext = new FilterContext(
+				new ArrayList<>(parameters)
+		);
+		filters.get(name).stream()
+				.sorted((h1, h2) -> Integer.compare(h1.priority(), h2.priority()))
+				.forEach(action -> {
+					var context = new FilterContext(new ArrayList<>(returnContext.values()));
+					var result = action.function().apply(context);
+					returnContext.values().clear();
+					returnContext.values().addAll(result);
+				});
+
+		return returnContext;
 	}
 }

@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.hooks;
  * #L%
  */
 
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,52 +42,69 @@ public class HookSystemTest {
 
 	@Test
 	public void test_single_result() {
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return true;
 		});
-		HookContext context = hookSystem.call("test/test1");
+		var context = hookSystem.execute("test/test1");
 		Assertions.assertThat(context.results()).hasSize(1).contains(true);
 	}
 	
 	@Test
 	public void test_multiple_result() {
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test1";
 		});
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test2";
 		});
-		HookContext context = hookSystem.call("test/test1");
+		var context = hookSystem.execute("test/test1");
 		Assertions.assertThat(context.results()).hasSize(2).contains("test1", "test2");
 	}
 	
 	@Test
 	public void test_multiple_result_with_priority() {
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test3";
 		}, 300);
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test1";
 		}, 100);
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test2";
 		}, 200);
-		HookContext context = hookSystem.call("test/test1");
+		var context = hookSystem.execute("test/test1");
 		Assertions.assertThat(context.results()).hasSize(3).containsExactly("test1", "test2", "test3");
 	}
 	
 	@Test
 	public void test_multiple_result_with_priority_reversed() {
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test3";
 		}, 100);
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test1";
 		}, 300);
-		hookSystem.register("test/test1", (context) -> {
+		hookSystem.registerAction("test/test1", (context) -> {
 			return "test2";
 		}, 200);
-		HookContext context = hookSystem.call("test/test1");
+		var context = hookSystem.execute("test/test1");
 		Assertions.assertThat(context.results()).hasSize(3).containsExactly("test3", "test2", "test1");
+	}
+	
+	@Test
+	public void test_filter_reversed () {
+		hookSystem.registerFilter("test/list", (context) -> context.values().reversed());
+		var context = hookSystem.filter("test/list", List.of("1", "2", "3"));
+		Assertions.assertThat(context.values()).containsExactly("3", "2", "1");
+	}
+	
+	@Test
+	public void test_filter_remove () {
+		hookSystem.registerFilter("test/list", (context) -> {
+			context.values().remove("2");
+			return context.values();
+		});
+		var context = hookSystem.filter("test/list", List.of("1", "2", "3"));
+		Assertions.assertThat(context.values()).containsExactly("1", "3");
 	}
 }

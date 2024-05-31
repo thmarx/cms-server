@@ -27,16 +27,23 @@ import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
+import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
+import com.github.thmarx.cms.api.hooks.HookContext;
+import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.utils.NodeUtil;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -50,6 +57,10 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private String contentType = Constants.DEFAULT_CONTENT_TYPE;
 
+	private String name = null;
+
+	private final HookSystem hookSystem;
+
 	public NavigationFunction(DB db, Path currentNode, RequestContext context) {
 		super(
 				db,
@@ -58,6 +69,12 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 				context.get(MarkdownRendererFeature.class).markdownRenderer(),
 				context.get(ContentNodeMapperFeature.class).contentNodeMapper(),
 				context);
+		hookSystem = context.get(HookSystemFeature.class).hookSystem();
+	}
+
+	public NavigationFunction named(String name) {
+		this.name = name;
+		return this;
 	}
 
 	/**
@@ -66,28 +83,34 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 	 * @return List of orderd nodes from root to current
 	 */
 	public List<NavNode> path() {
-		List<NavNode> nodes = new ArrayList<>();
+		List<NavNode> navNodes = new ArrayList<>();
 		var contentBase = db.getFileSystem().resolve("content/");
 		var node = currentNode;
-		while (!node.equals(contentBase.getParent())) {
-
+		while (PathUtil.isChild(contentBase, node)) {
 			var uri = PathUtil.toRelativeFile(node, contentBase);
 			final Optional<ContentNode> contentNode = db.getContent().byUri(uri);
 			if (contentNode.isPresent()) {
 				var metaNode = contentNode.get();
-				var name = NodeUtil.getName(metaNode);
+				var nodeName = NodeUtil.getName(metaNode);
 
 				var path = contentBase.resolve(metaNode.uri());
-				final NavNode navNode = new NavNode(name, getUrl(path), isCurrentNode(path));
-				if (!nodes.contains(navNode)) {
-					nodes.add(navNode);
+				final NavNode navNode = new NavNode(nodeName, getUrl(path), isCurrentNode(path));
+				if (!navNodes.contains(navNode)) {
+					navNodes.add(navNode);
 				}
 			}
 
 			node = node.getParent();
 		}
 
-		return nodes.reversed();
+		navNodes = navNodes.reversed();
+
+		if (name != null) {
+			var hookContext = hookSystem.filter("navigation/" + name + "/path", navNodes);
+			navNodes = hookContext.values();
+		}
+
+		return navNodes;
 	}
 
 	public NavigationFunction contentType(final String contentType) {
@@ -114,14 +137,19 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 	}
 
 	private List<NavNode> getNodes(final String start, final int depth) {
+		List<NavNode> navNodes = Collections.emptyList();
 		if (start.startsWith("/")) { // root
-			return getNodesFromBase(db.getFileSystem().resolve("content/"), start.substring(1), depth);
+			navNodes = getNodesFromBase(db.getFileSystem().resolve("content/"), start.substring(1), depth);
 		} else if (start.equals(".")) { // current
-			return getNodesFromBase(currentNode.getParent(), "", depth);
+			navNodes = getNodesFromBase(currentNode.getParent(), "", depth);
 		} else if (start.startsWith("./")) { // subfolder of current
-			return getNodesFromBase(currentNode.getParent(), start.substring(2), depth);
+			navNodes = getNodesFromBase(currentNode.getParent(), start.substring(2), depth);
 		}
-		return Collections.emptyList();
+		if (name != null) {
+			var hookContext = hookSystem.filter("navigation/" + name + "/list", navNodes);
+			navNodes = hookContext.values();
+		}
+		return navNodes;
 	}
 
 	private List<NavNode> getSubNodesFromBaseRemoveCurrent(final Path base, final String start, final int depth, final String toRemovePath) {
@@ -130,7 +158,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return nodes.stream().filter(node -> !node.path().equals(toRemovePath)).toList();
 	}
 
-	public List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
+	private List<NavNode> getNodesFromBase(final Path base, final String start, final int depth) {
 		if (depth == 0) {
 			return Collections.emptyList();
 		}

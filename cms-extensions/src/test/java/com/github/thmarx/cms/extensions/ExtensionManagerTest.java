@@ -87,7 +87,7 @@ public class ExtensionManagerTest {
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
 		extensionManager.newContext(theme, requestContext);
 		
-		Assertions.assertThat(hookSystem.call("test").results())
+		Assertions.assertThat(hookSystem.execute("test").results())
 				.hasSize(1)
 				.containsExactly("hallo")
 				;

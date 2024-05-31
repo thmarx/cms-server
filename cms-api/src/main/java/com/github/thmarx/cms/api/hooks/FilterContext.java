@@ -22,10 +22,12 @@ package com.github.thmarx.cms.api.hooks;
  * #L%
  */
 
+import java.util.List;
+
 /**
  *
  * @author t.marx
  */
-public interface Hook {
+public record FilterContext<T>(List<T> values) implements HookContext {
 	
 }

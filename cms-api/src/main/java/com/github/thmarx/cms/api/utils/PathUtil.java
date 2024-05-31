@@ -24,19 +24,29 @@ package com.github.thmarx.cms.api.utils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author thmar
  */
+@Slf4j
 public class PathUtil {
 
-	public static boolean isContentFile (final Path file) {
+	public static boolean isContentFile(final Path file) {
 		return file.toString().endsWith(".md");
 	}
-	
-	public static boolean isChild(Path possibleParent, Path maybeChild) throws IOException {
-		return maybeChild.toFile().getCanonicalPath().startsWith(possibleParent.toFile().getCanonicalPath());
+
+	public static boolean isChild(Path possibleParent, Path maybeChild) {
+		try {
+			if (maybeChild == null || possibleParent == null) {
+				return false;
+			}
+			return maybeChild.toFile().getCanonicalPath().startsWith(possibleParent.toFile().getCanonicalPath());
+		} catch (IOException ex) {
+			log.error("", ex);
+		}
+		return false;
 	}
 
 	public static String toRelativePath(final Path contentPath, final Path contentBase) {
@@ -59,27 +69,26 @@ public class PathUtil {
 		uri = uri.replaceAll("\\\\", "/");
 		return uri;
 	}
-	
+
 	public static String toURI(final Path contentFile, final Path contentBase) {
 		var relFile = toRelativeFile(contentFile, contentBase);
 		if (relFile.endsWith("index.md")) {
 			relFile = relFile.replace("index.md", "");
 		}
-		
+
 		if (relFile.equals("")) {
 			relFile = "/";
 		} else if (relFile.endsWith("/")) {
 			relFile = relFile.substring(0, relFile.lastIndexOf("/"));
-		} 
-		
+		}
+
 		if (!relFile.startsWith("/")) {
 			relFile = "/" + relFile;
 		}
 		if (relFile.endsWith(".md")) {
 			relFile = relFile.substring(0, relFile.lastIndexOf(".md"));
 		}
-		
-		
+
 		return relFile;
 	}
 }

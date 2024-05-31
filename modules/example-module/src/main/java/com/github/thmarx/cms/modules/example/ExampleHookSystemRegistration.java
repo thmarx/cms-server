@@ -35,7 +35,7 @@ public class ExampleHookSystemRegistration extends HookSystemRegisterExtentionPo
 
 	@Override
 	public void register(HookSystem hookSystem) {
-		hookSystem.register("example/test", (hookContext) -> "example hook function");
+		hookSystem.registerAction("example/test", (hookContext) -> "example hook function");
 	}
 	
 }

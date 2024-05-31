@@ -4,7 +4,7 @@ package com.github.thmarx.cms.api.hooks;
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +22,12 @@ package com.github.thmarx.cms.api.hooks;
  * #L%
  */
 
+import java.util.List;
+import java.util.function.Function;
+
 /**
  *
  * @author t.marx
  */
-public interface Hook {
-	
+public record Filter(String name, int priority, Function<FilterContext<Object>, List<Object>> function) implements Hook {
 }

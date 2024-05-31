@@ -54,12 +54,7 @@ public class FileFolderPathResource extends Resource {
 
 	@Override
 	public boolean isContainedIn(Resource r) {
-		try {
-			return PathUtil.isChild(path, r.getPath());
-		} catch (IOException ex) {
-			log.error(null, ex);
-		}
-		return false;
+		return PathUtil.isChild(path, r.getPath());
 	}
 
 	@Override

@@ -135,12 +135,8 @@ public class MultiRootRecursiveWatcher {
 
 							if (fileEvent != null) {
 								roots.values().forEach((root) -> {
-									try {
-										if (PathUtil.isChild(root.path, file.toPath())) {
-											root.publisher.submit(fileEvent);
-										}
-									} catch (IOException ex) {
-										log.error(null, ex);
+									if (PathUtil.isChild(root.path, file.toPath())) {
+										root.publisher.submit(fileEvent);
 									}
 								});
 							}

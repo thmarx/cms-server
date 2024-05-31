@@ -107,7 +107,7 @@ public class NavigationFunctionNGTest {
 	}
 	
 	@Test
-	public void test_path() {
+	public void test_path() throws Exception {
 
 		var sut = new NavigationFunction(db, Path.of("hosts/test/content/nav3/folder1/index.md"), 
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));

@@ -4,7 +4,7 @@ package com.github.thmarx.cms.api.hooks;
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +22,13 @@ package com.github.thmarx.cms.api.hooks;
  * #L%
  */
 
+import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class HooksTemlateFunction {
+public record ActionContext<R>(Map<String, Object> arguments, List<R> results) implements HookContext {
 	
-	private final HookSystem hookSystem;
-	
-	public HookContext call (String name) {
-		return call(name, Map.of());
-	}
-	public HookContext call (String name, Map<String, Object> arguments) {
-		return hookSystem.call(name, arguments);
-	}
 }

@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.extensions.HttpHandler;
 import com.github.thmarx.cms.api.extensions.HttpHandlerExtensionPoint;
 import com.github.thmarx.cms.api.extensions.Mapping;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.hooks.ActionContext;
 import com.github.thmarx.cms.api.hooks.HookContext;
 import com.github.thmarx.modules.api.annotation.Extension;
 import java.nio.ByteBuffer;
@@ -50,7 +51,7 @@ public class ExampleJettyHttpHandlerExtension extends HttpHandlerExtensionPoint 
 		mapping.add(PathSpec.from("/people"), new ExampleHandler("Hello people!"));
 		mapping.add(PathSpec.from("/hook"), (request, response, callback) -> {
 			
-			HookContext hookContext = getRequestContext().get(HookSystemFeature.class).hookSystem().call("example/test");
+			ActionContext hookContext = getRequestContext().get(HookSystemFeature.class).hookSystem().execute("example/test");
 			
 			var content = (String)hookContext.results().get(0);
 			

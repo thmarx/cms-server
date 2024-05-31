@@ -6,6 +6,14 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 4.18.0
+
+* **FEATURE** Make RequestContext available in scripting [#201](https://github.com/thmarx/cms/issues/201)
+* **MAINTENANCE** pug4j template engine not longer actively supported [#198](https://github.com/thmarx/cms/issues/198)
+* **MAINTENANCE** dependencies updated [#202](https://github.com/thmarx/cms/issues/202)
+* **FEATURE** Hooks to change navigations [#200](https://github.com/thmarx/cms/issues/200)
+* **FEATURE** relative links in markdown [#197](https://github.com/thmarx/cms/issues/197)
+
 ## 4.17.0
 
 * **MAINTENANCE** Refactor request processing [#136](https://github.com/thmarx/cms/issues/136)

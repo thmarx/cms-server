@@ -23,11 +23,10 @@ package com.github.thmarx.cms.api.hooks;
  */
 
 import java.util.List;
-import java.util.Map;
 
 
 /**
  *
  * @author t.marx
  */
-public record HookContext(Map<String, Object> arguments, List<Object> results) {}
+public interface HookContext {}
