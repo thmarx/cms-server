@@ -13,6 +13,7 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 * **MAINTENANCE** dependencies updated [#202](https://github.com/thmarx/cms/issues/202)
 * **FEATURE** Hooks to change navigations [#200](https://github.com/thmarx/cms/issues/200)
 * **FEATURE** relative links in markdown [#197](https://github.com/thmarx/cms/issues/197)
+* **MAINTENANCE** deprecate third party markdown implementations [#203](https://github.com/thmarx/cms/issues/203)
 
 ## 4.17.0
 
