@@ -47,15 +47,15 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 	}
 
 	public ContentNode(String uri, String name, Map<String, Object> data, boolean directory) {
-		this(uri, name, data, directory, new HashMap<String, ContentNode>(), LocalDate.now());
+		this(uri, name, data, directory, new HashMap<>(), LocalDate.now());
 	}
 
 	public ContentNode(String uri, String name, Map<String, Object> data) {
-		this(uri, name, data, false, new HashMap<String, ContentNode>(), LocalDate.now());
+		this(uri, name, data, false, new HashMap<>(), LocalDate.now());
 	}
 
 	public ContentNode(String uri, String name, Map<String, Object> data, LocalDate lastmodified) {
-		this(uri, name, data, false, new HashMap<String, ContentNode>(), lastmodified);
+		this(uri, name, data, false, new HashMap<>(), lastmodified);
 	}
 
 	public String nodeType () {
