@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.common.value.qual.ArrayLen;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
@@ -37,6 +37,7 @@ import org.checkerframework.common.value.qual.ArrayLen;
  *
  * @author t.marx
  */
+@Slf4j
 @RequiredArgsConstructor
 public class HookSystem {
 
@@ -44,29 +45,19 @@ public class HookSystem {
 	
 	Multimap<String, Filter> filters = ArrayListMultimap.create();
 
-	@Deprecated(since = "4.18.0", forRemoval = true)
-	public void register(final String name, final Function<ActionContext<Object>, Object> hookFunction) {
-		register(name, hookFunction, 10);
-	}
-
-	@Deprecated(since = "4.18.0", forRemoval = true)
-	public void register(final String name, final Function<ActionContext<Object>, Object> hookFunction, int priority) {
-		actions.put(name, new Action(name, priority, hookFunction));
-	}
-
-	public void registerAction(final String name, final Function<ActionContext<Object>, Object> hookFunction) {
+	public void registerAction(final String name, final ActionFunction hookFunction) {
 		registerAction(name, hookFunction, 10);
 	}
 
-	public void registerAction(final String name, final Function<ActionContext<Object>, Object> hookFunction, int priority) {
+	public void registerAction(final String name, final ActionFunction hookFunction, int priority) {
 		actions.put(name, new Action(name, priority, hookFunction));
 	}
 	
-	public void registerFilter(final String name, final Function<FilterContext<Object>, List<Object>> hookFunction) {
+	public <T> void registerFilter(final String name, final FilterFunction<T> hookFunction) {
 		registerFilter(name, hookFunction, 10);
 	}
 
-	public void registerFilter(final String name, final Function<FilterContext<Object>, List<Object>> hookFunction, int priority) {
+	public <T> void registerFilter(final String name, final FilterFunction<T> hookFunction, int priority) {
 		filters.put(name, new Filter(name, priority, hookFunction));
 	}
 	
@@ -79,7 +70,15 @@ public class HookSystem {
 		var context = new ActionContext(new HashMap<>(arguments), new ArrayList<>());
 		actions.get(name).stream()
 				.sorted((h1, h2) -> Integer.compare(h1.priority(), h2.priority()))
-				.map(action -> action.function().apply(context))
+				.map((action) -> {
+					try {
+						return action.function().apply(context);
+					} catch (Exception e) {
+						log.error("error executing action");
+					}
+					return null;
+				})
+				.filter(value -> value != null)
 				.forEach(context.results()::add);
 
 		return context;
@@ -100,11 +99,15 @@ public class HookSystem {
 		);
 		filters.get(name).stream()
 				.sorted((h1, h2) -> Integer.compare(h1.priority(), h2.priority()))
-				.forEach(action -> {
-					var context = new FilterContext(new ArrayList<>(returnContext.values()));
-					var result = action.function().apply(context);
-					returnContext.values().clear();
-					returnContext.values().addAll(result);
+				.forEach((var action) -> {
+					try {
+						var context = new FilterContext(new ArrayList<>(returnContext.values()));
+						var result = action.function().apply(context);
+						returnContext.values().clear();
+						returnContext.values().addAll((List<T>)result);
+					} catch (Exception e) {
+						log.error("error on filter");
+					}
 				});
 
 		return returnContext;

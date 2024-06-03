@@ -30,6 +30,9 @@ import java.util.List;
  * @author t.marx
  */
 public record NavNode (String name, String path, int depth, boolean current, List<NavNode> children) {
+	public NavNode (String name, String path) {
+		this(name, path, 1, false, Collections.emptyList());
+	}
 	public NavNode (String name, String path, int depth) {
 		this(name, path, depth, false, Collections.emptyList());
 	}

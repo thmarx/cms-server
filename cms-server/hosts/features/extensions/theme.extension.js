@@ -1,6 +1,6 @@
 import { $hooks } from 'system/hooks.mjs';
 
-$hooks.register(
+$hooks.registerAction(
     "theme/header",
     (context) => {
         return `

@@ -30,11 +30,14 @@ import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
+import com.github.thmarx.cms.api.hooks.FilterContext;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.api.request.RequestContext;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.assertj.core.api.Assertions;
@@ -94,14 +97,22 @@ public class NavigationFunctionTest {
 	@Test
 	public void test_hook_path() {
 		var hookCalled = new AtomicBoolean(false);
-		hookSystem.registerFilter("navigation/test/path", (parameters) -> {
+		hookSystem.registerFilter("navigation/test/path", (FilterContext<NavNode> parameters) -> {
 			hookCalled.set(true);
-			return parameters.values();
+			
+			var nodes = (List<NavNode>) parameters.values();
+			
+			nodes.add(0, new NavNode("test", "test", false));
+			
+			return nodes;
 		});
 		
-		sut.named("test").path();
+		var nodes = sut.named("test").path();
 		
 		Assertions.assertThat(hookCalled).isTrue();
+		Assertions.assertThat(nodes).containsExactly(
+				new NavNode("test", "test", false)
+		);
 	}
 	
 	@Test

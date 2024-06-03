@@ -22,12 +22,9 @@ package com.github.thmarx.cms.api.hooks;
  * #L%
  */
 
-import java.util.List;
-import java.util.function.Function;
-
 /**
  *
  * @author t.marx
  */
-public record Filter(String name, int priority, Function<FilterContext<Object>, List<Object>> function) implements Hook {
+public record Filter<T>(String name, int priority, FilterFunction<T> function) implements Hook {
 }

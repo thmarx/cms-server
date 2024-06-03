@@ -1,6 +1,8 @@
+package com.github.thmarx.cms.api.hooks;
+
 /*-
  * #%L
- * cms-extensions
+ * cms-api
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -20,11 +22,13 @@
  * #L%
  */
 
-import { $hooks } from 'system/hooks.mjs';
+import java.util.function.Function;
 
-$hooks.registerAction(
-	"test",
-	(context) => {
-		return 'hallo'
-	}
-)
+/**
+ *
+ * @author t.marx
+ */
+@FunctionalInterface
+public interface ActionFunction extends Function<ActionContext<Object>, Object> {
+	
+}

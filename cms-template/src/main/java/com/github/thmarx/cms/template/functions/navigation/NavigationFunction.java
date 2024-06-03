@@ -29,21 +29,17 @@ import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
-import com.github.thmarx.cms.api.hooks.HookContext;
 import com.github.thmarx.cms.api.hooks.HookSystem;
+import com.github.thmarx.cms.api.hooks.Hooks;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.utils.NodeUtil;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -106,7 +102,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		navNodes = navNodes.reversed();
 
 		if (name != null) {
-			var hookContext = hookSystem.filter("navigation/" + name + "/path", navNodes);
+			var hookContext = hookSystem.filter(Hooks.NAVIGATION_PATH.hook(name), navNodes);
 			navNodes = hookContext.values();
 		}
 
@@ -146,7 +142,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 			navNodes = getNodesFromBase(currentNode.getParent(), start.substring(2), depth);
 		}
 		if (name != null) {
-			var hookContext = hookSystem.filter("navigation/" + name + "/list", navNodes);
+			var hookContext = hookSystem.filter(Hooks.NAVIGATION_LIST.hook(name), navNodes);
 			navNodes = hookContext.values();
 		}
 		return navNodes;

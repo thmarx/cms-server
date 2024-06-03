@@ -1,6 +1,8 @@
+package com.github.thmarx.cms.api.hooks;
+
 /*-
  * #%L
- * cms-extensions
+ * cms-api
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -20,11 +22,27 @@
  * #L%
  */
 
-import { $hooks } from 'system/hooks.mjs';
-
-$hooks.registerAction(
-	"test",
-	(context) => {
-		return 'hallo'
+/**
+ *
+ * @author t.marx
+ */
+public enum Hooks {
+	
+	NAVIGATION_PATH("navigation/%s/path"),
+	NAVIGATION_LIST("navigation/%s/list"),
+	;
+	
+	private String pattern;
+	
+	private Hooks (String pattern) {
+		this.pattern = pattern;
 	}
-)
+	
+	public String hook () {
+		return pattern;
+	}
+	
+	public String hook (Object...variables) {
+		return pattern.formatted(variables);
+	}
+}

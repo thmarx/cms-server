@@ -1,6 +1,8 @@
+package com.github.thmarx.cms.api.hooks;
+
 /*-
  * #%L
- * cms-extensions
+ * cms-api
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -20,11 +22,15 @@
  * #L%
  */
 
-import { $hooks } from 'system/hooks.mjs';
+import java.util.List;
+import java.util.function.Function;
 
-$hooks.registerAction(
-	"test",
-	(context) => {
-		return 'hallo'
-	}
-)
+/**
+ *
+ * @author t.marx
+ * @param <T>
+ */
+@FunctionalInterface
+public interface FilterFunction<T> extends Function<FilterContext<T>, List<T>> {
+	
+}
