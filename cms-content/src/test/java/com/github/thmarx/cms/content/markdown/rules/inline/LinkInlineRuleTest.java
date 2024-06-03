@@ -21,34 +21,73 @@ package com.github.thmarx.cms.content.markdown.rules.inline;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import com.github.thmarx.cms.content.markdown.rules.inline.LinkInlineRule;
+import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
+import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  *
  * @author t.marx
  */
+@ExtendWith(MockitoExtension.class)
 public class LinkInlineRuleTest {
 
 	LinkInlineRule SUT = new LinkInlineRule();
 
+	@Mock
+	SiteProperties siteProperties;
+	
 	@Test
 	public void test_link() {
-		
+
 		var result = SUT.next("[google](https://google.de)");
-		
+
 		Assertions.assertThat(result.render())
 				.isEqualTo("<a href=\"https://google.de\" id=\"google\">google</a>");
 	}
 
 	@Test
 	public void test_link_title() {
-		
+
 		var result = SUT.next("[google](https://google.de \"The Google\")");
-		
+
 		Assertions.assertThat(result.render())
 				.isEqualTo("<a href=\"https://google.de\" id=\"google\" title=\"The Google\">google</a>");
+	}
+
+	@Test
+	public void test_relativ_linking() {
+
+		var result = SUT.next("[relative link](../sibling/test)");
+
+		Assertions.assertThat(result.render())
+				.isEqualTo("<a href=\"../sibling/test\" id=\"relative-link\">relative link</a>");
+	}
+
+	@Test
+	public void test_relativ_linking_with_context() {
+
+		try {
+			
+			Mockito.when(siteProperties.contextPath()).thenReturn("/de");
+			
+			RequestContext requestContext = new RequestContext();
+			requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
+			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
+			
+			var result = SUT.next("[relative link](../sibling/test)");
+
+			Assertions.assertThat(result.render())
+					.isEqualTo("<a href=\"../sibling/test\" id=\"relative-link\">relative link</a>");
+		} finally {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
+		}
 	}
 }
