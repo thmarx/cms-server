@@ -22,5 +22,8 @@ export const ThemeFeature = Java.type("com.github.thmarx.cms.api.feature.feature
 export const $features = {
 	get : (feature) => {
 		return requestContext.get(feature)
+	},
+	has : (feature) => {
+		return requestContext.has(feature)
 	}
 }

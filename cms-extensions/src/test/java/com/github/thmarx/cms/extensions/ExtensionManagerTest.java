@@ -24,6 +24,7 @@ package com.github.thmarx.cms.extensions;
 
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.feature.features.AuthFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -80,7 +81,22 @@ public class ExtensionManagerTest {
 	}
 
 	@Test
-	public void testSomeMethod() throws IOException {
+	public void test_with_auth() throws IOException {
+		
+		var requestContext = new RequestContext();
+		final HookSystem hookSystem = new HookSystem();
+		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
+		requestContext.add(AuthFeature.class, new AuthFeature("thorsten"));
+		extensionManager.newContext(theme, requestContext);
+		
+		Assertions.assertThat(hookSystem.execute("test").results())
+				.hasSize(1)
+				.containsExactly("Hallo thorsten")
+				;
+	}
+	
+	@Test
+	public void test_without_auth() throws IOException {
 		
 		var requestContext = new RequestContext();
 		final HookSystem hookSystem = new HookSystem();
@@ -89,8 +105,7 @@ public class ExtensionManagerTest {
 		
 		Assertions.assertThat(hookSystem.execute("test").results())
 				.hasSize(1)
-				.containsExactly("hallo")
+				.containsExactly("Guten Tag")
 				;
 	}
-	
 }

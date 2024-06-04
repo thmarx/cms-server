@@ -22,9 +22,16 @@
 
 import { $hooks } from 'system/hooks.mjs';
 
+import { AuthFeature, $features } from 'system/features.mjs';
+
 $hooks.registerAction(
 	"test",
 	(context) => {
-		return 'hallo'
+		
+		if ($features.has(AuthFeature)) {
+			return `Hallo ${$features.get(AuthFeature).username()}`
+		}
+		
+		return 'Guten Tag'
 	}
 )
