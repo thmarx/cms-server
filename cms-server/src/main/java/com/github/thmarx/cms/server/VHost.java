@@ -27,6 +27,7 @@ import com.github.thmarx.cms.api.configuration.Config;
 import com.github.thmarx.cms.api.module.CMSModuleContext;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
+import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.EventListener;
@@ -34,9 +35,11 @@ import com.github.thmarx.cms.api.eventbus.events.ConfigurationFileChanged;
 import com.github.thmarx.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
+import com.github.thmarx.cms.api.eventbus.events.lifecycle.HostReloadedEvent;
 import com.github.thmarx.cms.api.eventbus.events.lifecycle.HostStoppedEvent;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.feature.features.ContentRenderFeature;
+import com.github.thmarx.cms.api.feature.features.ThemeFeature;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
@@ -94,6 +97,9 @@ public class VHost {
 	private final ScheduledExecutorService scheduledExecutorService;
 
 	@Getter
+	private Handler hostHandler;
+	
+	@Getter
 	protected Injector injector;
 
 	public VHost(final Path hostBase, final Configuration configuration, final ScheduledExecutorService scheduledExecutorService) {
@@ -113,6 +119,32 @@ public class VHost {
 			injector.getInstance(ExtensionManager.class).close();
 		} catch (Exception ex) {
 			log.error("", ex);
+		}
+	}
+	
+	public void reload () {
+		log.trace("reload theme");
+		
+		try {
+			
+			reloadConfiguration(SiteConfiguration.class);
+			
+			var theme = this.injector.getInstance(Theme.class);
+		
+			var themeAssetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("theme")));
+			themeAssetsMediaManager.reloadTheme(theme);
+			
+			ResourceHandler themeAssetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));
+			themeAssetsHandler.stop();
+			themeAssetsHandler.setBaseResource(new FileFolderPathResource(theme.assetsPath()));
+			themeAssetsHandler.start();
+			
+			this.injector.getInstance(TemplateEngine.class).updateTheme(theme);
+			this.injector.getInstance(CMSModuleContext.class).get(ThemeFeature.class).updateTheme(theme);
+			
+			injector.getInstance(EventBus.class).syncPublish(new HostReloadedEvent(id()));
+		} catch (Exception e) {
+			log.error("", e);
 		}
 	}
 
@@ -173,7 +205,7 @@ public class VHost {
 		);
 	}
 
-	public Handler httpHandler() {
+	public Handler buildHttpHandler() {
 
 		var contentHandler = injector.getInstance(JettyContentHandler.class);
 		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
@@ -248,7 +280,9 @@ public class VHost {
 		gzipHandler.addIncludedMimeTypes("text/css");
 		gzipHandler.addIncludedMimeTypes("application/javascript");
 
-		return gzipHandler;
+		hostHandler = gzipHandler;
+		
+		return hostHandler;
 	}
 
 	private String appendContextIfNeeded(final String path) {

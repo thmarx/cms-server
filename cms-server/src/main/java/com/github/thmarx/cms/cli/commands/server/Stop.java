@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.cli.commands;
+package com.github.thmarx.cms.cli.commands.server;
 
 /*-
  * #%L

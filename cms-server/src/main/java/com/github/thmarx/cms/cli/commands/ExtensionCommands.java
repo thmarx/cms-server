@@ -21,42 +21,26 @@ package com.github.thmarx.cms.cli.commands;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.auth.services.UserService;
-import java.nio.file.Path;
+import com.github.thmarx.cms.cli.commands.extensions.InfoCommand;
+import com.github.thmarx.cms.cli.commands.extensions.InstallCommand;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
-import picocli.CommandLine.Parameters;
 
 /**
  *
  * @author t.marx
  */
-@CommandLine.Command(name = "remove_user")
+@CommandLine.Command(
+		name = "extension",
+		subcommands = {
+			InfoCommand.class,
+			InstallCommand.class
+		})
 @Slf4j
-public class RemoveUser implements Runnable {
-
-	@CommandLine.Option(names = {"-r", "--realm"}, description = "The realm")
-	String realm = "users";
-
-	@CommandLine.Option(names = {"-h", "--host"}, description = "The host", required = true)
-	String host = null;
-	
-	@Parameters(
-			paramLabel = "<username>",
-			index = "0",
-			description = "The username."
-	)
-	private String username = "";
+public class ExtensionCommands implements Runnable {
 
 	@Override
 	public void run() {
-		try {
-			UserService userService = new UserService(Path.of("hosts/" + host));
-			
-			userService.removeUser(UserService.Realm.of(realm), username);
-			log.info("user added successfuly");
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		System.out.println("Subcommand needed: 'install', 'deinstall' or 'info'");
 	}
 }

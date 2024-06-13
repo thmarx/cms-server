@@ -103,7 +103,6 @@ public class SiteModule extends AbstractModule {
 	}
 
 	@Provides
-	@Singleton
 	public Theme loadTheme(Configuration configuration, MessageSource messageSource) throws IOException {
 
 		var siteProperties = configuration.get(SiteConfiguration.class).siteProperties();
@@ -204,15 +203,8 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public RequestContextFactory requestContextFactory(
-			Injector injector, ExtensionManager extensionManager, Theme theme, SiteProperties siteProperties,
-			MediaService mediaService, MarkdownRenderer markdownRenderer) {
+	public RequestContextFactory requestContextFactory(Injector injector) {
 		return new RequestContextFactory(
-				markdownRenderer,
-				extensionManager,
-				theme,
-				siteProperties,
-				mediaService,
 				injector
 		);
 	}

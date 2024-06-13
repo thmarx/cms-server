@@ -1,11 +1,10 @@
-name: test
+name: demo
+version: 1.0
 template:
   engine: thymeleaf
 modules:
   active:
-    - example-module
     - thymeleaf-module
-    - search-module
 media:
   formats:
     - name: small

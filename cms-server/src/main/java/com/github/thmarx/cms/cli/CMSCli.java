@@ -29,7 +29,12 @@ import picocli.CommandLine;
  * @author t.marx
  */
 public class CMSCli {
+	
+	public static CommandLine getCommandLine () {
+		return new CommandLine(new CLICommand());
+	}
+	
 	public static void main(String[] args) {
-        new CommandLine(new ServerCommand()).execute(args);
+        CMSCli.getCommandLine().execute(args);
     }
 }

@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.cli;
+package com.github.thmarx.cms.api.eventbus.events.lifecycle;
 
 /*-
  * #%L
  * cms-server
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,24 +21,11 @@ package com.github.thmarx.cms.cli;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.cli.commands.AddUser;
-import com.github.thmarx.cms.cli.commands.RemoveUser;
-import com.github.thmarx.cms.cli.commands.Startup;
-import com.github.thmarx.cms.cli.commands.Stop;
-import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
+import com.github.thmarx.cms.api.eventbus.Event;
 
 /**
  *
  * @author t.marx
  */
-@CommandLine.Command(name = "server", subcommands = {
-	Startup.class, AddUser.class, RemoveUser.class, Stop.class})
-@Slf4j
-public class ServerCommand implements Runnable {
-
-	@Override
-	public void run() {
-		System.out.println("server command");
-	}
+public record ReloadHostEvent(String host) implements Event {
 }

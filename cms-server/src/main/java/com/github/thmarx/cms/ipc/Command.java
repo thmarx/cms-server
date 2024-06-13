@@ -44,7 +44,8 @@ public class Command {
 		return Optional.ofNullable(headers.get(name));
 	}
 	
-	public void setHeader (String name, Object value) {
+	public Command setHeader (String name, Object value) {
 		headers.put(name, value);
+		return this;
 	}
 }
