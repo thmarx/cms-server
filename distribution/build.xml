@@ -25,9 +25,6 @@
 		<copy todir="build/hosts">
 			<fileset dir="temp/cms-server-${cms.version}/hosts"/>
 		</copy>
-		<copy todir="build/modules/example-module">
-			<fileset dir="temp/cms-server-${cms.version}/modules/example-module"/>
-		</copy>
 		<copy todir="build/">
 			<resources>
 				<file file="temp/cms-server-${cms.version}/cms-server-${cms.version}.jar"/>
