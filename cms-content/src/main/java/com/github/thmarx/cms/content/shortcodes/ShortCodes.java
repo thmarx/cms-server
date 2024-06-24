@@ -45,75 +45,14 @@ public class ShortCodes {
 	
 	public static final Pattern TAG_PARAMS_PATTERN_LONG = Pattern.compile("\\[{2}(?<tag>[a-z_A-Z0-9]+)( (?<params>.*?))?\\]{2}(?<content>.*?)\\[{2}/\\k<tag>\\]{2}");
 	
-	private final Codes codes;
+	private final ShortCodeParser.Codes codes;
 
 	public ShortCodes (Map<String, Function<Parameter, String>> codes) {
-		this.codes = new Codes();
+		this.codes = new ShortCodeParser.Codes();
 		this.codes.addAll(codes);
 	}
 	
 	public String replace (final String content) {
-		
-		var newContent = _replace(content, TAG_PARAMS_PATTERN_SHORT);
-		return _replace(newContent, TAG_PARAMS_PATTERN_LONG);
-	}
-	
-	private String _replace (final String content, final Pattern pattern) {
-		var matcher = pattern.matcher(content);
-
-		String newContent = "";
-		int lastPosition = 0;
-		while (matcher.find(lastPosition)) {
-			var tagName = matcher.group("tag");
-
-			newContent += content.substring(lastPosition, matcher.start());
-			Parameter params = parseParameters(matcher.group("params"));
-			if (matcher.namedGroups().containsKey("content")) {
-				params.put("content", matcher.group("content"));
-			}
-			newContent += codes.get(tagName).apply(params);
-
-			lastPosition = matcher.end();
-		}
-		if (content.length() > lastPosition) {
-			newContent += content.substring(lastPosition);
-		}
-
-		return newContent;
-	}
-	
-	private Parameter parseParameters(final String paramString) {
-		Parameter params = new Parameter();
-
-		if (Strings.isNullOrEmpty(paramString)) {
-			return params;
-		}
-
-		Map<String, String> result = Splitter.on(',')
-				.trimResults()
-				.withKeyValueSeparator(
-						Splitter.on('=')
-								.limit(2)
-								.trimResults(CharMatcher.anyOf("'\" ")))
-				.split(paramString);
-
-		params.putAll(result);
-
-		return params;
-	}
-	
-	public static class Codes {
-		private Map<String, Function<Parameter, String>> codes = new HashMap<>();
-		
-		public void addAll(Map<String, Function<Parameter, String>> codes) {
-			this.codes.putAll(codes);
-		}
-		
-		public void add (final String codeName, Function<Parameter, String> function) {
-			codes.put(codeName, function);
-		}
-		public Function<Parameter, String> get (final String codeName) {
-			return codes.getOrDefault(codeName, (params) -> "");
-		}
+		return ShortCodeParser.replace(content, codes);
 	}
 }

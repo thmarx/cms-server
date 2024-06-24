@@ -58,9 +58,14 @@ public class ConfigurationManagement implements Runnable {
 	final ScheduledExecutorService scheduler;
 	final EventBus eventBus;
 
-	private List<ConfigurationResource> watched_configurations = new ArrayList<>();
+	private final List<ConfigurationResource> watched_configurations = new ArrayList<>();
 
-	public void init() throws IOException {
+	public void reload () throws IOException {
+		watched_configurations.clear();
+		init_files();
+	}
+	
+	private void init_files () throws IOException {
 		// init config files
 		addPathToWatch(db.getFileSystem().resolve("site.yaml"), SiteConfiguration.class);
 		
@@ -83,6 +88,10 @@ public class ConfigurationManagement implements Runnable {
 						}
 					});
 		}
+	}
+	
+	public void init() throws IOException {
+		init_files();
 
 		// setup scheduler
 		scheduler.scheduleWithFixedDelay(this, 1, 1, TimeUnit.MINUTES);
@@ -97,10 +106,14 @@ public class ConfigurationManagement implements Runnable {
 		);
 	}
 
+	private List<ConfigurationResource> getConfigurations () {
+		return new ArrayList<>(watched_configurations);
+	}
+	
 	@Override
 	public void run() {
 		log.trace("check for modified configurations {}", db.getFileSystem().resolve(".").toString());
-		watched_configurations.forEach(config -> {
+		getConfigurations().forEach(config -> {
 			try {
 				var tempMod = Files.getLastModifiedTime(config.configFile).toMillis();
 

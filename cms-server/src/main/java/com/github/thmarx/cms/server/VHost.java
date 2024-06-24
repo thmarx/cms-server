@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Config;
 import com.github.thmarx.cms.api.module.CMSModuleContext;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.configuration.ConfigurationManagement;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
@@ -128,6 +129,8 @@ public class VHost {
 		try {
 			
 			reloadConfiguration(SiteConfiguration.class);
+			reloadConfiguration(TaxonomyConfiguration.class);
+			injector.getInstance(ConfigurationManagement.class).reload();
 			
 			var theme = this.injector.getInstance(Theme.class);
 		

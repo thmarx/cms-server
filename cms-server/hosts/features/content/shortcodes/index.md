@@ -9,6 +9,8 @@ menu:
 
 [[hello name='Thorsten'/]]
 
+[[name_age name='Thorsten' age="46" /]]
+
 Or call a shortcode provided by the default theme
 
 [[theme_name /]]

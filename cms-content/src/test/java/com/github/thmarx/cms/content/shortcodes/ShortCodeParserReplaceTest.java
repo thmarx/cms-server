@@ -22,10 +22,6 @@ package com.github.thmarx.cms.content.shortcodes;
  * #L%
  */
 
-import com.github.thmarx.cms.api.model.Parameter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,46 +30,46 @@ import org.junit.jupiter.api.Test;
  *
  * @author t.marx
  */
-public class ShortCodesTest {
+public class ShortCodeParserReplaceTest {
 	
-	static ShortCodes shortCodes;
+	static ShortCodeParser.Codes tags;
 	
 	@BeforeAll
 	public static void init () {
-		Map<String, Function<Parameter, String>> tags = new HashMap<>();
-		tags.put(
+		
+		tags = new ShortCodeParser.Codes();
+		
+		tags.add(
 				"youtube", 
 				(params) -> "<video src='%s'></video>".formatted(params.getOrDefault("id", "")));
-		tags.put(
+		tags.add(
 				"hello_from", 
 				(params) -> "<p><h3>%s</h3><small>from %s</small></p>".formatted(params.getOrDefault("name", ""), params.getOrDefault("from", "")));
 		
-		tags.put(
+		tags.add(
 				"mark",
 				params -> "<mark>%s</mark>".formatted(params.get("content"))
 		);
 		
-		tags.put(
+		tags.add(
 				"mark2",
 				params -> "<mark class='%s'>%s</mark>".formatted(params.get("class"), params.get("content"))
 		);
-		
-		shortCodes = new ShortCodes(tags);
 	}
 	
 
 	@Test
 	void simpleTest () {
-		var result = shortCodes.replace("[[youtube    /]]");
+		var result = ShortCodeParser.replace("[[youtube    /]]", tags);
 		Assertions.assertThat(result).isEqualTo("<video src=''></video>");
 		
-		result = shortCodes.replace("[[youtube/]]");
+		result = ShortCodeParser.replace("[[youtube/]]", tags);
 		Assertions.assertThat(result).isEqualTo("<video src=''></video>");
 	}
 	
 	@Test
 	void simple_with_text_before_and_After () {
-		var result = shortCodes.replace("before [[youtube /]] after");
+		var result = ShortCodeParser.replace("before [[youtube /]] after", tags);
 		Assertions.assertThat(result).isEqualTo("before <video src=''></video> after");
 	}
 	
@@ -88,7 +84,7 @@ public class ShortCodesTest {
                 some text after
                 """;
 		
-		var result = shortCodes.replace(content);
+		var result = ShortCodeParser.replace(content, tags);
 		
 		var expected = """
                 some text before
@@ -103,32 +99,32 @@ public class ShortCodesTest {
 	
 	@Test
 	void unknown_tag () {
-		var result = shortCodes.replace("before [[vimeo id='TEST' /]] after");
+		var result = ShortCodeParser.replace("before [[vimeo id='TEST' /]] after", tags);
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace("before  after");
 	}
 	
 	@Test
 	void hello_from () {
-		var result = shortCodes.replace("[[hello_from name='Thorsten',from='Bochum' /]]");
+		var result = ShortCodeParser.replace("[[hello_from name='Thorsten' from='Bochum' /]]", tags);
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 		
-		result = shortCodes.replace("[[hello_from name='Thorsten',from='Bochum'    /]]");
+		result = ShortCodeParser.replace("[[hello_from name='Thorsten' from='Bochum'    /]]", tags);
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 		
-		result = shortCodes.replace("[[hello_from name='Thorsten', from='Bochum' /]]");
+		result = ShortCodeParser.replace("[[hello_from name='Thorsten' from='Bochum' /]]", tags);
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 	}
 	
 	@Test
 	void test_long () {
-		var result = shortCodes.replace("[[mark]]Important[[/mark]]");
+		var result = ShortCodeParser.replace("[[mark]]Important[[/mark]]", tags);
 		
 		Assertions.assertThat(result).isEqualTo("<mark>Important</mark>");
 	}
 	
 	@Test
 	void test_long_with_params () {
-		var result = shortCodes.replace("[[mark2 class='test-class']]Important[[/mark2]]");
+		var result = ShortCodeParser.replace("[[mark2 class='test-class']]Important[[/mark2]]", tags);
 		
 		Assertions.assertThat(result).isEqualTo("<mark class='test-class'>Important</mark>");
 	}
@@ -144,7 +140,7 @@ public class ShortCodesTest {
                 some text after
                 """;
 		
-		var result = shortCodes.replace(content);
+		var result = ShortCodeParser.replace(content,tags);
 		
 		var expected = """
                 some text before
@@ -160,21 +156,21 @@ public class ShortCodesTest {
 	@Test
 	void multiple_hello () {
 		var input = """
-              [[hello_from name='Thorsten',from='Bochum']][[/hello_from]][[hello_from name='Thorsten',from='Bochum']][[/hello_from]]
+              [[hello_from name='Thorsten' from='Bochum']][[/hello_from]][[hello_from name='Thorsten' from='Bochum']][[/hello_from]]
               """;
 		var expected = """
               <p><h3>Thorsten</h3><small>from Bochum</small></p><p><h3>Thorsten</h3><small>from Bochum</small></p>
               """;
-		var result = shortCodes.replace(input);
+		var result = ShortCodeParser.replace(input, tags);
 		Assertions.assertThat(result).isEqualTo(expected);
 		
 		input = """
-              [[hello_from name='Thorsten',from='Bochum'/]][[hello_from name='Thorsten',from='Bochum'/]]
+              [[hello_from name='Thorsten' from='Bochum'/]][[hello_from name='Thorsten' from='Bochum'/]]
               """;
 		expected = """
               <p><h3>Thorsten</h3><small>from Bochum</small></p><p><h3>Thorsten</h3><small>from Bochum</small></p>
               """;
-		result = shortCodes.replace(input);
+		result = ShortCodeParser.replace(input, tags);
 		Assertions.assertThat(result).isEqualTo(expected);
 	}
 }

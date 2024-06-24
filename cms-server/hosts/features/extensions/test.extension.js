@@ -42,3 +42,8 @@ $shortcodes.register(
 	"hello",
 	(params) => `Hello ${params.get("name")}, I'm a TAG!`
 )
+
+$shortcodes.register(
+	"name_age",
+	(params) => `Hello ${params.get("name")}, your age is ${params.get("age")}!`
+)
