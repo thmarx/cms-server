@@ -21,7 +21,6 @@ package com.github.thmarx.cms.content.markdown.rules.block;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.content.markdown.rules.block.ListBlockRule;
 import com.github.thmarx.cms.content.markdown.Block;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -130,5 +129,37 @@ public class ListBlockRuleTest {
 				.hasFieldOrPropertyWithValue("items", List.of("first sentence. second sentence.", "item 2"));
 
 		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<ol><li>first sentence. second sentence.</li><li>item 2</li></ol>");
+	}
+	
+	@Test
+	void ordered_list_multiline_items() {
+
+		String md = "1. first sentence.\nsecond sentence.\n1. item 2";
+
+		Block next = sut.next(md);
+
+		Assertions.assertThat(next)
+				.isNotNull()
+				.isInstanceOf(ListBlockRule.ListBlock.class)
+				.asInstanceOf(InstanceOfAssertFactories.type(ListBlockRule.ListBlock.class))
+				.hasFieldOrPropertyWithValue("items", List.of("first sentence.\nsecond sentence.", "item 2"));
+
+		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<ol><li>first sentence.\nsecond sentence.</li><li>item 2</li></ol>");
+	}
+	
+	@Test
+	void unordered_list_multiline_items() {
+
+		String md = "+ first sentence.\nsecond sentence.\n+ item 2";
+
+		Block next = sut.next(md);
+
+		Assertions.assertThat(next)
+				.isNotNull()
+				.isInstanceOf(ListBlockRule.ListBlock.class)
+				.asInstanceOf(InstanceOfAssertFactories.type(ListBlockRule.ListBlock.class))
+				.hasFieldOrPropertyWithValue("items", List.of("first sentence.\nsecond sentence.", "item 2"));
+
+		Assertions.assertThat(next.render((content) -> content)).isEqualTo("<ul><li>first sentence.\nsecond sentence.</li><li>item 2</li></ul>");
 	}
 }

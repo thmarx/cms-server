@@ -49,9 +49,10 @@ public class ListBlockRule implements BlockElementRule {
 		Matcher matcher = PATTERN_ORDERED_LIST.matcher(md);
 		if (matcher.find()) {
 			var listContent = matcher.group(0);
-			var items = listContent.split("\n");
+			
+			var items = listContent.split("(^|\n)[0-9]?\\. ");
 
-			var listItems = Stream.of(items).map(item -> item.replaceFirst("\\A^[0-9]?\\. ", "")).toList();
+			var listItems = Stream.of(items).skip(1).toList();
 
 			return new ListBlock(matcher.start(), matcher.end(),
 					listItems, true);
@@ -59,9 +60,9 @@ public class ListBlockRule implements BlockElementRule {
 			matcher = PATTERN_UNORDERED_LIST.matcher(md);
 			if (matcher.find()) {
 				var listContent = matcher.group(0);
-				var items = listContent.split("\n");
+				var items = listContent.split("(^|\n)[-\\*\\+]{1} ");
 
-				var listItems = Stream.of(items).map(item -> item.replaceFirst("\\A^[-\\*\\+]{1} ", "")).toList();
+				var listItems = Stream.of(items).skip(1).toList();
 
 				return new ListBlock(matcher.start(), matcher.end(),
 						listItems, false);
