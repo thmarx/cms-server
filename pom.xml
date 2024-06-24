@@ -26,6 +26,7 @@
 		<module>cms-content</module>
 		<module>cms-extensions</module>
 		<module>cms-auth</module>
+	 <module>integration-tests</module>
 	</modules>
 	<inceptionYear>2023</inceptionYear>
 	<organization>

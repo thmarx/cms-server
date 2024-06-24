@@ -91,18 +91,22 @@ public class ConfigurationManagement implements Runnable {
 	}
 	
 	public void init() throws IOException {
+		init(1, 1, TimeUnit.MINUTES);
+	}
+
+	public void init(int initialDelay, int delay, TimeUnit timeUnit) throws IOException {
 		init_files();
 
 		// setup scheduler
-		scheduler.scheduleWithFixedDelay(this, 1, 1, TimeUnit.MINUTES);
+		scheduler.scheduleWithFixedDelay(this, initialDelay, delay, timeUnit);
 	}
-
+	
 	private void addPathToWatch(final Path configFile, final Class<? extends Config> configClass) throws IOException {
 		if (!Files.exists(configFile)) {
 			return;
 		}
 		watched_configurations.add(
-				new ConfigurationResource(configFile, configClass, Files.getLastModifiedTime(configFile).toMillis())
+				new ConfigurationResource(configFile, configClass, 0)
 		);
 	}
 

@@ -59,9 +59,9 @@ public class Configuration {
 
 	public void reload(Class<? extends Config> configClass) {
 		try {
-			var env = get(ServerConfiguration.class).serverProperties().env();
 			log.debug("reload config + " + configClass.getSimpleName());
 			if (configClass.equals(SiteConfiguration.class)) {
+				var env = get(ServerConfiguration.class).serverProperties().env();
 				new SiteConfigurationLoader(hostBase, env).reload((SiteConfiguration)configs.get(configClass));
 			} else if (configClass.equals(TaxonomyConfiguration.class)) {
 				new TaxonomyConfigurationLoader(hostBase).reload((TaxonomyConfiguration)configs.get(configClass));

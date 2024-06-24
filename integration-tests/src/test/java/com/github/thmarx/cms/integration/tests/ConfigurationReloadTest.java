@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.filesystem;
+package com.github.thmarx.cms.integration.tests;
 
 /*-
  * #%L
- * cms-filesystem
+ * integration-tests
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,7 +21,11 @@ package com.github.thmarx.cms.filesystem;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.eventbus.EventBus;
+import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,16 +40,21 @@ import org.yaml.snakeyaml.Yaml;
  *
  * @author t.marx
  */
-public class FileSystemTest {
-
+public class ConfigurationReloadTest {
+	
 	static FileSystem fileSystem;
+	
+	static Configuration configuration;
 	
 	@BeforeAll
 	static void setup() throws IOException {
 		
+		Files.deleteIfExists(Path.of("reload/config/taxonomy.yaml"));
+		Files.deleteIfExists(Path.of("reload/config/taxonomy.tags.yaml"));
+		
 		var eventBus = Mockito.mock(EventBus.class);
 		
-		fileSystem = new FileSystem(Path.of("src/test/resources"), eventBus, (file) -> {
+		fileSystem = new FileSystem(Path.of("reload/"), eventBus, (file) -> {
 			try {
 				return new Yaml().load(Files.readString(file));
 			} catch (Exception e) {
@@ -53,36 +62,33 @@ public class FileSystemTest {
 			}
 		});
 		fileSystem.init();
+		
+		configuration = new Configuration(fileSystem.base());
 	}
 	
 	@AfterAll
 	static void shutdown () {
 		fileSystem.shutdown();
 	}
-
+	
 	@Test
-	public void test_seconday_index() throws IOException {
-
-//		var dimension = fileSystem.createDimension("featured", (ContentNode node) -> node.data().containsKey("featured") ? (Boolean) node.data().get("featured") : false, Boolean.class);
-
-//		Assertions.assertThat(dimension.filter(Boolean.TRUE)).hasSize(2);
-//		Assertions.assertThat(dimension.filter(Boolean.FALSE)).hasSize(1);
-	}
-
-	@Test
-	public void test_query() throws IOException {
-
-		var nodes = fileSystem.query((node, i) -> node).where("featured", true).get();
+	void test_taxonomy () throws IOException {
 		
-		Assertions.assertThat(nodes).hasSize(2);
-	}
-
-	@Test
-	public void test_query_with_start_uri() throws IOException {
-
-		var nodes = fileSystem.query("/test", (node, i) -> node).where("featured", true).get();
+		TaxonomyConfiguration config = configuration.get(TaxonomyConfiguration.class);
 		
-		Assertions.assertThat(nodes).hasSize(1);
-		Assertions.assertThat(nodes.getFirst().uri()).isEqualTo("test/test1.md");
+		Assertions.assertThat(config.getTaxonomies()).isEmpty();
+		
+		Files.copy(
+				Path.of("reload/taxonomies/taxonomy.yaml"), 
+				Path.of("reload/config/taxonomy.yaml")
+		);
+		Files.copy(
+				Path.of("reload/taxonomies/taxonomy.tags.yaml"), 
+				Path.of("reload/config/taxonomy.tags.yaml")
+		);
+		
+		configuration.reload(TaxonomyConfiguration.class);
+		
+		Assertions.assertThat(config.getTaxonomies()).isNotEmpty();
 	}
 }
