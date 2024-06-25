@@ -45,6 +45,8 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.media.MediaManager;
+import com.github.thmarx.cms.media.SiteMediaManager;
+import com.github.thmarx.cms.media.ThemeMediaManager;
 import com.github.thmarx.cms.module.DefaultRenderContentFunction;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
@@ -133,9 +135,11 @@ public class VHost {
 			injector.getInstance(ConfigurationManagement.class).reload();
 			
 			var theme = this.injector.getInstance(Theme.class);
+			
+			this.injector.getInstance(SiteMediaManager.class).reloadTheme(theme);
+			
 		
-			var themeAssetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("theme")));
-			themeAssetsMediaManager.reloadTheme(theme);
+			this.injector.getInstance(ThemeMediaManager.class).reloadTheme(theme);;
 			
 			ResourceHandler themeAssetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));
 			themeAssetsHandler.stop();
@@ -244,7 +248,7 @@ public class VHost {
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
 
-		var assetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("site")));
+		var assetsMediaManager = this.injector.getInstance(SiteMediaManager.class);
 		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, assetsMediaManager);
 		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
@@ -299,7 +303,7 @@ public class VHost {
 	}
 
 	private ContextHandler themeContextHandler() {
-		final MediaManager themeAssetsMediaManager = this.injector.getInstance(Key.get(MediaManager.class, Names.named("theme")));
+		final MediaManager themeAssetsMediaManager = this.injector.getInstance(ThemeMediaManager.class);
 		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, themeAssetsMediaManager);
 		JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("theme")));
 		ResourceHandler assetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));

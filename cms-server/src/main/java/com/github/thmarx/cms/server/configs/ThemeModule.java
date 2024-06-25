@@ -27,7 +27,7 @@ import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.cms.media.MediaManager;
+import com.github.thmarx.cms.media.ThemeMediaManager;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
 import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
 import com.google.inject.AbstractModule;
@@ -48,9 +48,8 @@ public class ThemeModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	@Named("theme")
-	public MediaManager themeMediaManager (Theme theme, Configuration configuration, DB db, EventBus eventBus) throws IOException {
-		var mediaManager =  new MediaManager(db.getFileSystem().resolve("temp"), theme, configuration);
+	public ThemeMediaManager themeMediaManager (Theme theme, Configuration configuration, DB db, EventBus eventBus) throws IOException {
+		var mediaManager =  new ThemeMediaManager(db.getFileSystem().resolve("temp"), theme, configuration);
 		eventBus.register(SitePropertiesChanged.class, mediaManager);
 		return mediaManager;
 	}
@@ -58,7 +57,7 @@ public class ThemeModule extends AbstractModule {
 	@Provides
 	@Singleton
 	@Named("theme")
-	public JettyMediaHandler themeMediaHandler(@Named("theme") MediaManager mediaManager) throws IOException {
+	public JettyMediaHandler themeMediaHandler(ThemeMediaManager mediaManager) throws IOException {
 		return new JettyMediaHandler(mediaManager);
 	}
 

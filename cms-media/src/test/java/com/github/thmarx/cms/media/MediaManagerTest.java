@@ -49,7 +49,7 @@ public class MediaManagerTest {
 		var serverConfig = new ServerConfiguration(new ServerProperties(Map.of()));
 		config.add(ServerConfiguration.class, serverConfig);
 		
-		mediaManager = new MediaManager(
+		mediaManager = new SiteMediaManager(
 				Path.of("src/test/resources/assets"), 
 				Path.of("target/"), 
 				new TestTheme(new ThemeProperties(PropertiesLoader.rawProperties(Path.of("src/test/resources/theme.yaml")))), 

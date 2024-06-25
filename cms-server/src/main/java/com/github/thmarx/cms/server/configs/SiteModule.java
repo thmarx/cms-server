@@ -51,7 +51,7 @@ import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.template.functions.taxonomy.TaxonomyFunction;
 import com.github.thmarx.cms.media.FileMediaService;
-import com.github.thmarx.cms.media.MediaManager;
+import com.github.thmarx.cms.media.SiteMediaManager;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.theme.DefaultTheme;
 import com.github.thmarx.modules.api.ModuleManager;
@@ -187,9 +187,8 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	@Named("site")
-	public MediaManager siteMediaManager(DB db, @Named("assets") Path assetBase, Theme theme, Configuration configuration, EventBus eventbus) throws IOException {
-		var mediaManager = new MediaManager(assetBase, db.getFileSystem().resolve("temp"), theme, configuration);
+	public SiteMediaManager siteMediaManager(DB db, @Named("assets") Path assetBase, Theme theme, Configuration configuration, EventBus eventbus) throws IOException {
+		var mediaManager = new SiteMediaManager(assetBase, db.getFileSystem().resolve("temp"), theme, configuration);
 		eventbus.register(SitePropertiesChanged.class, mediaManager);
 		return mediaManager;
 	}

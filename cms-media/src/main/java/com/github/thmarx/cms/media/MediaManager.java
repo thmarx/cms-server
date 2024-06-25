@@ -36,7 +36,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Position;
@@ -47,34 +46,19 @@ import net.coobird.thumbnailator.geometry.Positions;
  * @author t.marx
  */
 @Slf4j
-public class MediaManager implements EventListener<SitePropertiesChanged> {
+public abstract class MediaManager implements EventListener<SitePropertiesChanged> {
 
-	private Path assetBase;
-	private Path tempFolder;
-	private Theme theme;
-	private Configuration configuration;
+	protected Path assetBase;
+	protected Path tempFolder;
+	protected Theme theme;
+	protected Configuration configuration;
 
-	private Map<String, MediaFormat> mediaFormats;
-	private Path tempDirectory;
-
-	public MediaManager(Path assetBase, Path tempFolder, Theme theme, Configuration configuration) {
-		this.assetBase = assetBase;
-		this.tempFolder = tempFolder;
-		this.theme = theme;
-		this.configuration = configuration;
-	}
+	protected Map<String, MediaFormat> mediaFormats;
+	protected Path tempDirectory;
 	
-	public MediaManager(Path tempFolder, Theme theme, Configuration configuration) {
-		this(theme.assetsPath(), tempFolder, theme, configuration);
-	}
 	
-	public void reloadTheme (Theme updateTheme) {
-		this.assetBase = updateTheme.assetsPath();
-		this.theme = updateTheme;
-		if (mediaFormats != null) {
-			mediaFormats.clear();
-		}
-	}
+	
+	public abstract void reloadTheme (Theme updateTheme);
 	
 	
 	public Path resolve (String uri) {

@@ -24,7 +24,7 @@ package com.github.thmarx.cms.server.configs;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.cms.media.MediaManager;
+import com.github.thmarx.cms.media.SiteMediaManager;
 import com.github.thmarx.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
 import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
@@ -79,7 +79,7 @@ public class SiteHandlerModule extends AbstractModule {
 	@Provides
 	@Singleton
 	@Named("site")
-	public JettyMediaHandler mediaHandler(@Named("site") MediaManager mediaManager) throws IOException {
+	public JettyMediaHandler mediaHandler(SiteMediaManager mediaManager) throws IOException {
 		return new JettyMediaHandler(mediaManager);
 	}
 
