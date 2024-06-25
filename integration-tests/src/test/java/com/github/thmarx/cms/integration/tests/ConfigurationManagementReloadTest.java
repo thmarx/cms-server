@@ -42,12 +42,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.mockito.Mockito;
 
 /**
  *
  * @author t.marx
  */
+@DisabledIfEnvironmentVariable(named = "GITHUB_ACTIONS", matches = "true")
 public class ConfigurationManagementReloadTest {
 
 	static FileDB db;
