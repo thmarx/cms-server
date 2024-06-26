@@ -23,7 +23,6 @@ package com.github.thmarx.cms.extensions;
  */
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.github.thmarx.cms.api.theme.Theme;

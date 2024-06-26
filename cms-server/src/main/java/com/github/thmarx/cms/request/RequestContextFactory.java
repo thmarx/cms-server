@@ -47,16 +47,19 @@ import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
+import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.cms.extensions.hooks.ServerHooks;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Injector;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.Request;
 
@@ -71,14 +74,14 @@ public class RequestContextFactory {
 
 	public RequestContext create(
 			Request request) throws IOException {
-		
+
 //		var uri = request.getHttpURI().getPath();
 		var uri = RequestUtil.getContentPath(request);
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
-		
+
 		return create(uri, queryParameters);
 	}
-	
+
 	public RequestContext create(
 			String uri, Map<String, List<String>> queryParameters) throws IOException {
 
@@ -88,7 +91,7 @@ public class RequestContextFactory {
 		var extensionManager = injector.getInstance(ExtensionManager.class);
 		var siteProperties = injector.getInstance(SiteProperties.class);
 		var siteMediaService = injector.getInstance(MediaService.class);
-		
+
 		var requestContext = new RequestContext();
 		requestContext.add(InjectorFeature.class, new InjectorFeature(injector));
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
@@ -106,34 +109,37 @@ public class RequestContextFactory {
 		requestContext.add(ConfigurationFeature.class, new ConfigurationFeature(injector.getInstance(Configuration.class)));
 		requestContext.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(
 				injector.getInstance(Configuration.class)
-				.get(ServerConfiguration.class).serverProperties()
+						.get(ServerConfiguration.class).serverProperties()
 		));
 		requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 		requestContext.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
-		
+
 		RequestExtensions requestExtensions = extensionManager.newContext(theme, requestContext);
+		requestContext.add(ServerHooks.class, new ServerHooks(requestContext));
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer,
-				createShortCodes(requestExtensions),
+				createShortCodes(requestExtensions, requestContext),
 				theme);
 		requestContext.add(RenderContext.class, renderContext);
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(renderContext.markdownRenderer()));
 
-		
 		requestContext.add(RequestExtensions.class, requestExtensions);
 		
 
 		return requestContext;
 	}
-	
-	private ShortCodes createShortCodes (RequestExtensions requestExtensions) {
+
+	private ShortCodes createShortCodes(RequestExtensions requestExtensions, RequestContext requestContext) {
 		var codes = requestExtensions.getShortCodes();
-		
+
 		injector.getInstance(ModuleManager.class).extensions(RegisterShortCodesExtensionPoint.class)
 				.forEach(extension -> codes.putAll(extension.shortCodes()));
+
+		var wrapper = requestContext.get(ServerHooks.class).getShortCodes(codes);
 		
-		return new ShortCodes(codes);
+		return new ShortCodes(wrapper.getShortCodes());
 	}
 
+	
 }

@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
 import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.github.thmarx.cms.extensions.http.JettyHttpHandlerWrapper;
+import com.github.thmarx.cms.extensions.hooks.ServerHooks;
 import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,15 @@ public class JettyExtensionRouteHandler extends Handler.Abstract {
 
 		String extension = getExtensionName(request);
 		var method = request.getMethod();
-		Optional<HttpHandlerExtension> findHttpHandler = requestContext.get(RequestExtensions.class).findHttpRouteHandler(method, extension);
+		
+		var httpExtensions = requestContext.get(ServerHooks.class).getHttpRoutes();
+		Optional<HttpHandlerExtension> findHttpHandler = httpExtensions.findHttpHandler(method, extension);
+		
+		if (findHttpHandler.isPresent()) {
+			return new JettyHttpHandlerWrapper(findHttpHandler.get().handler()).handle(request, response, callback);
+		}
+		
+		findHttpHandler = requestContext.get(RequestExtensions.class).findHttpRouteHandler(method, extension);
 		if (findHttpHandler.isPresent()) {
 			return new JettyHttpHandlerWrapper(findHttpHandler.get().handler()).handle(request, response, callback);
 

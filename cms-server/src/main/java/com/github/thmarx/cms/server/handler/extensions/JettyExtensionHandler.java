@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
 import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.github.thmarx.cms.extensions.http.JettyHttpHandlerWrapper;
+import com.github.thmarx.cms.extensions.hooks.ServerHooks;
 import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ import org.eclipse.jetty.util.Callback;
 @RequiredArgsConstructor
 @Slf4j
 public class JettyExtensionHandler extends Handler.Abstract {
-	
+
 	public static final String PATH = "extension";
 
 	@Override
@@ -50,25 +51,36 @@ public class JettyExtensionHandler extends Handler.Abstract {
 
 		String extension = getExtensionName(request);
 		var method = request.getMethod();
-		Optional<HttpHandlerExtension> findHttpHandler = requestContext.get(RequestExtensions.class).findHttpHandler(method, extension);
-		if (findHttpHandler.isEmpty()) {
-			response.setStatus(404);
-			callback.succeeded();
-			return false;
+		
+		var httpExtensions = requestContext.get(ServerHooks.class).getHttpExtensions();
+		
+		Optional<HttpHandlerExtension> findHttpHandler = httpExtensions.findHttpHandler(method, extension);
+		
+		if (findHttpHandler.isPresent()) {
+			return new JettyHttpHandlerWrapper(findHttpHandler.get().handler()).handle(request, response, callback);
 		}
-		return new JettyHttpHandlerWrapper(findHttpHandler.get().handler()).handle(request, response, callback);
-
+		
+		findHttpHandler = requestContext.get(RequestExtensions.class).findHttpHandler(method, extension);
+		
+		if (findHttpHandler.isPresent()) {
+			return new JettyHttpHandlerWrapper(findHttpHandler.get().handler()).handle(request, response, callback);
+		}
+		
+		// no extension found
+		response.setStatus(404);
+		callback.succeeded();
+		return false;
 	}
 
 	private String getExtensionName(Request request) {
 		var path = request.getHttpURI().getPath();
 		var contextPath = request.getContext().getContextPath();
-		
+
 		if (!contextPath.endsWith("/")) {
 			contextPath += "/";
 		}
 		contextPath = contextPath + PATH + "/";
-		
+
 		path = path.replace(contextPath, "");
 		if (!path.startsWith("/")) {
 			path = "/" + path;

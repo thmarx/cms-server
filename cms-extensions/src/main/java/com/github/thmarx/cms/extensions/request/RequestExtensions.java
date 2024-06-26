@@ -68,18 +68,19 @@ public class RequestExtensions implements AutoCloseable, Feature {
 		queryOperations.put(operation, predicate);
 	}
 	
+	@Deprecated
 	public void registerHttpExtension(final String method, final String path, final ExtensionHttpHandler handler) {
 		httpHandlerExtensions.add(new HttpHandlerExtension(method, path, handler));
 	}
-	
+	@Deprecated
 	public Optional<HttpHandlerExtension> findHttpHandler (final String method, final String path) {
 		return httpHandlerExtensions.stream().filter(handler -> handler.method().equalsIgnoreCase(method) && handler.path().equalsIgnoreCase(path)).findFirst();
 	}
-	
+	@Deprecated
 	public void registerHttpRouteExtension(final String method, final String path, final ExtensionHttpHandler handler) {
 		httpRouteHandlerExtensions.add(new HttpHandlerExtension(method, path, handler));
 	}
-	
+	@Deprecated
 	public Optional<HttpHandlerExtension> findHttpRouteHandler (final String method, final String path) {
 		return httpRouteHandlerExtensions.stream().filter(handler -> handler.method().equalsIgnoreCase(method) && handler.path().equalsIgnoreCase(path)).findFirst();
 	}
@@ -91,7 +92,7 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	public void registerTemplateFunction(final String path, final Function<?, ?> function) {
 		registerTemplateFunctions.add(new TemplateFunctionExtension(path, function));
 	}
-	
+	@Deprecated
 	public void registerShortCode(final String shortCode, final Function<Parameter, String> function) {
 		shortCodes.put(shortCode, function);
 	}

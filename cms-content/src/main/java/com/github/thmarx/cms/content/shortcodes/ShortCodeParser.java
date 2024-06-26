@@ -29,7 +29,9 @@ import java.util.regex.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ShortCodeParser {
 
 	 private static final String SHORTCODE_REGEX = "\\[\\[(\\w+)([^\\]]*)\\]\\](.*?)\\[\\[\\/\\1\\]\\]|\\[\\[(\\w+)([^\\]]*)\\/\\]\\]";
@@ -76,7 +78,11 @@ public class ShortCodeParser {
 			
 			newContent += content.substring(lastPosition, match.getStart());
 			
-			newContent += codes.get(match.getName()).apply(match.getParameters());
+			try {
+				newContent += codes.get(match.getName()).apply(match.getParameters());
+			} catch (Exception e) {
+				log.error("error executing shortcode", e);
+			}
 			
 			lastPosition = match.getEnd();
 		}

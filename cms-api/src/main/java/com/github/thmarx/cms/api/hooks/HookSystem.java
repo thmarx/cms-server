@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,7 +73,7 @@ public class HookSystem {
 					try {
 						return action.function().apply(context);
 					} catch (Exception e) {
-						log.error("error executing action");
+						log.error("error executing action", e);
 					}
 					return null;
 				})
@@ -106,7 +105,7 @@ public class HookSystem {
 						returnContext.values().clear();
 						returnContext.values().addAll((List<T>)result);
 					} catch (Exception e) {
-						log.error("error on filter");
+						log.error("error on filter", e);
 					}
 				});
 

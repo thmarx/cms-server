@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.content.shortcodes;
+package com.github.thmarx.cms.extensions.hooks;
 
 /*-
  * #%L
  * cms-server
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,25 +25,28 @@ package com.github.thmarx.cms.content.shortcodes;
 import com.github.thmarx.cms.api.model.Parameter;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
-@Slf4j
 @RequiredArgsConstructor
-public class ShortCodes {
+public class ShortCodesWrapper {
 
-	private final ShortCodeParser.Codes codes;
+	@Getter
+	private final Map<String, Function<Parameter, String>> shortCodes;
 
-	public ShortCodes (Map<String, Function<Parameter, String>> codes) {
-		this.codes = new ShortCodeParser.Codes();
-		this.codes.addAll(codes);
+	public void put(final String shortCode, final Function<Parameter, String> function) {
+		shortCodes.put(shortCode, function);
 	}
-	
-	public String replace (final String content) {
-		return ShortCodeParser.replace(content, codes);
+
+	public boolean contains(final String shortCode) {
+		return shortCodes.containsKey(shortCode);
+	}
+
+	public void remove(final String shortCode) {
+		shortCodes.remove(shortCode);
 	}
 }
