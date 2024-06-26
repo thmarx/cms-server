@@ -48,6 +48,7 @@ import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.template.functions.LinkFunction;
 import com.github.thmarx.cms.content.views.model.View;
+import com.github.thmarx.cms.extensions.hooks.DBHooks;
 import com.github.thmarx.cms.extensions.hooks.TemplateHooks;
 import com.github.thmarx.cms.template.functions.query.QueryFunction;
 import com.github.thmarx.cms.template.functions.taxonomy.TaxonomyFunction;
@@ -215,6 +216,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 		Map<String, BiPredicate<Object, Object>> customOperators = new HashMap<>();
 
 		customOperators.putAll(context.get(RequestExtensions.class).getQueryOperations());
+		customOperators.putAll( context.get(DBHooks.class).getQueryOperations().getOperations() );
 
 		moduleManager
 				.extensions(ContentQueryOperatorExtensionPoint.class)
