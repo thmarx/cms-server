@@ -25,8 +25,10 @@ package com.github.thmarx.cms.extensions.hooks;
 import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.api.request.RequestContext;
 import java.util.Map;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -35,24 +37,15 @@ import lombok.RequiredArgsConstructor;
  */
 @Experimental
 @RequiredArgsConstructor
-public class TemplateHooks implements Feature {
+public class ContentHooks implements Feature {
 	
 	private final RequestContext requestContext;
 	
-	
-	public TemplateSupplierWrapper getTemplateSupplier () {
-		var templateSupplier = new TemplateSupplierWrapper();
+	public ShortCodesWrapper getShortCodes (Map<String, Function<Parameter, String>> codes) {
+		var codeWrapper = new ShortCodesWrapper(codes);
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("template/supplier/add", Map.of("suppliers", templateSupplier));
+				.execute("content/shortcodes/filter", Map.of("shortCodes", codeWrapper));
 		
-		return templateSupplier;
-	}
-	
-	public TemplateFunctionWrapper getTemplateFunctions () {
-		var templateFunctions = new TemplateFunctionWrapper();
-		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("template/function/add", Map.of("functions", templateFunctions));
-		
-		return templateFunctions;
+		return codeWrapper;
 	}
 }

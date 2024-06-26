@@ -25,10 +25,8 @@ package com.github.thmarx.cms.extensions.hooks;
 import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
-import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.api.request.RequestContext;
 import java.util.Map;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -45,7 +43,7 @@ public class ServerHooks implements Feature {
 	public HttpHandlerWrapper getHttpExtensions () {
 		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("http/extension/register", Map.of("httpExtensions", httpExtensions));
+				.execute("server/http/extension/add", Map.of("httpExtensions", httpExtensions));
 		
 		return httpExtensions;
 	}
@@ -53,16 +51,8 @@ public class ServerHooks implements Feature {
 	public HttpHandlerWrapper getHttpRoutes () {
 		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("http/route/register", Map.of("httpRoutes", httpExtensions));
+				.execute("server/http/route/add", Map.of("httpRoutes", httpExtensions));
 		
 		return httpExtensions;
-	}
-	
-	public ShortCodesWrapper getShortCodes (Map<String, Function<Parameter, String>> codes) {
-		var codeWrapper = new ShortCodesWrapper(codes);
-		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("content/shortcodes/filter", Map.of("shortCodes", codeWrapper));
-		
-		return codeWrapper;
 	}
 }

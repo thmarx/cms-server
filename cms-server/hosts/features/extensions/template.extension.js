@@ -7,7 +7,7 @@ $template.registerTemplateSupplier(
 	() => "Thorsten"
 )
  */
-$hooks.registerAction("template/supplier/register", (context) => {
+$hooks.registerAction("template/supplier/add", (context) => {
 	context.arguments().get("suppliers").add(
 			"myName",
 			() => "My name is Thorsten"
@@ -21,7 +21,7 @@ $template.registerTemplateFunction(
 	(name) => "Hello " + name + "!"
 )
  */
-$hooks.registerAction("template/function/register", (context) => {
+$hooks.registerAction("template/function/add", (context) => {
 	context.arguments().get("functions").add(
 			"getHello",
 		(name) => "Hello " + name + "!!"

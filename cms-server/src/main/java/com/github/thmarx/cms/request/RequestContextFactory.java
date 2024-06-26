@@ -47,12 +47,12 @@ import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.SiteMediaServiceFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
-import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.cms.extensions.hooks.ContentHooks;
 import com.github.thmarx.cms.extensions.hooks.DBHooks;
 import com.github.thmarx.cms.extensions.hooks.ServerHooks;
 import com.github.thmarx.cms.extensions.hooks.TemplateHooks;
@@ -61,7 +61,6 @@ import com.google.inject.Injector;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.Request;
 
@@ -120,6 +119,7 @@ public class RequestContextFactory {
 		requestContext.add(ServerHooks.class, new ServerHooks(requestContext));
 		requestContext.add(TemplateHooks.class, new TemplateHooks(requestContext));
 		requestContext.add(DBHooks.class, new DBHooks(requestContext));
+		requestContext.add(ContentHooks.class, new ContentHooks(requestContext));
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer,
@@ -140,7 +140,7 @@ public class RequestContextFactory {
 		injector.getInstance(ModuleManager.class).extensions(RegisterShortCodesExtensionPoint.class)
 				.forEach(extension -> codes.putAll(extension.shortCodes()));
 
-		var wrapper = requestContext.get(ServerHooks.class).getShortCodes(codes);
+		var wrapper = requestContext.get(ContentHooks.class).getShortCodes(codes);
 		
 		return new ShortCodes(wrapper.getShortCodes());
 	}
