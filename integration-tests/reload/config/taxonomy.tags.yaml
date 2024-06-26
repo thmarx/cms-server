@@ -1,0 +1,9 @@
+## YAML Template.
+---
+values:
+    - id: blue
+      title: Blau
+    - id: red
+      title: Rot
+    - id: orange
+      title: Orange

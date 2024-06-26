@@ -161,12 +161,13 @@ public abstract class MediaManager implements EventListener<SitePropertiesChange
 	private Map<String, MediaFormat> getMediaFormats() {
 
 		if (mediaFormats == null) {
-			mediaFormats = new HashMap<>();
+			Map<String, MediaFormat> tempFormats = new HashMap<>();
 
 			if (!theme.empty()) {
-				mediaFormats.putAll(theme.properties().getMediaFormats());
+				tempFormats.putAll(theme.properties().getMediaFormats());
 			}
-			mediaFormats.putAll(configuration.get(SiteConfiguration.class).siteProperties().getMediaFormats());
+			tempFormats.putAll(configuration.get(SiteConfiguration.class).siteProperties().getMediaFormats());
+			mediaFormats = tempFormats;
 		}
 
 		return mediaFormats;

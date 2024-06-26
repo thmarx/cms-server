@@ -48,6 +48,7 @@ import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.template.functions.LinkFunction;
 import com.github.thmarx.cms.content.views.model.View;
+import com.github.thmarx.cms.extensions.hooks.TemplateHooks;
 import com.github.thmarx.cms.template.functions.query.QueryFunction;
 import com.github.thmarx.cms.template.functions.taxonomy.TaxonomyFunction;
 import com.github.thmarx.cms.extensions.request.RequestExtensions;
@@ -189,6 +190,13 @@ public class DefaultContentRenderer implements ContentRenderer {
 			model.values.put("USERNAME", context.get(AuthFeature.class).username());
 		}
 
+		context.get(TemplateHooks.class).getTemplateSupplier().getRegisterTemplateSupplier().forEach(service -> {
+			model.values.put(service.name(), service.supplier());
+		});
+		context.get(TemplateHooks.class).getTemplateFunctions().getRegisterTemplateFunctions().forEach(service -> {
+			model.values.put(service.name(), service.function());
+		});
+		
 		context.get(RequestExtensions.class).getRegisterTemplateSupplier().forEach(service -> {
 			model.values.put(service.name(), service.supplier());
 		});

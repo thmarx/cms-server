@@ -84,11 +84,11 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	public Optional<HttpHandlerExtension> findHttpRouteHandler (final String method, final String path) {
 		return httpRouteHandlerExtensions.stream().filter(handler -> handler.method().equalsIgnoreCase(method) && handler.path().equalsIgnoreCase(path)).findFirst();
 	}
-	
+	@Deprecated
 	public void registerTemplateSupplier(final String path, final Supplier<?> supplier) {
 		registerTemplateSupplier.add(new TemplateSupplierExtension(path, supplier));
 	}
-
+	@Deprecated
 	public void registerTemplateFunction(final String path, final Function<?, ?> function) {
 		registerTemplateFunctions.add(new TemplateFunctionExtension(path, function));
 	}

@@ -1,7 +1,6 @@
 import { UTF_8 } from 'system/charsets.mjs';
 import { $http } from 'system/http.mjs';
 import { $routes } from 'system/routes.mjs';
-import { $template } from 'system/template.mjs';
 import { getLogger } from 'system/logging.mjs';
 
 const logger = getLogger("extensions");
@@ -21,13 +20,3 @@ $routes.get("/hello-extension", (request, response) => {
 	response.addHeader("Content-Type", "text/html; charset=utf-8")
 	response.write("extension route", UTF_8)
 })
-
-$template.registerTemplateSupplier(
-	"myName",
-	() => "Thorsten"
-)
-
-$template.registerTemplateFunction(
-	"getHello",
-	(name) => "Hello " + name + "!"
-)

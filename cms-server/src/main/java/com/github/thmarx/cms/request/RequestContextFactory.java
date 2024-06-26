@@ -54,6 +54,7 @@ import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;
 import com.github.thmarx.cms.extensions.hooks.ServerHooks;
+import com.github.thmarx.cms.extensions.hooks.TemplateHooks;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Injector;
 import java.io.IOException;
@@ -116,6 +117,7 @@ public class RequestContextFactory {
 
 		RequestExtensions requestExtensions = extensionManager.newContext(theme, requestContext);
 		requestContext.add(ServerHooks.class, new ServerHooks(requestContext));
+		requestContext.add(TemplateHooks.class, new TemplateHooks(requestContext));
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer,

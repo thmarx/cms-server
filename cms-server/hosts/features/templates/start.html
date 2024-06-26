@@ -69,6 +69,20 @@
 		</th:block>
 	</div>
 
+	<div class="container">
+		<h2>
+			template extension
+		</h2>
+		<div th:with="name = ${myName.get()}">
+			<p th:text="${name}"></p>
+			<!-- Thorsten -->
+		</div>
+		<div th:with="hello = ${getHello.apply('Thorsten')}">
+			<p th:text="${hello}"></p>
+			<!-- Hello Thorsten -->
+		</div>
+	</div>
+
 	<th:block th:replace="libs/fragments.html :: footer"></th:block>
 
 </body>
