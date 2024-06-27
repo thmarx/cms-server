@@ -8,6 +8,15 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 ## 5.0.0
 
+* **FEATURE** Correction for the shortcode syntax [#216](https://github.com/thmarx/cms/issues/216)
+	The comma to separate the parameters is not needed anymore.
+* **FEATURE** Markdown support for multiline list items [#215](https://github.com/thmarx/cms/issues/215)
+* **FEATURE** New taxonomies added at runtime are reloaded when using the cli comman *host reload* [#213](https://github.com/thmarx/cms/issues/213)
+* **FEATURE** introduce more hooks [#218](https://github.com/thmarx/cms/issues/218)
+
+
+## 5.0.0
+
 * **BREAKING CHANGE** Introduce module registry [#205](https://github.com/thmarx/cms/issues/205)
 * **BREAKING CHANGE** Reload host cli command [#209](https://github.com/thmarx/cms/issues/209)
 * **FEATURE** Extension management [#9](https://github.com/thmarx/cms/issues/9)
@@ -17,7 +26,6 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 ### Highlights
 
 The new cli commands to manage extension, module and themes
-
 
 
 ### Migration
