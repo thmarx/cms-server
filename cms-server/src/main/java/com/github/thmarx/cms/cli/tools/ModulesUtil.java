@@ -21,7 +21,6 @@ package com.github.thmarx.cms.cli.tools;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.cli.commands.modules.AbstractModuleCommand;
 import java.io.IOException;
@@ -39,49 +38,57 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ModulesUtil {
 
-	public static boolean allInstalled (Set<String> modules) {
+	public static boolean allInstalled(Set<String> modules) {
 		return modules.stream().allMatch(AbstractModuleCommand::isInstalled);
 	}
-	
-	public static Set<String> filterUnInstalled (Set<String> modules) {
+
+	public static Set<String> filterUnInstalled(Set<String> modules) {
 		return modules.stream().filter(module -> !AbstractModuleCommand.isInstalled(module)).collect(Collectors.toSet());
 	}
-	
-	public static Set<String> getRequiredModules () {
+
+	public static Set<String> getRequiredModules() {
 		Set<String> requiredModules = new HashSet<>();
 		try {
-			Files.list(Path.of("hosts/"))
-					.filter(ModulesUtil::isHost)
-					.map(host -> host.resolve("site.yaml"))
-					.forEach(site -> {
-						try {
-							var hostProperties = PropertiesLoader.hostProperties(site);
-							requiredModules.addAll(hostProperties.activeModules());
-						} catch (IOException ex) {
-							log.error("", ex);
-						}
-					});
-			Files.list(Path.of("themes/"))
-					.filter(ModulesUtil::isTheme)
-					.map(host -> host.resolve("theme.yaml"))
-					.forEach(site -> {
-						try {
-							var hostProperties = PropertiesLoader.themeProperties(site);
-							requiredModules.addAll(hostProperties.activeModules());
-						} catch (IOException ex) {
-							log.error("", ex);
-						}
-					});
+
+			var hosts = Path.of("hosts/");
+			var themes = Path.of("themes/");
+			if (Files.exists(hosts)) {
+				Files.list(hosts)
+						.filter(ModulesUtil::isHost)
+						.map(host -> host.resolve("site.yaml"))
+						.forEach(site -> {
+							try {
+								var hostProperties = PropertiesLoader.hostProperties(site);
+								requiredModules.addAll(hostProperties.activeModules());
+							} catch (IOException ex) {
+								log.error("", ex);
+							}
+						});
+			}
+			if (Files.exists(themes)) {
+				Files.list(themes)
+						.filter(ModulesUtil::isTheme)
+						.map(host -> host.resolve("theme.yaml"))
+						.forEach(site -> {
+							try {
+								var hostProperties = PropertiesLoader.themeProperties(site);
+								requiredModules.addAll(hostProperties.activeModules());
+							} catch (IOException ex) {
+								log.error("", ex);
+							}
+						});
+			}
 		} catch (IOException ex) {
 			log.error("", ex);
 		}
-		
+
 		return requiredModules;
 	}
-	
+
 	public static boolean isHost(Path host) {
 		return Files.exists(host.resolve("site.yaml"));
 	}
+
 	public static boolean isTheme(Path host) {
 		return Files.exists(host.resolve("theme.yaml"));
 	}
