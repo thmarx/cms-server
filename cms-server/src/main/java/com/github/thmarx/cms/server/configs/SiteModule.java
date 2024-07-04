@@ -173,7 +173,7 @@ public class SiteModule extends AbstractModule {
 				throw new RuntimeException(ioe);
 			}
 		}, configuration);
-		if (site.peristentIndex()) {
+		if ("PERSISTENT".equals(site.queryIndexMode())) {
 			db.init(MetaData.Type.PERSISTENT);
 		} else {
 			db.init();

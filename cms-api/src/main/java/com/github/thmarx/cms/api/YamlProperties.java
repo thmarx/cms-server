@@ -56,6 +56,9 @@ public class YamlProperties {
 	}
 
 	protected Map<String, Object> getSubMap(final String name) {
-		return (Map<String, Object>) properties.getOrDefault(name, Collections.emptyMap());
+		return getSubMap(name, properties);
+	}
+	protected Map<String, Object> getSubMap(final String name, Map<String, Object> source) {
+		return (Map<String, Object>) source.getOrDefault(name, Collections.emptyMap());
 	}
 }
