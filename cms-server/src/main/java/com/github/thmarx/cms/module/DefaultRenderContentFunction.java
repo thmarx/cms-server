@@ -46,7 +46,7 @@ public class DefaultRenderContentFunction implements RenderContentFunction {
 	@Override
 	public Optional<ContentResponse> render(String uri, Map<String, List<String>> parameters) {
 		try (
-				var requestContext = requestContextFactory.create(uri, parameters);) {
+				var requestContext = requestContextFactory.create(null, uri, parameters);) {
 			
 			return contentResolver.getContent(requestContext);
 		} catch (Exception e) {

@@ -31,8 +31,12 @@ import lombok.extern.slf4j.Slf4j;
  * @author t.marx
  */
 @Slf4j
-public record RequestFeature(String uri, Map<String, List<String>> queryParameters) implements Feature {
+public record RequestFeature(String context, String uri, Map<String, List<String>> queryParameters) implements Feature {
 
+	public RequestFeature(String uri, Map<String, List<String>> queryParameters) {
+		this(null, uri, queryParameters);
+	}
+	
 	public String getQueryParameter(String name, final String defaultValue) {
 		if (!queryParameters.containsKey(name)) {
 			return defaultValue;

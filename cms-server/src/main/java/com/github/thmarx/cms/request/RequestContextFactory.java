@@ -80,10 +80,11 @@ public class RequestContextFactory {
 		var uri = RequestUtil.getContentPath(request);
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
 
-		return create(uri, queryParameters);
+		return create(request.getContext().getContextPath(), uri, queryParameters);
 	}
 
 	public RequestContext create(
+			String context,
 			String uri, Map<String, List<String>> queryParameters) throws IOException {
 
 		var hookSystem = injector.getInstance(HookSystem.class);
@@ -96,7 +97,7 @@ public class RequestContextFactory {
 		var requestContext = new RequestContext();
 		requestContext.add(InjectorFeature.class, new InjectorFeature(injector));
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
-		requestContext.add(RequestFeature.class, new RequestFeature(uri, queryParameters));
+		requestContext.add(RequestFeature.class, new RequestFeature(context, uri, queryParameters));
 		requestContext.add(ThemeFeature.class, new ThemeFeature(theme));
 		requestContext.add(ContentParserFeature.class, new ContentParserFeature(injector.getInstance(ContentParser.class)));
 		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(injector.getInstance(ContentNodeMapper.class)));
