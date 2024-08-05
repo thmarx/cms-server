@@ -25,8 +25,11 @@ package com.github.thmarx.cms.content;
 import com.github.thmarx.cms.MockModuleManager;
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.TestTemplateEngine;
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
@@ -55,6 +58,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 	
 	static ModuleManager moduleManager = new MockModuleManager();
 	static FileDB db;
+	static Path hostBase = Path.of("hosts/test/");
 	
 	@BeforeAll
 	public static void beforeClass () throws IOException {
@@ -62,7 +66,8 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				return contentParser.parseMeta(file);
+				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -94,7 +99,9 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 						</body>
                      </html>
                      """;
-		var content = contentRenderer.render(Path.of("hosts/test/content/test.md"), TestHelper.requestContext());
+		var content = contentRenderer.render(
+				new NIOCMSFile(Path.of("hosts/test/content/test.md"), Path.of("hosts/test/"))
+				, TestHelper.requestContext());
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);
 	}
@@ -111,7 +118,9 @@ public class ContentRendererNGTest extends TemplateEngineTest {
                      	</body>
                      </html>
                      """;
-		var content = contentRenderer.render(Path.of("hosts/test/content/products/test.md"), TestHelper.requestContext());
+		var content = contentRenderer.render(
+				new NIOCMSFile(Path.of("hosts/test/content/products/test.md"), Path.of("hosts/test/"))
+				, TestHelper.requestContext());
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);
 	}

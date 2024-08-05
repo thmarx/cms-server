@@ -22,9 +22,12 @@ package com.github.thmarx.cms.content.views;
  * #L%
  */
 import com.github.thmarx.cms.TestHelper;
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.Page;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -65,10 +68,12 @@ public class ViewParserTest {
 	@BeforeAll
 	static void setup () throws IOException {
 		
+		var hostBase = Path.of("hosts/test/");
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				return parser.parseMeta(file);
+				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				return parser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -82,7 +87,7 @@ public class ViewParserTest {
 	
 	@Test
 	public void test_query () throws Exception {
-		final Path currentNode = db.getFileSystem().resolve("content/query/view.yaml");		
+		final CMSFile currentNode = db.getCMSFileSystem().resolve("content/query/view.yaml");		
 		var view = ViewParser.parse(currentNode);		
 		Assertions.assertThat(view).isNotNull();
 	
@@ -114,7 +119,7 @@ public class ViewParserTest {
 	
 	@Test
 	public void test_nodelist () throws Exception {
-		final Path currentNode = db.getFileSystem().resolve("content/view/view.yaml");		
+		final CMSFile currentNode = db.getCMSFileSystem().resolve("content/view/view.yaml");		
 		var view = ViewParser.parse(currentNode);		
 		Assertions.assertThat(view).isNotNull();
 	
@@ -141,7 +146,9 @@ public class ViewParserTest {
 
 	@Test
 	public void test() throws IOException, URISyntaxException {
-		var view = ViewParser.parse(Path.of(ViewParser.class.getResource("view-nodelist.yaml").toURI()));
+		var view = ViewParser.parse(new NIOCMSFile(
+				Path.of(ViewParser.class.getResource("view-nodelist.yaml").toURI()), 
+				Path.of("./")));
 		Assertions.assertThat(view.getTemplate()).isEqualTo("views/test.html");
 
 		Assertions.assertThat(view.getContent().getNodelist().getFrom()).isEqualTo("./");

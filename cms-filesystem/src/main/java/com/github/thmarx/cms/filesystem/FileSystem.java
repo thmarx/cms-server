@@ -34,7 +34,7 @@ import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.api.utils.PathUtil;
-import com.github.thmarx.cms.filesystem.exceptions.AccessNotAllowedException;
+import com.github.thmarx.cms.api.exceptions.AccessNotAllowedException;
 import com.github.thmarx.cms.filesystem.metadata.AbstractMetaData;
 import com.github.thmarx.cms.filesystem.metadata.persistent.PersistentMetaData;
 import java.io.IOException;
@@ -147,6 +147,10 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 		var startPath = base.resolve(start);
 		String folder = PathUtil.toRelativePath(startPath, contentBase);
 
+		return listDirectories(folder);
+	}
+	
+	public List<ContentNode> listDirectories(final String folder) {
 		List<ContentNode> nodes = new ArrayList<>();
 
 		if ("".equals(folder)) {
@@ -188,9 +192,11 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
 	public List<ContentNode> listContent(final Path base, final String start) {
 		var startPath = base.resolve(start);
-
 		String folder = PathUtil.toRelativePath(startPath, contentBase);
 
+		return listContent(folder);
+	}
+	public List<ContentNode> listContent(final String folder) {
 		if ("".equals(folder)) {
 			return metaData.listChildren("");
 		} else {
@@ -204,6 +210,10 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 		String filename = contentFile.getFileName().toString();
 		filename = filename.substring(0, filename.length() - 3);
 
+		return listSections(filename, folder);
+	}
+	
+	public List<ContentNode> listSections(final String filename, String folder) {
 		List<ContentNode> nodes = new ArrayList<>();
 
 		final Pattern isSectionOf = Constants.SECTION_OF_PATTERN.apply(filename);

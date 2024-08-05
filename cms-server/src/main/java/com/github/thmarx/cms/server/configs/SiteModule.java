@@ -30,6 +30,8 @@ import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
@@ -167,7 +169,8 @@ public class SiteModule extends AbstractModule {
 	public DB fileDb(SiteProperties site, ContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
 		var db = new FileDB(hostBase, eventBus, (file) -> {
 			try {
-				return contentParser.parseMeta(file);
+				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				return contentParser.parseMeta(cmsFile);
 			} catch (IOException ioe) {
 				log.error(null, ioe);
 				throw new RuntimeException(ioe);
@@ -226,15 +229,15 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public ContentResolver contentResolver(@Named("content") Path contentBase, ContentRenderer contentRenderer,
+	public ContentResolver contentResolver(ContentRenderer contentRenderer,
 			FileDB db) {
-		return new ContentResolver(contentBase, contentRenderer, db);
+		return new ContentResolver(contentRenderer, db);
 	}
 
 	@Provides
 	@Singleton
-	public ViewResolver viewResolver(@Named("content") Path contentBase, ContentRenderer contentRenderer,
+	public ViewResolver viewResolver(ContentRenderer contentRenderer,
 			FileDB db) {
-		return new ViewResolver(contentBase, contentRenderer, db);
+		return new ViewResolver(contentRenderer, db);
 	}
 }

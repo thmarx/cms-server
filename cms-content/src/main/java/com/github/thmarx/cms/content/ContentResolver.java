@@ -26,15 +26,13 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.google.common.base.Strings;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,8 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ContentResolver {
 
-	private final Path contentBase;
-
 	private final ContentRenderer contentRenderer;
 	
 	private final DB db;
@@ -59,15 +55,14 @@ public class ContentResolver {
 		if (uri.startsWith("/")) {
 			uri = uri.substring(1);
 		}
-		Path staticFile = contentBase.resolve(uri);
+		var contentBase = db.getCMSFileSystem().contentBase();
+		CMSFile staticFile = contentBase.resolve(uri);
 		try {
-			if (!PathUtil.isChild(contentBase, staticFile)) {
-				return Optional.empty();
-			}
-			if (Files.exists(staticFile)) {
+			if (staticFile.exists()) {
 				return Optional.ofNullable(new ContentResponse(
-						Files.readString(staticFile, StandardCharsets.UTF_8), 
-						Files.probeContentType(staticFile), null
+						staticFile.getContent(), 
+						staticFile.getContentType(), 
+						null
 				));
 			}
 		} catch (IOException ex) {
@@ -95,20 +90,20 @@ public class ContentResolver {
 			path = context.get(RequestFeature.class).uri();
 		}
 		
-
+		var contentBase = db.getCMSFileSystem().contentBase();
 		var contentPath = contentBase.resolve(path);
-		Path contentFile = null;
-		if (Files.exists(contentPath) && Files.isDirectory(contentPath)) {
+		CMSFile contentFile = null;
+		if (contentPath.exists() && contentPath.isDirectory()) {
 			// use index.md
 			var tempFile = contentPath.resolve("index.md");
-			if (Files.exists(tempFile)) {
+			if (tempFile.exists()) {
 				contentFile = tempFile;
 			} else {
 				return Optional.empty();
 			}
 		} else {
 			var temp = contentBase.resolve(path + ".md");
-			if (Files.exists(temp)) {
+			if (temp.exists()) {
 				contentFile = temp;
 			} else {
 				return Optional.empty();

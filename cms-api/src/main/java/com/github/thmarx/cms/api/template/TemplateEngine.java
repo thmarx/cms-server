@@ -23,6 +23,7 @@ package com.github.thmarx.cms.api.template;
  */
 
 import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.theme.Theme;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -45,7 +46,7 @@ public interface TemplateEngine {
 	@RequiredArgsConstructor
 	public static class Model {
 		public final Map<String, Object> values = new HashMap<>();
-		public final Path contentFile;
+		public final CMSFile contentFile;
 		public final ContentNode contentNode;
 	} 
 }

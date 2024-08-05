@@ -25,6 +25,7 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -53,10 +54,10 @@ public class ContentNodeMapper {
 	private final DB db;
 	private final ContentParser contentParser;
 
-	protected Optional<ContentParser.Content> parse(Path node) {
+	protected Optional<ContentParser.Content> parse(CMSFile node) {
 		try {
 			//Path rel = contentBase.relativize(node);
-			if (Files.isDirectory(node)) {
+			if (node.isDirectory()) {
 				node = node.resolve("index.md");
 			}
 			var md = contentParser.parse(node);
@@ -71,7 +72,7 @@ public class ContentNodeMapper {
 	public ListNode toListNode(final ContentNode node, final RequestContext context, final int excerptLength) {
 
 		var name = NodeUtil.getName(node);
-		final Path contentBase = db.getFileSystem().resolve("content/");
+		final CMSFile contentBase = db.getCMSFileSystem().contentBase();
 		var temp_path = contentBase.resolve(node.uri());
 		var url = PathUtil.toURI(temp_path, contentBase);
 		

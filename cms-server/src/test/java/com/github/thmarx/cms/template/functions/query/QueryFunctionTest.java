@@ -22,7 +22,10 @@ package com.github.thmarx.cms.template.functions.query;
  * #L%
  */
 import com.github.thmarx.cms.TestHelper;
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.content.DefaultContentParser;
@@ -46,18 +49,21 @@ public class QueryFunctionTest {
 
 	@BeforeAll
 	static void init() throws IOException {
+		var hostBase = Path.of("hosts/test/");
 		var contentParser = new DefaultContentParser();
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
-				return contentParser.parseMeta(file);
+				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		}, config);
 		db.init();
 		defaultContentParser = new DefaultContentParser();
-		query = new QueryFunction(db, Path.of("hosts/test/content/nav/index.md"), 
+		query = new QueryFunction(db, 
+				new NIOCMSFile(Path.of("hosts/test/content/nav/index.md"), hostBase), 
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 	}
 	protected static DefaultContentParser defaultContentParser;

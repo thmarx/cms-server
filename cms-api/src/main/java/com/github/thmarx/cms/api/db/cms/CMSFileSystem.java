@@ -1,13 +1,10 @@
-package com.github.thmarx.cms.api.db;
-
-import com.github.thmarx.cms.api.db.cms.CMSFileSystem;
-import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
+package com.github.thmarx.cms.api.db.cms;
 
 /*-
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,16 +23,13 @@ import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
  */
 
 /**
+ * The CMSFileSystem is a read only access abstraction to the underlying filesystem
  *
- * @author thmar
+ * @author t.marx
  */
-public interface DB extends AutoCloseable{
+public interface CMSFileSystem {
 	
-	public DBFileSystem getFileSystem();
+	CMSFile resolve (String path);
 	
-	public CMSFileSystem getCMSFileSystem();
-	
-	public Content getContent();
-	
-	public Taxonomies getTaxonomies();
+	CMSFile contentBase ();
 }

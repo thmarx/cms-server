@@ -22,6 +22,7 @@ package com.github.thmarx.cms.content;
  * #L%
  */
 
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
@@ -47,7 +48,9 @@ public class ContentParserNGTest {
                    Und hier der Inhalt
                    """;
 		
-		var content = contentParser.parse(Path.of("hosts/test/content/test.md"));
+		var content = contentParser.parse(
+				new NIOCMSFile(Path.of("hosts/test/content/test.md"), Path.of("hosts/test"))
+		);
 		
 		Assertions.assertThat(content.meta()).containsKeys("title", "tags", "template");
 		Assertions.assertThat(content.meta().get("title")).isEqualTo("StartseiteView");
@@ -60,7 +63,9 @@ public class ContentParserNGTest {
 	public void test_date() throws IOException {
 		var contentParser = new DefaultContentParser();
 		
-		var content = contentParser.parse(Path.of("hosts/test/content/test.md"));
+		var content = contentParser.parse(
+				new NIOCMSFile(Path.of("hosts/test/content/test.md"), Path.of("hosts/test/"))
+		);
 		
 		Assertions.assertThat(content.meta().get("date")).isNotNull().isInstanceOf(Date.class);
 		Assertions.assertThat((Date)content.meta().get("date"))
@@ -78,7 +83,9 @@ public class ContentParserNGTest {
 	public void test_tags() throws IOException {
 		var contentParser = new DefaultContentParser();
 		
-		var content = contentParser.parse(Path.of("hosts/test/content/tags.md"));
+		var content = contentParser.parse(
+				new NIOCMSFile(Path.of("hosts/test/content/tags.md"), Path.of("hosts/test/"))
+		);
 		
 		Assertions.assertThat(content.meta()).containsKey("tags");
 		Assertions.assertThat(content.meta().get("tags")).isInstanceOf(List.class);

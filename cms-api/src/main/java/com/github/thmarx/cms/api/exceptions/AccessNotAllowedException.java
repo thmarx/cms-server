@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.filesystem.exceptions;
+package com.github.thmarx.cms.api.exceptions;
 
 /*-
  * #%L

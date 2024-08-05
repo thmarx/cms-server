@@ -26,6 +26,8 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.DBFileSystem;
+import com.github.thmarx.cms.api.db.cms.CMSFileSystem;
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
@@ -70,6 +72,8 @@ public class NavigationFunctionTest {
 	MarkdownRenderer markdownRenderer;
 	@Mock
 	ContentNodeMapper contentNodeMapper;
+	@Mock
+	CMSFileSystem cmsFileSystem;
 	
 	NavigationFunction sut;
 	
@@ -79,8 +83,12 @@ public class NavigationFunctionTest {
 		var contentBase = Path.of("content/");
 		
 		Mockito.lenient().when(db.getFileSystem()).thenReturn(fileSystem);
+		Mockito.lenient().when(db.getCMSFileSystem()).thenReturn(cmsFileSystem);
 		Mockito.lenient().when(db.getContent()).thenReturn(content);
 		Mockito.lenient().when(fileSystem.resolve("content/")).thenReturn(contentBase);
+		Mockito.lenient().when(cmsFileSystem.contentBase()).thenReturn(
+				new NIOCMSFile(contentBase, contentBase.getParent())
+		);
 		Mockito.lenient().when(content.byUri("current")).thenReturn(Optional.empty());
 		
 		
@@ -91,7 +99,9 @@ public class NavigationFunctionTest {
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(markdownRenderer));
 		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(contentNodeMapper));
 		
-		sut = new NavigationFunction(db, Path.of("content/current/"), requestContext);
+		sut = new NavigationFunction(db, 
+				new NIOCMSFile(Path.of("content/current/"), Path.of("content/"))
+				, requestContext);
 	}
 	
 	@Test

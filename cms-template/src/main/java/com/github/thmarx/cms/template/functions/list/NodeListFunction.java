@@ -27,6 +27,7 @@ import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
@@ -59,7 +60,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		return true;
 	};
 
-	public NodeListFunction(DB db, Path currentNode, RequestContext context) {
+	public NodeListFunction(DB db, CMSFile currentNode, RequestContext context) {
 		super(
 				db,
 				currentNode,
@@ -69,7 +70,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 				context);
 	}
 
-	public NodeListFunction(DB db, Path currentNode, RequestContext context, boolean excludeIndexMd) {
+	public NodeListFunction(DB db, CMSFile currentNode, RequestContext context, boolean excludeIndexMd) {
 		this(db, currentNode, context);
 		this.excludeIndexMd = excludeIndexMd;
 	}
@@ -93,11 +94,11 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 	Page<ListNode> getNodes(final String start, int page, int size, int excerptLength, final Comparator<ContentNode> comparator,
 			final Predicate<ContentNode> nodeFilter) {
 
-		Path baseNode = null;
+		CMSFile baseNode = null;
 		String path = start;
 		// first select base node
 		if (start.startsWith("/")) {
-			baseNode = db.getFileSystem().resolve("content/");
+			baseNode = db.getCMSFileSystem().contentBase();
 			path = start.substring(1);
 		} else if (start.equals(".")) {
 			baseNode = currentNode.getParent();
@@ -117,8 +118,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		blog\/*\/*
 		 */
 		if (path.contains("*")) {
-			final Path contentBase = db.getFileSystem()
-					.resolve("content/");
+			final CMSFile contentBase = db.getCMSFileSystem().contentBase();
 			List<ContentNode> relevantPaths = getPaths(baseNode, path);
 
 			List<ContentNode> allContentNodes = new ArrayList<>();
@@ -154,7 +154,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		}
 	}
 
-	private List<ContentNode> getPaths(final Path base, final String path) {
+	private List<ContentNode> getPaths(final CMSFile base, final String path) {
 		Set<ContentNode> relevantPaths = new HashSet<>();
 		var parts = path.split(Constants.SPLIT_PATH_PATTERN);
 
@@ -179,7 +179,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		return new ArrayList<>(relevantPaths);
 	}
 
-	public Page<ListNode> getNodesFromBase(final Path base, final String start, final int page, final int pageSize, 
+	public Page<ListNode> getNodesFromBase(final CMSFile base, final String start, final int page, final int pageSize, 
 			final Comparator<ContentNode> comparator, final Predicate<ContentNode> nodeFilter) {
 		try {
 			List<ListNode> nodes = new ArrayList<>();
@@ -187,7 +187,7 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 					.listContent(base, start)
 					.stream().filter(nodeFilter)
 					.toList();
-			final Path contentBase = db.getFileSystem().resolve("content/");
+			final CMSFile contentBase = db.getCMSFileSystem().contentBase();
 			long total = navNodes.stream().filter(nodeNameFilter).count();
 			int skipCount = (page - 1) * pageSize;
 

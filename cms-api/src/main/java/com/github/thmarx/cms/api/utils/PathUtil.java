@@ -21,6 +21,7 @@ package com.github.thmarx.cms.api.utils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,6 +60,17 @@ public class PathUtil {
 		uri = uri.replaceAll("\\\\", "/");
 		return uri;
 	}
+	
+	public static String toRelativePath(final CMSFile contentPath, final CMSFile contentBase) {
+		CMSFile tempPath = contentPath;
+		if (!contentPath.isDirectory()) {
+			tempPath = contentPath.getParent();
+		}
+		CMSFile relativize = contentBase.relativize(tempPath);
+		var uri = relativize.toString();
+		uri = uri.replaceAll("\\\\", "/");
+		return uri;
+	}
 
 	public static String toRelativeFile(final Path contentFile, final Path contentBase) {
 		Path relativize = contentBase.relativize(contentFile);
@@ -70,7 +82,39 @@ public class PathUtil {
 		return uri;
 	}
 
+	public static String toRelativeFile(CMSFile contentFile, final CMSFile contentBase) {
+		if (contentFile.isDirectory()) {
+			contentFile = contentFile.resolve("index.md");
+		}
+		var relativize = contentBase.relativize(contentFile);
+		var uri = relativize.toString();
+		uri = uri.replaceAll("\\\\", "/");
+		return uri;
+	}
+	
 	public static String toURI(final Path contentFile, final Path contentBase) {
+		var relFile = toRelativeFile(contentFile, contentBase);
+		if (relFile.endsWith("index.md")) {
+			relFile = relFile.replace("index.md", "");
+		}
+
+		if (relFile.equals("")) {
+			relFile = "/";
+		} else if (relFile.endsWith("/")) {
+			relFile = relFile.substring(0, relFile.lastIndexOf("/"));
+		}
+
+		if (!relFile.startsWith("/")) {
+			relFile = "/" + relFile;
+		}
+		if (relFile.endsWith(".md")) {
+			relFile = relFile.substring(0, relFile.lastIndexOf(".md"));
+		}
+
+		return relFile;
+	}
+	
+	public static String toURI(final CMSFile contentFile, final CMSFile contentBase) {
 		var relFile = toRelativeFile(contentFile, contentBase);
 		if (relFile.endsWith("index.md")) {
 			relFile = relFile.replace("index.md", "");

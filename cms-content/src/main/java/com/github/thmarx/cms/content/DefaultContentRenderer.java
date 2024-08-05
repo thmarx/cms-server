@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.extensions.ContentQueryOperatorExtensionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateModelExtendingExtentionPoint;
@@ -85,12 +86,12 @@ public class DefaultContentRenderer implements ContentRenderer {
 	private final ModuleManager moduleManager;
 
 	@Override
-	public String render(final Path contentFile, final RequestContext context) throws IOException {
+	public String render(final CMSFile contentFile, final RequestContext context) throws IOException {
 		return render(contentFile, context, Collections.emptyMap());
 	}
 
 	@Override
-	public String render(final Path contentFile, final RequestContext context, final Map<String, List<Section>> sections) throws IOException {
+	public String render(final CMSFile contentFile, final RequestContext context, final Map<String, List<Section>> sections) throws IOException {
 		var content = contentParser.parse(contentFile);
 
 		return render(contentFile, context, sections, content.meta(), content.content(), (model) -> {
@@ -99,7 +100,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 
 	@Override
 	public String renderTaxonomy(final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, final Map<String, Object> meta, final Page<ListNode> page) throws IOException {
-		var contentFile = db.getFileSystem().resolve("content").resolve("index.md");
+		var contentFile = db.getCMSFileSystem().contentBase().resolve("index.md");
 
 		return render(contentFile, context, Collections.emptyMap(), meta, "", (model) -> {
 			model.values.put("taxonomy", taxonomy);
@@ -113,7 +114,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 	}
 
 	@Override
-	public String renderView(final Path viewFile, final View view, final ContentNode contentNode, final RequestContext requestContext, final Page<ListNode> page) throws IOException {
+	public String renderView(final CMSFile viewFile, final View view, final ContentNode contentNode, final RequestContext requestContext, final Page<ListNode> page) throws IOException {
 		return render(viewFile, requestContext, Collections.emptyMap(),
 				contentNode.data(), "", (model) -> {
 			model.values.put("page", page);
@@ -151,11 +152,12 @@ public class DefaultContentRenderer implements ContentRenderer {
 	}
 
 	@Override
-	public String render(final Path contentFile, final RequestContext context,
+	public String render(final CMSFile contentFile, final RequestContext context,
 			final Map<String, List<Section>> sections,
 			final Map<String, Object> meta, final String rawContent, final Consumer<TemplateEngine.Model> modelExtending
 	) throws IOException {
-		var uri = PathUtil.toRelativeFile(contentFile, db.getFileSystem().resolve("content/"));
+		var uri = PathUtil.toRelativeFile(contentFile, db.getCMSFileSystem().contentBase());
+		
 		Optional<ContentNode> contentNode = db.getContent().byUri(uri);
 
 		TemplateEngine.Model model = new TemplateEngine.Model(contentFile, contentNode.isPresent() ? contentNode.get() : null);
@@ -211,7 +213,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 		return templates.get().render((String) meta.get("template"), model);
 	}
 
-	protected QueryFunction createQueryFunction(final Path contentFile, final RequestContext context) {
+	protected QueryFunction createQueryFunction(final CMSFile contentFile, final RequestContext context) {
 
 		Map<String, BiPredicate<Object, Object>> customOperators = new HashMap<>();
 
@@ -227,13 +229,13 @@ public class DefaultContentRenderer implements ContentRenderer {
 		return queryFn;
 	}
 
-	protected NodeListFunctionBuilder createNodeListFunction(final Path contentFile, final RequestContext context) {
+	protected NodeListFunctionBuilder createNodeListFunction(final CMSFile contentFile, final RequestContext context) {
 		var nlFn = new NodeListFunctionBuilder(db, contentFile, context);
 		nlFn.contentType(siteProperties.defaultContentType());
 		return nlFn;
 	}
 
-	protected NavigationFunction createNavigationFunction(final Path contentFile, final RequestContext context) {
+	protected NavigationFunction createNavigationFunction(final CMSFile contentFile, final RequestContext context) {
 		var navFn = new NavigationFunction(db, contentFile, context);
 		navFn.contentType(siteProperties.defaultContentType());
 		return navFn;
@@ -260,7 +262,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 
 		Map<String, List<Section>> sections = new HashMap<>();
 
-		final Path contentBase = db.getFileSystem().resolve("content/");
+		final CMSFile contentBase = db.getCMSFileSystem().contentBase();
 		sectionNodes.forEach(node -> {
 			try {
 				var sectionPath = contentBase.resolve(node.uri());

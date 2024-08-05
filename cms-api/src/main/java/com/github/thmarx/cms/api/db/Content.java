@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.db;
  * #L%
  */
 
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,11 @@ import java.util.function.BiFunction;
 public interface Content {
 	boolean isVisible (String uri);
 	
-	List<ContentNode>  listSections(Path contentFile);
+	List<ContentNode>  listSections(final CMSFile contentFile);
 	
-	List<ContentNode> listContent(final Path base, final String start);
+	List<ContentNode> listContent(final CMSFile base, final String start);
 	
-	List<ContentNode> listDirectories(final Path base, final String start);
+	List<ContentNode> listDirectories(final CMSFile base, final String start);
 	
 	Optional<ContentNode> byUri (final String uri);
 	

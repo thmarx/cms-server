@@ -23,6 +23,7 @@ package com.github.thmarx.cms.template.functions;
  */
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -45,18 +46,18 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class AbstractCurrentNodeFunction {
 
 	protected final DB db;
-	protected final Path currentNode;
+	protected final CMSFile currentNode;
 	protected final ContentParser contentParser;
 	protected final MarkdownRenderer markdownRenderer;
 	protected final ContentNodeMapper contentNodeMapper;
 	protected final RequestContext context;
 
-	protected String getUrl(Path node) {
+	protected String getUrl(CMSFile node) {
 		StringBuilder sb = new StringBuilder();
 
-		while (node != null && !node.equals(db.getFileSystem().resolve("content/"))) {
+		while (node != null && !node.equals(db.getCMSFileSystem().contentBase())) {
 
-			var filename = node.getFileName().toString();
+			var filename = node.getFileName();
 			if (!filename.equals("index.md")) {
 				if (filename.endsWith(".md")) {
 					filename = filename.substring(0, filename.length() - 3);
@@ -64,7 +65,11 @@ public abstract class AbstractCurrentNodeFunction {
 				sb.insert(0, filename);
 				sb.insert(0, "/");
 			}
-			node = node.getParent();
+			if (node.hasParent()) {
+				node = node.getParent();
+			} else {
+				node = null;
+			}
 		}
 
 		var url = sb.toString();
@@ -83,10 +88,10 @@ public abstract class AbstractCurrentNodeFunction {
 		return false;
 	}
 
-	protected Optional<ContentParser.Content> parse(Path node) {
+	protected Optional<ContentParser.Content> parse(CMSFile node) {
 		try {
 			//Path rel = contentBase.relativize(node);
-			if (Files.isDirectory(node)) {
+			if (node.isDirectory()) {
 				node = node.resolve("index.md");
 			}
 			var md = contentParser.parse(node);

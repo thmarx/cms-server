@@ -27,6 +27,7 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -48,7 +49,7 @@ import org.yaml.snakeyaml.Yaml;
 @RequiredArgsConstructor
 public class NodeResolver {
 	final DB db;
-	final Path currentNode;
+	final CMSFile currentNode;
 	final ContentParser contentParser;
 	final MarkdownRenderer markdownRenderer;
 	final Context context;

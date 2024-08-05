@@ -25,6 +25,9 @@ package com.github.thmarx.cms.filesystem;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
+import com.github.thmarx.cms.api.db.cms.CMSFileSystem;
+import com.github.thmarx.cms.api.utils.PathUtil;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class FileContent implements Content {
 
 	private final FileSystem fileSystem;
+	private final CMSFileSystem cmsFileSystem;
 	
 	@Override
 	public boolean isVisible(String uri) {
@@ -47,18 +51,26 @@ public class FileContent implements Content {
 	}
 
 	@Override
-	public List<ContentNode> listSections(Path contentFile) {
-		return fileSystem.listSections(contentFile);
+	public List<ContentNode> listSections(CMSFile contentFile) {
+		String folder = PathUtil.toRelativePath(contentFile, cmsFileSystem.contentBase());
+		String filename = contentFile.getFileName();
+		filename = filename.substring(0, filename.length() - 3);
+		
+		return fileSystem.listSections(filename, folder);
 	}
 
 	@Override
-	public List<ContentNode> listContent(Path base, String start) {
-		return fileSystem.listContent(base, start);
+	public List<ContentNode> listContent(CMSFile base, String start) {
+		var startPath = base.resolve(start);
+		String folder = PathUtil.toRelativePath(startPath, cmsFileSystem.contentBase());
+		return fileSystem.listContent(folder);
 	}
 
 	@Override
-	public List<ContentNode> listDirectories(Path base, String start) {
-		return fileSystem.listDirectories(base, start);
+	public List<ContentNode> listDirectories(CMSFile base, String start) {
+		var startPath = base.resolve(start);
+		String folder = PathUtil.toRelativePath(startPath, cmsFileSystem.contentBase());
+		return fileSystem.listDirectories(folder);
 	}
 
 	@Override

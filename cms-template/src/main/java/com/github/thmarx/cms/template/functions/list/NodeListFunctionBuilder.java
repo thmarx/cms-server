@@ -25,14 +25,12 @@ package com.github.thmarx.cms.template.functions.list;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
-import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
-import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
 import com.github.thmarx.cms.api.utils.NodeUtil;
@@ -77,7 +75,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return filename1.compareTo(filename2);
 	};
 
-	public NodeListFunctionBuilder(DB db, Path currentNode, RequestContext context) {
+	public NodeListFunctionBuilder(DB db, CMSFile currentNode, RequestContext context) {
 		super(
 				db,
 				currentNode,

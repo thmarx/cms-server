@@ -24,13 +24,12 @@ package com.github.thmarx.cms.content;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.utils.PathUtil;
-import com.github.thmarx.cms.content.ContentRenderer;
-import com.github.thmarx.cms.content.RenderContext;
 import com.github.thmarx.cms.content.views.ViewParser;
 import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.google.common.base.Strings;
@@ -47,8 +46,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class ViewResolver {
-
-	private final Path contentBase;
 
 	private final ContentRenderer contentRenderer;
 
@@ -69,19 +66,20 @@ public class ViewResolver {
 			path = context.get(RequestFeature.class).uri();
 		}
 
+		var contentBase = db.getCMSFileSystem().contentBase();
 		var contentPath = contentBase.resolve(path);
-		Path contentFile = null;
-		if (Files.exists(contentPath) && Files.isDirectory(contentPath)) {
+		CMSFile contentFile = null;
+		if (contentPath.exists() && contentPath.isDirectory()) {
 			// use index.md
 			var tempFile = contentPath.resolve("index.md");
-			if (Files.exists(tempFile)) {
+			if (tempFile.exists()) {
 				contentFile = tempFile;
 			} else {
 				return Optional.empty();
 			}
 		} else {
 			var temp = contentBase.resolve(path + ".md");
-			if (Files.exists(temp)) {
+			if (temp.exists()) {
 				contentFile = temp;
 			} else {
 				return Optional.empty();

@@ -26,6 +26,8 @@ import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.DBFileSystem;
+import com.github.thmarx.cms.api.db.cms.CMSFileSystem;
+import com.github.thmarx.cms.api.db.cms.WrappedCMSFileSystem;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.filesystem.taxonomy.FileTaxonomies;
@@ -49,6 +51,7 @@ public class FileDB implements DB {
 	
 	private FileSystem fileSystem;
 	private FileContent content;
+	private CMSFileSystem cmsFileSystem;
 	
 	private FileTaxonomies taxonomies;
 	
@@ -59,12 +62,19 @@ public class FileDB implements DB {
 	public void init (MetaData.Type metaDataType) throws IOException {
 		fileSystem = new FileSystem(hostBaseDirectory, eventBus, contentParser);
 		fileSystem.init(metaDataType);
+		cmsFileSystem = new WrappedCMSFileSystem(fileSystem);
 		
-		content = new FileContent(fileSystem);
+		content = new FileContent(fileSystem, cmsFileSystem);
 		
 		taxonomies = new FileTaxonomies(configuration, fileSystem);
-	}
 		
+	}
+
+	@Override
+	public CMSFileSystem getCMSFileSystem() {
+		return cmsFileSystem;
+	}
+
 	@Override
 	public DBFileSystem getFileSystem() {
 		return fileSystem;

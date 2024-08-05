@@ -21,11 +21,14 @@ package com.github.thmarx.cms;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.content.DefaultContentRenderer;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.metadata.memory.MemoryMetaData;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -55,10 +58,12 @@ public class SectionsTest extends TemplateEngineTest {
 	@BeforeAll
 	public static void beforeClass() throws IOException {
 		var contentParser = new DefaultContentParser();
+		var hostBase = Path.of("hosts/test/");
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				return contentParser.parseMeta(file);
+				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -77,7 +82,7 @@ public class SectionsTest extends TemplateEngineTest {
 
 	@Test
 	public void test_sections() throws IOException {
-		List<ContentNode> listSections = db.getContent().listSections(db.getFileSystem().resolve("content/page.md"));
+		List<ContentNode> listSections = db.getContent().listSections(db.getCMSFileSystem().contentBase().resolve("page.md"));
 		Assertions.assertThat(listSections).hasSize(4);
 
 		Map<String, List<Section>> renderSections = contentRenderer.renderSections(listSections, TestHelper.requestContext());

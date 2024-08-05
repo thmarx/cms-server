@@ -23,8 +23,11 @@ package com.github.thmarx.cms.content;
  */
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.TestTemplateEngine;
+import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
+import com.github.thmarx.cms.api.db.cms.CMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import static com.github.thmarx.cms.content.ContentRendererNGTest.contentRenderer;
@@ -52,10 +55,12 @@ public class ContentResolverTest {
 	@BeforeAll
 	public static void setup() throws IOException {
 		var contentParser = new DefaultContentParser();
+		var hostBase = Path.of("hosts/test/");
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				return contentParser.parseMeta(file);
+				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -69,7 +74,7 @@ public class ContentResolverTest {
 				db,
 				new SiteProperties(Map.of()),
 				moduleManager);
-		contentResolver = new ContentResolver(db.getFileSystem().resolve("content/"), contentRenderer, db);
+		contentResolver = new ContentResolver(contentRenderer, db);
 	}
 
 	@AfterAll
