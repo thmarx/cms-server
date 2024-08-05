@@ -34,6 +34,7 @@ import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
 import com.github.thmarx.cms.api.utils.PathUtil;
+import com.github.thmarx.cms.filesystem.exceptions.AccessNotAllowedException;
 import com.github.thmarx.cms.filesystem.metadata.AbstractMetaData;
 import com.github.thmarx.cms.filesystem.metadata.persistent.PersistentMetaData;
 import java.io.IOException;
@@ -115,7 +116,11 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
 	@Override
 	public Path resolve(String path) {
-		return hostBaseDirectory.resolve(path);
+		final Path resolved = hostBaseDirectory.resolve(path);
+		if (!PathUtil.isChild(hostBaseDirectory, resolved)) {
+			throw new AccessNotAllowedException("access outside host package not allowed");
+		}
+		return resolved;
 	}
 
 	@Override
