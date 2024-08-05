@@ -77,7 +77,7 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 	private MetaData metaData;
 
 	@Override
-	public Path base () {
+	public Path hostBase () {
 		return hostBaseDirectory;
 	}
 	

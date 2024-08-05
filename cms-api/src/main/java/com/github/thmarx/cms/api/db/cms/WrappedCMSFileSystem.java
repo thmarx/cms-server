@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.DBFileSystem;
 import com.github.thmarx.cms.api.exceptions.AccessNotAllowedException;
 import com.github.thmarx.cms.api.utils.PathUtil;
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -39,17 +40,26 @@ public class WrappedCMSFileSystem implements CMSFileSystem {
 
 	@Override
 	public CMSFile resolve(String uri) {
+		return resolveWithBase(uri, dbFileSytem.hostBase());
+	}
+
+	private CMSFile resolveWithBase(final String uri, final Path basePath) {
 		var resolved = dbFileSytem.resolve(uri);
 		
-		if (!PathUtil.isChild(dbFileSytem.base(), resolved)) {
+		if (!PathUtil.isChild(dbFileSytem.hostBase(), resolved)) {
 			throw new AccessNotAllowedException("not allowed to access nodes outside the host base directory");
 		}
 		
-		return new NIOCMSFile(resolved, dbFileSytem.base());
+		return new NIOCMSFile(resolved, basePath);
 	}
-
+	
 	@Override
 	public CMSFile contentBase() {
-		return resolve(Constants.Folders.CONTENT);
+		return resolveWithBase(Constants.Folders.CONTENT, dbFileSytem.resolve(Constants.Folders.CONTENT));
+	}
+	
+	@Override
+	public CMSFile assetBase() {
+		return resolveWithBase(Constants.Folders.ASSETS, dbFileSytem.resolve(Constants.Folders.ASSETS));
 	}
 }

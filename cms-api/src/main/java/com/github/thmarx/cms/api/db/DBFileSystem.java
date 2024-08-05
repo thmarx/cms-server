@@ -33,7 +33,7 @@ import java.util.List;
  */
 public interface DBFileSystem {
 	
-	Path base();
+	Path hostBase();
 	
 	Path resolve(String path);
 	

@@ -63,7 +63,7 @@ public class ConfigurationReloadTest {
 		});
 		fileSystem.init();
 		
-		configuration = new Configuration(fileSystem.base());
+		configuration = new Configuration(fileSystem.hostBase());
 	}
 	
 	@AfterAll

@@ -83,7 +83,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		List<NavNode> navNodes = new ArrayList<>();
 		var contentBase = db.getCMSFileSystem().contentBase();
 		var node = currentNode;
-		while (node.hasParent()) {
+		while (node != null) {
 			var uri = PathUtil.toRelativeFile(node, contentBase);
 			final Optional<ContentNode> contentNode = db.getContent().byUri(uri);
 			if (contentNode.isPresent()) {
@@ -96,7 +96,11 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 					navNodes.add(navNode);
 				}
 			}
-			node = node.getParent();
+			if (node.hasParent()) {
+				node = node.getParent();
+			} else {
+				node = null;
+			}
 		}
 
 		navNodes = navNodes.reversed();

@@ -121,13 +121,13 @@ public class SiteModule extends AbstractModule {
 	@Provides
 	@Singleton
 	public UserService userService(DB db) {
-		return new UserService(db.getFileSystem().base());
+		return new UserService(db.getFileSystem().hostBase());
 	}
 	
 	@Provides
 	@Singleton
 	public AuthService authService(DB db) {
-		return new AuthService(db.getFileSystem().base());
+		return new AuthService(db.getFileSystem().hostBase());
 	}
 	
 	@Provides
