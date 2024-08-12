@@ -25,7 +25,6 @@ import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
@@ -42,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -58,7 +58,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private final HookSystem hookSystem;
 
-	public NavigationFunction(DB db, CMSFile currentNode, RequestContext context) {
+	public NavigationFunction(DB db, ReadOnlyFile currentNode, RequestContext context) {
 		super(
 				db,
 				currentNode,
@@ -81,7 +81,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 	 */
 	public List<NavNode> path() {
 		List<NavNode> navNodes = new ArrayList<>();
-		var contentBase = db.getCMSFileSystem().contentBase();
+		var contentBase = db.getReadOnlyFileSystem().contentBase();
 		var node = currentNode;
 		while (node != null) {
 			var uri = PathUtil.toRelativeFile(node, contentBase);
@@ -139,7 +139,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 	private List<NavNode> getNodes(final String start, final int depth) {
 		List<NavNode> navNodes = Collections.emptyList();
 		if (start.startsWith("/")) { // root
-			navNodes = getNodesFromBase(db.getCMSFileSystem().contentBase(), start.substring(1), depth);
+			navNodes = getNodesFromBase(db.getReadOnlyFileSystem().contentBase(), start.substring(1), depth);
 		} else if (start.equals(".")) { // current
 			navNodes = getNodesFromBase(currentNode.getParent(), "", depth);
 		} else if (start.startsWith("./")) { // subfolder of current
@@ -152,13 +152,13 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return navNodes;
 	}
 
-	private List<NavNode> getSubNodesFromBaseRemoveCurrent(final CMSFile base, final String start, final int depth, final String toRemovePath) {
+	private List<NavNode> getSubNodesFromBaseRemoveCurrent(final ReadOnlyFile base, final String start, final int depth, final String toRemovePath) {
 		List<NavNode> nodes = getNodesFromBase(base, start, depth);
 
 		return nodes.stream().filter(node -> !node.path().equals(toRemovePath)).toList();
 	}
 
-	private List<NavNode> getNodesFromBase(final CMSFile base, final String start, final int depth) {
+	private List<NavNode> getNodesFromBase(final ReadOnlyFile base, final String start, final int depth) {
 		if (depth == 0) {
 			return Collections.emptyList();
 		}
@@ -188,7 +188,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 			});
 
 			final List<NavNode> nodes = new ArrayList<>();
-			final CMSFile contentBase = db.getCMSFileSystem().contentBase();
+			final ReadOnlyFile contentBase = db.getReadOnlyFileSystem().contentBase();
 			navNodes.forEach((node) -> {
 				var name = NodeUtil.getName(node);
 				var path = contentBase.resolve(node.uri());
@@ -208,8 +208,8 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		return Collections.emptyList();
 	}
 
-	private boolean isCurrentNode(final CMSFile node) {
-		CMSFile nodeIndex;
+	private boolean isCurrentNode(final ReadOnlyFile node) {
+		ReadOnlyFile nodeIndex;
 		if ("index.md".equals(node.getFileName())) {
 			nodeIndex = node;
 		} else {

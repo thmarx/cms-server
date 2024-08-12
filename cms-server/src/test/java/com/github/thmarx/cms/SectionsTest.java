@@ -27,8 +27,7 @@ import com.github.thmarx.cms.content.DefaultContentRenderer;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.metadata.memory.MemoryMetaData;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
@@ -44,6 +43,7 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -62,7 +62,7 @@ public class SectionsTest extends TemplateEngineTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -82,7 +82,7 @@ public class SectionsTest extends TemplateEngineTest {
 
 	@Test
 	public void test_sections() throws IOException {
-		List<ContentNode> listSections = db.getContent().listSections(db.getCMSFileSystem().contentBase().resolve("page.md"));
+		List<ContentNode> listSections = db.getContent().listSections(db.getReadOnlyFileSystem().contentBase().resolve("page.md"));
 		Assertions.assertThat(listSections).hasSize(4);
 
 		Map<String, List<Section>> renderSections = contentRenderer.renderSections(listSections, TestHelper.requestContext());

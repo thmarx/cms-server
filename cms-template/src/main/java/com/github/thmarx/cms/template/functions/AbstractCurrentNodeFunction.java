@@ -23,7 +23,6 @@ package com.github.thmarx.cms.template.functions;
  */
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -36,6 +35,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -46,16 +46,16 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class AbstractCurrentNodeFunction {
 
 	protected final DB db;
-	protected final CMSFile currentNode;
+	protected final ReadOnlyFile currentNode;
 	protected final ContentParser contentParser;
 	protected final MarkdownRenderer markdownRenderer;
 	protected final ContentNodeMapper contentNodeMapper;
 	protected final RequestContext context;
 
-	protected String getUrl(CMSFile node) {
+	protected String getUrl(ReadOnlyFile node) {
 		StringBuilder sb = new StringBuilder();
 
-		while (node != null && !node.equals(db.getCMSFileSystem().contentBase())) {
+		while (node != null && !node.equals(db.getReadOnlyFileSystem().contentBase())) {
 
 			var filename = node.getFileName();
 			if (!filename.equals("index.md")) {
@@ -88,7 +88,7 @@ public abstract class AbstractCurrentNodeFunction {
 		return false;
 	}
 
-	protected Optional<ContentParser.Content> parse(CMSFile node) {
+	protected Optional<ContentParser.Content> parse(ReadOnlyFile node) {
 		try {
 			//Path rel = contentBase.relativize(node);
 			if (node.isDirectory()) {

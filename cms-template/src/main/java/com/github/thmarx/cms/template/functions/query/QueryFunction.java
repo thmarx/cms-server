@@ -24,7 +24,6 @@ package com.github.thmarx.cms.template.functions.query;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
@@ -38,6 +37,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import lombok.Setter;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -51,14 +51,14 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 	@Setter
 	private String contentType;
 
-	public QueryFunction(DB db, CMSFile currentNode, RequestContext context) {
+	public QueryFunction(DB db, ReadOnlyFile currentNode, RequestContext context) {
 		this(
 				db, 
 				currentNode,
 				context, Map.of());
 	}
 	
-	public QueryFunction(DB db, CMSFile currentNode, RequestContext context, final Map<String, BiPredicate<Object, Object>> queryOperations) {
+	public QueryFunction(DB db, ReadOnlyFile currentNode, RequestContext context, final Map<String, BiPredicate<Object, Object>> queryOperations) {
 		super(
 				db, 
 				currentNode, 

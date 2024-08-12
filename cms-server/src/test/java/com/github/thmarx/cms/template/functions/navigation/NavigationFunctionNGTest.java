@@ -26,8 +26,7 @@ import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
@@ -40,6 +39,7 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -58,7 +58,7 @@ public class NavigationFunctionNGTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -67,7 +67,7 @@ public class NavigationFunctionNGTest {
 		db.init();
 		defaultContentParser = new DefaultContentParser();
 		navigationFunction = new NavigationFunction(db, 
-				db.getCMSFileSystem().contentBase().resolve("nav/index.md"),
+				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 	}
 	protected static DefaultContentParser defaultContentParser;
@@ -114,7 +114,7 @@ public class NavigationFunctionNGTest {
 	public void test_path() throws Exception {
 
 		var sut = new NavigationFunction(db, 
-				db.getCMSFileSystem().contentBase().resolve("nav3/folder1/index.md")
+				db.getReadOnlyFileSystem().contentBase().resolve("nav3/folder1/index.md")
 				, 
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 		
@@ -129,7 +129,7 @@ public class NavigationFunctionNGTest {
 	@Test
 	public void test_json () {
 		var navigationFunction = new NavigationFunction(db, 
-				db.getCMSFileSystem().contentBase().resolve("nav/index.md"),
+				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 		
 		List<NavNode> list = navigationFunction.json().list("/json");

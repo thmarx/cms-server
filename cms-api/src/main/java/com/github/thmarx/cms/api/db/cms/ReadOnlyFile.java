@@ -30,10 +30,10 @@ import java.util.List;
  *
  * @author t.marx
  */
-public interface CMSFile {
+public interface ReadOnlyFile {
 	boolean exists ();
 	
-	CMSFile resolve (String uri);
+	ReadOnlyFile resolve (String uri);
 	
 	String getContent () throws IOException;
 	
@@ -43,7 +43,7 @@ public interface CMSFile {
 	
 	List<String> getAllLines (Charset charset) throws IOException;
 	
-	CMSFile relativize (CMSFile node);
+	ReadOnlyFile relativize (ReadOnlyFile node);
 	
 	boolean isDirectory();
 	
@@ -51,17 +51,17 @@ public interface CMSFile {
 	
 	String getFileName ();
 	
-	CMSFile getParent ();
+	ReadOnlyFile getParent ();
 	
 	boolean hasParent ();
 	
-	List<? extends CMSFile> children() throws IOException;
+	List<? extends ReadOnlyFile> children() throws IOException;
 	
 	String getContentType () throws IOException;
 	
-	CMSFile toAbsolutePath();
+	ReadOnlyFile toAbsolutePath();
 	
 	String getCanonicalPath () throws IOException;
 	
-	boolean isChild (CMSFile maybeChild);
+	boolean isChild (ReadOnlyFile maybeChild);
 }

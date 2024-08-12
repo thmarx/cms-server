@@ -30,8 +30,7 @@ import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
@@ -68,6 +67,7 @@ import java.nio.file.Path;
 import java.util.concurrent.ScheduledExecutorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -169,7 +169,7 @@ public class SiteModule extends AbstractModule {
 	public DB fileDb(SiteProperties site, ContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
 		var db = new FileDB(hostBase, eventBus, (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return contentParser.parseMeta(cmsFile);
 			} catch (IOException ioe) {
 				log.error(null, ioe);

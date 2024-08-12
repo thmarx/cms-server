@@ -25,8 +25,6 @@ package com.github.thmarx.cms.filesystem;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.CMSFileSystem;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import java.nio.file.Path;
 import java.util.List;
@@ -34,6 +32,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import lombok.RequiredArgsConstructor;
+import com.github.thmarx.cms.api.db.cms.ReadyOnlyFileSystem;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -43,7 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class FileContent implements Content {
 
 	private final FileSystem fileSystem;
-	private final CMSFileSystem cmsFileSystem;
+	private final ReadyOnlyFileSystem cmsFileSystem;
 	
 	@Override
 	public boolean isVisible(String uri) {
@@ -51,7 +51,7 @@ public class FileContent implements Content {
 	}
 
 	@Override
-	public List<ContentNode> listSections(CMSFile contentFile) {
+	public List<ContentNode> listSections(ReadOnlyFile contentFile) {
 		String folder = PathUtil.toRelativePath(contentFile, cmsFileSystem.contentBase());
 		String filename = contentFile.getFileName();
 		filename = filename.substring(0, filename.length() - 3);
@@ -60,14 +60,14 @@ public class FileContent implements Content {
 	}
 
 	@Override
-	public List<ContentNode> listContent(CMSFile base, String start) {
+	public List<ContentNode> listContent(ReadOnlyFile base, String start) {
 		var startPath = base.resolve(start);
 		String folder = PathUtil.toRelativePath(startPath, cmsFileSystem.contentBase());
 		return fileSystem.listContent(folder);
 	}
 
 	@Override
-	public List<ContentNode> listDirectories(CMSFile base, String start) {
+	public List<ContentNode> listDirectories(ReadOnlyFile base, String start) {
 		var startPath = base.resolve(start);
 		String folder = PathUtil.toRelativePath(startPath, cmsFileSystem.contentBase());
 		return fileSystem.listDirectories(folder);

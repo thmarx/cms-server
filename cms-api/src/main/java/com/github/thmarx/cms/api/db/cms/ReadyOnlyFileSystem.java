@@ -27,7 +27,7 @@ package com.github.thmarx.cms.api.db.cms;
  *
  * @author t.marx
  */
-public interface CMSFileSystem {
+public interface ReadyOnlyFileSystem {
 
 	/**
 	 * Resolves a file if it is a child of the host base directory
@@ -35,19 +35,19 @@ public interface CMSFileSystem {
 	 * @param path
 	 * @return 
 	 */
-	CMSFile resolve (String path);
+	ReadOnlyFile resolve (String path);
 	
 	/**
 	 * creates a base directory for content.
 	 * 
 	 * @return 
 	 */
-	CMSFile contentBase ();
+	ReadOnlyFile contentBase ();
 	
 	/**
 	 * creates a base directory for assets
 	 * 
 	 * @return 
 	 */
-	CMSFile assetBase ();
+	ReadOnlyFile assetBase ();
 }

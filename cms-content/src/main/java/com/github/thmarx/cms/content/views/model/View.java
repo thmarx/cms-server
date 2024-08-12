@@ -25,7 +25,6 @@ package com.github.thmarx.cms.content.views.model;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Data;
 import org.graalvm.polyglot.Context;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -48,7 +48,7 @@ public class View {
 	private String template;
 	private Content content;
 	
-	public Page<ListNode> getNodes (final DB db, final CMSFile currentNode, final ContentParser contentParser, 
+	public Page<ListNode> getNodes (final DB db, final ReadOnlyFile currentNode, final ContentParser contentParser, 
 			final MarkdownRenderer markdownRenderer, final Context context, final Map<String, List<String>> queryParams,
 			final RequestContext requestContext) {
 		

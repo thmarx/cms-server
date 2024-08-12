@@ -27,8 +27,7 @@ import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
@@ -41,6 +40,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -62,7 +62,7 @@ public class NodeListFunctionBuilderNGTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return parser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -71,7 +71,7 @@ public class NodeListFunctionBuilderNGTest {
 		db.init();
 		
 		nodeList = new NodeListFunctionBuilder(db, 
-				new NIOCMSFile(db.getFileSystem().resolve("content/").resolve("index.md"), hostBase), 
+				new NIOReadOnlyFile(db.getFileSystem().resolve("content/").resolve("index.md"), hostBase), 
 				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
 	}
 	@AfterAll
@@ -160,7 +160,7 @@ public class NodeListFunctionBuilderNGTest {
 	@Test
 	void test_from_subfolder () {
 		var nodeList = new NodeListFunctionBuilder(db, 
-				new NIOCMSFile(db.getFileSystem().resolve("content/nodelist2/index.md"), hostBase), 
+				new NIOReadOnlyFile(db.getFileSystem().resolve("content/nodelist2/index.md"), hostBase), 
 				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
 		Page<ListNode> page = nodeList.from("./sub_folder/*").page(1).size(10).list();
 		var nodeUris = page.getItems().stream().map(ListNode::path).collect(Collectors.toList());
@@ -176,7 +176,7 @@ public class NodeListFunctionBuilderNGTest {
 	@Test
 	void test_json () {
 		var nodeList = new NodeListFunctionBuilder(db, 
-				new NIOCMSFile(db.getFileSystem().resolve("content/index.md"), hostBase), 
+				new NIOReadOnlyFile(db.getFileSystem().resolve("content/index.md"), hostBase), 
 				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
 		Page<ListNode> page = nodeList.from("./json").page(1).size(10).list();
 		Assertions.assertThat(page.getItems()).hasSize(1);

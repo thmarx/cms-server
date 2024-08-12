@@ -25,7 +25,6 @@ package com.github.thmarx.cms.content;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.thmarx.cms.api.ServerContext;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -62,7 +62,7 @@ public class DefaultContentParser implements com.github.thmarx.cms.api.content.C
 	}
 
 	@Override
-	public Content parse(final CMSFile contentFile) throws IOException {
+	public Content parse(final ReadOnlyFile contentFile) throws IOException {
 		final String filename = contentFile.toAbsolutePath().toString();
 		var cached = contentCache.getIfPresent(filename);
 		if (cached != null) {
@@ -73,7 +73,7 @@ public class DefaultContentParser implements com.github.thmarx.cms.api.content.C
 		return object;
 	}
 
-	private Content _parse(final CMSFile contentFile) throws IOException {
+	private Content _parse(final ReadOnlyFile contentFile) throws IOException {
 		ContentRecord readContent = readContent(contentFile);
 
 		return new Content(readContent.content(), _parseMeta(readContent));
@@ -91,13 +91,13 @@ public class DefaultContentParser implements com.github.thmarx.cms.api.content.C
 		}
     }
 
-	public Map<String, Object> parseMeta(final CMSFile contentFile) throws IOException {
+	public Map<String, Object> parseMeta(final ReadOnlyFile contentFile) throws IOException {
 		ContentRecord readContent = readContent(contentFile);
 
 		return _parseMeta(readContent);
 	}
 
-	private ContentRecord readContent(final CMSFile contentFile) throws IOException {
+	private ContentRecord readContent(final ReadOnlyFile contentFile) throws IOException {
 		var fileContent = contentFile.getAllLines();
 
 		StringBuilder contentBuilder = new StringBuilder();

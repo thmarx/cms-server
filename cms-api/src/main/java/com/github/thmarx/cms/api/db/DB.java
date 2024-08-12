@@ -1,7 +1,7 @@
 package com.github.thmarx.cms.api.db;
 
-import com.github.thmarx.cms.api.db.cms.CMSFileSystem;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
+import com.github.thmarx.cms.api.db.cms.ReadyOnlyFileSystem;
 
 /*-
  * #%L
@@ -33,7 +33,7 @@ public interface DB extends AutoCloseable{
 	
 	public DBFileSystem getFileSystem();
 	
-	public CMSFileSystem getCMSFileSystem();
+	public ReadyOnlyFileSystem getReadOnlyFileSystem();
 	
 	public Content getContent();
 	

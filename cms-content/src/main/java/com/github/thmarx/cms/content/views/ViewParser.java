@@ -1,6 +1,5 @@
 package com.github.thmarx.cms.content.views;
 
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.content.views.model.View;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +10,7 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /*-
  * #%L
@@ -39,7 +39,7 @@ import org.yaml.snakeyaml.representer.Representer;
  */
 public class ViewParser {
 
-	public static View parse(final CMSFile viewFile) throws IOException {
+	public static View parse(final ReadOnlyFile viewFile) throws IOException {
 		Representer representer = new Representer(new DumperOptions());
 		representer.getPropertyUtils().setSkipMissingProperties(true);
 		LoaderOptions loaderOptions = new LoaderOptions();

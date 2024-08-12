@@ -24,8 +24,7 @@ package com.github.thmarx.cms.template.functions.query;
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.content.DefaultContentParser;
@@ -36,6 +35,7 @@ import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -54,7 +54,7 @@ public class QueryFunctionTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -63,7 +63,7 @@ public class QueryFunctionTest {
 		db.init();
 		defaultContentParser = new DefaultContentParser();
 		query = new QueryFunction(db, 
-				new NIOCMSFile(Path.of("hosts/test/content/nav/index.md"), hostBase), 
+				new NIOReadOnlyFile(Path.of("hosts/test/content/nav/index.md"), hostBase), 
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 	}
 	protected static DefaultContentParser defaultContentParser;

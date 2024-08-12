@@ -27,7 +27,6 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.Page;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -41,6 +40,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.graalvm.polyglot.Context;
 import org.yaml.snakeyaml.Yaml;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -49,7 +49,7 @@ import org.yaml.snakeyaml.Yaml;
 @RequiredArgsConstructor
 public class NodeResolver {
 	final DB db;
-	final CMSFile currentNode;
+	final ReadOnlyFile currentNode;
 	final ContentParser contentParser;
 	final MarkdownRenderer markdownRenderer;
 	final Context context;

@@ -26,8 +26,7 @@ import com.github.thmarx.cms.TestTemplateEngine;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import static com.github.thmarx.cms.content.ContentRendererNGTest.contentRenderer;
@@ -41,6 +40,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -59,7 +59,7 @@ public class ContentResolverTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);

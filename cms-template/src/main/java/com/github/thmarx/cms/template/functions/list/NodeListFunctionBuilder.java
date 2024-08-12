@@ -27,7 +27,6 @@ import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
@@ -39,6 +38,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -75,7 +75,7 @@ public class NodeListFunctionBuilder extends AbstractCurrentNodeFunction {
 		return filename1.compareTo(filename2);
 	};
 
-	public NodeListFunctionBuilder(DB db, CMSFile currentNode, RequestContext context) {
+	public NodeListFunctionBuilder(DB db, ReadOnlyFile currentNode, RequestContext context) {
 		super(
 				db,
 				currentNode,

@@ -22,10 +22,10 @@ package com.github.thmarx.cms.api.content;
  * #L%
  */
 
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -35,9 +35,9 @@ public interface ContentParser {
 	
 	void clearCache();
 	
-	Content parse(final CMSFile contentFile) throws IOException;
+	Content parse(final ReadOnlyFile contentFile) throws IOException;
 	
-	Map<String, Object> parseMeta(final CMSFile contentFile) throws IOException;
+	Map<String, Object> parseMeta(final ReadOnlyFile contentFile) throws IOException;
 	
 	record ContentRecord(String content, String meta) {}
 

@@ -26,8 +26,7 @@ import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.DBFileSystem;
-import com.github.thmarx.cms.api.db.cms.CMSFileSystem;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
@@ -49,6 +48,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.github.thmarx.cms.api.db.cms.ReadyOnlyFileSystem;
 
 /**
  *
@@ -73,7 +73,7 @@ public class NavigationFunctionTest {
 	@Mock
 	ContentNodeMapper contentNodeMapper;
 	@Mock
-	CMSFileSystem cmsFileSystem;
+	ReadyOnlyFileSystem cmsFileSystem;
 	
 	NavigationFunction sut;
 	
@@ -83,11 +83,10 @@ public class NavigationFunctionTest {
 		var contentBase = Path.of("content/");
 		
 		Mockito.lenient().when(db.getFileSystem()).thenReturn(fileSystem);
-		Mockito.lenient().when(db.getCMSFileSystem()).thenReturn(cmsFileSystem);
+		Mockito.lenient().when(db.getReadOnlyFileSystem()).thenReturn(cmsFileSystem);
 		Mockito.lenient().when(db.getContent()).thenReturn(content);
 		Mockito.lenient().when(fileSystem.resolve("content/")).thenReturn(contentBase);
-		Mockito.lenient().when(cmsFileSystem.contentBase()).thenReturn(
-				new NIOCMSFile(contentBase, contentBase.getParent())
+		Mockito.lenient().when(cmsFileSystem.contentBase()).thenReturn(new NIOReadOnlyFile(contentBase, contentBase.getParent())
 		);
 		Mockito.lenient().when(content.byUri("current")).thenReturn(Optional.empty());
 		
@@ -100,7 +99,7 @@ public class NavigationFunctionTest {
 		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(contentNodeMapper));
 		
 		sut = new NavigationFunction(db, 
-				new NIOCMSFile(Path.of("content/current/"), Path.of("content/"))
+				new NIOReadOnlyFile(Path.of("content/current/"), Path.of("content/"))
 				, requestContext);
 	}
 	

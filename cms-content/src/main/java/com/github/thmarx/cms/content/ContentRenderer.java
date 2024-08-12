@@ -24,7 +24,6 @@ package com.github.thmarx.cms.content;
 
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.Page;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -43,16 +43,16 @@ import java.util.function.Consumer;
  */
 public interface ContentRenderer {
 
-	String render(final CMSFile contentFile, final RequestContext context) throws IOException;
+	String render(final ReadOnlyFile contentFile, final RequestContext context) throws IOException;
 
-	String render(final CMSFile contentFile, final RequestContext context, final Map<String, List<Section>> sections) throws IOException;
+	String render(final ReadOnlyFile contentFile, final RequestContext context, final Map<String, List<Section>> sections) throws IOException;
 
-	String render(final CMSFile contentFile, final RequestContext context, final Map<String, List<Section>> sections, final Map<String, Object> meta, final String markdownContent, final Consumer<TemplateEngine.Model> modelExtending) throws IOException;
+	String render(final ReadOnlyFile contentFile, final RequestContext context, final Map<String, List<Section>> sections, final Map<String, Object> meta, final String markdownContent, final Consumer<TemplateEngine.Model> modelExtending) throws IOException;
 
 	Map<String, List<Section>> renderSections(final List<ContentNode> sectionNodes, final RequestContext context) throws IOException;
 
 	String renderTaxonomy(final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, final Map<String, Object> meta, final Page<ListNode> page) throws IOException;
 
-	String renderView(final CMSFile viewFile, final View view, final ContentNode contentNode, final RequestContext requestContext, final Page<ListNode> page) throws IOException;
+	String renderView(final ReadOnlyFile viewFile, final View view, final ContentNode contentNode, final RequestContext requestContext, final Page<ListNode> page) throws IOException;
 	
 }

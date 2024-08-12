@@ -28,8 +28,7 @@ import com.github.thmarx.cms.TestTemplateEngine;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
@@ -45,6 +44,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -66,7 +66,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return contentParser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -99,8 +99,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 						</body>
                      </html>
                      """;
-		var content = contentRenderer.render(
-				new NIOCMSFile(Path.of("hosts/test/content/test.md"), Path.of("hosts/test/"))
+		var content = contentRenderer.render(new NIOReadOnlyFile(Path.of("hosts/test/content/test.md"), Path.of("hosts/test/"))
 				, TestHelper.requestContext());
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);
@@ -118,8 +117,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
                      	</body>
                      </html>
                      """;
-		var content = contentRenderer.render(
-				new NIOCMSFile(Path.of("hosts/test/content/products/test.md"), Path.of("hosts/test/"))
+		var content = contentRenderer.render(new NIOReadOnlyFile(Path.of("hosts/test/content/products/test.md"), Path.of("hosts/test/"))
 				, TestHelper.requestContext());
 		
 		Assertions.assertThat(content).isEqualToIgnoringWhitespace(expectedHTML);

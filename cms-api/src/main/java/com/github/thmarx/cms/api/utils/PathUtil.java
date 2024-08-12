@@ -21,11 +21,11 @@ package com.github.thmarx.cms.api.utils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -61,12 +61,12 @@ public class PathUtil {
 		return uri;
 	}
 	
-	public static String toRelativePath(final CMSFile contentPath, final CMSFile contentBase) {
-		CMSFile tempPath = contentPath;
+	public static String toRelativePath(final ReadOnlyFile contentPath, final ReadOnlyFile contentBase) {
+		ReadOnlyFile tempPath = contentPath;
 		if (!contentPath.isDirectory()) {
 			tempPath = contentPath.getParent();
 		}
-		CMSFile relativize = contentBase.relativize(tempPath);
+		ReadOnlyFile relativize = contentBase.relativize(tempPath);
 		var uri = relativize.toString();
 		uri = uri.replaceAll("\\\\", "/");
 		return uri;
@@ -82,7 +82,7 @@ public class PathUtil {
 		return uri;
 	}
 
-	public static String toRelativeFile(CMSFile contentFile, final CMSFile contentBase) {
+	public static String toRelativeFile(ReadOnlyFile contentFile, final ReadOnlyFile contentBase) {
 		if (contentFile.isDirectory()) {
 			contentFile = contentFile.resolve("index.md");
 		}
@@ -114,7 +114,7 @@ public class PathUtil {
 		return relFile;
 	}
 	
-	public static String toURI(final CMSFile contentFile, final CMSFile contentBase) {
+	public static String toURI(final ReadOnlyFile contentFile, final ReadOnlyFile contentBase) {
 		var relFile = toRelativeFile(contentFile, contentBase);
 		if (relFile.endsWith("index.md")) {
 			relFile = relFile.replace("index.md", "");

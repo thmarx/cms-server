@@ -26,8 +26,7 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.Page;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
-import com.github.thmarx.cms.api.db.cms.NIOCMSFile;
+import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -48,6 +47,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -72,7 +72,7 @@ public class ViewParserTest {
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
-				CMSFile cmsFile = new NIOCMSFile(file, hostBase.resolve(Constants.Folders.CONTENT));
+				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
 				return parser.parseMeta(cmsFile);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -87,7 +87,7 @@ public class ViewParserTest {
 	
 	@Test
 	public void test_query () throws Exception {
-		final CMSFile currentNode = db.getCMSFileSystem().resolve("content/query/view.yaml");		
+		final ReadOnlyFile currentNode = db.getReadOnlyFileSystem().resolve("content/query/view.yaml");		
 		var view = ViewParser.parse(currentNode);		
 		Assertions.assertThat(view).isNotNull();
 	
@@ -119,7 +119,7 @@ public class ViewParserTest {
 	
 	@Test
 	public void test_nodelist () throws Exception {
-		final CMSFile currentNode = db.getCMSFileSystem().resolve("content/view/view.yaml");		
+		final ReadOnlyFile currentNode = db.getReadOnlyFileSystem().resolve("content/view/view.yaml");		
 		var view = ViewParser.parse(currentNode);		
 		Assertions.assertThat(view).isNotNull();
 	
@@ -146,7 +146,7 @@ public class ViewParserTest {
 
 	@Test
 	public void test() throws IOException, URISyntaxException {
-		var view = ViewParser.parse(new NIOCMSFile(
+		var view = ViewParser.parse(new NIOReadOnlyFile(
 				Path.of(ViewParser.class.getResource("view-nodelist.yaml").toURI()), 
 				Path.of("./")));
 		Assertions.assertThat(view.getTemplate()).isEqualTo("views/test.html");

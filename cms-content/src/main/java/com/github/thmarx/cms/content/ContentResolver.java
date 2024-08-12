@@ -26,7 +26,6 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
@@ -38,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -55,8 +55,8 @@ public class ContentResolver {
 		if (uri.startsWith("/")) {
 			uri = uri.substring(1);
 		}
-		var contentBase = db.getCMSFileSystem().contentBase();
-		CMSFile staticFile = contentBase.resolve(uri);
+		var contentBase = db.getReadOnlyFileSystem().contentBase();
+		ReadOnlyFile staticFile = contentBase.resolve(uri);
 		try {
 			if (staticFile.exists()) {
 				return Optional.ofNullable(new ContentResponse(
@@ -90,9 +90,9 @@ public class ContentResolver {
 			path = context.get(RequestFeature.class).uri();
 		}
 		
-		var contentBase = db.getCMSFileSystem().contentBase();
+		var contentBase = db.getReadOnlyFileSystem().contentBase();
 		var contentPath = contentBase.resolve(path);
-		CMSFile contentFile = null;
+		ReadOnlyFile contentFile = null;
 		if (contentPath.exists() && contentPath.isDirectory()) {
 			// use index.md
 			var tempFile = contentPath.resolve("index.md");

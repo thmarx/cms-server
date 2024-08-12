@@ -24,7 +24,6 @@ package com.github.thmarx.cms.content;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
-import com.github.thmarx.cms.api.db.cms.CMSFile;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.CurrentNodeFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -38,6 +37,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -66,9 +66,9 @@ public class ViewResolver {
 			path = context.get(RequestFeature.class).uri();
 		}
 
-		var contentBase = db.getCMSFileSystem().contentBase();
+		var contentBase = db.getReadOnlyFileSystem().contentBase();
 		var contentPath = contentBase.resolve(path);
-		CMSFile contentFile = null;
+		ReadOnlyFile contentFile = null;
 		if (contentPath.exists() && contentPath.isDirectory()) {
 			// use index.md
 			var tempFile = contentPath.resolve("index.md");

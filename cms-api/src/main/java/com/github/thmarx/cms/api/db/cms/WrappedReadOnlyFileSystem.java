@@ -34,32 +34,32 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class WrappedCMSFileSystem implements CMSFileSystem {
+public class WrappedReadOnlyFileSystem implements ReadyOnlyFileSystem {
 	
 	private final DBFileSystem dbFileSytem;
 
 	@Override
-	public CMSFile resolve(String uri) {
+	public ReadOnlyFile resolve(String uri) {
 		return resolveWithBase(uri, dbFileSytem.hostBase());
 	}
 
-	private CMSFile resolveWithBase(final String uri, final Path basePath) {
+	private ReadOnlyFile resolveWithBase(final String uri, final Path basePath) {
 		var resolved = dbFileSytem.resolve(uri);
 		
 		if (!PathUtil.isChild(dbFileSytem.hostBase(), resolved)) {
 			throw new AccessNotAllowedException("not allowed to access nodes outside the host base directory");
 		}
 		
-		return new NIOCMSFile(resolved, basePath);
+		return new NIOReadOnlyFile(resolved, basePath);
 	}
 	
 	@Override
-	public CMSFile contentBase() {
+	public ReadOnlyFile contentBase() {
 		return resolveWithBase(Constants.Folders.CONTENT, dbFileSytem.resolve(Constants.Folders.CONTENT));
 	}
 	
 	@Override
-	public CMSFile assetBase() {
+	public ReadOnlyFile assetBase() {
 		return resolveWithBase(Constants.Folders.ASSETS, dbFileSytem.resolve(Constants.Folders.ASSETS));
 	}
 }

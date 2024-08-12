@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class NIOCMSFile implements CMSFile {
+public class NIOReadOnlyFile implements ReadOnlyFile {
 
 	protected final Path file;
 	private final Path basePath;
@@ -51,14 +51,14 @@ public class NIOCMSFile implements CMSFile {
 	}
 
 	@Override
-	public CMSFile resolve(String uri) {
+	public ReadOnlyFile resolve(String uri) {
 		var resolved = file.resolve(uri);
 		
 		if (!PathUtil.isChild(basePath, resolved)) {
 			throw new AccessNotAllowedException("not allowed to access nodes outside the host base directory");
 		}
 		
-		return new NIOCMSFile(resolved, basePath);
+		return new NIOReadOnlyFile(resolved, basePath);
 	}
 
 	@Override
@@ -82,9 +82,9 @@ public class NIOCMSFile implements CMSFile {
 	}
 
 	@Override
-	public CMSFile relativize(CMSFile node) {
-		var resolved = file.relativize(((NIOCMSFile)node).file);
-		return new NIOCMSFile(resolved, basePath);
+	public ReadOnlyFile relativize(ReadOnlyFile node) {
+		var resolved = file.relativize(((NIOReadOnlyFile)node).file);
+		return new NIOReadOnlyFile(resolved, basePath);
 	}
 
 	@Override
@@ -103,19 +103,19 @@ public class NIOCMSFile implements CMSFile {
 	}
 
 	@Override
-	public CMSFile getParent() {
+	public ReadOnlyFile getParent() {
 		var resolved = file.getParent();
 		
 		if (!PathUtil.isChild(basePath, resolved)) {
 			throw new AccessNotAllowedException("not allowed to access nodes outside the host base directory");
 		}
 		
-		return new NIOCMSFile(resolved, basePath);
+		return new NIOReadOnlyFile(resolved, basePath);
 	}
 
 	@Override
-	public List<? extends CMSFile> children() throws IOException {
-		return Files.list(file).map(path -> new NIOCMSFile(file, basePath)).toList();
+	public List<? extends ReadOnlyFile> children() throws IOException {
+		return Files.list(file).map(path -> new NIOReadOnlyFile(file, basePath)).toList();
 	}
 
 	@Override
@@ -129,8 +129,8 @@ public class NIOCMSFile implements CMSFile {
 	}
 
 	@Override
-	public CMSFile toAbsolutePath() {
-		return new NIOCMSFile(file.toAbsolutePath(), basePath);
+	public ReadOnlyFile toAbsolutePath() {
+		return new NIOReadOnlyFile(file.toAbsolutePath(), basePath);
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public class NIOCMSFile implements CMSFile {
 	}
 
 	@Override
-	public boolean isChild(CMSFile maybeChild) {
+	public boolean isChild(ReadOnlyFile maybeChild) {
 	
 		try {
 			if (maybeChild == null) {
@@ -178,7 +178,7 @@ public class NIOCMSFile implements CMSFile {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		final NIOCMSFile other = (NIOCMSFile) obj;
+		final NIOReadOnlyFile other = (NIOReadOnlyFile) obj;
 		return Objects.equals(this.file, other.file);
 	}
 	
