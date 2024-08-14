@@ -24,7 +24,6 @@ package com.github.thmarx.cms.template.functions.hooks;
 
 import com.github.thmarx.cms.api.hooks.ActionContext;
 import com.github.thmarx.cms.api.hooks.FilterContext;
-import com.github.thmarx.cms.api.hooks.HookContext;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import java.util.List;
 import java.util.Map;
