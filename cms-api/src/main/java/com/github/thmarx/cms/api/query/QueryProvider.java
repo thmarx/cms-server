@@ -22,34 +22,13 @@ package com.github.thmarx.cms.api.query;
  * #L%
  */
 
-import com.github.thmarx.cms.api.annotations.Experimental;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
-
 /**
  *
- * @author t.marx
+ * @author thmar
  */
-@Experimental
-public class QueryGateway {
+public interface QueryProvider<Q extends Query<T>, T> {
 	
-	public Map<Class<? extends Query>, QueryHandler> handlers = new HashMap<>();
+	Class<? extends Query<T>> queryClass ();
 	
-	public  <T, Q extends Query<T>> void register (Class<Q> query, QueryHandler<Q, T> handler) {
-		handlers.put(query, handler);
-	}
-	
-	public void init () {
-		ServiceLoader<QueryProvider> loader = ServiceLoader.load(QueryProvider.class);
-		loader.forEach(provider -> register(provider.queryClass(), provider.handler()));
-	}
-	
-	public <T> T execute (Query<T> query) {
-		if (!handlers.containsKey(query.getClass())) {
-			return null;
-		}
-		
-		return (T) handlers.get(query.getClass()).handle(query);
-	}
+	QueryHandler<Q, T> handler();
 }

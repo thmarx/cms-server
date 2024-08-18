@@ -22,7 +22,10 @@ package com.github.thmarx.cms.api.query;
  * #L%
  */
 
+import com.google.auto.service.AutoService;
+import com.google.j2objc.annotations.AutoreleasePool;
 import lombok.Data;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -38,12 +41,19 @@ public class QueryGatewayTest {
 	@BeforeAll
 	public static void setup () {
 		gateway.register(CustomQuery.class, new CustomQueryHandler());
+		gateway.init();
 	}
 			
 	@Test
 	public void testSomeMethod() {
 		String message = gateway.execute(new CustomQuery("cms"));
 		System.out.println(message);
+	}
+	
+	@Test
+	public void testSecondQuery() {
+		String message = gateway.execute(new SecondQueryProvider.SecondQuery("coder"));
+		Assertions.assertThat(message).isEqualTo("hello coder");
 	}
 
 	public static record CustomQuery(String name) implements Query<String> {
@@ -56,5 +66,25 @@ public class QueryGatewayTest {
 			return "hello " + query.name();
 		}
 		
+	}
+	
+	@AutoService(QueryProvider.class)
+	public static class SecondQueryProvider implements QueryProvider<SecondQueryProvider.SecondQuery, String> {
+
+		@Override
+		public Class<? extends Query<String>> queryClass() {
+			return SecondQuery.class;
+		}
+
+		@Override
+		public QueryHandler<SecondQuery, String> handler() {
+			return (query) -> {
+				return "hello " + query.name();
+			};
+		}
+		
+		public static record SecondQuery(String name) implements Query<String> {
+			
+		}
 	}
 }
