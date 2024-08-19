@@ -25,7 +25,6 @@ package com.github.thmarx.cms.api.template;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.theme.Theme;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
