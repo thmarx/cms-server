@@ -44,5 +44,10 @@
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.google.auto.service</groupId>
+			<artifactId>auto-service</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 </project>
