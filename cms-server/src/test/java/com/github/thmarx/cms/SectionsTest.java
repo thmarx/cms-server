@@ -28,7 +28,7 @@ import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
-import com.github.thmarx.cms.eventbus.DefaultEventBus;
+import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.metadata.memory.MemoryMetaData;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;

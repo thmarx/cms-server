@@ -24,27 +24,29 @@ package com.github.thmarx.cms.git;
 import com.github.thmarx.cms.git.tasks.CloneTask;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutionException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.SchedulerException;
+import org.quartz.Scheduler;
 
 /**
  *
  * @author t.marx
  */
+@RequiredArgsConstructor
 @Slf4j
 public class RepositoryManager {
 
+	private final Scheduler scheduler;
+	
 	Config config;
 	TaskRunner taskRunner;
 
-	GitScheduler scheduler;
+	GitScheduler gitScheduler;
 
 	public void init(final Path configFile) throws IOException {
 		config = Config.load(configFile);
 		taskRunner = new TaskRunner();
-		scheduler = new GitScheduler(taskRunner);
-		scheduler.open();
+		gitScheduler = new GitScheduler(scheduler, taskRunner);
 
 		if (config.getRepos() != null) {
 			log.debug("initial clone repositories");
@@ -54,7 +56,7 @@ public class RepositoryManager {
 				try {
 					log.debug("result : {} ", result.get());
 					log.debug("schedule repo");
-					scheduler.schedule(repo);
+					gitScheduler.schedule(repo);
 				} catch (Exception ex) {
 					log.error("error cloneing repository", ex);
 				}
@@ -64,7 +66,6 @@ public class RepositoryManager {
 	}
 
 	public void close() throws IOException {
-		scheduler.close();
 		taskRunner.executor.shutdown();
 	}
 

@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.git;
+package com.github.thmarx.cms.core.scheduler;
 
 /*-
  * #%L
- * cms-git
+ * cms-core
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,9 @@ package com.github.thmarx.cms.git;
  * #L%
  */
 
+import com.github.thmarx.cms.api.scheduler.CronJob;
+import com.github.thmarx.cms.api.scheduler.CronJobContext;
+import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.CronScheduleBuilder;
@@ -31,35 +34,31 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
 
 /**
  *
  * @author t.marx
  */
-@Slf4j
 @RequiredArgsConstructor
-public class GitScheduler {
+@Slf4j
+public class SiteCronJobScheduler implements CronJobScheduler {
 
 	private final Scheduler scheduler;
-	private final TaskRunner taskRunner;
-
-
-	public void schedule(final Repo repo)  {
+	private final CronJobContext context;
+	
+	@Override
+	public void schedule(String cronExpression, CronJob job) {
 		JobDataMap data = new JobDataMap();
-		data.put("repo", repo);
-		data.put("taskRunner", taskRunner);
+		data.put(CronJobRunner.DATA_CRONJOB, job);
+		data.put(CronJobRunner.DATA_CONTEXT, context);
 		JobDetail jobDetail = JobBuilder
-				.newJob(UpdateRepoJob.class)
-				.withIdentity(repo.getName(), "update-repo")
+				.newJob(CronJobRunner.class)
 				.usingJobData(data)
 				.build();
 		
 		CronTrigger trigger = TriggerBuilder.newTrigger()
-				.withIdentity(repo.getName(), "update-repo")
-				.withSchedule(CronScheduleBuilder.cronSchedule(repo.getCron()))
+				.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
 				.startNow()
 				.forJob(jobDetail)
 				.build();
@@ -71,4 +70,5 @@ public class GitScheduler {
 			throw new RuntimeException(ex);
 		}
 	}
+	
 }

@@ -32,7 +32,7 @@ import com.github.thmarx.cms.api.eventbus.events.lifecycle.HostReadyEvent;
 import com.github.thmarx.cms.api.eventbus.events.lifecycle.ReloadHostEvent;
 import com.github.thmarx.cms.api.eventbus.events.lifecycle.ServerReadyEvent;
 import com.github.thmarx.cms.api.eventbus.events.lifecycle.ServerShutdownInitiated;
-import com.github.thmarx.cms.eventbus.DefaultEventBus;
+import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,8 +41,11 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.server.VHost;
+import com.google.inject.Injector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -54,6 +57,8 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.QoSHandler;
 import org.eclipse.jetty.server.handler.ThreadLimitHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 /**
  *
@@ -63,7 +68,7 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 @Slf4j
 public class JettyServer implements AutoCloseable {
 
-	private final ServerProperties properties;
+	private final Injector globalInjector;
 	private Server server;
 
 	private ScheduledExecutorService scheduledExecutorService;
@@ -93,6 +98,7 @@ public class JettyServer implements AutoCloseable {
 	public void startup() throws IOException {
 
 		scheduledExecutorService = Executors.newScheduledThreadPool(1);
+		var properties = globalInjector.getInstance(ServerProperties.class);
 
 		Files.list(Path.of("hosts")).forEach((hostPath) -> {
 			var props = hostPath.resolve("site.yaml");
@@ -101,7 +107,7 @@ public class JettyServer implements AutoCloseable {
 					Configuration configuration = new Configuration(hostPath);
 					configuration.add(ServerConfiguration.class, new ServerConfiguration(properties));
 					var host = new VHost(hostPath, configuration, scheduledExecutorService);
-					host.init(Path.of(Constants.Folders.MODULES));
+					host.init(Path.of(Constants.Folders.MODULES), globalInjector);
 					vhosts.add(host);
 
 					host.getInjector().getInstance(ConfigurationManagement.class).init();
@@ -133,6 +139,12 @@ public class JettyServer implements AutoCloseable {
 				host.shutdown();
 			});
 			scheduledExecutorService.shutdownNow();
+			
+			try {
+				globalInjector.getInstance(Scheduler.class).shutdown();
+			} catch (SchedulerException ex) {
+				log.error("", ex);
+			}
 
 			log.debug("exit");
 		}));
@@ -143,7 +155,7 @@ public class JettyServer implements AutoCloseable {
 		HttpConnectionFactory http11 = new HttpConnectionFactory(httpConfig);
 
 		QueuedThreadPool threadPool = new QueuedThreadPool();
-		threadPool.setVirtualThreadsExecutor(Executors.newVirtualThreadPerTaskExecutor());
+		//threadPool.setVirtualThreadsExecutor(Executors.newVirtualThreadPerTaskExecutor());
 
 		server = new Server(threadPool);
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));

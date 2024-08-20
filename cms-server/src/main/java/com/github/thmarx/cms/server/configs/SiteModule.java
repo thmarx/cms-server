@@ -47,7 +47,7 @@ import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.content.TaxonomyResolver;
 import com.github.thmarx.cms.content.ViewResolver;
-import com.github.thmarx.cms.eventbus.DefaultEventBus;
+import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.filesystem.MetaData;
@@ -68,6 +68,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
+import com.github.thmarx.cms.api.feature.features.ConfigurationFeature;
+import com.github.thmarx.cms.api.feature.features.DBFeature;
+import com.github.thmarx.cms.api.feature.features.EventBusFeature;
+import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
+import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
+import com.github.thmarx.cms.api.feature.features.ThemeFeature;
+import com.github.thmarx.cms.api.module.CMSModuleContext;
+import com.github.thmarx.cms.api.scheduler.CronJobContext;
+import com.github.thmarx.cms.core.scheduler.SiteCronJobScheduler;
+import org.quartz.Scheduler;
 
 /**
  *
@@ -97,11 +107,6 @@ public class SiteModule extends AbstractModule {
 	@Provides
 	public SiteProperties siteProperties(Configuration configuration) throws IOException {
 		return configuration.get(SiteConfiguration.class).siteProperties();
-	}
-
-	@Provides
-	public ServerProperties serverProperties(Configuration configuration) throws IOException {
-		return configuration.get(ServerConfiguration.class).serverProperties();
 	}
 
 	@Provides
@@ -239,5 +244,26 @@ public class SiteModule extends AbstractModule {
 	public ViewResolver viewResolver(ContentRenderer contentRenderer,
 			FileDB db) {
 		return new ViewResolver(contentRenderer, db);
+	}
+	
+	@Provides
+	@Singleton
+	public CronJobContext cronJobContext(SiteProperties siteProperties, ServerProperties serverProperties, FileDB db, EventBus eventBus, Theme theme,
+			Configuration configuration) {
+		final CronJobContext cronJobContext = new CronJobContext();
+		cronJobContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
+		cronJobContext.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(serverProperties));
+		cronJobContext.add(DBFeature.class, new DBFeature(db));
+		cronJobContext.add(EventBusFeature.class, new EventBusFeature(eventBus));
+		cronJobContext.add(ThemeFeature.class, new ThemeFeature(theme));
+		cronJobContext.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
+		
+		return cronJobContext;
+	}
+	
+	@Provides
+	@Singleton
+	public SiteCronJobScheduler siteCronJobScheduler (Scheduler scheduler, CronJobContext context) {
+		return new SiteCronJobScheduler(scheduler, context);
 	}
 }

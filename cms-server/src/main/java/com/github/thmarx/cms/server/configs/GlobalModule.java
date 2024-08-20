@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.git;
+package com.github.thmarx.cms.server.configs;
 
 /*-
  * #%L
- * cms-git
+ * cms-server
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,18 +21,17 @@ package com.github.thmarx.cms.git;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import lombok.RequiredArgsConstructor;
+import com.github.thmarx.cms.api.PropertiesLoader;
+import com.github.thmarx.cms.api.ServerProperties;
+import com.google.inject.Binder;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import java.io.IOException;
+import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
-import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 
 /**
@@ -40,35 +39,30 @@ import org.quartz.impl.StdSchedulerFactory;
  * @author t.marx
  */
 @Slf4j
-@RequiredArgsConstructor
-public class GitScheduler {
+public class GlobalModule implements com.google.inject.Module {
 
-	private final Scheduler scheduler;
-	private final TaskRunner taskRunner;
+	@Override
+	public void configure(Binder binder) {
 
+	}
 
-	public void schedule(final Repo repo)  {
-		JobDataMap data = new JobDataMap();
-		data.put("repo", repo);
-		data.put("taskRunner", taskRunner);
-		JobDetail jobDetail = JobBuilder
-				.newJob(UpdateRepoJob.class)
-				.withIdentity(repo.getName(), "update-repo")
-				.usingJobData(data)
-				.build();
-		
-		CronTrigger trigger = TriggerBuilder.newTrigger()
-				.withIdentity(repo.getName(), "update-repo")
-				.withSchedule(CronScheduleBuilder.cronSchedule(repo.getCron()))
-				.startNow()
-				.forJob(jobDetail)
-				.build();
-		
+	@Provides
+	@Singleton
+	public Scheduler scheduler() {
 		try {
-			scheduler.scheduleJob(jobDetail, trigger);
+			SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+			var scheduler = schedulerFactory.getScheduler();
+			scheduler.start();
+
+			return scheduler();
 		} catch (SchedulerException ex) {
 			log.error(null, ex);
 			throw new RuntimeException(ex);
 		}
+	}
+
+	@Provides
+	public ServerProperties serverProperties() throws IOException {
+		return PropertiesLoader.serverProperties(Path.of("server.yaml"));
 	}
 }

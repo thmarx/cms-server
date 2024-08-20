@@ -28,7 +28,10 @@ import java.time.Duration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SchedulerFactory;
+import org.quartz.impl.StdSchedulerFactory;
 
 /**
  *
@@ -36,24 +39,30 @@ import org.quartz.SchedulerException;
  */
 public class GitSchedulerTest {
 	
-	static GitScheduler scheduler;
+	static GitScheduler gitScheduler;
 	static TaskRunner runner = new TaskRunner();
+	
+	static Scheduler scheduler;
 	
 	@BeforeAll
 	static void setup () throws Exception {
-		scheduler = new GitScheduler(runner);
-		scheduler.open();
+		
+		SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+		scheduler = schedulerFactory.getScheduler();
+		scheduler.start();
+		
+		gitScheduler = new GitScheduler(scheduler, runner);
 	}
 	@AfterAll
 	static void shutdown () throws Exception {
-		scheduler.close();
+		scheduler.shutdown();
 		runner.executor.shutdown();
 	}
 
 	@Test
 	public void testSomeMethod() throws IOException, SchedulerException, InterruptedException {
 		var config = Config.load(Path.of("git.yaml"));
-		scheduler.schedule(config.getRepos().get(0));
+		gitScheduler.schedule(config.getRepos().get(0));
 		Thread.sleep(Duration.ofSeconds(15));
 	}
 	

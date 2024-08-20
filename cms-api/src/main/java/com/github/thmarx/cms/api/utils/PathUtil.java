@@ -34,20 +34,19 @@ import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 @Slf4j
 public class PathUtil {
 
+	public static String canonicalPath(final Path file) {
+		return file.toAbsolutePath().normalize().toString();
+	}
+
 	public static boolean isContentFile(final Path file) {
 		return file.toString().endsWith(".md");
 	}
 
 	public static boolean isChild(Path possibleParent, Path maybeChild) {
-		try {
-			if (maybeChild == null || possibleParent == null) {
-				return false;
-			}
-			return maybeChild.toFile().getCanonicalPath().startsWith(possibleParent.toFile().getCanonicalPath());
-		} catch (IOException ex) {
-			log.error("", ex);
+		if (maybeChild == null || possibleParent == null) {
+			return false;
 		}
-		return false;
+		return canonicalPath(maybeChild).startsWith(canonicalPath(possibleParent));
 	}
 
 	public static String toRelativePath(final Path contentPath, final Path contentBase) {
@@ -60,7 +59,7 @@ public class PathUtil {
 		uri = uri.replaceAll("\\\\", "/");
 		return uri;
 	}
-	
+
 	public static String toRelativePath(final ReadOnlyFile contentPath, final ReadOnlyFile contentBase) {
 		ReadOnlyFile tempPath = contentPath;
 		if (!contentPath.isDirectory()) {
@@ -91,7 +90,7 @@ public class PathUtil {
 		uri = uri.replaceAll("\\\\", "/");
 		return uri;
 	}
-	
+
 	public static String toURI(final Path contentFile, final Path contentBase) {
 		var relFile = toRelativeFile(contentFile, contentBase);
 		if (relFile.endsWith("index.md")) {
@@ -113,7 +112,7 @@ public class PathUtil {
 
 		return relFile;
 	}
-	
+
 	public static String toURI(final ReadOnlyFile contentFile, final ReadOnlyFile contentBase) {
 		var relFile = toRelativeFile(contentFile, contentBase);
 		if (relFile.endsWith("index.md")) {

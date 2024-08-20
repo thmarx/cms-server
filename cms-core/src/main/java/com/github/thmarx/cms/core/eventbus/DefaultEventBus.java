@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.eventbus;
+package com.github.thmarx.cms.core.eventbus;
 
 /*-
  * #%L
@@ -26,7 +26,6 @@ import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.Event;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import lombok.extern.slf4j.Slf4j;
 
 /**

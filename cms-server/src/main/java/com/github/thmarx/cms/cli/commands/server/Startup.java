@@ -23,18 +23,21 @@ package com.github.thmarx.cms.cli.commands.server;
  */
 
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.ServerContext;
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.cli.tools.ModulesUtil;
 import com.github.thmarx.cms.git.RepositoryManager;
 import com.github.thmarx.cms.ipc.IPCServer;
+import com.github.thmarx.cms.server.configs.GlobalModule;
 import com.github.thmarx.cms.server.jetty.JettyServer;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.Scheduler;
 import picocli.CommandLine;
 
 /**
@@ -64,15 +67,16 @@ public class Startup implements Runnable {
 			System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 			System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
-			ServerProperties properties = PropertiesLoader.serverProperties(Path.of("server.yaml"));
-
+			var globalInjector = Guice.createInjector(new GlobalModule());
+			ServerProperties properties = globalInjector.getInstance(ServerProperties.class);
+			
 			printStartup(properties);
 
 			ServerContext.IS_DEV = properties.dev();
 
-			initGitRepositoryManager();
+			initGitRepositoryManager(globalInjector);
 			
-			var server = new JettyServer(properties);
+			var server = new JettyServer(globalInjector);
 			
 			var ipcServer = new IPCServer(properties.ipc(), server::fireServerEvent);
 			ipcServer.start();
@@ -90,14 +94,14 @@ public class Startup implements Runnable {
 		Files.writeString(Path.of(Constants.PID_FILE), String.valueOf(ProcessHandle.current().pid()));
 	}
 
-	private static void initGitRepositoryManager() throws IOException {
+	private static void initGitRepositoryManager(Injector globaInjector) throws IOException {
 		Path gitConfig = Path.of("git.yaml");
 		if (!Files.exists(gitConfig)) {
 			log.info("no repository configuration found");
 			return;
 		}
 		log.info("repository configuration found");
-		final RepositoryManager repositoryManager = new RepositoryManager();
+		final RepositoryManager repositoryManager = new RepositoryManager(globaInjector.getInstance(Scheduler.class));
 		repositoryManager.init(gitConfig);
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {

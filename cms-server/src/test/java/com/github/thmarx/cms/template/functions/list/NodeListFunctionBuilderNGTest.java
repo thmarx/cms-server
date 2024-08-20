@@ -30,7 +30,7 @@ import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
-import com.github.thmarx.cms.eventbus.DefaultEventBus;
+import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.api.model.ListNode;
 import java.io.IOException;

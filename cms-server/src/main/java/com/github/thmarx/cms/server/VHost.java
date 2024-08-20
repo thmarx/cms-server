@@ -166,8 +166,8 @@ public class VHost {
 		return injector.getInstance(SiteProperties.class).hostnames();
 	}
 
-	public void init(Path modulesPath) throws IOException {
-		this.injector = Guice.createInjector(new SiteModule(hostBase, configuration, scheduledExecutorService),
+	public void init(Path modulesPath, Injector globalInjector) throws IOException {
+		this.injector = globalInjector.createChildInjector(new SiteModule(hostBase, configuration, scheduledExecutorService),
 				new ModulesModule(modulesPath), new SiteHandlerModule(), new ThemeModule());
 
 		final CMSModuleContext cmsModuleContext = injector.getInstance(CMSModuleContext.class);

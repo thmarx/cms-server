@@ -135,7 +135,7 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 
 	@Override
 	public String getCanonicalPath() throws IOException {
-		return file.toFile().getCanonicalPath();
+		return file.toAbsolutePath().normalize().toString();
 	}
 
 	@Override

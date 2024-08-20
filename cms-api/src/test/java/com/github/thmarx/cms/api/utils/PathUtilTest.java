@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.utils;
  * #L%
  */
 
+import java.io.IOException;
 import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,13 @@ import org.junit.jupiter.api.Test;
  */
 public class PathUtilTest {
 	
-	
+	@Test
+	public void test_canonical () throws IOException {
+		String file = "pom.xml";
+		
+		System.out.println("canonical: " + Path.of(file).toFile().getCanonicalPath());
+		System.out.println("alternative: " + Path.of(file).toAbsolutePath().normalize().toString());
+	}
 
 	@Test
 	public void test_to_uri() {

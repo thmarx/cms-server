@@ -31,7 +31,7 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import static com.github.thmarx.cms.content.ContentRendererNGTest.contentRenderer;
 import static com.github.thmarx.cms.content.ContentRendererNGTest.moduleManager;
-import com.github.thmarx.cms.eventbus.DefaultEventBus;
+import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import java.io.IOException;
 import java.nio.file.Path;

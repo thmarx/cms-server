@@ -22,6 +22,7 @@ package com.github.thmarx.cms.eventbus;
  * #L%
  */
 
+import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.github.thmarx.cms.api.eventbus.events.GenericEvent;

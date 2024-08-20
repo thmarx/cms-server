@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.git;
+package com.github.thmarx.cms.core.scheduler;
 
 /*-
  * #%L
- * cms-git
+ * cms-core
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +22,8 @@ package com.github.thmarx.cms.git;
  * #L%
  */
 
-import lombok.RequiredArgsConstructor;
+import com.github.thmarx.cms.api.scheduler.CronJob;
+import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -40,26 +41,21 @@ import org.quartz.impl.StdSchedulerFactory;
  * @author t.marx
  */
 @Slf4j
-@RequiredArgsConstructor
-public class GitScheduler {
+public class CMSCronJobScheduler implements CronJobScheduler, AutoCloseable {
 
-	private final Scheduler scheduler;
-	private final TaskRunner taskRunner;
-
-
-	public void schedule(final Repo repo)  {
+	Scheduler scheduler;
+	
+	@Override
+	public void schedule(String cronExpression, CronJob job) {
 		JobDataMap data = new JobDataMap();
-		data.put("repo", repo);
-		data.put("taskRunner", taskRunner);
+		data.put("cronJob", job);
 		JobDetail jobDetail = JobBuilder
-				.newJob(UpdateRepoJob.class)
-				.withIdentity(repo.getName(), "update-repo")
+				.newJob(CronJobRunner.class)
 				.usingJobData(data)
 				.build();
 		
 		CronTrigger trigger = TriggerBuilder.newTrigger()
-				.withIdentity(repo.getName(), "update-repo")
-				.withSchedule(CronScheduleBuilder.cronSchedule(repo.getCron()))
+				.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
 				.startNow()
 				.forJob(jobDetail)
 				.build();
@@ -71,4 +67,23 @@ public class GitScheduler {
 			throw new RuntimeException(ex);
 		}
 	}
+
+	public void open () {
+		try {
+			SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+			scheduler = schedulerFactory.getScheduler();
+			scheduler.start();
+		} catch (SchedulerException ex) {
+			log.error(null, ex);
+			throw new RuntimeException(ex);
+		}
+	}
+	
+	@Override
+	public void close() throws Exception {
+		if (scheduler != null) {
+			scheduler.shutdown();
+		}
+	}
+	
 }
