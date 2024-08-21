@@ -23,34 +23,44 @@ package com.github.thmarx.cms.core.scheduler;
  */
 
 import com.github.thmarx.cms.api.scheduler.CronJob;
-import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
+import com.github.thmarx.cms.api.scheduler.CronJobContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
+import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
 
 /**
  *
  * @author t.marx
  */
+@RequiredArgsConstructor
 @Slf4j
-public class CMSCronJobScheduler implements CronJobScheduler, AutoCloseable {
+public class AbstractCronJobScheduler {
 
-	Scheduler scheduler;
+	private final Scheduler scheduler;
+	private final CronJobContext context;
 	
-	@Override
-	public void schedule(String cronExpression, CronJob job) {
+	protected void schedule(
+			String cronExpression, 
+			String name, 
+			CronJob job, 
+			Class<? extends Job> jobClass) {
 		JobDataMap data = new JobDataMap();
-		data.put("cronJob", job);
+		data.put(SingleCronJobRunner.DATA_CRONJOB, job);
+		data.put(SingleCronJobRunner.DATA_CONTEXT, context);
 		JobDetail jobDetail = JobBuilder
-				.newJob(CronJobRunner.class)
+				.newJob(jobClass)
+				.withIdentity(name)
 				.usingJobData(data)
 				.build();
 		
@@ -67,22 +77,23 @@ public class CMSCronJobScheduler implements CronJobScheduler, AutoCloseable {
 			throw new RuntimeException(ex);
 		}
 	}
-
-	public void open () {
+	
+	protected boolean exists (String name) {
 		try {
-			SchedulerFactory schedulerFactory = new StdSchedulerFactory();
-			scheduler = schedulerFactory.getScheduler();
-			scheduler.start();
+			return scheduler.checkExists(JobKey.jobKey(name));
 		} catch (SchedulerException ex) {
-			log.error(null, ex);
+			log.error("", ex);
 			throw new RuntimeException(ex);
 		}
 	}
+
 	
-	@Override
-	public void close() throws Exception {
-		if (scheduler != null) {
-			scheduler.shutdown();
+	protected void remove(String name) {
+		try {
+			scheduler.deleteJob(JobKey.jobKey(name));
+		} catch (SchedulerException ex) {
+			log.error("", ex);
+			throw new RuntimeException(ex);
 		}
 	}
 	

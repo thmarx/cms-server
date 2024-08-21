@@ -22,36 +22,38 @@ package com.github.thmarx.cms.core.scheduler;
  * #L%
  */
 
+
 import com.github.thmarx.cms.api.scheduler.CronJob;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
-import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
-import lombok.extern.slf4j.Slf4j;
-import org.quartz.Scheduler;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 /**
  *
  * @author t.marx
  */
-@Slf4j
-public class SiteCronJobScheduler extends AbstractCronJobScheduler implements CronJobScheduler {
+public class ScriptCronJobRunner implements Job {
 
-	public SiteCronJobScheduler(Scheduler scheduler, CronJobContext context) {
-		super(scheduler, context);
-	}
+	public static final String DATA_CRONJOB = "cronjob";
+	public static final String DATA_CONTEXT = "context";
+	
+	private static final Lock LOCK = new ReentrantLock(true);
 	
 	@Override
-	public void schedule(String cronExpression, String name, CronJob job) {
-		super.schedule(cronExpression, name, job, DefaultCronJobRunner.class);
-	}
-
-	@Override
-	public void remove(String name) {
-		super.remove(name);
-	}
-	
-	@Override
-	public boolean exists(String name) {
-		return super.exists(name);
+	public void execute(JobExecutionContext context) throws JobExecutionException {
+		if (context.getJobDetail().getJobDataMap().get(DATA_CRONJOB) != null) {
+			CronJobContext jobContext = (CronJobContext) context.getJobDetail().getJobDataMap().get(DATA_CONTEXT);
+			
+			LOCK.lock();
+			try {
+				((CronJob)context.getJobDetail().getJobDataMap().get(DATA_CRONJOB)).accept(jobContext);
+			} finally {
+				LOCK.unlock();
+			}
+		}
 	}
 	
 }

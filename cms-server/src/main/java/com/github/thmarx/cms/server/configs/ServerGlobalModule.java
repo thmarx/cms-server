@@ -28,7 +28,9 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
+import org.graalvm.polyglot.Engine;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
@@ -39,7 +41,7 @@ import org.quartz.impl.StdSchedulerFactory;
  * @author t.marx
  */
 @Slf4j
-public class GlobalModule implements com.google.inject.Module {
+public class ServerGlobalModule implements com.google.inject.Module {
 
 	@Override
 	public void configure(Binder binder) {
@@ -54,7 +56,7 @@ public class GlobalModule implements com.google.inject.Module {
 			var scheduler = schedulerFactory.getScheduler();
 			scheduler.start();
 
-			return scheduler();
+			return scheduler;
 		} catch (SchedulerException ex) {
 			log.error(null, ex);
 			throw new RuntimeException(ex);
@@ -64,5 +66,12 @@ public class GlobalModule implements com.google.inject.Module {
 	@Provides
 	public ServerProperties serverProperties() throws IOException {
 		return PropertiesLoader.serverProperties(Path.of("server.yaml"));
+	}
+	
+	@Provides
+	public Engine engine() throws IOException {
+		return Engine.newBuilder("js")
+					.option("engine.WarnInterpreterOnly", "false")
+					.build();
 	}
 }

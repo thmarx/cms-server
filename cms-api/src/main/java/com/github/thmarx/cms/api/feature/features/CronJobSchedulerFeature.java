@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.api.scheduler;
+package com.github.thmarx.cms.api.feature.features;
 
 /*-
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,15 +22,13 @@ package com.github.thmarx.cms.api.scheduler;
  * #L%
  */
 
+import com.github.thmarx.cms.api.feature.Feature;
+import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
+
 /**
  *
  * @author t.marx
  */
-public interface CronJobScheduler {
-	
-	void schedule (String cronExpression, String name, CronJob job);
-	
-	void remove (String name);
-	
-	boolean exists (String name);
+public record CronJobSchedulerFeature(CronJobScheduler cronJobScheduler) implements Feature {
+
 }

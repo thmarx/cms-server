@@ -44,8 +44,6 @@ import com.github.thmarx.cms.server.VHost;
 import com.google.inject.Injector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -57,6 +55,8 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.QoSHandler;
 import org.eclipse.jetty.server.handler.ThreadLimitHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Engine;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -81,7 +81,7 @@ public class JettyServer implements AutoCloseable {
 	public void fireServerEvent(Event event) {
 		serverEventBus.publish(event);
 	}
-
+	
 	public void reloadVHost(String vhost) {
 		log.debug("try reloading " + vhost);
 		vhosts.stream()
@@ -145,6 +145,7 @@ public class JettyServer implements AutoCloseable {
 			} catch (SchedulerException ex) {
 				log.error("", ex);
 			}
+			globalInjector.getInstance(Engine.class).close(true);
 
 			log.debug("exit");
 		}));
@@ -155,7 +156,7 @@ public class JettyServer implements AutoCloseable {
 		HttpConnectionFactory http11 = new HttpConnectionFactory(httpConfig);
 
 		QueuedThreadPool threadPool = new QueuedThreadPool();
-		//threadPool.setVirtualThreadsExecutor(Executors.newVirtualThreadPerTaskExecutor());
+		threadPool.setVirtualThreadsExecutor(Executors.newVirtualThreadPerTaskExecutor());
 
 		server = new Server(threadPool);
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));

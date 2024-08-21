@@ -30,6 +30,7 @@ import com.github.thmarx.cms.api.configuration.ConfigurationManagement;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
+import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.github.thmarx.cms.api.eventbus.events.ConfigurationFileChanged;
@@ -38,11 +39,12 @@ import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.SitePropertiesChanged;
 import com.github.thmarx.cms.api.eventbus.events.lifecycle.HostReloadedEvent;
 import com.github.thmarx.cms.api.eventbus.events.lifecycle.HostStoppedEvent;
-import com.github.thmarx.cms.extensions.ExtensionManager;
 import com.github.thmarx.cms.api.feature.features.ContentRenderFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
+import com.github.thmarx.cms.extensions.GlobalExtensions;
+import com.github.thmarx.cms.extensions.hooks.GlobalHooks;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.media.MediaManager;
 import com.github.thmarx.cms.media.SiteMediaManager;
@@ -61,6 +63,7 @@ import com.github.thmarx.cms.server.handler.module.JettyRoutesHandler;
 import com.github.thmarx.cms.server.handler.content.JettyTaxonomyHandler;
 import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
 import com.github.thmarx.cms.server.configs.ModulesModule;
+import com.github.thmarx.cms.server.configs.SiteGlobalModule;
 import com.github.thmarx.cms.server.configs.SiteHandlerModule;
 import com.github.thmarx.cms.server.configs.SiteModule;
 import com.github.thmarx.cms.server.configs.ThemeModule;
@@ -68,7 +71,6 @@ import com.github.thmarx.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyExtensionRouteHandler;
 import com.github.thmarx.cms.utils.SiteUtils;
 import com.github.thmarx.modules.api.ModuleManager;
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
@@ -119,7 +121,6 @@ public class VHost {
 		try {
 			injector.getInstance(EventBus.class).syncPublish(new HostStoppedEvent(id()));
 			injector.getInstance(FileDB.class).close();
-			injector.getInstance(ExtensionManager.class).close();
 		} catch (Exception ex) {
 			log.error("", ex);
 		}
@@ -167,8 +168,12 @@ public class VHost {
 	}
 
 	public void init(Path modulesPath, Injector globalInjector) throws IOException {
-		this.injector = globalInjector.createChildInjector(new SiteModule(hostBase, configuration, scheduledExecutorService),
-				new ModulesModule(modulesPath), new SiteHandlerModule(), new ThemeModule());
+		this.injector = globalInjector.createChildInjector(
+				new SiteGlobalModule(),
+				new SiteModule(hostBase, configuration, scheduledExecutorService),
+				new ModulesModule(modulesPath), 
+				new SiteHandlerModule(), 
+				new ThemeModule());
 
 		final CMSModuleContext cmsModuleContext = injector.getInstance(CMSModuleContext.class);
 		var moduleManager = injector.getInstance(ModuleManager.class);
@@ -203,6 +208,18 @@ public class VHost {
 		});
 		injector.getInstance(EventBus.class).register(ConfigurationFileChanged.class,
 				(event) -> reloadConfiguration(event.clazz()));
+		
+		initSiteGlobals();
+	}
+	
+	private void initSiteGlobals () throws IOException {
+		var globalJs = injector.getInstance(DB.class).getReadOnlyFileSystem().resolve("site.globals.js");
+		if (globalJs.exists()) {
+			var context = injector.getInstance(GlobalExtensions.class);
+			context.evaluate(globalJs.getContent());
+			
+			injector.getInstance(GlobalHooks.class).registerCronJob();
+		}
 	}
 
 	protected List<String> getActiveModules() {

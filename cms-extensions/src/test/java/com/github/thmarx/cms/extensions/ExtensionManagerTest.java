@@ -21,7 +21,6 @@ package com.github.thmarx.cms.extensions;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.feature.features.AuthFeature;
@@ -33,7 +32,10 @@ import com.github.thmarx.cms.filesystem.FileSystem;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
+import org.graalvm.polyglot.Engine;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +49,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  */
 @ExtendWith(MockitoExtension.class)
 public class ExtensionManagerTest {
-	
+
 	@Mock
 	DB db;
 	@Mock
@@ -56,13 +58,25 @@ public class ExtensionManagerTest {
 	ServerProperties properties;
 	@Mock
 	FileSystem fileSystem;
-	
-	
+
 	ExtensionManager extensionManager;
-	
+
+	static Engine engine;
+
+	@BeforeAll
+	public static void initEngine() {
+		engine = Engine.newBuilder("js")
+				.option("engine.WarnInterpreterOnly", "false")
+				.build();
+	}
+	@AfterAll
+	public static void shutdown() throws Exception {
+		engine.close(true);
+	}
+
 	@BeforeEach
-	public void setup () throws Exception {
-		
+	public void setup() throws Exception {
+
 		Mockito.when(fileSystem.resolve("libs/"))
 				.thenReturn(Path.of("src/test/resources/site/libs"));
 		Mockito.when(fileSystem.resolve("extensions/"))
@@ -70,42 +84,34 @@ public class ExtensionManagerTest {
 		Mockito.when(db.getFileSystem()).thenReturn(fileSystem);
 		Mockito.when(theme.extensionsPath())
 				.thenReturn(Path.of("src/test/resources/theme/extensions"));
-		
-		extensionManager = new ExtensionManager(db, theme, properties);
-		extensionManager.init();
-	}
-	
-	@AfterEach
-	public void shutdown () throws Exception {
-		extensionManager.close();
+
+		extensionManager = new ExtensionManager(db, theme, properties, engine);
 	}
 
 	@Test
 	public void test_with_auth() throws IOException {
-		
+
 		var requestContext = new RequestContext();
 		final HookSystem hookSystem = new HookSystem();
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
 		requestContext.add(AuthFeature.class, new AuthFeature("thorsten"));
 		extensionManager.newContext(theme, requestContext);
-		
+
 		Assertions.assertThat(hookSystem.execute("test").results())
 				.hasSize(1)
-				.containsExactly("Hallo thorsten")
-				;
+				.containsExactly("Hallo thorsten");
 	}
-	
+
 	@Test
 	public void test_without_auth() throws IOException {
-		
+
 		var requestContext = new RequestContext();
 		final HookSystem hookSystem = new HookSystem();
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
 		extensionManager.newContext(theme, requestContext);
-		
+
 		Assertions.assertThat(hookSystem.execute("test").results())
 				.hasSize(1)
-				.containsExactly("Guten Tag")
-				;
+				.containsExactly("Guten Tag");
 	}
 }

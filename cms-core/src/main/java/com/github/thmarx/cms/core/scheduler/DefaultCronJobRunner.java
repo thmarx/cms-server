@@ -25,6 +25,8 @@ package com.github.thmarx.cms.core.scheduler;
 
 import com.github.thmarx.cms.api.scheduler.CronJob;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
+import static com.github.thmarx.cms.core.scheduler.SingleCronJobRunner.DATA_CONTEXT;
+import static com.github.thmarx.cms.core.scheduler.SingleCronJobRunner.DATA_CRONJOB;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -33,16 +35,13 @@ import org.quartz.JobExecutionException;
  *
  * @author t.marx
  */
-public class CronJobRunner implements Job {
+public class DefaultCronJobRunner implements Job {
 
-	public static final String DATA_CRONJOB = "cronjob";
-	public static final String DATA_CONTEXT = "context";
-	
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		if (context.get(DATA_CRONJOB) != null) {
-			CronJobContext jobContext = (CronJobContext) context.get(DATA_CONTEXT);
-			((CronJob)context.get(DATA_CRONJOB)).accept(null);
+		if (context.getJobDetail().getJobDataMap().get(DATA_CRONJOB) != null) {
+			CronJobContext jobContext = (CronJobContext) context.getJobDetail().getJobDataMap().get(DATA_CONTEXT);
+			((CronJob)context.getJobDetail().getJobDataMap().get(DATA_CRONJOB)).accept(jobContext);
 		}
 	}
 	

@@ -52,14 +52,14 @@ import org.graalvm.polyglot.io.IOAccess;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class ExtensionManager implements AutoCloseable {
+public class ExtensionManager {
 
 	private final DB db;
 	private final Theme parentTheme;
 	private final ServerProperties serverProperties;
 
 	@Getter
-	private Engine engine;
+	private final Engine engine;
 
 	private ClassLoader getClassLoader() throws IOException {
 		Path libs = db.getFileSystem().resolve("libs/");
@@ -76,15 +76,6 @@ public class ExtensionManager implements AutoCloseable {
 					});
 		}
 		return new URLClassLoader(urls.toArray(URL[]::new), ClassLoader.getSystemClassLoader());
-	}
-
-	public void init() throws IOException {
-		if (engine == null) {
-			log.debug("init extensions");
-			engine = Engine.newBuilder("js")
-					.option("engine.WarnInterpreterOnly", "false")
-					.build();
-		}
 	}
 
 	protected void loadExtensions(final Path extPath, final List<Source> sources) throws IOException {
@@ -191,12 +182,4 @@ public class ExtensionManager implements AutoCloseable {
 		bindings.putMember("requestContext", requestContext);
 		bindings.putMember("ENV", serverProperties.env());
 	}
-
-	@Override
-	public void close() throws Exception {
-		if (engine != null) {
-			engine.close(true);
-		}
-	}
-
 }

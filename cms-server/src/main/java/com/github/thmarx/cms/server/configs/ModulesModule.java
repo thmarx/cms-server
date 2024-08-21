@@ -29,6 +29,7 @@ import com.github.thmarx.cms.api.extensions.HookSystemRegisterExtentionPoint;
 import com.github.thmarx.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
 import com.github.thmarx.cms.api.extensions.TemplateEngineProviderExtentionPoint;
 import com.github.thmarx.cms.api.feature.features.ConfigurationFeature;
+import com.github.thmarx.cms.api.feature.features.CronJobSchedulerFeature;
 import com.github.thmarx.cms.api.feature.features.DBFeature;
 import com.github.thmarx.cms.api.feature.features.EventBusFeature;
 import com.github.thmarx.cms.api.feature.features.ModuleManagerFeature;
@@ -44,6 +45,7 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.content.markdown.module.CMSMarkdownRenderer;
+import com.github.thmarx.cms.core.scheduler.SiteCronJobScheduler;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
 import com.github.thmarx.modules.manager.ModuleManagerImpl;
@@ -115,7 +117,7 @@ public class ModulesModule extends AbstractModule {
 	@Provides
 	@Singleton
 	public CMSModuleContext moduleContext(SiteProperties siteProperties, ServerProperties serverProperties, FileDB db, EventBus eventBus, Theme theme,
-			Configuration configuration) {
+			Configuration configuration, SiteCronJobScheduler cronJobScheduler) {
 		final CMSModuleContext cmsModuleContext = new CMSModuleContext();
 		cmsModuleContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 		cmsModuleContext.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(serverProperties));
@@ -123,6 +125,7 @@ public class ModulesModule extends AbstractModule {
 		cmsModuleContext.add(EventBusFeature.class, new EventBusFeature(eventBus));
 		cmsModuleContext.add(ThemeFeature.class, new ThemeFeature(theme));
 		cmsModuleContext.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
+		cmsModuleContext.add(CronJobSchedulerFeature.class, new CronJobSchedulerFeature(cronJobScheduler));
 		
 		return cmsModuleContext;
 	}

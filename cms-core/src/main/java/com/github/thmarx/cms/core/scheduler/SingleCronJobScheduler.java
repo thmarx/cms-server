@@ -33,15 +33,15 @@ import org.quartz.Scheduler;
  * @author t.marx
  */
 @Slf4j
-public class SiteCronJobScheduler extends AbstractCronJobScheduler implements CronJobScheduler {
+public class SingleCronJobScheduler extends AbstractCronJobScheduler implements CronJobScheduler {
 
-	public SiteCronJobScheduler(Scheduler scheduler, CronJobContext context) {
+	public SingleCronJobScheduler(Scheduler scheduler, CronJobContext context) {
 		super(scheduler, context);
 	}
 	
 	@Override
 	public void schedule(String cronExpression, String name, CronJob job) {
-		super.schedule(cronExpression, name, job, DefaultCronJobRunner.class);
+		super.schedule(cronExpression, name, job, SingleCronJobRunner.class);
 	}
 
 	@Override
@@ -53,5 +53,4 @@ public class SiteCronJobScheduler extends AbstractCronJobScheduler implements Cr
 	public boolean exists(String name) {
 		return super.exists(name);
 	}
-	
 }

@@ -28,7 +28,7 @@ import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.cli.tools.ModulesUtil;
 import com.github.thmarx.cms.git.RepositoryManager;
 import com.github.thmarx.cms.ipc.IPCServer;
-import com.github.thmarx.cms.server.configs.GlobalModule;
+import com.github.thmarx.cms.server.configs.ServerGlobalModule;
 import com.github.thmarx.cms.server.jetty.JettyServer;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -67,7 +67,7 @@ public class Startup implements Runnable {
 			System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 			System.setProperty("polyglotimpl.DisableClassPathIsolation", "true");
 
-			var globalInjector = Guice.createInjector(new GlobalModule());
+			var globalInjector = Guice.createInjector(new ServerGlobalModule());
 			ServerProperties properties = globalInjector.getInstance(ServerProperties.class);
 			
 			printStartup(properties);

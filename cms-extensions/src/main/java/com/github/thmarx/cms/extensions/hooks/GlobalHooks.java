@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.api.scheduler;
+package com.github.thmarx.cms.extensions.hooks;
 
 /*-
  * #%L
- * cms-api
+ * cms-extensions
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -22,15 +22,25 @@ package com.github.thmarx.cms.api.scheduler;
  * #L%
  */
 
+import com.github.thmarx.cms.api.hooks.HookSystem;
+import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+
 /**
  *
  * @author t.marx
  */
-public interface CronJobScheduler {
+@RequiredArgsConstructor
+public class GlobalHooks {
+	private final HookSystem globalHookSystem;
 	
-	void schedule (String cronExpression, String name, CronJob job);
+	private final CronJobScheduler scheduler;
 	
-	void remove (String name);
-	
-	boolean exists (String name);
+	public void registerCronJob () {
+		globalHookSystem.execute("system/scheduler/register", Map.of("scheduler", scheduler));
+	}
+	public void removeCronJob () {
+		globalHookSystem.execute("system/scheduler/remove", Map.of("scheduler", scheduler));
+	}
 }

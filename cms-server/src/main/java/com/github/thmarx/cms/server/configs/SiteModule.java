@@ -74,9 +74,9 @@ import com.github.thmarx.cms.api.feature.features.EventBusFeature;
 import com.github.thmarx.cms.api.feature.features.ServerPropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
-import com.github.thmarx.cms.api.module.CMSModuleContext;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
 import com.github.thmarx.cms.core.scheduler.SiteCronJobScheduler;
+import org.graalvm.polyglot.Engine;
 import org.quartz.Scheduler;
 
 /**
@@ -191,9 +191,13 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public ExtensionManager extensionManager(DB db, Theme theme, Configuration configuration) throws IOException {
-		var extensionManager = new ExtensionManager(db, theme, configuration.get(ServerConfiguration.class).serverProperties());
-		extensionManager.init();
+	public ExtensionManager extensionManager(DB db, Theme theme, Configuration configuration, Engine engine) throws IOException {
+		var extensionManager = new ExtensionManager(
+				db, 
+				theme, 
+				configuration.get(ServerConfiguration.class).serverProperties(), 
+				engine
+		);
 
 		return extensionManager;
 	}
@@ -259,11 +263,5 @@ public class SiteModule extends AbstractModule {
 		cronJobContext.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
 		
 		return cronJobContext;
-	}
-	
-	@Provides
-	@Singleton
-	public SiteCronJobScheduler siteCronJobScheduler (Scheduler scheduler, CronJobContext context) {
-		return new SiteCronJobScheduler(scheduler, context);
 	}
 }
