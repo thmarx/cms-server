@@ -36,11 +36,11 @@ import java.util.function.Function;
  *
  * @author t.marx
  */
-public class LocalCacheProvider<K extends Serializable, V extends Serializable> implements CacheProvider<K, V> {
+public class LocalCacheProvider implements CacheProvider {
 
-	private final ConcurrentMap<String, ICache<K, V>> caches = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, ICache> caches = new ConcurrentHashMap<>();
 	
-	private Cache<K,V> buildCache (CacheManager.CacheConfig config) {
+	private <K extends Serializable, V extends Serializable> Cache<K,V> buildCache (CacheManager.CacheConfig config) {
 		var cache = Caffeine.newBuilder();
 		
 		if (config.maxSize() != null)  {
@@ -55,7 +55,7 @@ public class LocalCacheProvider<K extends Serializable, V extends Serializable> 
 	}
 	
 	@Override
-	public ICache<K, V> getCache(String name, CacheManager.CacheConfig config) {
+	public <K extends Serializable, V extends Serializable> ICache<K, V> getCache(String name, CacheManager.CacheConfig config) {
 		if (!caches.containsKey(name)) {
 			caches.putIfAbsent(name, new LocalCache(
 					buildCache(config), 
@@ -65,7 +65,7 @@ public class LocalCacheProvider<K extends Serializable, V extends Serializable> 
 	}
 
 	@Override
-	public ICache<K, V> getCache(String name, CacheManager.CacheConfig config, Function<K, V> loader) {
+	public <K extends Serializable, V extends Serializable> ICache<K, V> getCache(String name, CacheManager.CacheConfig config, Function<K, V> loader) {
 		if (!caches.containsKey(name)) {
 			caches.putIfAbsent(name, new LocalCache(
 					buildCache(config), 

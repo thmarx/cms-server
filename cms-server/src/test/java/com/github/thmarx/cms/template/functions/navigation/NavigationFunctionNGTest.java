@@ -56,7 +56,7 @@ public class NavigationFunctionNGTest {
 
 	@BeforeAll
 	static void init() throws IOException {
-		var contentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
+		var contentParser = new DefaultContentParser();
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
@@ -67,7 +67,7 @@ public class NavigationFunctionNGTest {
 			}
 		}, config);
 		db.init();
-		defaultContentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
+		defaultContentParser = new DefaultContentParser();
 		navigationFunction = new NavigationFunction(db, 
 				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));

@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.api.cache;
+package com.github.thmarx.cms.api.extensions;
 
 /*-
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +22,15 @@ package com.github.thmarx.cms.api.cache;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.function.Function;
+import com.github.thmarx.cms.api.cache.CacheProvider;
 
 /**
  *
  * @author t.marx
  */
-public interface CacheProvider {
+public abstract class CacheProviderExtentionPoint extends AbstractExtensionPoint {
+
+	public abstract String getName ();
+	public abstract CacheProvider getCacheProvider ();
 	
-	<K extends Serializable, V extends Serializable> ICache<K, V> getCache (String name, CacheManager.CacheConfig config);
-	
-	<K extends Serializable, V extends Serializable> ICache<K, V> getCache (String name, CacheManager.CacheConfig config, Function<K, V> loader);
 }

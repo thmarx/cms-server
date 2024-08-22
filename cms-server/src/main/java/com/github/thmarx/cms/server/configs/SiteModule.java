@@ -49,6 +49,7 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.auth.services.AuthService;
 import com.github.thmarx.cms.auth.services.UserService;
+import com.github.thmarx.cms.content.CachedContentParser;
 import com.github.thmarx.cms.content.ContentRenderer;
 import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.content.DefaultContentParser;
@@ -94,7 +95,8 @@ public class SiteModule extends AbstractModule {
 		bind(Configuration.class).toInstance(configuration);
 		bind(ScheduledExecutorService.class).toInstance(scheduledExecutorService);
 		bind(EventBus.class).to(DefaultEventBus.class).in(Singleton.class);
-		bind(ContentParser.class).to(DefaultContentParser.class).in(Singleton.class);
+		bind(DefaultContentParser.class).in(Singleton.class);
+		bind(ContentParser.class).to(CachedContentParser.class).in(Singleton.class);
 		bind(TaxonomyFunction.class).in(Singleton.class);
 		bind(ContentNodeMapper.class).in(Singleton.class);
 		bind(TaxonomyResolver.class).in(Singleton.class);
@@ -169,7 +171,7 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public DB fileDb(SiteProperties site, ContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
+	public DB fileDb(SiteProperties site, DefaultContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
 		var db = new FileDB(hostBase, eventBus, (file) -> {
 			try {
 				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));

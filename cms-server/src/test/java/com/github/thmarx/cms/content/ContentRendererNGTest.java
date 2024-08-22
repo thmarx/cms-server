@@ -57,7 +57,6 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 	
 	static DefaultContentRenderer contentRenderer;
 	static MarkdownRenderer markdownRenderer;
-	static CacheManager cacheManager = new CacheManager(new LocalCacheProvider());
 	
 	static ModuleManager moduleManager = new MockModuleManager();
 	static FileDB db;
@@ -65,7 +64,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 	
 	@BeforeAll
 	public static void beforeClass () throws IOException {
-		var contentParser = new DefaultContentParser(cacheManager);
+		var contentParser = new DefaultContentParser();
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {

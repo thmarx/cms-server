@@ -58,7 +58,7 @@ import org.junit.jupiter.api.Test;
 public class ViewParserTest {
 	
 	static FileDB db;
-	static ContentParser parser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
+	static ContentParser parser = new DefaultContentParser();
 	static MarkdownRenderer markdownRenderer = TestHelper.getRenderer();
 	static RequestContext requestContext;
 	

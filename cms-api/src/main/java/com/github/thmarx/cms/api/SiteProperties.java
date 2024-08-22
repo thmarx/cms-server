@@ -78,4 +78,8 @@ public class SiteProperties extends ThemeProperties {
 	public String defaultContentType () {
 		return (String)getSubMap("content").getOrDefault("type", Constants.DEFAULT_CONTENT_TYPE);
 	}
+	
+	public String cacheEngine() {
+		return (String) getSubMap("cache").getOrDefault("engine", Constants.DEFAULT_CACHE_ENGINE);
+	}
 }

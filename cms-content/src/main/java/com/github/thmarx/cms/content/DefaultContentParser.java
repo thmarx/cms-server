@@ -22,14 +22,10 @@ package com.github.thmarx.cms.content;
  * #L%
  */
 
-import com.github.thmarx.cms.api.ServerContext;
-import com.github.thmarx.cms.api.cache.CacheManager;
-import com.github.thmarx.cms.api.cache.ICache;
+import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.google.common.base.Strings;
-import com.google.inject.Inject;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,38 +38,19 @@ import org.yaml.snakeyaml.Yaml;
  * @author t.marx
  */
 @Slf4j
-public class DefaultContentParser implements com.github.thmarx.cms.api.content.ContentParser{
+public class DefaultContentParser implements ContentParser{
 
-	private final ICache<String, Content> contentCache;	
-
-	@Inject
-	public DefaultContentParser(final CacheManager cacheManager) {
-		if (ServerContext.IS_DEV) {
-			contentCache = cacheManager.get("contentCache", 
-					new CacheManager.CacheConfig(10l, Duration.ofMinutes(1)));
-		} else {
-			contentCache = cacheManager.get("contentCache", 
-					new CacheManager.CacheConfig(0l, Duration.ofMinutes(1)));
-		}
+	
+	public DefaultContentParser() {
 	}
 
+	@Override
 	public void clearCache() {
-		contentCache.invalidate();
+		
 	}
 
 	@Override
 	public Content parse(final ReadOnlyFile contentFile) throws IOException {
-		final String filename = contentFile.toAbsolutePath().toString();
-		var cached = contentCache.get(filename);
-		if (cached != null) {
-			return cached;
-		}
-		var object = _parse(contentFile);
-		contentCache.put(filename, object);
-		return object;
-	}
-
-	private Content _parse(final ReadOnlyFile contentFile) throws IOException {
 		ContentRecord readContent = readContent(contentFile);
 
 		return new Content(readContent.content(), _parseMeta(readContent));
@@ -91,6 +68,7 @@ public class DefaultContentParser implements com.github.thmarx.cms.api.content.C
 		}
     }
 
+	@Override
 	public Map<String, Object> parseMeta(final ReadOnlyFile contentFile) throws IOException {
 		ContentRecord readContent = readContent(contentFile);
 

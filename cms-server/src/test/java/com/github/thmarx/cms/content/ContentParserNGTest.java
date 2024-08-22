@@ -38,11 +38,10 @@ import org.junit.jupiter.api.Test;
  */
 public class ContentParserNGTest {
 	
-	CacheManager cacheManager = new CacheManager(new LocalCacheProvider());
 
 	@Test
 	public void testSomeMethod() throws IOException {
-		var contentParser = new DefaultContentParser(cacheManager);
+		var contentParser = new DefaultContentParser();
 		
 		var expectedMD = """
                    
@@ -61,7 +60,7 @@ public class ContentParserNGTest {
 	
 	@Test
 	public void test_date() throws IOException {
-		var contentParser = new DefaultContentParser(cacheManager);
+		var contentParser = new DefaultContentParser();
 		
 		var content = contentParser.parse(new NIOReadOnlyFile(Path.of("hosts/test/content/test.md"), Path.of("hosts/test/"))
 		);
@@ -80,7 +79,7 @@ public class ContentParserNGTest {
 	
 	@Test
 	public void test_tags() throws IOException {
-		var contentParser = new DefaultContentParser(cacheManager);
+		var contentParser = new DefaultContentParser();
 		
 		var content = contentParser.parse(new NIOReadOnlyFile(Path.of("hosts/test/content/tags.md"), Path.of("hosts/test/"))
 		);

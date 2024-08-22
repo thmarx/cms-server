@@ -53,7 +53,7 @@ public class NodeListFunctionBuilderNGTest {
 	static NodeListFunctionBuilder nodeList;
 	static FileDB db;
 	
-	static DefaultContentParser parser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
+	static DefaultContentParser parser = new DefaultContentParser();
 	static MarkdownRenderer markdownRenderer = TestHelper.getRenderer();
 	
 	static Path hostBase = Path.of("hosts/test/");

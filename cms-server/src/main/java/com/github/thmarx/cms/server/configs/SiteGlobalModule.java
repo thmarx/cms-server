@@ -21,7 +21,11 @@ package com.github.thmarx.cms.server.configs;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.cache.CacheManager;
+import com.github.thmarx.cms.api.cache.CacheProvider;
+import com.github.thmarx.cms.api.extensions.CacheProviderExtentionPoint;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
 import com.github.thmarx.cms.core.cache.LocalCacheProvider;
@@ -29,11 +33,14 @@ import com.github.thmarx.cms.core.scheduler.SingleCronJobScheduler;
 import com.github.thmarx.cms.core.scheduler.SiteCronJobScheduler;
 import com.github.thmarx.cms.extensions.GlobalExtensions;
 import com.github.thmarx.cms.extensions.hooks.GlobalHooks;
+import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
@@ -97,7 +104,23 @@ public class SiteGlobalModule implements com.google.inject.Module {
 	
 	@Provides
 	@Singleton
-	public CacheManager cacheManager () {
-		return new CacheManager(new LocalCacheProvider());
+	public CacheManager cacheManager (CacheProvider cacheProvider) {
+		return new CacheManager(cacheProvider);
+	}
+	
+	@Provides
+	@Singleton
+	public CacheProvider cacheProvider (ModuleManager moduleManager, SiteProperties siteProperties) {
+		var cacheEngine = siteProperties.cacheEngine();
+		if (Constants.DEFAULT_CACHE_ENGINE.equals(cacheEngine)) {
+			return new LocalCacheProvider();
+		}
+		List<CacheProviderExtentionPoint> extensions = moduleManager.extensions(CacheProviderExtentionPoint.class);
+		Optional<CacheProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(cacheEngine)).findFirst();
+
+		if (extOpt.isPresent()) {
+			return extOpt.get().getCacheProvider();
+		}
+		return new LocalCacheProvider();
 	}
 }

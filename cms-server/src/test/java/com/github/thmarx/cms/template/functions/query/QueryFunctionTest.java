@@ -52,7 +52,7 @@ public class QueryFunctionTest {
 	@BeforeAll
 	static void init() throws IOException {
 		var hostBase = Path.of("hosts/test/");
-		var contentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
+		var contentParser = new DefaultContentParser();
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
@@ -63,7 +63,7 @@ public class QueryFunctionTest {
 			}
 		}, config);
 		db.init();
-		defaultContentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
+		defaultContentParser = new DefaultContentParser();
 		query = new QueryFunction(db, 
 				new NIOReadOnlyFile(Path.of("hosts/test/content/nav/index.md"), hostBase), 
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));

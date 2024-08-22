@@ -104,6 +104,8 @@ public abstract class Constants {
 	
 	public static final int DEFAULT_REDIRECT_STATUS = 301;
 	
+	public static final String DEFAULT_CACHE_ENGINE = "local";
+	
 	public static class Taxonomy {
 		public static final String DEFAULT_TEMPLATE = "taxonomy.html";
 		public static final String DEFAULT_SINGLE_TEMPLATE = "taxonomy.single.html";

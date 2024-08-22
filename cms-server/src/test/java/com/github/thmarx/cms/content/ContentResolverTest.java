@@ -56,7 +56,7 @@ public class ContentResolverTest {
 
 	@BeforeAll
 	public static void setup() throws IOException {
-		var contentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
+		var contentParser = new DefaultContentParser();
 		var hostBase = Path.of("hosts/test/");
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
