@@ -22,6 +22,7 @@ package com.github.thmarx.cms.extensions.request;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
@@ -45,6 +46,7 @@ import org.graalvm.polyglot.Context;
  * @author t.marx
  */
 @RequiredArgsConstructor
+@FeatureScope(FeatureScope.Scope.REQUEST)
 public class RequestExtensions implements AutoCloseable, Feature {
 
 	@Getter

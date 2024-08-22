@@ -21,14 +21,14 @@ package com.github.thmarx.cms.api.feature.features;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.modules.api.ModuleManager;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
-@Slf4j
+@FeatureScope({FeatureScope.Scope.MODULE})
 public record ModuleManagerFeature(ModuleManager moduleManager) implements Feature {
 }

@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.media.MediaService;
 
@@ -29,6 +30,7 @@ import com.github.thmarx.cms.api.media.MediaService;
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.REQUEST})
 public record SiteMediaServiceFeature(MediaService mediaService) implements Feature {
 
 }

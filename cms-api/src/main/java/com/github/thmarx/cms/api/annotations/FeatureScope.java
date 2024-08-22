@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.feature.features;
+package com.github.thmarx.cms.api.annotations;
 
 /*-
  * #%L
@@ -22,15 +22,25 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
-import com.github.thmarx.cms.api.annotations.FeatureScope;
-import com.github.thmarx.cms.api.configuration.Configuration;
-import com.github.thmarx.cms.api.feature.Feature;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
  * @author t.marx
  */
-@FeatureScope({FeatureScope.Scope.GLOBAL, FeatureScope.Scope.MODULE, FeatureScope.Scope.REQUEST})
-public record ConfigurationFeature(Configuration configuration) implements Feature {
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE })
+public @interface FeatureScope {
+	
+	public FeatureScope.Scope[] value() default {};
+	
+	public enum Scope {
+		REQUEST,
+		GLOBAL,
+		MODULE
+	}
 }
+

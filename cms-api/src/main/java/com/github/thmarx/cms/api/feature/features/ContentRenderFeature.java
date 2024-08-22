@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.content.RenderContentFunction;
 import com.github.thmarx.cms.api.feature.Feature;
@@ -33,6 +34,7 @@ import java.util.Optional;
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.MODULE})
 public record ContentRenderFeature(RenderContentFunction renderContentFunction) implements Feature {
 
 	public Optional<ContentResponse> renderContentNode (String uri, Map<String, List<String>> params) {

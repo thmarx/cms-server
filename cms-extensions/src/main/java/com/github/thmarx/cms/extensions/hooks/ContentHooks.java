@@ -23,6 +23,7 @@ package com.github.thmarx.cms.extensions.hooks;
  */
 
 import com.github.thmarx.cms.api.annotations.Experimental;
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.model.Parameter;
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Experimental
 @RequiredArgsConstructor
+@FeatureScope(FeatureScope.Scope.REQUEST)
 public class ContentHooks implements Feature {
 	
 	private final RequestContext requestContext;

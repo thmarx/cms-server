@@ -21,6 +21,7 @@ package com.github.thmarx.cms.api.feature.features;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author t.marx
  */
 @Slf4j
+@FeatureScope({FeatureScope.Scope.REQUEST})
 public record RequestFeature(String context, String uri, Map<String, List<String>> queryParameters) implements Feature {
 
 	public RequestFeature(String uri, Map<String, List<String>> queryParameters) {

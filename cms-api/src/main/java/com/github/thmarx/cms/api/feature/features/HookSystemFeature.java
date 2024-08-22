@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 
@@ -29,6 +30,7 @@ import com.github.thmarx.cms.api.hooks.HookSystem;
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.REQUEST})
 public record HookSystemFeature(HookSystem hookSystem) implements Feature {
 
 }

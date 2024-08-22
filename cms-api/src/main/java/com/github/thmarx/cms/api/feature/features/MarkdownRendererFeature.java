@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 
@@ -29,6 +30,7 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.REQUEST})
 public record MarkdownRendererFeature(MarkdownRenderer markdownRenderer) implements Feature {
 
 }

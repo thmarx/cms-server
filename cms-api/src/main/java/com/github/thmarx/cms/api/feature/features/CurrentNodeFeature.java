@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.feature.Feature;
 
@@ -29,6 +30,7 @@ import com.github.thmarx.cms.api.feature.Feature;
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.REQUEST})
 public record CurrentNodeFeature(ContentNode node) implements Feature {
 
 }

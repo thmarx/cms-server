@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.feature.Feature;
 
@@ -29,6 +30,7 @@ import com.github.thmarx.cms.api.feature.Feature;
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.GLOBAL, FeatureScope.Scope.MODULE})
 public record DBFeature(DB db) implements Feature {
 
 }

@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.db.Page;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.feature.Feature;
@@ -33,6 +34,7 @@ import java.util.Optional;
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.REQUEST})
 public record CurrentTaxonomyFeature(Taxonomy taxonomy, Optional<String> value, Map<String, Object> meta, Page<ListNode> page) implements Feature {
 
 }

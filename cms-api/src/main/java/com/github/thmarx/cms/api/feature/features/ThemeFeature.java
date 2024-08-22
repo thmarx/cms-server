@@ -1,5 +1,6 @@
 package com.github.thmarx.cms.api.feature.features;
 
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.theme.Theme;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ import lombok.AllArgsConstructor;
  * @author t.marx
  */
 @AllArgsConstructor
+@FeatureScope({FeatureScope.Scope.GLOBAL, FeatureScope.Scope.MODULE, FeatureScope.Scope.REQUEST})
 public class ThemeFeature implements Feature {
 
 	private Theme theme;

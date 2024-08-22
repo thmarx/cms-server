@@ -23,12 +23,14 @@ package com.github.thmarx.cms.api.feature.features;
  */
 
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 
 /**
  *
  * @author t.marx
  */
+@FeatureScope({FeatureScope.Scope.GLOBAL, FeatureScope.Scope.MODULE, FeatureScope.Scope.REQUEST})
 public record SitePropertiesFeature(SiteProperties siteProperties) implements Feature {
 
 }
