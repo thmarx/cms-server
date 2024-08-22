@@ -25,6 +25,7 @@ import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.TestTemplateEngine;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
@@ -32,6 +33,7 @@ import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import static com.github.thmarx.cms.content.ContentRendererNGTest.contentRenderer;
 import static com.github.thmarx.cms.content.ContentRendererNGTest.moduleManager;
+import com.github.thmarx.cms.core.cache.LocalCacheProvider;
 import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import java.io.IOException;
@@ -54,7 +56,7 @@ public class ContentResolverTest {
 
 	@BeforeAll
 	public static void setup() throws IOException {
-		var contentParser = new DefaultContentParser();
+		var contentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
 		var hostBase = Path.of("hosts/test/");
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {

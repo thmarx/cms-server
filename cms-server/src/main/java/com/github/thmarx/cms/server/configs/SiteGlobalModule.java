@@ -21,8 +21,10 @@ package com.github.thmarx.cms.server.configs;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
+import com.github.thmarx.cms.core.cache.LocalCacheProvider;
 import com.github.thmarx.cms.core.scheduler.SingleCronJobScheduler;
 import com.github.thmarx.cms.core.scheduler.SiteCronJobScheduler;
 import com.github.thmarx.cms.extensions.GlobalExtensions;
@@ -91,5 +93,11 @@ public class SiteGlobalModule implements com.google.inject.Module {
 	@Singleton
 	public SingleCronJobScheduler singleCronJobScheduler (Scheduler scheduler, CronJobContext context) {
 		return new SingleCronJobScheduler(scheduler, context);
+	}
+	
+	@Provides
+	@Singleton
+	public CacheManager cacheManager () {
+		return new CacheManager(new LocalCacheProvider());
 	}
 }

@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.api.content;
+package com.github.thmarx.cms.api.cache;
 
 /*-
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +22,27 @@ package com.github.thmarx.cms.api.content;
  * #L%
  */
 
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.Map;
+import java.time.Duration;
+import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-public interface ContentParser {
+@RequiredArgsConstructor
+public class CacheManager {
+	private final CacheProvider cacheProvider;
 	
-	void clearCache();
+	public <K extends Serializable, V extends Serializable> ICache<K, V> get (String name, CacheConfig config) {
+		return cacheProvider.getCache(name, config);
+	}
 	
-	Content parse(final ReadOnlyFile contentFile) throws IOException;
+	public <K extends Serializable, V extends Serializable> ICache<K, V> get (String name, CacheConfig config, Function<K, V> loader) {
+		return cacheProvider.getCache(name, config, loader);
+	}
 	
-	Map<String, Object> parseMeta(final ReadOnlyFile contentFile) throws IOException;
-	
-	record ContentRecord(String content, String meta) implements Serializable {}
-
-	record Content(String content, Map<String, Object> meta) implements Serializable {}
+	public record CacheConfig (Long maxSize, Duration lifeTime) {
+	}
 }

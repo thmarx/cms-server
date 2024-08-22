@@ -22,11 +22,12 @@ package com.github.thmarx.cms.content;
  * #L%
  */
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.thmarx.cms.api.ServerContext;
+import com.github.thmarx.cms.api.cache.CacheManager;
+import com.github.thmarx.cms.api.cache.ICache;
 import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.google.common.base.Strings;
+import com.google.inject.Inject;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
@@ -43,25 +44,27 @@ import org.yaml.snakeyaml.Yaml;
 @Slf4j
 public class DefaultContentParser implements com.github.thmarx.cms.api.content.ContentParser{
 
-	private final Cache<String, Content> contentCache;
+	private final ICache<String, Content> contentCache;	
 
-	public DefaultContentParser() {
-		var builder = Caffeine.newBuilder()
-				.expireAfterWrite(Duration.ofMinutes(1));
+	@Inject
+	public DefaultContentParser(final CacheManager cacheManager) {
 		if (ServerContext.IS_DEV) {
-			builder.maximumSize(0);
+			contentCache = cacheManager.get("contentCache", 
+					new CacheManager.CacheConfig(10l, Duration.ofMinutes(1)));
+		} else {
+			contentCache = cacheManager.get("contentCache", 
+					new CacheManager.CacheConfig(0l, Duration.ofMinutes(1)));
 		}
-		contentCache = builder.build();
 	}
 
 	public void clearCache() {
-		contentCache.invalidateAll();
+		contentCache.invalidate();
 	}
 
 	@Override
 	public Content parse(final ReadOnlyFile contentFile) throws IOException {
 		final String filename = contentFile.toAbsolutePath().toString();
-		var cached = contentCache.getIfPresent(filename);
+		var cached = contentCache.get(filename);
 		if (cached != null) {
 			return cached;
 		}

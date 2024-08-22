@@ -27,11 +27,13 @@ import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.TestTemplateEngine;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.template.TemplateEngine;
+import com.github.thmarx.cms.core.cache.LocalCacheProvider;
 import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.template.TemplateEngineTest;
@@ -55,6 +57,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 	
 	static DefaultContentRenderer contentRenderer;
 	static MarkdownRenderer markdownRenderer;
+	static CacheManager cacheManager = new CacheManager(new LocalCacheProvider());
 	
 	static ModuleManager moduleManager = new MockModuleManager();
 	static FileDB db;
@@ -62,7 +65,7 @@ public class ContentRendererNGTest extends TemplateEngineTest {
 	
 	@BeforeAll
 	public static void beforeClass () throws IOException {
-		var contentParser = new DefaultContentParser();
+		var contentParser = new DefaultContentParser(cacheManager);
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {

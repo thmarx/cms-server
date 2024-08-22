@@ -24,6 +24,7 @@ package com.github.thmarx.cms.template.functions.navigation;
 
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
 import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
@@ -31,6 +32,7 @@ import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.content.DefaultContentParser;
+import com.github.thmarx.cms.core.cache.LocalCacheProvider;
 import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import java.io.IOException;
@@ -54,7 +56,7 @@ public class NavigationFunctionNGTest {
 
 	@BeforeAll
 	static void init() throws IOException {
-		var contentParser = new DefaultContentParser();
+		var contentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
@@ -65,7 +67,7 @@ public class NavigationFunctionNGTest {
 			}
 		}, config);
 		db.init();
-		defaultContentParser = new DefaultContentParser();
+		defaultContentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
 		navigationFunction = new NavigationFunction(db, 
 				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));

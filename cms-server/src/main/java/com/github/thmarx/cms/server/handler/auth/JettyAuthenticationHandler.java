@@ -23,6 +23,7 @@ package com.github.thmarx.cms.server.handler.auth;
  */
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.github.thmarx.cms.api.cache.ICache;
 import com.github.thmarx.cms.api.feature.features.AuthFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.RequestUtil;
@@ -57,12 +58,13 @@ public class JettyAuthenticationHandler extends Handler.Abstract {
 
 	private final AuthService authService;
 	private final UserService userService;
+	private final ICache<String, AtomicInteger> loginFails;
 
-	LoadingCache<String, AtomicInteger> loginFails = Caffeine.newBuilder()
-			.maximumSize(10_000)
-			.expireAfterWrite(Duration.ofMinutes(1))
-			.expireAfterAccess(Duration.ofMinutes(1))
-			.build(key -> new AtomicInteger(0));
+//	LoadingCache<String, AtomicInteger> loginFails = Caffeine.newBuilder()
+//			.maximumSize(10_000)
+//			.expireAfterWrite(Duration.ofMinutes(1))
+//			.expireAfterAccess(Duration.ofMinutes(1))
+//			.build(key -> new AtomicInteger(0));
 
 	static final int ATTEMPTS_TO_BLOCK = 3;
 

@@ -23,6 +23,7 @@ package com.github.thmarx.cms;
  */
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
@@ -32,6 +33,7 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.content.DefaultContentRenderer;
 import com.github.thmarx.cms.content.Section;
+import com.github.thmarx.cms.core.cache.LocalCacheProvider;
 import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.template.TemplateEngineTest;
@@ -56,7 +58,7 @@ public class SectionsTest extends TemplateEngineTest {
 
 	@BeforeAll
 	public static void beforeClass() throws IOException {
-		var contentParser = new DefaultContentParser();
+		var contentParser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
 		var hostBase = Path.of("hosts/test/");
 		var config = new Configuration(Path.of("hosts/test/"));
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {

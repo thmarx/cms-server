@@ -23,7 +23,11 @@ package com.github.thmarx.cms.server.configs;
  */
 import com.github.thmarx.cms.api.ServerProperties;
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.cache.CacheManager;
+import com.github.thmarx.cms.api.cache.ICache;
 import com.github.thmarx.cms.api.theme.Theme;
+import com.github.thmarx.cms.auth.services.AuthService;
+import com.github.thmarx.cms.auth.services.UserService;
 import com.github.thmarx.cms.media.SiteMediaManager;
 import com.github.thmarx.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
@@ -44,7 +48,9 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
@@ -67,7 +73,19 @@ public class SiteHandlerModule extends AbstractModule {
 		bind(JettyExtensionHandler.class).in(Singleton.class);
 		bind(JettyExtensionRouteHandler.class).in(Singleton.class);
 		
-		bind(JettyAuthenticationHandler.class).in(Singleton.class);
+		//bind(JettyAuthenticationHandler.class).in(Singleton.class);
+	}
+	
+	@Provides
+	@Singleton
+	public JettyAuthenticationHandler authHandler(CacheManager cacheManager, UserService userSerivce, AuthService authService) throws IOException {
+		
+		ICache<String, AtomicInteger> cache = cacheManager.get("loginFails", 
+				new CacheManager.CacheConfig(10_000l, Duration.ofMinutes(1)), 
+				key -> new AtomicInteger(0)
+		);
+		
+		return new JettyAuthenticationHandler(authService, userSerivce, cache);
 	}
 	
 	@Provides

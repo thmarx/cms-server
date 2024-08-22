@@ -1,10 +1,10 @@
-package com.github.thmarx.cms.api.content;
+package com.github.thmarx.cms.api.cache;
 
 /*-
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +22,23 @@ package com.github.thmarx.cms.api.content;
  * #L%
  */
 
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  *
  * @author t.marx
+ * @param <K>
+ * @param <V>
  */
-public interface ContentParser {
+public interface ICache<K extends Serializable, V extends Serializable> {
 	
-	void clearCache();
+	void put (K key, V value);
 	
-	Content parse(final ReadOnlyFile contentFile) throws IOException;
+	V get (K key);
 	
-	Map<String, Object> parseMeta(final ReadOnlyFile contentFile) throws IOException;
+	boolean contains (K key);
 	
-	record ContentRecord(String content, String meta) implements Serializable {}
-
-	record Content(String content, Map<String, Object> meta) implements Serializable {}
+	void invalidate ();
+	
+	void invalidate (K key);
 }

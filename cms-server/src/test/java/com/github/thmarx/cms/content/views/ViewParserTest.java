@@ -23,6 +23,7 @@ package com.github.thmarx.cms.content.views;
  */
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.Page;
@@ -32,6 +33,7 @@ import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.content.DefaultContentParser;
+import com.github.thmarx.cms.core.cache.LocalCacheProvider;
 import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
 import java.io.IOException;
@@ -56,7 +58,7 @@ import org.junit.jupiter.api.Test;
 public class ViewParserTest {
 	
 	static FileDB db;
-	static ContentParser parser = new DefaultContentParser();
+	static ContentParser parser = new DefaultContentParser(new CacheManager(new LocalCacheProvider()));
 	static MarkdownRenderer markdownRenderer = TestHelper.getRenderer();
 	static RequestContext requestContext;
 	
