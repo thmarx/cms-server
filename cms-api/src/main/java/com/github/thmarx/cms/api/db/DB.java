@@ -1,7 +1,7 @@
 package com.github.thmarx.cms.api.db;
 
-import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
 import com.github.thmarx.cms.api.db.cms.ReadyOnlyFileSystem;
+import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
 
 /*-
  * #%L

@@ -22,12 +22,12 @@ package com.github.thmarx.cms.extensions.request;
  * #L%
  */
 
-import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
 import com.github.thmarx.cms.extensions.TemplateFunctionExtension;
 import com.github.thmarx.cms.extensions.TemplateSupplierExtension;
+import com.github.thmarx.cms.extensions.http.ExtensionHttpHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.github.thmarx.cms.api.content;
 
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 
 /*-

@@ -1,11 +1,10 @@
 package com.github.thmarx.cms.api;
 
-import com.github.thmarx.cms.api.media.MediaUtils;
 /*-
  * #%L
- * cms-server
+ * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 Marx-Software
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +21,9 @@ import com.github.thmarx.cms.api.media.MediaUtils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.github.thmarx.cms.api.media.MediaFormat;
+import com.github.thmarx.cms.api.media.MediaUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

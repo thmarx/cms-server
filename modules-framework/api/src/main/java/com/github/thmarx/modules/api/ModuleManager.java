@@ -24,6 +24,7 @@ package com.github.thmarx.modules.api;
 
 
 
+import com.github.thmarx.modules.api.Module;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;

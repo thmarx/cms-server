@@ -22,10 +22,9 @@ package com.github.thmarx.cms.api.content;
  * #L%
  */
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Map;
 import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  *

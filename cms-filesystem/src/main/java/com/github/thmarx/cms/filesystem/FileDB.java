@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.db.DBFileSystem;
+import com.github.thmarx.cms.api.db.cms.ReadyOnlyFileSystem;
 import com.github.thmarx.cms.api.db.cms.WrappedReadOnlyFileSystem;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomies;
 import com.github.thmarx.cms.api.eventbus.EventBus;
@@ -35,7 +36,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
-import com.github.thmarx.cms.api.db.cms.ReadyOnlyFileSystem;
 
 /**
  *

@@ -23,7 +23,6 @@ package com.github.thmarx.cms.api.eventbus.events;
  */
 
 import com.github.thmarx.cms.api.eventbus.Event;
-import java.nio.file.Path;
 
 /**
  *

@@ -23,8 +23,8 @@ package com.github.thmarx.cms.api.module;
  */
 
 import com.github.thmarx.cms.api.feature.FeatureContainer;
-import lombok.RequiredArgsConstructor;
 import com.github.thmarx.modules.api.ModuleRequestContext;
+import lombok.RequiredArgsConstructor;
 
 /**
  *

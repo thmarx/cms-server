@@ -22,12 +22,11 @@ package com.github.thmarx.cms.api.db;
  * #L%
  */
 
-import java.nio.file.Path;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

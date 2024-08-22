@@ -22,29 +22,28 @@ package com.github.thmarx.modules.manager;
  * #L%
  */
 import com.github.thmarx.modules.api.Context;
-import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.ExtensionPoint;
 import com.github.thmarx.modules.api.ManagerConfiguration;
+import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.ModuleDescription;
 import com.github.thmarx.modules.api.ModuleLifeCycleExtension;
 import com.github.thmarx.modules.api.ModuleManager;
+import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 
 /**
  * The ModuleManager loads all modules from a given directoy.

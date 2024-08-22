@@ -21,8 +21,8 @@ package com.github.thmarx.cms.cli.commands;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.cli.commands.modules.InfoCommand;
 import com.github.thmarx.cms.cli.commands.modules.GetCommand;
+import com.github.thmarx.cms.cli.commands.modules.InfoCommand;
 import com.github.thmarx.cms.cli.commands.modules.RemoveCommand;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;

@@ -22,16 +22,16 @@ package com.github.thmarx.cms.filesystem.metadata.memory;
  * #L%
  */
 import com.github.thmarx.cms.api.Constants;
-import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.Page;
-import static com.github.thmarx.cms.filesystem.metadata.memory.QueryUtil.filtered;
-import static com.github.thmarx.cms.filesystem.metadata.memory.QueryUtil.sorted;
 import com.github.thmarx.cms.api.utils.NodeUtil;
 import com.github.thmarx.cms.filesystem.metadata.AbstractMetaData;
+import static com.github.thmarx.cms.filesystem.metadata.memory.QueryUtil.filtered;
+import static com.github.thmarx.cms.filesystem.metadata.memory.QueryUtil.sorted;
 import com.github.thmarx.cms.filesystem.metadata.query.ExcerptMapperFunction;
-import com.github.thmarx.cms.filesystem.metadata.query.Queries;
 import com.github.thmarx.cms.filesystem.metadata.query.ExtendableQuery;
+import com.github.thmarx.cms.filesystem.metadata.query.Queries;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

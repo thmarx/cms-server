@@ -22,9 +22,9 @@ package com.github.thmarx.cms.module;
  * #L%
  */
 
-import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.content.RenderContentFunction;
+import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import java.util.List;
 import java.util.Map;

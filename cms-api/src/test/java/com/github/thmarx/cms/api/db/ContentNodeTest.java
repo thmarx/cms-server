@@ -24,7 +24,6 @@ package com.github.thmarx.cms.api.db;
 
 import com.github.thmarx.cms.api.Constants;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

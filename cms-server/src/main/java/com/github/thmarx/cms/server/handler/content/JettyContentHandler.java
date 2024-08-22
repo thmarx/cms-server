@@ -21,12 +21,12 @@ package com.github.thmarx.cms.server.handler.content;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.api.content.ContentResponse;
 import com.github.thmarx.cms.api.request.RequestContext;
-import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;
+import com.github.thmarx.cms.content.ContentResolver;
+import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.google.inject.Inject;
 import java.util.Optional;

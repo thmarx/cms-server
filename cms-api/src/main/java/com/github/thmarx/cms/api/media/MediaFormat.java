@@ -22,8 +22,6 @@ package com.github.thmarx.cms.api.media;
  * #L%
  */
 
-import com.github.thmarx.cms.api.media.MediaUtils;
-
 /**
  *
  * @author t.marx

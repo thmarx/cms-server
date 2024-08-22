@@ -24,7 +24,6 @@ package com.github.thmarx.cms.cli.commands.modules;
 import com.github.thmarx.cms.CMSServer;
 import com.github.thmarx.cms.cli.tools.ModulesUtil;
 import com.github.thmarx.cms.extensions.repository.InstallationHelper;
-import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 

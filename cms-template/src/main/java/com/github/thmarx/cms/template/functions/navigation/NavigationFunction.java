@@ -21,27 +21,26 @@ package com.github.thmarx.cms.template.functions.navigation;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.DB;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
 import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.hooks.Hooks;
+import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.api.utils.NodeUtil;
 import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
-import com.github.thmarx.cms.api.utils.NodeUtil;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

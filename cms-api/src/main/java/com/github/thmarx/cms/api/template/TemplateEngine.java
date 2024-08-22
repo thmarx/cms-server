@@ -23,12 +23,12 @@ package com.github.thmarx.cms.api.template;
  */
 
 import com.github.thmarx.cms.api.db.ContentNode;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.github.thmarx.cms.api.theme.Theme;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

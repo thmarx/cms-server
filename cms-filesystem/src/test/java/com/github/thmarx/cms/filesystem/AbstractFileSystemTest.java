@@ -24,7 +24,6 @@ package com.github.thmarx.cms.filesystem;
 
 import com.github.thmarx.cms.filesystem.metadata.query.ExtendableQuery;
 import java.io.IOException;
-import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

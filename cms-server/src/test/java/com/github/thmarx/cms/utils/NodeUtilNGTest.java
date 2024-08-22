@@ -22,10 +22,9 @@ package com.github.thmarx.cms.utils;
  * #L%
  */
 
-import com.github.thmarx.cms.api.utils.NodeUtil;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.db.ContentNode;
-import com.github.thmarx.cms.filesystem.metadata.memory.MemoryMetaData;
+import com.github.thmarx.cms.api.utils.NodeUtil;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

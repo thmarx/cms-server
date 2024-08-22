@@ -23,7 +23,6 @@ package com.github.thmarx.cms.cli.tools;
  */
 
 import com.github.thmarx.cms.api.PropertiesLoader;
-import com.github.thmarx.cms.cli.commands.modules.AbstractModuleCommand;
 import com.github.thmarx.cms.cli.commands.themes.AbstractThemeCommand;
 import com.google.common.base.Strings;
 import java.io.IOException;

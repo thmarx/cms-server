@@ -25,14 +25,15 @@ package com.github.thmarx.modules.manager;
 
 
 import com.github.thmarx.modules.api.Context;
-import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.ExtensionPoint;
+import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.Module.Priority;
 import com.github.thmarx.modules.api.ModuleConfiguration;
 import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -40,11 +41,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.net.JarURLConnection;
-import java.util.Collections;
-import java.util.Objects;
 
 /**
  *

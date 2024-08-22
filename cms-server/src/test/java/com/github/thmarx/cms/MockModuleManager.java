@@ -31,7 +31,6 @@ import com.github.thmarx.modules.api.ManagerConfiguration;
 import com.github.thmarx.modules.api.Module;
 import com.github.thmarx.modules.api.ModuleDescription;
 import com.github.thmarx.modules.api.ModuleManager;
-import com.github.thmarx.modules.manager.ModuleImpl;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;

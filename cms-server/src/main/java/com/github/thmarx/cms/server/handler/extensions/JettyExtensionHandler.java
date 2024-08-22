@@ -23,9 +23,9 @@ package com.github.thmarx.cms.server.handler.extensions;
  */
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.extensions.HttpHandlerExtension;
-import com.github.thmarx.cms.extensions.request.RequestExtensions;
-import com.github.thmarx.cms.extensions.http.JettyHttpHandlerWrapper;
 import com.github.thmarx.cms.extensions.hooks.ServerHooks;
+import com.github.thmarx.cms.extensions.http.JettyHttpHandlerWrapper;
+import com.github.thmarx.cms.extensions.request.RequestExtensions;
 import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

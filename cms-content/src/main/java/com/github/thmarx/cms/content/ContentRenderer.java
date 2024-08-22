@@ -24,18 +24,17 @@ package com.github.thmarx.cms.content;
 
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.Page;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.content.views.model.View;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

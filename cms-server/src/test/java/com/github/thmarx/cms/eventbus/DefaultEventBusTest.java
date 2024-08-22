@@ -22,15 +22,14 @@ package com.github.thmarx.cms.eventbus;
  * #L%
  */
 
-import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.github.thmarx.cms.api.eventbus.events.GenericEvent;
+import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

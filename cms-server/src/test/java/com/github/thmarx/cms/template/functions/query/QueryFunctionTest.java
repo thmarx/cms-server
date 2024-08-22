@@ -25,6 +25,7 @@ import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.content.DefaultContentParser;
@@ -35,7 +36,6 @@ import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

@@ -22,16 +22,17 @@ package com.github.thmarx.cms.template.functions.navigation;
  * #L%
  */
 
-import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.TestHelper;
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.db.cms.NIOReadOnlyFile;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
+import com.github.thmarx.cms.api.model.NavNode;
+import com.github.thmarx.cms.content.DefaultContentParser;
 import com.github.thmarx.cms.core.eventbus.DefaultEventBus;
 import com.github.thmarx.cms.filesystem.FileDB;
-import com.github.thmarx.cms.api.model.NavNode;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -39,7 +40,6 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

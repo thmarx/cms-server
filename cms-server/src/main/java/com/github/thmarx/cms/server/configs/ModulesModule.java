@@ -43,10 +43,11 @@ import com.github.thmarx.cms.api.module.CMSRequestContext;
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
-import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.cms.content.markdown.module.CMSMarkdownRenderer;
 import com.github.thmarx.cms.core.scheduler.SiteCronJobScheduler;
+import com.github.thmarx.cms.filesystem.FileDB;
 import com.github.thmarx.modules.api.ModuleManager;
+import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 import com.github.thmarx.modules.manager.ModuleAPIClassLoader;
 import com.github.thmarx.modules.manager.ModuleManagerImpl;
 import com.google.inject.AbstractModule;
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.github.thmarx.modules.api.ModuleRequestContextFactory;
 
 /**
  *

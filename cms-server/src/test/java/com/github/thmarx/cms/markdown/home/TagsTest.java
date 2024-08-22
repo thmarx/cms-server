@@ -22,7 +22,6 @@ package com.github.thmarx.cms.markdown.home;
  * #L%
  */
 
-import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 /**

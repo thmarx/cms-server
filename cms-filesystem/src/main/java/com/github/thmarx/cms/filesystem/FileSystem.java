@@ -21,9 +21,8 @@ package com.github.thmarx.cms.filesystem;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.filesystem.metadata.memory.MemoryMetaData;
-import com.github.thmarx.cms.api.ModuleFileSystem;
 import com.github.thmarx.cms.api.Constants;
+import com.github.thmarx.cms.api.ModuleFileSystem;
 import com.github.thmarx.cms.api.db.ContentNode;
 import com.github.thmarx.cms.api.db.ContentQuery;
 import com.github.thmarx.cms.api.db.DBFileSystem;
@@ -33,9 +32,10 @@ import com.github.thmarx.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.github.thmarx.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.github.thmarx.cms.api.eventbus.events.TemplateChangedEvent;
-import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.api.exceptions.AccessNotAllowedException;
+import com.github.thmarx.cms.api.utils.PathUtil;
 import com.github.thmarx.cms.filesystem.metadata.AbstractMetaData;
+import com.github.thmarx.cms.filesystem.metadata.memory.MemoryMetaData;
 import com.github.thmarx.cms.filesystem.metadata.persistent.PersistentMetaData;
 import java.io.IOException;
 import java.nio.charset.Charset;

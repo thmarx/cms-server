@@ -22,8 +22,6 @@ package com.github.thmarx.cms.api.hooks;
  * #L%
  */
 
-import java.util.List;
-
 
 /**
  *

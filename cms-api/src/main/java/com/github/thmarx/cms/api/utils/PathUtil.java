@@ -21,11 +21,10 @@ package com.github.thmarx.cms.api.utils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.io.IOException;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

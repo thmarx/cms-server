@@ -25,11 +25,9 @@ package com.github.thmarx.cms.content;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.thmarx.cms.api.ServerContext;
+import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 import com.google.common.base.Strings;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
@@ -37,7 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
-import com.github.thmarx.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *

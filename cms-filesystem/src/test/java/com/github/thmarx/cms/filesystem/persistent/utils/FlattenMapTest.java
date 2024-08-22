@@ -23,11 +23,10 @@ package com.github.thmarx.cms.filesystem.persistent.utils;
  */
 
 import com.github.thmarx.cms.filesystem.metadata.persistent.utils.FlattenMap;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 
 public class FlattenMapTest {

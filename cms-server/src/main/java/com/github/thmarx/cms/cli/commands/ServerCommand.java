@@ -22,13 +22,9 @@ package com.github.thmarx.cms.cli.commands;
  * #L%
  */
 import com.github.thmarx.cms.cli.commands.server.AddUser;
-import com.github.thmarx.cms.cli.commands.ExtensionCommands;
-import com.github.thmarx.cms.cli.commands.HostCommands;
 import com.github.thmarx.cms.cli.commands.server.RemoveUser;
 import com.github.thmarx.cms.cli.commands.server.Startup;
 import com.github.thmarx.cms.cli.commands.server.Stop;
-import com.github.thmarx.cms.cli.commands.ModuleCommands;
-import com.github.thmarx.cms.cli.commands.ThemeCommands;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 

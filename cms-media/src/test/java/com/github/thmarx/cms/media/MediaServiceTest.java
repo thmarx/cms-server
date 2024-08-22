@@ -25,8 +25,8 @@ package com.github.thmarx.cms.media;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  *

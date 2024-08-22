@@ -28,7 +28,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Engine;
 import org.quartz.Scheduler;

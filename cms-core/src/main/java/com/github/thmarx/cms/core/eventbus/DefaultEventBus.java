@@ -21,9 +21,9 @@ package com.github.thmarx.cms.core.eventbus;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.eventbus.EventListener;
-import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.Event;
+import com.github.thmarx.cms.api.eventbus.EventBus;
+import com.github.thmarx.cms.api.eventbus.EventListener;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;

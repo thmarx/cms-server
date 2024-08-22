@@ -24,8 +24,6 @@ package com.github.thmarx.cms.core.scheduler;
 
 import com.github.thmarx.cms.api.scheduler.CronJob;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.CronScheduleBuilder;

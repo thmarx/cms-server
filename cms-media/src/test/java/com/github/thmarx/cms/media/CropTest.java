@@ -24,9 +24,9 @@ package com.github.thmarx.cms.media;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
-import org.junit.jupiter.api.Test;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
+import org.junit.jupiter.api.Test;
 
 /**
  *

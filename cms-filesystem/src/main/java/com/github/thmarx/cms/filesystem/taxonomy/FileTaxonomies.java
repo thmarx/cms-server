@@ -30,7 +30,6 @@ import com.github.thmarx.cms.api.db.taxonomy.Taxonomy;
 import com.github.thmarx.cms.api.utils.MapUtil;
 import com.github.thmarx.cms.filesystem.FileSystem;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

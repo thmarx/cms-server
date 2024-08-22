@@ -23,7 +23,6 @@ package com.github.thmarx.cms.extensions;
  */
 
 import com.github.thmarx.cms.api.hooks.HookSystem;
-import static com.github.thmarx.cms.extensions.ExtensionManagerTest.engine;
 import java.io.IOException;
 import org.assertj.core.api.Assertions;
 import org.graalvm.polyglot.Context;

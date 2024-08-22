@@ -21,8 +21,8 @@ package com.github.thmarx.cms.media;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.thmarx.cms.api.media.MediaUtils;
 import com.github.thmarx.cms.api.media.MediaFormat;
+import com.github.thmarx.cms.api.media.MediaUtils;
 import com.luciad.imageio.webp.WebPWriteParam;
 import java.awt.Color;
 import java.awt.Image;

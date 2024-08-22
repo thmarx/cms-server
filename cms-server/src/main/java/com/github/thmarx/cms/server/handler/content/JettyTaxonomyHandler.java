@@ -24,7 +24,6 @@ package com.github.thmarx.cms.server.handler.content;
 import com.github.thmarx.cms.api.content.TaxonomyResponse;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.content.TaxonomyResolver;
-import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.server.jetty.filter.RequestContextFilter;
 import com.google.inject.Inject;
 import java.util.Optional;

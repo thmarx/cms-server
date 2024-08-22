@@ -23,7 +23,6 @@ package com.github.thmarx.cms.api.media.meta;
  */
 
 import java.util.HashMap;
-import lombok.Data;
 
 /**
  *

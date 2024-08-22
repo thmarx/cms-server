@@ -22,8 +22,8 @@ package com.github.thmarx.cms.api.feature.features;
  * #L%
  */
 
-import com.github.thmarx.cms.api.media.MediaService;
 import com.github.thmarx.cms.api.feature.Feature;
+import com.github.thmarx.cms.api.media.MediaService;
 
 /**
  *

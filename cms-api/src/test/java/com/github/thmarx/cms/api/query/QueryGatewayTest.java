@@ -23,8 +23,6 @@ package com.github.thmarx.cms.api.query;
  */
 
 import com.google.auto.service.AutoService;
-import com.google.j2objc.annotations.AutoreleasePool;
-import lombok.Data;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
