@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.hooks.Hooks;
 import com.github.thmarx.cms.api.request.RequestContext;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class TemplateHooks implements Feature {
 	public TemplateSupplierWrapper getTemplateSupplier () {
 		var templateSupplier = new TemplateSupplierWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("template/supplier/add", Map.of("suppliers", templateSupplier));
+				.execute(Hooks.TEMPLATE_SUPPLIER.hook(), Map.of("suppliers", templateSupplier));
 		
 		return templateSupplier;
 	}
@@ -53,7 +54,7 @@ public class TemplateHooks implements Feature {
 	public TemplateFunctionWrapper getTemplateFunctions () {
 		var templateFunctions = new TemplateFunctionWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("template/function/add", Map.of("functions", templateFunctions));
+				.execute(Hooks.TEMPLATE_FUNCTION.hook(), Map.of("functions", templateFunctions));
 		
 		return templateFunctions;
 	}

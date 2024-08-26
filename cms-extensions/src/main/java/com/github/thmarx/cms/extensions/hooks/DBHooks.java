@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.hooks.Hooks;
 import com.github.thmarx.cms.api.request.RequestContext;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class DBHooks implements Feature {
 	public QueryOperationsWrapper getQueryOperations () {
 		var wrapper = new QueryOperationsWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("db/query/operations/add", Map.of("operations", wrapper));
+				.execute(Hooks.DB_QUERY_OPERATIONS.hook(), Map.of("operations", wrapper));
 		
 		return wrapper;
 	}

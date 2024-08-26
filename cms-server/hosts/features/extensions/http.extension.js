@@ -9,7 +9,7 @@ $http.get("/test", (request, response) => {
 	response.write("ich bin einen test extension!öäü", UTF_8)
 })
 
-$hooks.registerAction("server/http/extension/add", (context) => {
+$hooks.registerAction("system/server/http/extension", (context) => {
 	context.arguments().get("httpExtensions").add(
 			"GET",
 			"/test2",
@@ -26,7 +26,7 @@ $routes.get("/hello-extension", (request, response) => {
 	response.write("extension route", UTF_8)
 })
 
-$hooks.registerAction("server/http/route/add", (context) => {
+$hooks.registerAction("system/server/http/route", (context) => {
 	context.arguments().get("httpRoutes").add(
 			"GET",
 			"/hello-route",

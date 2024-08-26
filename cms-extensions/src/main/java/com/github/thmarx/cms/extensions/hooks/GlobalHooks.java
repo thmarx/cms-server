@@ -23,6 +23,7 @@ package com.github.thmarx.cms.extensions.hooks;
  */
 
 import com.github.thmarx.cms.api.hooks.HookSystem;
+import com.github.thmarx.cms.api.hooks.Hooks;
 import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +39,9 @@ public class GlobalHooks {
 	private final CronJobScheduler scheduler;
 	
 	public void registerCronJob () {
-		globalHookSystem.execute("system/scheduler/register", Map.of("scheduler", scheduler));
+		globalHookSystem.execute(Hooks.SCHEDULER_REGISTER.hook(), Map.of("scheduler", scheduler));
 	}
 	public void removeCronJob () {
-		globalHookSystem.execute("system/scheduler/remove", Map.of("scheduler", scheduler));
+		globalHookSystem.execute(Hooks.SCHEDULER_REMOVE.hook(), Map.of("scheduler", scheduler));
 	}
 }

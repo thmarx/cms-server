@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.hooks.Hooks;
 import com.github.thmarx.cms.api.request.RequestContext;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class ServerHooks implements Feature {
 	public HttpHandlerWrapper getHttpExtensions () {
 		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("server/http/extension/add", Map.of("httpExtensions", httpExtensions));
+				.execute(Hooks.HTTP_EXTENSION.hook(), Map.of("httpExtensions", httpExtensions));
 		
 		return httpExtensions;
 	}
@@ -53,7 +54,7 @@ public class ServerHooks implements Feature {
 	public HttpHandlerWrapper getHttpRoutes () {
 		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("server/http/route/add", Map.of("httpRoutes", httpExtensions));
+				.execute(Hooks.HTTP_ROUTE.hook(), Map.of("httpRoutes", httpExtensions));
 		
 		return httpExtensions;
 	}

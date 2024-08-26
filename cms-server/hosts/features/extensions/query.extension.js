@@ -10,11 +10,10 @@ $query.registerOperation(
 	}
 )
  */
-$hooks.registerAction("db/query/operations/add", (context) => {
+$hooks.registerAction("system/db/query/operations", (context) => {
 	context.arguments().get("operations").add(
 			"none",
 			(fieldValue, value) => {
-				console.log("none operator")
 				return false
 			}
 	)

@@ -28,8 +28,16 @@ package com.github.thmarx.cms.api.hooks;
  */
 public enum Hooks {
 	
-	NAVIGATION_PATH("navigation/%s/path"),
-	NAVIGATION_LIST("navigation/%s/list"),
+	NAVIGATION_PATH("system/navigation/%s/path"),
+	NAVIGATION_LIST("system/navigation/%s/list"),
+	CONTENT_SHORTCODE("system/content/shortcodes"),
+	DB_QUERY_OPERATIONS("system/db/query/operations"),
+	SCHEDULER_REGISTER("system/scheduler/register"),
+	SCHEDULER_REMOVE("system/scheduler/remove"),
+	HTTP_EXTENSION("system/server/http/extension"),
+	HTTP_ROUTE("system/server/http/route"),
+	TEMPLATE_SUPPLIER("system/template/supplier"),
+	TEMPLATE_FUNCTION("system/template/function")
 	;
 	
 	private String pattern;

@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.annotations.FeatureScope;
 import com.github.thmarx.cms.api.feature.Feature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
+import com.github.thmarx.cms.api.hooks.Hooks;
 import com.github.thmarx.cms.api.model.Parameter;
 import com.github.thmarx.cms.api.request.RequestContext;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class ContentHooks implements Feature {
 	public ShortCodesWrapper getShortCodes (Map<String, Function<Parameter, String>> codes) {
 		var codeWrapper = new ShortCodesWrapper(codes);
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute("content/shortcodes/filter", Map.of("shortCodes", codeWrapper));
+				.execute(Hooks.CONTENT_SHORTCODE.hook(), Map.of("shortCodes", codeWrapper));
 		
 		return codeWrapper;
 	}
