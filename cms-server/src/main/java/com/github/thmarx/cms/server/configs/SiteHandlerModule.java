@@ -33,10 +33,10 @@ import com.github.thmarx.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
 import com.github.thmarx.cms.server.handler.content.JettyTaxonomyHandler;
 import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
-import com.github.thmarx.cms.server.handler.extensions.JettyExtensionHandler;
+import com.github.thmarx.cms.server.handler.extensions.JettyHttpHandlerExtensionHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyExtensionRouteHandler;
 import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
-import com.github.thmarx.cms.server.handler.module.JettyHttpHandlerHandler;
+import com.github.thmarx.cms.server.handler.module.JettyHttpHandlerExtensionPointHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRouteHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRoutesHandler;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
@@ -69,8 +69,7 @@ public class SiteHandlerModule extends AbstractModule {
 		bind(JettyTaxonomyHandler.class).in(Singleton.class);
 		bind(JettyRouteHandler.class).in(Singleton.class);
 		bind(JettyRoutesHandler.class).in(Singleton.class);
-		
-		bind(JettyExtensionHandler.class).in(Singleton.class);
+		bind(JettyHttpHandlerExtensionHandler.class).in(Singleton.class);
 		bind(JettyExtensionRouteHandler.class).in(Singleton.class);
 		
 		//bind(JettyAuthenticationHandler.class).in(Singleton.class);
@@ -90,8 +89,8 @@ public class SiteHandlerModule extends AbstractModule {
 	
 	@Provides
 	@Singleton
-	public JettyHttpHandlerHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
-		return new JettyHttpHandlerHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
+	public JettyHttpHandlerExtensionPointHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
+		return new JettyHttpHandlerExtensionPointHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
 	}
 	
 	@Provides

@@ -39,7 +39,7 @@ import org.eclipse.jetty.util.Callback;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class JettyHttpHandlerHandler extends Handler.Abstract {
+public class JettyHttpHandlerExtensionPointHandler extends Handler.Abstract {
 
 	public static final String PATH = "module";
 	

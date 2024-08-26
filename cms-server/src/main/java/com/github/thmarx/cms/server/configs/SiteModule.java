@@ -49,7 +49,6 @@ import com.github.thmarx.cms.api.template.TemplateEngine;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.auth.services.AuthService;
 import com.github.thmarx.cms.auth.services.UserService;
-import com.github.thmarx.cms.content.CachedContentParser;
 import com.github.thmarx.cms.content.ContentRenderer;
 import com.github.thmarx.cms.content.ContentResolver;
 import com.github.thmarx.cms.content.DefaultContentParser;
@@ -95,8 +94,7 @@ public class SiteModule extends AbstractModule {
 		bind(Configuration.class).toInstance(configuration);
 		bind(ScheduledExecutorService.class).toInstance(scheduledExecutorService);
 		bind(EventBus.class).to(DefaultEventBus.class).in(Singleton.class);
-		bind(DefaultContentParser.class).in(Singleton.class);
-		bind(ContentParser.class).to(CachedContentParser.class).in(Singleton.class);
+		bind(ContentParser.class).to(DefaultContentParser.class).in(Singleton.class);
 		bind(TaxonomyFunction.class).in(Singleton.class);
 		bind(ContentNodeMapper.class).in(Singleton.class);
 		bind(TaxonomyResolver.class).in(Singleton.class);

@@ -21,8 +21,6 @@ package com.github.thmarx.cms.server.handler.auth;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.thmarx.cms.api.cache.ICache;
 import com.github.thmarx.cms.api.feature.features.AuthFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -34,7 +32,6 @@ import com.google.inject.Inject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.time.Duration;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.StringTokenizer;

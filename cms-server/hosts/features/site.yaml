@@ -5,6 +5,8 @@ baseurl: "http://localhost2:1010"
 language: en
 test: Hallo
 theme: test
+cache:
+    content: true
 query:
   index:
     mode: PERSISTENT

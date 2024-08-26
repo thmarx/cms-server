@@ -22,6 +22,7 @@ package com.github.thmarx.cms.server;
  * #L%
  */
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.configuration.Config;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.configuration.ConfigurationManagement;
@@ -57,13 +58,14 @@ import com.github.thmarx.cms.server.configs.SiteHandlerModule;
 import com.github.thmarx.cms.server.configs.SiteModule;
 import com.github.thmarx.cms.server.configs.ThemeModule;
 import com.github.thmarx.cms.server.handler.auth.JettyAuthenticationHandler;
+import com.github.thmarx.cms.server.handler.cache.CacheHandler;
 import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
 import com.github.thmarx.cms.server.handler.content.JettyTaxonomyHandler;
 import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
-import com.github.thmarx.cms.server.handler.extensions.JettyExtensionHandler;
+import com.github.thmarx.cms.server.handler.extensions.JettyHttpHandlerExtensionHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyExtensionRouteHandler;
 import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
-import com.github.thmarx.cms.server.handler.module.JettyHttpHandlerHandler;
+import com.github.thmarx.cms.server.handler.module.JettyHttpHandlerExtensionPointHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRouteHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRoutesHandler;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
@@ -231,7 +233,14 @@ public class VHost {
 
 	public Handler buildHttpHandler() {
 
-		var contentHandler = injector.getInstance(JettyContentHandler.class);
+		
+		Handler contentHandler = null;
+		if (configuration.get(SiteConfiguration.class).siteProperties().cacheContent()) {
+			contentHandler = new CacheHandler(injector.getInstance(JettyContentHandler.class), injector.getInstance(CacheManager.class));
+		} else {
+			contentHandler = injector.getInstance(JettyContentHandler.class);
+		}
+		
 		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
 		var viewHandler = injector.getInstance(JettyViewHandler.class);
 		var routeHandler = injector.getInstance(JettyRouteHandler.class);
@@ -270,13 +279,12 @@ public class VHost {
 		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
-		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerHandler.PATH + "/*"),
-				new RequestContextFilter(injector.getInstance(JettyHttpHandlerHandler.class), injector.getInstance(RequestContextFactory.class))
+		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerExtensionPointHandler.PATH + "/*"),
+				new RequestContextFilter(injector.getInstance(JettyHttpHandlerExtensionPointHandler.class), injector.getInstance(RequestContextFactory.class))
 		);
 
-		pathMappingsHandler.addMapping(
-				PathSpec.from("/" + JettyExtensionHandler.PATH + "/*"),
-				new RequestContextFilter(injector.getInstance(JettyExtensionHandler.class), injector.getInstance(RequestContextFactory.class))
+		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerExtensionHandler.PATH + "/*"),
+				new RequestContextFilter(injector.getInstance(JettyHttpHandlerExtensionHandler.class), injector.getInstance(RequestContextFactory.class))
 		);
 
 		ContextHandler defaultContextHandler = new ContextHandler(

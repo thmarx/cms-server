@@ -32,6 +32,7 @@ import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -79,18 +80,18 @@ public class JettyContentHandler extends Handler.Abstract {
 
 			var contentResponse = content.get();
 			if (contentResponse.isRedirect()) {
-				response.getHeaders().add("Location", contentResponse.node().getRedirectLocation());
+				response.getHeaders().add(HttpHeader.LOCATION, contentResponse.node().getRedirectLocation());
 				response.setStatus(contentResponse.node().getRedirectStatus());
 				callback.succeeded();
 			} else {
-				response.getHeaders().add("Content-Type", "%s; charset=utf-8".formatted(content.get().contentType()));
+				response.getHeaders().add(HttpHeader.CONTENT_TYPE, "%s; charset=utf-8".formatted(content.get().contentType()));
 				Content.Sink.write(response, true, content.get().content(), callback);
 			}
 
 		} catch (Exception e) {
 			log.error("", e);
 			response.setStatus(500);
-			response.getHeaders().add("Content-Type", "text/html; charset=utf-8");
+			response.getHeaders().add(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
 			callback.succeeded();
 		}
 		return true;

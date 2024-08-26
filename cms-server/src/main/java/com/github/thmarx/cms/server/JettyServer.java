@@ -117,7 +117,7 @@ public class JettyServer implements AutoCloseable {
 		});
 
 		vhosts.forEach(host -> {
-			log.debug("add virtual host : " + host.hostnames());
+			log.info("add virtual host : " + host.hostnames());
 			var httpHandler = host.buildHttpHandler();
 			handlerCollection.addHandler(httpHandler);
 		});
@@ -193,6 +193,7 @@ public class JettyServer implements AutoCloseable {
 		} catch (Exception ex) {
 			log.error(null, ex);
 		}
+		System.out.println("cms startup successfully");
 	}
 
 	@Override
