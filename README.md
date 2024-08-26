@@ -6,6 +6,15 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+
+## 5.2.0
+
+* **MAINTENANCE** Dependencies updated [#223](https://github.com/thmarx/cms/issues/223)  
+* **FEATURE** Abstraction layer for cache implementations [#226](https://github.com/thmarx/cms/issues/226)  
+* **FEATURE** Readonly layer for filesystem [#225](https://github.com/thmarx/cms/issues/225)  
+* **FEATURE** Cronjob scheduler [#10](https://github.com/thmarx/cms/issues/10)
+* **FEATURE** Minor modifications for upcoming ui module [#222](https://github.com/thmarx/cms/issues/222)
+
 ## 5.1.0
 
 * **FEATURE** Persitent index for metadata [#217](https://github.com/thmarx/cms/issues/217)  
