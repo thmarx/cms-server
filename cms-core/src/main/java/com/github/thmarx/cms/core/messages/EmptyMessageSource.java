@@ -1,5 +1,6 @@
-package com.github.thmarx.cms.api.messages;
+package com.github.thmarx.cms.core.messages;
 
+import com.github.thmarx.cms.api.messages.MessageSource;
 import java.util.List;
 
 /*-

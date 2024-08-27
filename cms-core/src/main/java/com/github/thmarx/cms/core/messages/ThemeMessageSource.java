@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.messages;
+package com.github.thmarx.cms.core.messages;
 
 /*-
  * #%L
@@ -23,6 +23,7 @@ package com.github.thmarx.cms.api.messages;
  */
 
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.messages.MessageSource;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.api.messages;
+package com.github.thmarx.cms.core.messages;
 
 /*-
  * #%L
@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api.messages;
  * #L%
  */
 import com.github.thmarx.cms.api.SiteProperties;
+import com.github.thmarx.cms.api.messages.MessageSource;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.net.URL;

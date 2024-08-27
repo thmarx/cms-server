@@ -42,7 +42,7 @@ import com.github.thmarx.cms.api.feature.features.SitePropertiesFeature;
 import com.github.thmarx.cms.api.feature.features.ThemeFeature;
 import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.media.MediaService;
-import com.github.thmarx.cms.api.messages.DefaultMessageSource;
+import com.github.thmarx.cms.core.messages.DefaultMessageSource;
 import com.github.thmarx.cms.api.messages.MessageSource;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
 import com.github.thmarx.cms.api.template.TemplateEngine;
