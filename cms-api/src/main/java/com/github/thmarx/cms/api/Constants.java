@@ -68,13 +68,13 @@ public abstract class Constants {
 	}
 	
 	public static class NodeType {
-		public static String VIEW = "view";
-		public static String PAGE = "page";
+		public static final String VIEW = "view";
+		public static final String PAGE = "page";
 	}
 	
 	public static class ContentTypes {
-		public static String HTML = "text/html";
-		public static String JSON = "application/json";
+		public static final String HTML = "text/html";
+		public static final String JSON = "application/json";
 	}
 	
 	public static final String SPLIT_PATH_PATTERN = Pattern.quote("/");
@@ -97,10 +97,10 @@ public abstract class Constants {
 	public static final double DEFAULT_MENU_POSITION = 1000f;
 	public static final boolean DEFAULT_MENU_VISIBILITY = true;
 	public static final int DEFAULT_EXCERPT_LENGTH = 200;
-	public static int DEFAULT_PAGE = 1;
-	public static int DEFAULT_PAGE_SIZE = 5;
+	public static final int DEFAULT_PAGE = 1;
+	public static final int DEFAULT_PAGE_SIZE = 5;
 	
-	public static String DEFAULT_CONTENT_TYPE = ContentTypes.HTML;
+	public static final String DEFAULT_CONTENT_TYPE = ContentTypes.HTML;
 	
 	public static final int DEFAULT_REDIRECT_STATUS = 301;
 	
