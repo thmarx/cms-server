@@ -21,7 +21,7 @@ package com.github.thmarx.cms.cli;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.io.File;
 import picocli.CommandLine;
 
 /**
@@ -29,12 +29,19 @@ import picocli.CommandLine;
  * @author t.marx
  */
 public class CMSCli {
-	
-	public static CommandLine getCommandLine () {
+
+	static {
+		File log4j2File = new File("log4j2.xml");
+		if (log4j2File.exists()) {
+			System.setProperty("log4j2.configurationFile", log4j2File.toURI().toString());
+		}
+	}
+
+	public static CommandLine getCommandLine() {
 		return new CommandLine(new CLICommand());
 	}
-	
+
 	public static void main(String[] args) {
-        CMSCli.getCommandLine().execute(args);
-    }
+		CMSCli.getCommandLine().execute(args);
+	}
 }
