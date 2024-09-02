@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.feature.Feature;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.server.Request;
 
 /**
  *
@@ -33,10 +34,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @FeatureScope({FeatureScope.Scope.REQUEST})
-public record RequestFeature(String context, String uri, Map<String, List<String>> queryParameters) implements Feature {
+public record RequestFeature(String context, String uri, Map<String, List<String>> queryParameters, Request request) implements Feature {
 
 	public RequestFeature(String uri, Map<String, List<String>> queryParameters) {
-		this(null, uri, queryParameters);
+		this(null, uri, queryParameters, null);
 	}
 	
 	public String getQueryParameter(String name, final String defaultValue) {
