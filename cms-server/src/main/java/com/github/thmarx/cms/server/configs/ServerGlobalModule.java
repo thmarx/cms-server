@@ -23,6 +23,7 @@ package com.github.thmarx.cms.server.configs;
  */
 import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.ServerProperties;
+import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
