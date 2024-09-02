@@ -28,6 +28,7 @@ import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.extensions.RegisterShortCodesExtensionPoint;
 import com.github.thmarx.cms.api.feature.features.ConfigurationFeature;
+import com.github.thmarx.cms.api.feature.features.ConnectionFeature;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
 import com.github.thmarx.cms.api.feature.features.ContentParserFeature;
 import com.github.thmarx.cms.api.feature.features.HookSystemFeature;
@@ -61,7 +62,9 @@ import com.google.inject.Injector;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
 
 /**
@@ -71,6 +74,8 @@ import org.eclipse.jetty.server.Request;
 @RequiredArgsConstructor
 public class RequestContextFactory {
 
+	private static final List<String> REMOTE_ADDR_HEADERS = List.of("X-Forwarded-For", "X-Real-IP");
+	
 	private final Injector injector;
 
 	public RequestContext create(
@@ -80,12 +85,18 @@ public class RequestContextFactory {
 		var uri = RequestUtil.getContentPath(request);
 		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
 
-		return create(request.getContext().getContextPath(), uri, queryParameters);
+		return create(request.getContext().getContextPath(), uri, queryParameters, Optional.of(request));
 	}
 
 	public RequestContext create(
 			String context,
 			String uri, Map<String, List<String>> queryParameters) throws IOException {
+		return create(context, uri, queryParameters, Optional.empty());
+	}
+
+	public RequestContext create(
+			String context,
+			String uri, Map<String, List<String>> queryParameters, Optional<Request> request) throws IOException {
 
 		var hookSystem = injector.getInstance(HookSystem.class);
 		var theme = injector.getInstance(Theme.class);
@@ -129,10 +140,29 @@ public class RequestContextFactory {
 		requestContext.add(RenderContext.class, renderContext);
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(renderContext.markdownRenderer()));
 
+		requestContext.add(ConnectionFeature.class, createConnectionFeature(request));
+
 		requestContext.add(RequestExtensions.class, requestExtensions);
-		
 
 		return requestContext;
+	}
+
+	private ConnectionFeature createConnectionFeature(Optional<Request> requestOpt) {
+		if (requestOpt.isEmpty()) {
+			return new ConnectionFeature("");
+		}
+		var request = requestOpt.get();
+		String clientIP = Request.getRemoteAddr(request);
+		var proxiedIP = REMOTE_ADDR_HEADERS.stream()
+				.filter(
+						header -> request.getHeaders().contains(header))
+				.map(
+						header ->request.getHeaders().get(header) )
+				.findFirst();
+		if (proxiedIP.isPresent()) {
+			clientIP = proxiedIP.get().split(",")[0];
+		}
+		return new ConnectionFeature(clientIP.trim());
 	}
 
 	private ShortCodes createShortCodes(RequestExtensions requestExtensions, RequestContext requestContext) {
@@ -142,9 +172,8 @@ public class RequestContextFactory {
 				.forEach(extension -> codes.putAll(extension.shortCodes()));
 
 		var wrapper = requestContext.get(ContentHooks.class).getShortCodes(codes);
-		
+
 		return new ShortCodes(wrapper.getShortCodes());
 	}
 
-	
 }

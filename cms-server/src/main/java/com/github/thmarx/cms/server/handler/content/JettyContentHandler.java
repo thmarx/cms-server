@@ -70,7 +70,7 @@ public class JettyContentHandler extends Handler.Abstract {
 					log.debug("content not found {}", uri);
 					try (var errorContext = requestContextFactory.create(request.getContext().getContextPath(),
 							"/.technical/404",
-							queryParameters)) {
+							queryParameters, Optional.of(request))) {
 						content = contentResolver.getErrorContent(errorContext);
 						response.setStatus(404);
 					}
