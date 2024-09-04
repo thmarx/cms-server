@@ -1,8 +1,8 @@
-package com.github.thmarx.cms.api.model;
+package com.github.thmarx.cms.template.functions.shortcode;
 
 /*-
  * #%L
- * cms-api
+ * cms-template
  * %%
  * Copyright (C) 2023 - 2024 Marx-Software
  * %%
@@ -22,17 +22,23 @@ package com.github.thmarx.cms.api.model;
  * #L%
  */
 
-import java.util.HashMap;
+import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-public class Parameter extends HashMap<String, Object> {
-	public Parameter () {
+@RequiredArgsConstructor
+public class ShortCodeTemplateFunction {
+	private final ShortCodes shortCodes;
+	
+	public String call (String name, Map<String, Object> parameters) {
+		return shortCodes.execute(name, parameters);
 	}
-	public Parameter (final Map<String, Object> parameters) {
-		super(parameters);
+	public String call (String name) {
+		return shortCodes.execute(name, Map.of());
 	}
+
 }

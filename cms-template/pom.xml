@@ -16,12 +16,35 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.thmarx.cms</groupId>
+			<artifactId>cms-content</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.thmarx.cms</groupId>
 			<artifactId>cms-filesystem</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.33</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+			<version>3.1.2.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.pebbletemplates</groupId>
+			<artifactId>pebble</artifactId>
+			<version>3.2.2</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

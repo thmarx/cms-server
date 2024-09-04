@@ -46,4 +46,22 @@ public class ShortCodes {
 	public String replace (final String content) {
 		return ShortCodeParser.replace(content, codes);
 	}
+	
+	public String execute (String name, Map<String, Object> parameters) {
+		if (codes.get(name) == null) {
+			return "";
+		}
+		try {
+			Parameter params;
+			if (parameters != null) {
+				params = new Parameter(parameters);
+			} else {
+				params = new Parameter();
+			}
+			return codes.get(name).apply(params);
+		} catch (Exception e) {
+			log.error("",e);
+		}
+		return "";
+	}
 }
