@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.shortcode;
+package com.github.thmarx.cms.content.template.functions.shortcode;
 
 /*-
  * #%L

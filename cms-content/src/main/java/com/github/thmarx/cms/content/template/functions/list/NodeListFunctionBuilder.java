@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.list;
+package com.github.thmarx.cms.content.template.functions.list;
 
 /*-
  * #%L
@@ -33,7 +33,7 @@ import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.NodeUtil;
-import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.content.template.functions.AbstractCurrentNodeFunction;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;

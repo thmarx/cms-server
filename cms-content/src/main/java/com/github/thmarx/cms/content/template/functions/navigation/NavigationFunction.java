@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.navigation;
+package com.github.thmarx.cms.content.template.functions.navigation;
 
 /*-
  * #%L
@@ -35,7 +35,7 @@ import com.github.thmarx.cms.api.model.NavNode;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.api.utils.NodeUtil;
 import com.github.thmarx.cms.api.utils.PathUtil;
-import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.content.template.functions.AbstractCurrentNodeFunction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.query;
+package com.github.thmarx.cms.content.template.functions.query;
 
 /*-
  * #%L
@@ -31,7 +31,7 @@ import com.github.thmarx.cms.api.feature.features.MarkdownRendererFeature;
 import com.github.thmarx.cms.api.model.ListNode;
 import com.github.thmarx.cms.api.request.RequestContext;
 import com.github.thmarx.cms.filesystem.metadata.query.ExtendableQuery;
-import com.github.thmarx.cms.template.functions.AbstractCurrentNodeFunction;
+import com.github.thmarx.cms.content.template.functions.AbstractCurrentNodeFunction;
 import com.google.common.base.Strings;
 import java.util.HashMap;
 import java.util.Map;

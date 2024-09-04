@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.hooks;
+package com.github.thmarx.cms.content.template.functions.hooks;
 
 /*-
  * #%L

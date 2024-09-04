@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.shortcode;
+package com.github.thmarx.cms.content.template.shortcode;
 
 /*-
  * #%L
@@ -22,6 +22,7 @@ package com.github.thmarx.cms.template.functions.shortcode;
  * #L%
  */
 
+import com.github.thmarx.cms.content.template.functions.shortcode.ShortCodeTemplateFunction;
 import com.github.thmarx.cms.content.shortcodes.ShortCodes;
 import freemarker.template.Configuration;
 import freemarker.template.Template;

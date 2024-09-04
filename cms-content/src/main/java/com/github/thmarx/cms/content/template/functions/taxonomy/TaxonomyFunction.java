@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.taxonomy;
+package com.github.thmarx.cms.content.template.functions.taxonomy;
 
 /*-
  * #%L

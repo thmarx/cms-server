@@ -1,4 +1,4 @@
-package com.github.thmarx.cms.template.functions.navigation;
+package com.github.thmarx.cms.content.template.navigation;
 
 /*-
  * #%L
@@ -22,6 +22,7 @@ package com.github.thmarx.cms.template.functions.navigation;
  * #L%
  */
 
+import com.github.thmarx.cms.content.template.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.api.content.ContentParser;
 import com.github.thmarx.cms.api.db.Content;
 import com.github.thmarx.cms.api.db.DB;
