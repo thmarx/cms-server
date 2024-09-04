@@ -64,11 +64,6 @@
 			</dependency>
 			<dependency>
 				<groupId>com.github.thmarx.cms</groupId>
-				<artifactId>cms-template</artifactId>
-				<version>${project.version}</version>            
-			</dependency>
-			<dependency>
-				<groupId>com.github.thmarx.cms</groupId>
 				<artifactId>cms-content</artifactId>
 				<version>${project.version}</version>            
 			</dependency>

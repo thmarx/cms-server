@@ -43,10 +43,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.thmarx.cms</groupId>
-			<artifactId>cms-template</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.github.thmarx.cms</groupId>
 			<artifactId>cms-content</artifactId>
 		</dependency>
 		<dependency>

@@ -62,7 +62,7 @@ import com.github.thmarx.cms.filesystem.MetaData;
 import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.media.SiteMediaManager;
 import com.github.thmarx.cms.request.RequestContextFactory;
-import com.github.thmarx.cms.template.functions.taxonomy.TaxonomyFunction;
+import com.github.thmarx.cms.content.template.functions.taxonomy.TaxonomyFunction;
 import com.github.thmarx.cms.theme.DefaultTheme;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.AbstractModule;
