@@ -53,6 +53,7 @@ import com.github.thmarx.cms.content.template.functions.LinkFunction;
 import com.github.thmarx.cms.content.template.functions.list.NodeListFunctionBuilder;
 import com.github.thmarx.cms.content.template.functions.navigation.NavigationFunction;
 import com.github.thmarx.cms.content.template.functions.query.QueryFunction;
+import com.github.thmarx.cms.content.template.functions.shortcode.ShortCodeTemplateFunction;
 import com.github.thmarx.cms.content.template.functions.taxonomy.TaxonomyFunction;
 import com.github.thmarx.modules.api.ModuleManager;
 import java.io.IOException;
@@ -169,6 +170,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 		);
 		model.values.put("sections", sections);
 
+		model.values.put("shortCodes", createShortCodeFunction(context));
 		model.values.put("navigation", createNavigationFunction(contentFile, context));
 		model.values.put("nodeList", createNodeListFunction(contentFile, context));
 		model.values.put("query", createQueryFunction(contentFile, context));
@@ -283,6 +285,10 @@ public class DefaultContentRenderer implements ContentRenderer {
 		sections.values().forEach(list -> list.sort((s1, s2) -> Integer.compare(s1.index(), s2.index())));
 
 		return sections;
+	}
+
+	private ShortCodeTemplateFunction createShortCodeFunction(RequestContext context) {
+		return new ShortCodeTemplateFunction(context.get(RenderContext.class).shortCodes());
 	}
 
 }
