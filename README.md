@@ -6,6 +6,13 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 5.3.0
+
+* **MAINTENANCE** Refactoring packages [#228](https://github.com/thmarx/cms/issues/228)  
+* **FEATURE** Add HttpRequest to RequestFeature [#230](https://github.com/thmarx/cms/issues/230)  
+* **FEATURE** Automatic load lof4j config from app directory [#229](https://github.com/thmarx/cms/issues/229)  
+* **FEATURE** Make ShortCodes callable from template code [#219](https://github.com/thmarx/cms/issues/219)  
+
 
 ## 5.2.0
 
