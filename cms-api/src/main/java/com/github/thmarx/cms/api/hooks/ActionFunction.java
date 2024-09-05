@@ -29,6 +29,6 @@ import java.util.function.Function;
  * @author t.marx
  */
 @FunctionalInterface
-public interface ActionFunction extends Function<ActionContext<Object>, Object> {
+public interface ActionFunction<T> extends Function<ActionContext<T>, Object> {
 	
 }

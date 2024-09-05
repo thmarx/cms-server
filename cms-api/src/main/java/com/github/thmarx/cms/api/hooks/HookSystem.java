@@ -44,11 +44,11 @@ public class HookSystem {
 	
 	Multimap<String, Filter> filters = ArrayListMultimap.create();
 
-	public void registerAction(final String name, final ActionFunction hookFunction) {
+	public <T> void registerAction(final String name, final ActionFunction<T> hookFunction) {
 		registerAction(name, hookFunction, 10);
 	}
 
-	public void registerAction(final String name, final ActionFunction hookFunction, int priority) {
+	public <T> void registerAction(final String name, final ActionFunction<T> hookFunction, int priority) {
 		actions.put(name, new Action(name, priority, hookFunction));
 	}
 	
