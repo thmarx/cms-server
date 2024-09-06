@@ -106,54 +106,49 @@ public class MultiRootRecursiveWatcher {
 	public void start() throws IOException {
 		watchService = FileSystems.getDefault().newWatchService();
 
-		watchThread = Thread.ofVirtual().name("Watcher").start(new Runnable() {
-			@Override
-			public void run() {
-				running.set(true);
-				walkTreeAndSetWatches();
-
-				while (running.get()) {
-					try {
-						WatchKey watchKey = watchService.take();
-						List<WatchEvent<?>> events = watchKey.pollEvents();
-
-						events.forEach((event) -> {
-							Path path = (Path) watchKey.watchable();
-							File file = path.resolve((Path) event.context()).toFile();
-
-							final FileEvent fileEvent;
-							if (event.kind().equals(ENTRY_CREATE)) {
-								fileEvent = new FileEvent(file, FileEvent.Type.CREATED);
-							} else if (event.kind().equals(ENTRY_DELETE)) {
-								fileEvent = new FileEvent(file, FileEvent.Type.DELETED);
-							} else if (event.kind().equals(ENTRY_MODIFY)) {
-								fileEvent = new FileEvent(file, FileEvent.Type.MODIFIED);
-							} else {
-								fileEvent = null;
-							}
-
-							if (fileEvent != null) {
-								roots.values().forEach((root) -> {
-									if (PathUtil.isChild(root.path, file.toPath())) {
-										root.publisher.submit(fileEvent);
-									}
-								});
-							}
-						});
-
-						// fire events
-						watchKey.reset();
-						resetWaitSettlementTimer();
-					} catch (InterruptedException | ClosedWatchServiceException e) {
-						running.set(false);
-					} catch (Exception e) {
-						log.error("an error occured", e);
-					}
+		watchThread = Thread.ofVirtual().name("Watcher").start(() -> {
+			running.set(true);
+			walkTreeAndSetWatches();
+			
+			while (running.get()) {
+				try {
+					WatchKey watchKey = watchService.take();
+					List<WatchEvent<?>> events = watchKey.pollEvents();
+					
+					events.forEach((event) -> {
+						Path path = (Path) watchKey.watchable();
+						File file = path.resolve((Path) event.context()).toFile();
+						
+						final FileEvent fileEvent;
+						if (event.kind().equals(ENTRY_CREATE)) {
+							fileEvent = new FileEvent(file, FileEvent.Type.CREATED);
+						} else if (event.kind().equals(ENTRY_DELETE)) {
+							fileEvent = new FileEvent(file, FileEvent.Type.DELETED);
+						} else if (event.kind().equals(ENTRY_MODIFY)) {
+							fileEvent = new FileEvent(file, FileEvent.Type.MODIFIED);
+						} else {
+							fileEvent = null;
+						}
+						
+						if (fileEvent != null) {
+							roots.values().forEach((root) -> {
+								if (PathUtil.isChild(root.path, file.toPath())) {
+									root.publisher.submit(fileEvent);
+								}
+							});
+						}
+					});
+					
+					// fire events
+					watchKey.reset();
+					resetWaitSettlementTimer();
+				} catch (InterruptedException | ClosedWatchServiceException e) {
+					running.set(false);
+				} catch (Exception e) {
+					log.error("an error occured", e);
 				}
 			}
 		});
-
-		//watchThread.start();
 	}
 
 	public synchronized void stop() {
