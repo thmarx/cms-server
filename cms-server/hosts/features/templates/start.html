@@ -82,6 +82,11 @@
 			<!-- Hello Thorsten -->
 		</div>
 	</div>
+	
+	<div class="container">
+		<h3>Call ShortCode from template</h3>
+		[(${shortCodes.call('hello', #{'name': 'CondationCMS'})})]
+	</div>
 
 	<th:block th:replace="libs/fragments.html :: footer"></th:block>
 
