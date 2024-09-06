@@ -21,9 +21,6 @@ package com.github.thmarx.modules.manager;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
-
 import com.github.thmarx.modules.api.Context;
 import com.github.thmarx.modules.api.ExtensionPoint;
 import com.github.thmarx.modules.api.Module;
@@ -51,8 +48,6 @@ import java.util.ServiceLoader;
  */
 public class ModuleImpl implements Module {
 
-
-	
 	private String id;
 	private String version;
 	private String name;
@@ -69,13 +64,13 @@ public class ModuleImpl implements Module {
 	URLClassLoader classloader;
 
 	ModuleConfiguration configuration;
-	
+
 	private final Context context;
 	private final ModuleInjector injector;
 
 	Map<Class, List> extensions = new HashMap<>();
 
-	protected ModuleImpl(final File moduleDir, final File modulesDataDir, final Context context, 
+	protected ModuleImpl(final File moduleDir, final File modulesDataDir, final Context context,
 			final ModuleInjector injector, final ModuleRequestContextFactory requestContextFactory) throws MalformedURLException, IOException {
 		this.moduleDir = moduleDir;
 		this.modulesDataDir = modulesDataDir;
@@ -136,8 +131,26 @@ public class ModuleImpl implements Module {
 	public <T extends ExtensionPoint> List<T> extensions(Class<T> extensionClass) {
 
 //		if (!extensions.containsKey(extensionClass)) {
-			ServiceLoader<T> loader = ServiceLoader.load(extensionClass, classloader);
-			List<T> extList = new ArrayList<>();
+		ServiceLoader<T> loader = ServiceLoader.load(extensionClass, classloader);
+//		List<T> extList = new ArrayList<>();
+		return loader.stream().map(value -> {
+			var ext = value.get();
+			ext.setContext(context);
+			ext.setConfiguration(configuration);
+
+			if (requestContextFactory != null) {
+				ext.setRequestContext(requestContextFactory.createContext());
+			}
+
+			if (injector != null) {
+				injector.inject(ext);
+			}
+
+			ext.init();
+
+			return ext;
+		}).toList();
+		/*
 			for (T ext : loader) {
 				ext.setContext(context);
 				ext.setConfiguration(configuration);
@@ -153,7 +166,8 @@ public class ModuleImpl implements Module {
 				ext.init();
 				extList.add(ext);
 			}
-			return extList;
+		 */
+//		return extList;
 //			extensions.put(extensionClass, extList);
 //		}
 
@@ -161,10 +175,10 @@ public class ModuleImpl implements Module {
 	}
 
 	@Override
-	public Priority getPriority () {
+	public Priority getPriority() {
 		return priority;
 	}
-	
+
 	@Override
 	public String getVersion() {
 		return version;
@@ -221,8 +235,6 @@ public class ModuleImpl implements Module {
 	public File getModulesDataDir() {
 		return modulesDataDir;
 	}
-	
-	
 
 	@Override
 	public int hashCode() {
@@ -255,7 +267,7 @@ public class ModuleImpl implements Module {
 		// workaround: close all libs manually: see https://bugs.openjdk.java.net/browse/JDK-7183373
 		for (URL u : this.classloader.getURLs()) {
 			if (u.getProtocol().equals("jar")) {
-				((JarURLConnection) u.openConnection()).getJarFile().close();				
+				((JarURLConnection) u.openConnection()).getJarFile().close();
 			}
 		}
 

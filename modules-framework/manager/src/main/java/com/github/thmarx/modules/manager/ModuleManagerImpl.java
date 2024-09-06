@@ -426,9 +426,13 @@ public class ModuleManagerImpl implements ModuleManager {
 	public <T extends ExtensionPoint> List<T> extensions(Class<T> extensionClass) {
 		List<T> extensions = new ArrayList<>();
 		moduleLoader.activeModules().values().forEach((ModuleImpl m) -> {
-			if (m.provides(extensionClass)) {
-				extensions.addAll(m.extensions(extensionClass));
+			var moduleExt = m.extensions(extensionClass);
+			if (!moduleExt.isEmpty()) {
+				extensions.addAll(moduleExt);
 			}
+//			if (m.provides(extensionClass)) {
+//				extensions.addAll(m.extensions(extensionClass));
+//			}
 		});
 		return extensions;
 	}
