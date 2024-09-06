@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
+import com.github.thmarx.cms.api.extensions.HookSystemRegisterExtentionPoint;
 import com.github.thmarx.cms.api.extensions.RegisterShortCodesExtensionPoint;
 import com.github.thmarx.cms.api.feature.features.ConfigurationFeature;
 import com.github.thmarx.cms.api.feature.features.ContentNodeMapperFeature;
@@ -45,6 +46,7 @@ import com.github.thmarx.cms.api.mapper.ContentNodeMapper;
 import com.github.thmarx.cms.api.markdown.MarkdownRenderer;
 import com.github.thmarx.cms.api.media.MediaService;
 import com.github.thmarx.cms.api.request.RequestContext;
+import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.api.theme.Theme;
 import com.github.thmarx.cms.api.utils.HTTPUtil;
 import com.github.thmarx.cms.api.utils.RequestUtil;
@@ -86,16 +88,15 @@ public class RequestContextFactory {
 	}
 
 	public RequestContext create(
-			String context,
+			String contextPath,
 			String uri, Map<String, List<String>> queryParameters) throws IOException {
-		return create(context, uri, queryParameters, Optional.empty());
+		return create(contextPath, uri, queryParameters, Optional.empty());
 	}
 
 	public RequestContext create(
-			String context,
+			String contextPath,
 			String uri, Map<String, List<String>> queryParameters, Optional<Request> request) throws IOException {
 
-		var hookSystem = injector.getInstance(HookSystem.class);
 		var theme = injector.getInstance(Theme.class);
 		var markdownRenderer = injector.getInstance(MarkdownRenderer.class);
 		var extensionManager = injector.getInstance(ExtensionManager.class);
@@ -104,8 +105,7 @@ public class RequestContextFactory {
 
 		var requestContext = new RequestContext();
 		requestContext.add(InjectorFeature.class, new InjectorFeature(injector));
-		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
-		requestContext.add(RequestFeature.class, new RequestFeature(context, uri, queryParameters, request.orElse(null)));
+		requestContext.add(RequestFeature.class, new RequestFeature(contextPath, uri, queryParameters, request.orElse(null)));
 		requestContext.add(ThemeFeature.class, new ThemeFeature(theme));
 		requestContext.add(ContentParserFeature.class, new ContentParserFeature(injector.getInstance(ContentParser.class)));
 		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(injector.getInstance(ContentNodeMapper.class)));
@@ -129,6 +129,7 @@ public class RequestContextFactory {
 		requestContext.add(DBHooks.class, new DBHooks(requestContext));
 		requestContext.add(ContentHooks.class, new ContentHooks(requestContext));
 
+		requestContext.add(HookSystemFeature.class, new HookSystemFeature(setupHookSystem(requestContext)));
 		RequestExtensions requestExtensions = extensionManager.newContext(theme, requestContext);
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer,
@@ -140,9 +141,28 @@ public class RequestContextFactory {
 
 		requestContext.add(RequestExtensions.class, requestExtensions);
 
+		
+		
 		return requestContext;
 	}
 
+	/**
+	 * Has to run as one of the last steps, because we need the requestContext to be filled
+	 * @param requestContext
+	 * @return 
+	 */
+	private HookSystem setupHookSystem (RequestContext requestContext) {
+		var hookSystem = injector.getInstance(HookSystem.class);
+		var moduleManager = injector.getInstance(ModuleManager.class);
+		try {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
+			moduleManager.extensions(HookSystemRegisterExtentionPoint.class).forEach(extensionPoint -> extensionPoint.register(hookSystem));
+		} finally {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
+		}
+		return hookSystem;
+	}
+	
 	private ShortCodes createShortCodes(RequestExtensions requestExtensions, RequestContext requestContext) {
 		var codes = requestExtensions.getShortCodes();
 

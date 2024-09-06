@@ -192,9 +192,6 @@ public class ModulesModule extends AbstractModule {
 	@Provides
 	public HookSystem hookSystem(final ModuleManager moduleManager) {
 		var hookSystem = new HookSystem();
-		
-		moduleManager.extensions(HookSystemRegisterExtentionPoint.class).forEach(extensionPoint -> extensionPoint.register(hookSystem));
-		
 		return hookSystem;
 	}
 }
