@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  *
@@ -69,7 +71,11 @@ public class ModuleImpl implements Module {
 	private final ModuleInjector injector;
 
 	Map<Class, List> extensions = new HashMap<>();
+	
+	private ConcurrentMap<Class, ServiceLoader<?>> serviceLoaders = new ConcurrentHashMap<>();
 
+	private ModuleServiceLoader moduleServiceLoader;
+	
 	protected ModuleImpl(final File moduleDir, final File modulesDataDir, final Context context,
 			final ModuleInjector injector, final ModuleRequestContextFactory requestContextFactory) throws MalformedURLException, IOException {
 		this.moduleDir = moduleDir;
@@ -119,6 +125,8 @@ public class ModuleImpl implements Module {
 			dataDir.mkdirs();
 		}
 		this.configuration = new ModuleConfiguration(dataDir);
+		
+		this.moduleServiceLoader = ModuleServiceLoader.create(classloader);
 	}
 
 	@Override
@@ -127,12 +135,37 @@ public class ModuleImpl implements Module {
 		return serviceLoader.iterator().hasNext();
 	}
 
+	private synchronized <T extends ExtensionPoint> ServiceLoader<T> getServiceLoader (Class<T> extensionClass) {
+		if (!serviceLoaders.containsKey(extensionClass)) {
+			serviceLoaders.put(extensionClass, ServiceLoader.load(extensionClass, classloader));
+		}
+		
+		return (ServiceLoader<T>) serviceLoaders.get(extensionClass);
+	}
+	
 	@Override
 	public <T extends ExtensionPoint> List<T> extensions(Class<T> extensionClass) {
+		
+		return moduleServiceLoader.get(extensionClass).stream()
+				.map(ext -> {
+			ext.setContext(context);
+			ext.setConfiguration(configuration);
 
-//		if (!extensions.containsKey(extensionClass)) {
+			if (requestContextFactory != null) {
+				ext.setRequestContext(requestContextFactory.createContext());
+			}
+
+			if (injector != null) {
+				injector.inject(ext);
+			}
+
+			ext.init();
+
+			return ext;
+		}).toList();
+		
+		/*
 		ServiceLoader<T> loader = ServiceLoader.load(extensionClass, classloader);
-//		List<T> extList = new ArrayList<>();
 		return loader.stream().map(value -> {
 			var ext = value.get();
 			ext.setContext(context);
@@ -150,28 +183,7 @@ public class ModuleImpl implements Module {
 
 			return ext;
 		}).toList();
-		/*
-			for (T ext : loader) {
-				ext.setContext(context);
-				ext.setConfiguration(configuration);
-				
-				if (requestContextFactory != null) {
-					ext.setRequestContext(requestContextFactory.createContext());
-				}
-				
-				if (injector != null) {
-					injector.inject(ext);
-				}
-				
-				ext.init();
-				extList.add(ext);
-			}
-		 */
-//		return extList;
-//			extensions.put(extensionClass, extList);
-//		}
-
-//		return Collections.unmodifiableList(extensions.get(extensionClass));
+		*/
 	}
 
 	@Override

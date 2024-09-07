@@ -189,10 +189,9 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public ExtensionManager extensionManager(DB db, Theme theme, Configuration configuration, Engine engine) throws IOException {
+	public ExtensionManager extensionManager(DB db, Configuration configuration, Engine engine) throws IOException {
 		var extensionManager = new ExtensionManager(
 				db, 
-				theme, 
 				configuration.get(ServerConfiguration.class).serverProperties(), 
 				engine
 		);

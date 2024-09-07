@@ -84,7 +84,7 @@ public class ExtensionManagerTest {
 		Mockito.when(theme.extensionsPath())
 				.thenReturn(Path.of("src/test/resources/theme/extensions"));
 
-		extensionManager = new ExtensionManager(db, theme, properties, engine);
+		extensionManager = new ExtensionManager(db, properties, engine);
 	}
 
 	@Test

@@ -47,7 +47,6 @@ import org.graalvm.polyglot.Context;
  */
 @RequiredArgsConstructor
 @FeatureScope(FeatureScope.Scope.REQUEST)
-@Deprecated
 public class RequestExtensions implements AutoCloseable, Feature {
 
 	@Getter

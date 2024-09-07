@@ -55,7 +55,6 @@ import org.graalvm.polyglot.io.IOAccess;
 public class ExtensionManager {
 
 	private final DB db;
-	private final Theme parentTheme;
 	private final ServerProperties serverProperties;
 
 	@Getter
@@ -118,7 +117,7 @@ public class ExtensionManager {
 				}).filter(source -> source != null)
 				.forEach(loader);
 	}
-
+	
 	public RequestExtensions newContext(Theme theme, RequestContext requestContext) throws IOException {
 		var context = Context.newBuilder()
 				.allowAllAccess(true)
@@ -161,7 +160,7 @@ public class ExtensionManager {
 			setUpBinding(themeBindings, requestExtensions, theme, requestContext);
 
 //			theme_sources.forEach(themeContext::eval);
-			var themeExtPath = parentTheme.extensionsPath();
+			var themeExtPath = theme.extensionsPath();
 			if (Files.exists(themeExtPath)) {
 				log.debug("load extensions from theme");
 				loadExtensions(themeExtPath, themeContext::eval);
