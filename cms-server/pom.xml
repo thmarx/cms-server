@@ -114,6 +114,12 @@
 			<artifactId>semver4j</artifactId>
 		</dependency>
 		
+		<dependency>
+			<groupId>com.github.chrisvest</groupId>
+			<artifactId>stormpot</artifactId>
+			<version>3.2</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

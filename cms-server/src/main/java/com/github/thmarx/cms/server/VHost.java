@@ -26,6 +26,7 @@ import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.configuration.Config;
 import com.github.thmarx.cms.api.configuration.Configuration;
 import com.github.thmarx.cms.api.configuration.ConfigurationManagement;
+import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.SiteConfiguration;
 import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.content.ContentParser;
@@ -57,6 +58,7 @@ import com.github.thmarx.cms.server.configs.SiteGlobalModule;
 import com.github.thmarx.cms.server.configs.SiteHandlerModule;
 import com.github.thmarx.cms.server.configs.SiteModule;
 import com.github.thmarx.cms.server.configs.ThemeModule;
+import com.github.thmarx.cms.server.filter.PooledRequestContextFilter;
 import com.github.thmarx.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.github.thmarx.cms.server.handler.cache.CacheHandler;
 import com.github.thmarx.cms.server.handler.content.JettyContentHandler;
@@ -105,7 +107,7 @@ public class VHost {
 
 	@Getter
 	private Handler hostHandler;
-	
+
 	@Getter
 	protected Injector injector;
 
@@ -114,8 +116,8 @@ public class VHost {
 		this.configuration = configuration;
 		this.scheduledExecutorService = scheduledExecutorService;
 	}
-	
-	public String id () {
+
+	public String id() {
 		return configuration.get(SiteConfiguration.class).siteProperties().id();
 	}
 
@@ -127,31 +129,30 @@ public class VHost {
 			log.error("", ex);
 		}
 	}
-	
-	public void reload () {
+
+	public void reload() {
 		log.trace("reload theme");
-		
+
 		try {
-			
+
 			reloadConfiguration(SiteConfiguration.class);
 			reloadConfiguration(TaxonomyConfiguration.class);
 			injector.getInstance(ConfigurationManagement.class).reload();
-			
+
 			var theme = this.injector.getInstance(Theme.class);
-			
+
 			this.injector.getInstance(SiteMediaManager.class).reloadTheme(theme);
-			
-		
+
 			this.injector.getInstance(ThemeMediaManager.class).reloadTheme(theme);;
-			
+
 			ResourceHandler themeAssetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));
 			themeAssetsHandler.stop();
 			themeAssetsHandler.setBaseResource(new FileFolderPathResource(theme.assetsPath()));
 			themeAssetsHandler.start();
-			
+
 			this.injector.getInstance(TemplateEngine.class).updateTheme(theme);
 			this.injector.getInstance(CMSModuleContext.class).get(ThemeFeature.class).updateTheme(theme);
-			
+
 			injector.getInstance(EventBus.class).syncPublish(new HostReloadedEvent(id()));
 		} catch (Exception e) {
 			log.error("", e);
@@ -173,8 +174,8 @@ public class VHost {
 		this.injector = globalInjector.createChildInjector(
 				new SiteGlobalModule(),
 				new SiteModule(hostBase, configuration, scheduledExecutorService),
-				new ModulesModule(modulesPath), 
-				new SiteHandlerModule(), 
+				new ModulesModule(modulesPath),
+				new SiteHandlerModule(),
 				new ThemeModule());
 
 		final CMSModuleContext cmsModuleContext = injector.getInstance(CMSModuleContext.class);
@@ -210,16 +211,16 @@ public class VHost {
 		});
 		injector.getInstance(EventBus.class).register(ConfigurationFileChanged.class,
 				(event) -> reloadConfiguration(event.clazz()));
-		
+
 		initSiteGlobals();
 	}
-	
-	private void initSiteGlobals () throws IOException {
+
+	private void initSiteGlobals() throws IOException {
 		var globalJs = injector.getInstance(DB.class).getReadOnlyFileSystem().resolve("site.globals.js");
 		if (globalJs.exists()) {
 			var context = injector.getInstance(GlobalExtensions.class);
 			context.evaluate(globalJs.getContent());
-			
+
 			injector.getInstance(GlobalHooks.class).registerCronJob();
 		}
 	}
@@ -233,14 +234,13 @@ public class VHost {
 
 	public Handler buildHttpHandler() {
 
-		
 		Handler contentHandler = null;
 		if (configuration.get(SiteConfiguration.class).siteProperties().cacheContent()) {
 			contentHandler = new CacheHandler(injector.getInstance(JettyContentHandler.class), injector.getInstance(CacheManager.class));
 		} else {
 			contentHandler = injector.getInstance(JettyContentHandler.class);
 		}
-		
+
 		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
 		var viewHandler = injector.getInstance(JettyViewHandler.class);
 		var routeHandler = injector.getInstance(JettyRouteHandler.class);
@@ -269,7 +269,7 @@ public class VHost {
 		PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
 		pathMappingsHandler.addMapping(
 				PathSpec.from("/"),
-				new RequestContextFilter(defaultHandlerSequence, injector.getInstance(RequestContextFactory.class))
+				requestContextFilter(defaultHandlerSequence, injector)
 		);
 		pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
 		pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
@@ -280,11 +280,11 @@ public class VHost {
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
 		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerExtensionPointHandler.PATH + "/*"),
-				new RequestContextFilter(injector.getInstance(JettyHttpHandlerExtensionPointHandler.class), injector.getInstance(RequestContextFactory.class))
+				requestContextFilter(injector.getInstance(JettyHttpHandlerExtensionPointHandler.class), injector)
 		);
 
 		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerExtensionHandler.PATH + "/*"),
-				new RequestContextFilter(injector.getInstance(JettyHttpHandlerExtensionHandler.class), injector.getInstance(RequestContextFactory.class))
+				requestContextFilter(injector.getInstance(JettyHttpHandlerExtensionHandler.class), injector)
 		);
 
 		ContextHandler defaultContextHandler = new ContextHandler(
@@ -313,8 +313,16 @@ public class VHost {
 		gzipHandler.addIncludedMimeTypes("application/javascript");
 
 		hostHandler = gzipHandler;
-		
+
 		return hostHandler;
+	}
+
+	private Handler.Wrapper requestContextFilter(Handler handler, Injector injector) {
+		var performance = configuration.get(ServerConfiguration.class).serverProperties().performance();
+		if (performance.pool_enabled()) {
+			return new PooledRequestContextFilter(handler, injector.getInstance(RequestContextFactory.class), performance);
+		}
+		return new RequestContextFilter(handler, injector.getInstance(RequestContextFactory.class));
 	}
 
 	private String appendContextIfNeeded(final String path) {

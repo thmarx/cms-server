@@ -37,7 +37,7 @@ import org.eclipse.jetty.util.Callback;
 public class RequestContextFilter extends Handler.Wrapper {
 
 	private final RequestContextFactory requestContextFactory;
-	
+
 	public static final String REQUEST_CONTEXT = "_requestContext";
 
 	public RequestContextFilter(final Handler handler, final RequestContextFactory requestContextFactory) {
@@ -46,15 +46,15 @@ public class RequestContextFilter extends Handler.Wrapper {
 	}
 
 	@Override
-	public boolean handle(Request rqst, Response rspns, Callback clbck) throws Exception {
+	public boolean handle(Request httpRequest, Response rspns, Callback clbck) throws Exception {
 		try (
-				var requestContext = requestContextFactory.create(rqst)) {
+				var requestContext = requestContextFactory.create(httpRequest)) {
 
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
 			
-			rqst.setAttribute(REQUEST_CONTEXT, requestContext);
+			httpRequest.setAttribute(REQUEST_CONTEXT, requestContext);
 
-			return super.handle(rqst, rspns, clbck);
+			return super.handle(httpRequest, rspns, clbck);
 
 		} finally {
 			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();

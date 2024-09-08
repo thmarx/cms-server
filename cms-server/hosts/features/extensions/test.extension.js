@@ -4,7 +4,7 @@ import { getLogger } from 'system/logging.mjs';
 
 const logger = getLogger("extensions");
 if (ENV === "dev"){
-	logger.info("dev debug log from test extension");
+	//logger.info("dev debug log from test extension");
 }
 
 $http.post("/form", (request, response) => {

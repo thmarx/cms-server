@@ -67,4 +67,8 @@ public class ServerProperties extends YamlProperties {
 	public IPCProperties ipc () {
 		return new IPCProperties(getSubMap("ipc"));
 	}
+	
+	public PerformanceProperties performance () {
+		return new PerformanceProperties(getSubMap("performance"));
+	}
 }

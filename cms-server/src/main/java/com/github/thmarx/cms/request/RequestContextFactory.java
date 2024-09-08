@@ -77,6 +77,55 @@ public class RequestContextFactory {
 	
 	private final Injector injector;
 
+	public RequestContext create() throws IOException {
+
+		var theme = injector.getInstance(Theme.class);
+		var markdownRenderer = injector.getInstance(MarkdownRenderer.class);
+		var extensionManager = injector.getInstance(ExtensionManager.class);
+		var siteProperties = injector.getInstance(SiteProperties.class);
+		var siteMediaService = injector.getInstance(MediaService.class);
+
+		var requestContext = new RequestContext();
+		requestContext.add(InjectorFeature.class, new InjectorFeature(injector));
+		
+		requestContext.add(ThemeFeature.class, new ThemeFeature(theme));
+		requestContext.add(ContentParserFeature.class, new ContentParserFeature(injector.getInstance(ContentParser.class)));
+		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(injector.getInstance(ContentNodeMapper.class)));
+		if (ServerContext.IS_DEV) {
+			requestContext.add(IsDevModeFeature.class, new IsDevModeFeature());
+		}
+		requestContext.add(ConfigurationFeature.class, new ConfigurationFeature(injector.getInstance(Configuration.class)));
+		requestContext.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(
+				injector.getInstance(Configuration.class)
+						.get(ServerConfiguration.class).serverProperties()
+		));
+		requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
+		requestContext.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(siteMediaService));
+
+		requestContext.add(ServerHooks.class, new ServerHooks(requestContext));
+		requestContext.add(TemplateHooks.class, new TemplateHooks(requestContext));
+		requestContext.add(DBHooks.class, new DBHooks(requestContext));
+		requestContext.add(ContentHooks.class, new ContentHooks(requestContext));
+
+		requestContext.add(HookSystemFeature.class, new HookSystemFeature(setupHookSystem(requestContext)));
+		
+		RequestExtensions requestExtensions = extensionManager.newContext(theme, requestContext);
+		
+		RenderContext renderContext = new RenderContext(
+				markdownRenderer,
+				createShortCodes(requestExtensions, requestContext),
+				theme);
+		requestContext.add(RenderContext.class, renderContext);
+		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(renderContext.markdownRenderer()));
+
+
+		requestContext.add(RequestExtensions.class, requestExtensions);
+
+		
+		
+		return requestContext;
+	}
+	
 	public RequestContext create(
 			Request request) throws IOException {
 
