@@ -55,8 +55,6 @@ import stormpot.Timeout;
 @Slf4j
 public class PooledRequestContextFilter extends Handler.Wrapper {
 
-	private final RequestContextFactory requestContextFactory;
-
 	public static final String REQUEST_CONTEXT = "_requestContext";
 
 	Pool<MyPoolable> requestContextPool;
@@ -66,7 +64,6 @@ public class PooledRequestContextFilter extends Handler.Wrapper {
 	public PooledRequestContextFilter(final Handler handler, final RequestContextFactory requestContextFactory,
 			final PerformanceProperties properties) {
 		super(handler);
-		this.requestContextFactory = requestContextFactory;
 		this.properties = properties;
 
 		requestContextPool = Pool.from(new MyAllocator(requestContextFactory))
@@ -111,11 +108,13 @@ public class PooledRequestContextFilter extends Handler.Wrapper {
 
 		@Override
 		public MyPoolable allocate(Slot slot) throws Exception {
+			log.info("allocate");
 			return new MyPoolable(slot, requestContextFactory.create());
 		}
 
 		@Override
 		public void deallocate(MyPoolable poolable) throws Exception {
+			log.info("deallocate");
 			poolable.close();
 		}
 
