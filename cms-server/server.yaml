@@ -10,4 +10,4 @@ apm:
   max_requests: 100
   thread_limit: 10
 performance:
-  pool_enabled: true
+  pool_enabled: false
