@@ -43,10 +43,12 @@ import org.graalvm.polyglot.io.FileSystem;
  */
 public class ExtensionFileSystem implements FileSystem {
 
-	private final Path extensionPath;
+	private final Path siteExtensionPath;
+	private final Path themeExtensionPath;
 
-	public ExtensionFileSystem(final Path extensionPath) {
-		this.extensionPath = extensionPath;
+	public ExtensionFileSystem(final Path siteExtensionPath, final Path themeExtensionPath) {
+		this.siteExtensionPath = siteExtensionPath;
+		this.themeExtensionPath = themeExtensionPath;
 	}
 
 	@Override
@@ -59,7 +61,11 @@ public class ExtensionFileSystem implements FileSystem {
 		if (path.startsWith("system/")) {
 			return Path.of(path);
 		}
-		return extensionPath.resolve(path);
+		var resolved = siteExtensionPath.resolve(path);
+		if (Files.exists(resolved)) {
+			return resolved;
+		}
+		return themeExtensionPath.resolve(path);
 	}
 
 	@Override

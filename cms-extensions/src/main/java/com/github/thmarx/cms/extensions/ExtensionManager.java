@@ -126,10 +126,10 @@ public class ExtensionManager {
 				.allowValueSharing(true)
 				.hostClassLoader(getClassLoader())
 				.allowIO(IOAccess.newBuilder()
-						.fileSystem(new ExtensionFileSystem(db.getFileSystem().resolve("extensions/")))
+						.fileSystem(new ExtensionFileSystem(db.getFileSystem().resolve("extensions/"), theme.extensionsPath()))
 						.build())
 				.engine(engine).build();
-
+		/*
 		Context themeContext = null;
 		if (!theme.empty()) {
 			themeContext = Context.newBuilder()
@@ -143,8 +143,9 @@ public class ExtensionManager {
 							.build())
 					.engine(engine).build();
 		}
+		*/
 
-		RequestExtensions requestExtensions = new RequestExtensions(context, themeContext);
+		RequestExtensions requestExtensions = new RequestExtensions(context);
 
 		final Value bindings = context.getBindings("js");
 		setUpBinding(bindings, requestExtensions, theme, requestContext);
@@ -154,16 +155,12 @@ public class ExtensionManager {
 			log.debug("load extensions from site");
 			loadExtensions(extPath, context::eval);
 		}
-
+		
 		if (!theme.empty()) {
-			final Value themeBindings = themeContext.getBindings("js");
-			setUpBinding(themeBindings, requestExtensions, theme, requestContext);
-
-//			theme_sources.forEach(themeContext::eval);
 			var themeExtPath = theme.extensionsPath();
 			if (Files.exists(themeExtPath)) {
 				log.debug("load extensions from theme");
-				loadExtensions(themeExtPath, themeContext::eval);
+				loadExtensions(themeExtPath, context::eval);
 			}
 		}
 

@@ -66,7 +66,7 @@ public abstract class TestHelper {
 		var markdownRenderer = TestHelper.getRenderer();
 		RequestContext context = new RequestContext();
 		context.add(RequestFeature.class, new RequestFeature(uri, Map.of()));
-		context.add(RequestExtensions.class, new RequestExtensions(null, null));
+		context.add(RequestExtensions.class, new RequestExtensions(null));
 		context.add(RenderContext.class, new RenderContext(markdownRenderer, new ShortCodes(Map.of()), DefaultTheme.EMPTY));
 
 		context.add(SiteMediaServiceFeature.class, new SiteMediaServiceFeature(new FileMediaService(null)));

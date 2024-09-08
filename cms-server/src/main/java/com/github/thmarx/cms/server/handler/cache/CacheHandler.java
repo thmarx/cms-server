@@ -23,6 +23,8 @@ package com.github.thmarx.cms.server.handler.cache;
  */
 import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.cache.ICache;
+import com.github.thmarx.cms.api.utils.HTTPUtil;
+import com.github.thmarx.cms.api.utils.RequestUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -79,8 +81,8 @@ public class CacheHandler extends Handler.Wrapper {
 		if (!request.getMethod().equalsIgnoreCase("GET")) {
 			return super.handle(request, response, callback);
 		}
-		String contextPath = request.getContext().getContextPath();
-		CachedKey key = new CachedKey(contextPath);
+		
+		CachedKey key = new CachedKey(request.getHttpURI().getPathQuery());
 
 		CachedResponse cached = responseCache.get(key);
 		if (cached != null) {

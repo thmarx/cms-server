@@ -64,7 +64,6 @@ public class RequestExtensions implements AutoCloseable, Feature {
 
 	@Getter
 	private final Context context;
-	private final Context themeContext;
 	
 	@Deprecated
 	public void registerQueryOperation (final String operation, final BiPredicate<Object, Object> predicate) {
@@ -103,8 +102,5 @@ public class RequestExtensions implements AutoCloseable, Feature {
 	@Override
 	public void close() throws Exception {
 		context.close();
-		if (themeContext != null) {
-			themeContext.close();
-		}
 	}
 }

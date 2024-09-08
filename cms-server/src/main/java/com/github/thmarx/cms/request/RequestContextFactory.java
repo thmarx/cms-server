@@ -105,6 +105,7 @@ public class RequestContextFactory {
 
 		var requestContext = new RequestContext();
 		requestContext.add(InjectorFeature.class, new InjectorFeature(injector));
+		//the only request specific
 		requestContext.add(RequestFeature.class, new RequestFeature(contextPath, uri, queryParameters, request.orElse(null)));
 		requestContext.add(ThemeFeature.class, new ThemeFeature(theme));
 		requestContext.add(ContentParserFeature.class, new ContentParserFeature(injector.getInstance(ContentParser.class)));
@@ -130,7 +131,9 @@ public class RequestContextFactory {
 		requestContext.add(ContentHooks.class, new ContentHooks(requestContext));
 
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(setupHookSystem(requestContext)));
+		
 		RequestExtensions requestExtensions = extensionManager.newContext(theme, requestContext);
+		
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer,
 				createShortCodes(requestExtensions, requestContext),
