@@ -51,4 +51,8 @@ public class PerformanceProperties {
 	public int pool_expire () {
 		return (int) properties.getOrDefault("pool_expire", 10);
 	}
+	
+	public int request_workers () {
+		return (int) properties.getOrDefault("request_workers", 200);
+	}
 }
