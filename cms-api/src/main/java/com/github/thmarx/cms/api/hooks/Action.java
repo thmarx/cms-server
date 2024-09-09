@@ -26,5 +26,5 @@ package com.github.thmarx.cms.api.hooks;
  *
  * @author t.marx
  */
-public record Action(String name, int priority, ActionFunction function) implements Hook {
+public record Action(String name, int priority, ActionFunction<?> function) implements Hook {
 }

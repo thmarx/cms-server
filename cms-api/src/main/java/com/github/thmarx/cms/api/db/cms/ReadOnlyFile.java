@@ -55,7 +55,7 @@ public interface ReadOnlyFile {
 	
 	boolean hasParent ();
 	
-	List<? extends ReadOnlyFile> children() throws IOException;
+	List<ReadOnlyFile> children() throws IOException;
 	
 	String getContentType () throws IOException;
 	
