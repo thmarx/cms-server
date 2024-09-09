@@ -50,7 +50,7 @@ public class CMSConfiguration implements IConfiguration {
 		} catch (Exception ex) {
 			Logger.getLogger(CMSConfiguration.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return null;
+		return Optional.empty();
 	}
 	
 	
