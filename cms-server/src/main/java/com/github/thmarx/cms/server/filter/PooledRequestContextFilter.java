@@ -23,6 +23,7 @@ package com.github.thmarx.cms.server.filter;
  */
 import com.github.thmarx.cms.api.PerformanceProperties;
 import com.github.thmarx.cms.api.ServerContext;
+import com.github.thmarx.cms.api.annotations.Experimental;
 import com.github.thmarx.cms.api.feature.features.IsPreviewFeature;
 import com.github.thmarx.cms.api.feature.features.RequestFeature;
 import com.github.thmarx.cms.api.request.RequestContext;
@@ -52,6 +53,7 @@ import stormpot.Timeout;
  *
  * @author t.marx
  */
+@Experimental(since = "5.3.0")
 @Slf4j
 public class PooledRequestContextFilter extends Handler.Wrapper {
 

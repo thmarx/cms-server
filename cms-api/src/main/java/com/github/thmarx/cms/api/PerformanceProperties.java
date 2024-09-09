@@ -22,6 +22,7 @@ package com.github.thmarx.cms.api;
  * #L%
  */
 
+import com.github.thmarx.cms.api.annotations.Experimental;
 import java.time.Duration;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import lombok.RequiredArgsConstructor;
  *
  * @author t.marx
  */
+@Experimental(since = "5.3.0")
 @RequiredArgsConstructor
 public class PerformanceProperties {
 	private final Map<String, Object> properties;
