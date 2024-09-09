@@ -59,7 +59,7 @@ public class PooledRequestContextFilter extends Handler.Wrapper {
 
 	public static final String REQUEST_CONTEXT = "_requestContext";
 
-	Pool<MyPoolable> requestContextPool;
+	Pool<RequestContextPoolable> requestContextPool;
 
 	private final PerformanceProperties properties;
 	
@@ -68,7 +68,7 @@ public class PooledRequestContextFilter extends Handler.Wrapper {
 		super(handler);
 		this.properties = properties;
 
-		requestContextPool = Pool.from(new MyAllocator(requestContextFactory))
+		requestContextPool = Pool.from(new RequestContextAllocator(requestContextFactory))
 				.setExpiration(Expiration.after(properties.pool_expire(), TimeUnit.SECONDS))
 				.setSize(properties.pool_size())
 				.build();
@@ -104,18 +104,18 @@ public class PooledRequestContextFilter extends Handler.Wrapper {
 
 
 	@RequiredArgsConstructor
-	private static class MyAllocator implements Allocator<MyPoolable> {
+	private static class RequestContextAllocator implements Allocator<RequestContextPoolable> {
 
 		private final RequestContextFactory requestContextFactory;
 
 		@Override
-		public MyPoolable allocate(Slot slot) throws Exception {
+		public RequestContextPoolable allocate(Slot slot) throws Exception {
 			log.info("allocate");
-			return new MyPoolable(slot, requestContextFactory.create());
+			return new RequestContextPoolable(slot, requestContextFactory.create());
 		}
 
 		@Override
-		public void deallocate(MyPoolable poolable) throws Exception {
+		public void deallocate(RequestContextPoolable poolable) throws Exception {
 			log.info("deallocate");
 			poolable.close();
 		}
@@ -123,7 +123,7 @@ public class PooledRequestContextFilter extends Handler.Wrapper {
 	}
 
 	@RequiredArgsConstructor
-	private static class MyPoolable implements Poolable, Closeable {
+	private static class RequestContextPoolable implements Poolable, Closeable {
 
 		private final Slot slot;
 		@Getter

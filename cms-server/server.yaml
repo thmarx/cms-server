@@ -6,8 +6,9 @@ ipc:
   port: 6868
   password: test_pwd
 apm:
-  enabled: true
+  enabled: false
   max_requests: 100
   thread_limit: 10
+# experimental settings
 performance:
   pool_enabled: false
