@@ -25,6 +25,8 @@ package com.github.thmarx.cms.api.query;
 /**
  *
  * @author thmar
+ * @param <Q>
+ * @param <T>
  */
 public interface QueryProvider<Q extends Query<T>, T> {
 	

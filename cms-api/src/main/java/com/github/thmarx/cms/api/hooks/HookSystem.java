@@ -49,7 +49,7 @@ public class HookSystem {
 	}
 
 	public <T> void registerAction(final String name, final ActionFunction<T> hookFunction, int priority) {
-		actions.put(name, new Action(name, priority, hookFunction));
+		actions.put(name, new Action<>(name, priority, hookFunction));
 	}
 	
 	public <T> void registerFilter(final String name, final FilterFunction<T> hookFunction) {
@@ -57,7 +57,7 @@ public class HookSystem {
 	}
 
 	public <T> void registerFilter(final String name, final FilterFunction<T> hookFunction, int priority) {
-		filters.put(name, new Filter(name, priority, hookFunction));
+		filters.put(name, new Filter<>(name, priority, hookFunction));
 	}
 	
 	public ActionContext<Object> execute(final String name) {
