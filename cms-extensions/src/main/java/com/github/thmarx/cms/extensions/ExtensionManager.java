@@ -129,21 +129,6 @@ public class ExtensionManager {
 						.fileSystem(new ExtensionFileSystem(db.getFileSystem().resolve("extensions/"), theme.extensionsPath()))
 						.build())
 				.engine(engine).build();
-		/*
-		Context themeContext = null;
-		if (!theme.empty()) {
-			themeContext = Context.newBuilder()
-					.allowAllAccess(true)
-					.allowHostClassLookup(className -> true)
-					.allowHostAccess(HostAccess.ALL)
-					.allowValueSharing(true)
-					.hostClassLoader(getClassLoader())
-					.allowIO(IOAccess.newBuilder()
-							.fileSystem(new ExtensionFileSystem(theme.extensionsPath()))
-							.build())
-					.engine(engine).build();
-		}
-		*/
 
 		RequestExtensions requestExtensions = new RequestExtensions(context);
 

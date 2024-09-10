@@ -15,7 +15,7 @@ $hooks.registerAction("system/server/http/extension", (context) => {
 			"/test2",
 			(request, response) => {
 				response.addHeader("Content-Type", "text/html; charset=utf-8")
-				response.write("ich bin einen test extension, registered via hook!", UTF_8)
+				response.write("http extension via hook!", UTF_8)
 			}
 	)
 	return null;

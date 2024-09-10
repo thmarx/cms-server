@@ -10,7 +10,7 @@ $template.registerTemplateSupplier(
 $hooks.registerAction("system/template/supplier", (context) => {
 	context.arguments().get("suppliers").add(
 			"myName",
-			() => "My name is Thorsten"
+			() => "My name is CondationCMS"
 	)
 	return null;
 })

@@ -2,9 +2,6 @@ package com.github.thmarx.cms.content.views;
 
 import com.github.thmarx.cms.content.views.model.View;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;

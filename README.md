@@ -8,10 +8,14 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 ## 5.3.0
 
-* **MAINTENANCE** Refactoring packages [#228](https://github.com/thmarx/cms/issues/228)  
+* **BUG** CMSRequestContext is empty in HookSystemRegisterExtentionPoint [#232](https://github.com/thmarx/cms/issues/232)
 * **FEATURE** Add HttpRequest to RequestFeature [#230](https://github.com/thmarx/cms/issues/230)  
 * **FEATURE** Automatic load lof4j config from app directory [#229](https://github.com/thmarx/cms/issues/229)  
 * **FEATURE** Make ShortCodes callable from template code [#219](https://github.com/thmarx/cms/issues/219)  
+* **MAINTENANCE** Refactoring packages [#228](https://github.com/thmarx/cms/issues/228)  
+* **MAINTENANCE** Performance optimizations [#234](https://github.com/thmarx/cms/issues/234)  
+* **MAINTENANCE** Update jetty dependency [#233](https://github.com/thmarx/cms/issues/233)
+* **MAINTENANCE** Test suite [#231](https://github.com/thmarx/cms/issues/231)
 
 
 ## 5.2.0
