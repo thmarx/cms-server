@@ -23,7 +23,6 @@ package com.github.thmarx.cms.server.configs;
  */
 import com.github.thmarx.cms.api.PropertiesLoader;
 import com.github.thmarx.cms.api.ServerProperties;
-import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -34,7 +33,9 @@ import org.graalvm.polyglot.Engine;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
-import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.DirectSchedulerFactory;
+import org.quartz.simpl.RAMJobStore;
+import org.quartz.simpl.SimpleThreadPool;
 
 /**
  *
@@ -52,8 +53,14 @@ public class ServerGlobalModule implements com.google.inject.Module {
 	@Singleton
 	public Scheduler scheduler() {
 		try {
-			SchedulerFactory schedulerFactory = new StdSchedulerFactory();
-			var scheduler = schedulerFactory.getScheduler();
+
+			DirectSchedulerFactory schedulerFactory = DirectSchedulerFactory.getInstance();
+			schedulerFactory.createScheduler(
+					"cms-scheduler", 
+					"cms-scheduler", 
+					new SimpleThreadPool(5, Thread.NORM_PRIORITY), 
+					new RAMJobStore());
+			var scheduler = schedulerFactory.getScheduler("cms-scheduler");
 			scheduler.start();
 
 			return scheduler;

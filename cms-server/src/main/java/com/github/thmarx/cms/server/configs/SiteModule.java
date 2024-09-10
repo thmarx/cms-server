@@ -96,8 +96,6 @@ public class SiteModule extends AbstractModule {
 		bind(TaxonomyFunction.class).in(Singleton.class);
 		bind(ContentNodeMapper.class).in(Singleton.class);
 		bind(TaxonomyResolver.class).in(Singleton.class);
-
-		bind(ConfigurationManagement.class).in(Singleton.class);
 	}
 	
 	@Provides
