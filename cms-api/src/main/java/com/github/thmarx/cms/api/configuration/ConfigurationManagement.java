@@ -29,14 +29,14 @@ import com.github.thmarx.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.events.ConfigurationFileChanged;
+import com.github.thmarx.cms.api.scheduler.CronJobContext;
+import com.github.thmarx.cms.api.scheduler.CronJobScheduler;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -50,12 +50,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__({
 	@Inject}))
-public class ConfigurationManagement implements Runnable {
+public class ConfigurationManagement {
 
 	final DB db;
 	@Getter
 	final Configuration configuration;
-	final ScheduledExecutorService scheduler;
+	final CronJobScheduler scheduler;
 	final EventBus eventBus;
 
 	private final List<ConfigurationResource> watched_configurations = new ArrayList<>();
@@ -91,14 +91,14 @@ public class ConfigurationManagement implements Runnable {
 	}
 	
 	public void init() throws IOException {
-		init(1, 1, TimeUnit.MINUTES);
+		init("0 * * * * ?");
 	}
-
-	public void init(int initialDelay, int delay, TimeUnit timeUnit) throws IOException {
+	
+	public void init(String cronExpression) throws IOException {
 		init_files();
 
 		// setup scheduler
-		scheduler.scheduleWithFixedDelay(this, initialDelay, delay, timeUnit);
+		scheduler.schedule(cronExpression, "configuration-updater", this::update);
 	}
 	
 	private void addPathToWatch(final Path configFile, final Class<? extends Config> configClass) throws IOException {
@@ -114,8 +114,9 @@ public class ConfigurationManagement implements Runnable {
 		return new ArrayList<>(watched_configurations);
 	}
 	
-	@Override
-	public void run() {
+	
+	public void update(CronJobContext jobContext) {
+		System.out.println("update");
 		log.trace("check for modified configurations {}", db.getFileSystem().resolve(".").toString());
 		getConfigurations().forEach(config -> {
 			try {

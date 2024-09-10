@@ -18,6 +18,10 @@
 			<groupId>com.github.thmarx.cms</groupId>
 			<artifactId>cms-filesystem</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.github.thmarx.cms</groupId>
+			<artifactId>cms-core</artifactId>
+		</dependency>
 	</dependencies>
 	
 </project>

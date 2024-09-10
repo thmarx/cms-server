@@ -70,8 +70,6 @@ public class JettyServer implements AutoCloseable {
 	private final Injector globalInjector;
 	private Server server;
 
-	private ScheduledExecutorService scheduledExecutorService;
-
 	private final EventBus serverEventBus = new DefaultEventBus();
 
 	List<VHost> vhosts = new ArrayList<>();
@@ -96,7 +94,7 @@ public class JettyServer implements AutoCloseable {
 
 	public void startup() throws IOException {
 
-		scheduledExecutorService = Executors.newScheduledThreadPool(1);
+//		scheduledExecutorService = Executors.newScheduledThreadPool(1);
 		var properties = globalInjector.getInstance(ServerProperties.class);
 
 		Files.list(Path.of("hosts")).forEach((hostPath) -> {
@@ -105,11 +103,9 @@ public class JettyServer implements AutoCloseable {
 				try {
 					Configuration configuration = new Configuration(hostPath);
 					configuration.add(ServerConfiguration.class, new ServerConfiguration(properties));
-					var host = new VHost(hostPath, configuration, scheduledExecutorService);
+					var host = new VHost(hostPath, configuration);
 					host.init(Path.of(Constants.Folders.MODULES), globalInjector);
 					vhosts.add(host);
-
-					host.getInjector().getInstance(ConfigurationManagement.class).init();
 				} catch (IOException ex) {
 					log.error(null, ex);
 				}
@@ -137,7 +133,7 @@ public class JettyServer implements AutoCloseable {
 				log.debug("shutting down vhost : " + host.hostnames());
 				host.shutdown();
 			});
-			scheduledExecutorService.shutdownNow();
+//			scheduledExecutorService.shutdownNow();
 			
 			try {
 				globalInjector.getInstance(Scheduler.class).shutdown();
@@ -155,6 +151,7 @@ public class JettyServer implements AutoCloseable {
 		HttpConnectionFactory http11 = new HttpConnectionFactory(httpConfig);
 
 		QueuedThreadPool threadPool = new QueuedThreadPool(properties.performance().request_workers());
+		threadPool.setName("cms-request-worker");
 		//threadPool.setVirtualThreadsExecutor(Executors.newVirtualThreadPerTaskExecutor());
 
 		server = new Server(threadPool);

@@ -103,18 +103,15 @@ public class VHost {
 
 	private final Path hostBase;
 
-	private final ScheduledExecutorService scheduledExecutorService;
-
 	@Getter
 	private Handler hostHandler;
 
 	@Getter
 	protected Injector injector;
 
-	public VHost(final Path hostBase, final Configuration configuration, final ScheduledExecutorService scheduledExecutorService) {
+	public VHost(final Path hostBase, final Configuration configuration) {
 		this.hostBase = hostBase;
 		this.configuration = configuration;
-		this.scheduledExecutorService = scheduledExecutorService;
 	}
 
 	public String id() {
@@ -173,7 +170,7 @@ public class VHost {
 	public void init(Path modulesPath, Injector globalInjector) throws IOException {
 		this.injector = globalInjector.createChildInjector(
 				new SiteGlobalModule(),
-				new SiteModule(hostBase, configuration, scheduledExecutorService),
+				new SiteModule(hostBase, configuration),
 				new ModulesModule(modulesPath),
 				new SiteHandlerModule(),
 				new ThemeModule());

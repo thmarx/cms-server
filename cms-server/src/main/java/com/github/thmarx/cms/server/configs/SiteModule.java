@@ -63,6 +63,7 @@ import com.github.thmarx.cms.media.FileMediaService;
 import com.github.thmarx.cms.media.SiteMediaManager;
 import com.github.thmarx.cms.request.RequestContextFactory;
 import com.github.thmarx.cms.content.template.functions.taxonomy.TaxonomyFunction;
+import com.github.thmarx.cms.core.scheduler.SiteCronJobScheduler;
 import com.github.thmarx.cms.theme.DefaultTheme;
 import com.github.thmarx.modules.api.ModuleManager;
 import com.google.inject.AbstractModule;
@@ -72,7 +73,6 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.ScheduledExecutorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Engine;
@@ -87,12 +87,10 @@ public class SiteModule extends AbstractModule {
 
 	private final Path hostBase;
 	private final Configuration configuration;
-	private final ScheduledExecutorService scheduledExecutorService;
 
 	@Override
 	protected void configure() {
 		bind(Configuration.class).toInstance(configuration);
-		bind(ScheduledExecutorService.class).toInstance(scheduledExecutorService);
 		bind(EventBus.class).to(DefaultEventBus.class).in(Singleton.class);
 		bind(ContentParser.class).to(DefaultContentParser.class).in(Singleton.class);
 		bind(TaxonomyFunction.class).in(Singleton.class);
@@ -100,6 +98,14 @@ public class SiteModule extends AbstractModule {
 		bind(TaxonomyResolver.class).in(Singleton.class);
 
 		bind(ConfigurationManagement.class).in(Singleton.class);
+	}
+	
+	@Provides
+	@Singleton
+	public ConfigurationManagement configurationManagement(DB db, Configuration configuration, SiteCronJobScheduler scheduler, EventBus eventBus) throws IOException {
+		ConfigurationManagement cm = new ConfigurationManagement(db, configuration, scheduler, eventBus);
+		cm.init();
+		return cm;
 	}
 	
 	@Provides

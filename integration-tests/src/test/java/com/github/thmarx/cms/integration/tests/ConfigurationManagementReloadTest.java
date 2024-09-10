@@ -28,14 +28,14 @@ import com.github.thmarx.cms.api.configuration.configs.ServerConfiguration;
 import com.github.thmarx.cms.api.eventbus.Event;
 import com.github.thmarx.cms.api.eventbus.EventBus;
 import com.github.thmarx.cms.api.eventbus.EventListener;
+import com.github.thmarx.cms.api.scheduler.CronJobContext;
+import com.github.thmarx.cms.core.scheduler.SingleCronJobScheduler;
 import com.github.thmarx.cms.filesystem.FileDB;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
@@ -44,6 +44,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.mockito.Mockito;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerFactory;
+import org.quartz.impl.StdSchedulerFactory;
 
 /**
  *
@@ -58,12 +62,12 @@ public class ConfigurationManagementReloadTest {
 
 	static ConfigurationManagement configurationManagement;
 
-	static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	static Scheduler scheduler;
 
 	static MockEventBus eventBus = new MockEventBus();
 
 	@BeforeAll
-	static void setup() throws IOException {
+	static void setup() throws IOException, SchedulerException {
 
 		var serverProps = Mockito.mock(ServerProperties.class);
 		
@@ -75,8 +79,13 @@ public class ConfigurationManagementReloadTest {
 		db = new FileDB(Path.of("reload/"), eventBus, (path) -> Map.of(), configuration);
 		db.init();
 
-		configurationManagement = new ConfigurationManagement(db, configuration, scheduler, eventBus);
-		configurationManagement.init(0, 5, TimeUnit.SECONDS);
+		SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+		scheduler = schedulerFactory.getScheduler();
+		scheduler.start();
+
+		
+		configurationManagement = new ConfigurationManagement(db, configuration, new SingleCronJobScheduler(scheduler, new CronJobContext()), eventBus);
+		configurationManagement.init("0/5 * * * * ?");
 	}
 	
 	@BeforeEach

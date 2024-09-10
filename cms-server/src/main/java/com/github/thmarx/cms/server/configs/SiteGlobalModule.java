@@ -25,7 +25,6 @@ import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.cache.CacheManager;
 import com.github.thmarx.cms.api.cache.CacheProvider;
-import com.github.thmarx.cms.api.db.DB;
 import com.github.thmarx.cms.api.extensions.CacheProviderExtentionPoint;
 import com.github.thmarx.cms.api.hooks.HookSystem;
 import com.github.thmarx.cms.api.scheduler.CronJobContext;
