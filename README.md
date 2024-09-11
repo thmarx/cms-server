@@ -6,6 +6,10 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 
 # changelog
 
+## 5.3.1
+
+* **BUG** NullPointer if site doesn't use a theme [#237](https://github.com/thmarx/cms/issues/237)
+
 ## 5.3.0
 
 * **BUG** CMSRequestContext is empty in HookSystemRegisterExtentionPoint [#232](https://github.com/thmarx/cms/issues/232)
