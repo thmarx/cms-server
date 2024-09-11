@@ -96,5 +96,4 @@ public class JettyContentHandler extends Handler.Abstract {
 		}
 		return true;
 	}
-
 }

@@ -67,7 +67,7 @@ import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyHttpHandlerExtensionHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyExtensionRouteHandler;
 import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
-import com.github.thmarx.cms.server.handler.module.JettyHttpHandlerExtensionPointHandler;
+import com.github.thmarx.cms.server.handler.module.JettyModuleHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRouteHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRoutesHandler;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
@@ -276,8 +276,8 @@ public class VHost {
 		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
-		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerExtensionPointHandler.PATH + "/*"),
-				requestContextFilter(injector.getInstance(JettyHttpHandlerExtensionPointHandler.class), injector)
+		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyModuleHandler.PATH + "/*"),
+				requestContextFilter(injector.getInstance(JettyModuleHandler.class), injector)
 		);
 
 		pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerExtensionHandler.PATH + "/*"),

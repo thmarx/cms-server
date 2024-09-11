@@ -36,7 +36,7 @@ import com.github.thmarx.cms.server.handler.content.JettyViewHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyHttpHandlerExtensionHandler;
 import com.github.thmarx.cms.server.handler.extensions.JettyExtensionRouteHandler;
 import com.github.thmarx.cms.server.handler.media.JettyMediaHandler;
-import com.github.thmarx.cms.server.handler.module.JettyHttpHandlerExtensionPointHandler;
+import com.github.thmarx.cms.server.handler.module.JettyModuleHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRouteHandler;
 import com.github.thmarx.cms.server.handler.module.JettyRoutesHandler;
 import com.github.thmarx.cms.server.jetty.FileFolderPathResource;
@@ -89,8 +89,8 @@ public class SiteHandlerModule extends AbstractModule {
 	
 	@Provides
 	@Singleton
-	public JettyHttpHandlerExtensionPointHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
-		return new JettyHttpHandlerExtensionPointHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
+	public JettyModuleHandler moduleHandler(Theme theme, ModuleManager moduleManager, SiteProperties siteProperties) throws IOException {
+		return new JettyModuleHandler(moduleManager, SiteUtils.getActiveModules(siteProperties, theme));
 	}
 	
 	@Provides

@@ -23,6 +23,11 @@ package com.github.thmarx.cms.server.jetty.filter;
  */
 import com.github.thmarx.cms.api.request.ThreadLocalRequestContext;
 import com.github.thmarx.cms.request.RequestContextFactory;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -46,16 +51,14 @@ public class RequestContextFilter extends Handler.Wrapper {
 	}
 
 	@Override
-	public boolean handle(Request httpRequest, Response rspns, Callback clbck) throws Exception {
-		try (
-				var requestContext = requestContextFactory.create(httpRequest)) {
+	public boolean handle(final Request httpRequest, final Response rspns, final Callback clbck) throws Exception {
+		try (var requestContext = requestContextFactory.create(httpRequest)) {
 
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);
-			
+
 			httpRequest.setAttribute(REQUEST_CONTEXT, requestContext);
 
 			return super.handle(httpRequest, rspns, clbck);
-
 		} finally {
 			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
 		}
