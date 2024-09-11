@@ -1,15 +1,10 @@
 package com.github.thmarx.cms.content.markdown.utils;
 
-import com.google.common.hash.Hasher;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
 /*-
  * #%L
- * cms-markdown
+ * cms-content
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 - 2024 CondationCMS
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +21,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import com.google.common.hash.Hasher;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 
 /**
  *

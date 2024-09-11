@@ -1,12 +1,10 @@
 package com.github.thmarx.cms.core.configuration;
 
-import java.util.Optional;
-
 /*-
  * #%L
  * cms-core
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 - 2024 CondationCMS
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +21,9 @@ import java.util.Optional;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import java.util.Optional;
+
 
 /**
  *

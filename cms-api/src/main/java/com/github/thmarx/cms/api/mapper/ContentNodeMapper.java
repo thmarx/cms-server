@@ -4,7 +4,7 @@ package com.github.thmarx.cms.api.mapper;
  * #%L
  * cms-api
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 CondationCMS
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as

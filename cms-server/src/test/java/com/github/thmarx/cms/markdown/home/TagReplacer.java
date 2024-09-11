@@ -1,18 +1,10 @@
 package com.github.thmarx.cms.markdown.home;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-
 /*-
  * #%L
  * cms-server
  * %%
- * Copyright (C) 2023 Marx-Software
+ * Copyright (C) 2023 - 2024 CondationCMS
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +21,16 @@ import java.util.regex.Pattern;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+
 /**
  *
  * @author t.marx

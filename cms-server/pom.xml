@@ -15,10 +15,6 @@
 		<exec.mainClass>com.github.thmarx.cms.cli.CMSCli</exec.mainClass>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 	</properties>
-	<inceptionYear>2023</inceptionYear>
-	<organization>
-		<name>Marx-Software</name>
-	</organization>
 
 	<dependencies>
 		<dependency>

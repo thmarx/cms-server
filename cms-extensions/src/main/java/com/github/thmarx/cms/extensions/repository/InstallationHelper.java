@@ -2,9 +2,9 @@ package com.github.thmarx.cms.extensions.repository;
 
 /*-
  * #%L
- * modules-manager
+ * cms-extensions
  * %%
- * Copyright (C) 2023 Thorsten Marx
+ * Copyright (C) 2023 - 2024 CondationCMS
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +21,7 @@ package com.github.thmarx.cms.extensions.repository;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 
 
 import java.io.BufferedOutputStream;

@@ -4,7 +4,7 @@ package com.github.thmarx.cms.utils;
  * #%L
  * cms-server
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 - 2024 CondationCMS
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +21,8 @@ package com.github.thmarx.cms.utils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+
 
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.theme.Theme;

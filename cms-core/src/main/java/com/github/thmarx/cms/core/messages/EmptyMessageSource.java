@@ -1,13 +1,10 @@
 package com.github.thmarx.cms.core.messages;
 
-import com.github.thmarx.cms.api.messages.MessageSource;
-import java.util.List;
-
 /*-
  * #%L
- * cms-api
+ * cms-core
  * %%
- * Copyright (C) 2023 - 2024 Marx-Software
+ * Copyright (C) 2023 - 2024 CondationCMS
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +21,10 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import com.github.thmarx.cms.api.messages.MessageSource;
+import java.util.List;
+
 
 /**
  *
