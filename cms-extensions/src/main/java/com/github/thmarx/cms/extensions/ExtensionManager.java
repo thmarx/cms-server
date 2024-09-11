@@ -127,7 +127,7 @@ public class ExtensionManager {
 				.allowValueSharing(true)
 				.hostClassLoader(getClassLoader())
 				.allowIO(IOAccess.newBuilder()
-						.fileSystem(new ExtensionFileSystem(db.getFileSystem().resolve("extensions/"), theme.extensionsPath()))
+						.fileSystem(new ExtensionFileSystem(db.getFileSystem().resolve("extensions/"), theme))
 						.build())
 				.engine(engine).build();
 

@@ -23,6 +23,7 @@ package com.github.thmarx.cms.extensions;
  */
 
 
+import com.github.thmarx.cms.api.theme.Theme;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -45,11 +46,11 @@ import org.graalvm.polyglot.io.FileSystem;
 public class ExtensionFileSystem implements FileSystem {
 
 	private final Path siteExtensionPath;
-	private final Path themeExtensionPath;
+	private final Theme theme;
 
-	public ExtensionFileSystem(final Path siteExtensionPath, final Path themeExtensionPath) {
+	public ExtensionFileSystem(final Path siteExtensionPath, final Theme theme) {
 		this.siteExtensionPath = siteExtensionPath;
-		this.themeExtensionPath = themeExtensionPath;
+		this.theme = theme;
 	}
 
 	@Override
@@ -63,10 +64,10 @@ public class ExtensionFileSystem implements FileSystem {
 			return Path.of(path);
 		}
 		var resolved = siteExtensionPath.resolve(path);
-		if (Files.exists(resolved)) {
-			return resolved;
+		if (!Files.exists(resolved) && !theme.empty() ) {
+			resolved = theme.extensionsPath().resolve(path);
 		}
-		return themeExtensionPath.resolve(path);
+		return resolved;
 	}
 
 	@Override

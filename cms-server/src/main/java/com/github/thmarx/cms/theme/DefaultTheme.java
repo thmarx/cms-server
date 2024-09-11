@@ -21,8 +21,6 @@ package com.github.thmarx.cms.theme;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 import com.github.thmarx.cms.api.Constants;
 import com.github.thmarx.cms.api.SiteProperties;
 import com.github.thmarx.cms.api.ThemeProperties;
@@ -55,8 +53,8 @@ public class DefaultTheme implements Theme {
 	private final MessageSource messages;
 	private boolean empty = false;
 
-	private DefaultTheme(final Path templatePath, final ThemeProperties themeProperties, final boolean empty, final MessageSource messages) {
-		this(templatePath, themeProperties, messages);
+	private DefaultTheme(final Path themePath, final ThemeProperties themeProperties, final boolean empty, final MessageSource messages) {
+		this(themePath, themeProperties, messages);
 		this.empty = empty;
 	}
 
@@ -65,7 +63,7 @@ public class DefaultTheme implements Theme {
 		Path themeYaml = themePath.resolve("theme.yaml");
 
 		MessageSource messages = new ThemeMessageSource(siteProperties, themePath.resolve("messages/"), siteMessages);
-		
+
 		var content = Files.readString(themeYaml, StandardCharsets.UTF_8);
 		Map<String, Object> config = (Map<String, Object>) yaml.load(content);
 
@@ -89,16 +87,26 @@ public class DefaultTheme implements Theme {
 
 	@Override
 	public Path assetsPath() {
+		if (themePath == null) {
+			return null;
+		}
 		return themePath.resolve(Constants.Folders.ASSETS);
 	}
 
 	@Override
 	public Path templatesPath() {
+		if (themePath == null) {
+			return null;
+		}
 		return themePath.resolve(Constants.Folders.TEMPLATES);
 	}
 
 	@Override
 	public Path extensionsPath() {
+		if (themePath == null) {
+			return null;
+		}
+
 		return themePath.resolve(Constants.Folders.EXTENSIONS);
 	}
 
