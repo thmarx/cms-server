@@ -6,7 +6,7 @@
 		
 	<target name="download-modules" description="--> download modules">
 		<echo>download template implementation modules</echo>
-		<get src="https://github.com/thmarx/thymeleaf-module/releases/download/${thymeleaf.version}/thymeleaf-module-bin.zip" dest="temp/thymeleaf-module-bin.zip"></get>
+		<get src="https://github.com/CondationCMS/thymeleaf-module/releases/download/${thymeleaf.version}/thymeleaf-module-bin.zip" dest="temp/thymeleaf-module-bin.zip"></get>
 	</target>
 	
 	<target name="unzip-modules">
