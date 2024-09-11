@@ -15,7 +15,6 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 * **MAINTENANCE** Refactoring packages [#228](https://github.com/thmarx/cms/issues/228)  
 * **MAINTENANCE** Performance optimizations [#234](https://github.com/thmarx/cms/issues/234)  
 * **MAINTENANCE** Update jetty dependency [#233](https://github.com/thmarx/cms/issues/233)
-* **MAINTENANCE** Test suite [#231](https://github.com/thmarx/cms/issues/231)
 
 
 ## 5.2.0
