@@ -1,5 +1,4 @@
 import { $hooks } from 'system/hooks.mjs';
-import { $shortcodes } from 'system/shortcodes.mjs';
 
 
 $hooks.registerAction("system/content/shortcodes", (context) => {
@@ -17,4 +16,6 @@ $hooks.registerAction("system/content/shortcodes", (context) => {
 	)
 	return null;
 })
+
+//$hooks.registerFilter("system/content/filter", (context) => "OH NO!")
 

@@ -1,1 +1,0 @@
-export const NavNode = Java.type("com.github.thmarx.cms.api.model.NavNode").class

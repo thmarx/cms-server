@@ -1,0 +1,1 @@
+export const NavNode = Java.type("com.condation.cms.api.model.NavNode").class
