@@ -6,3 +6,8 @@ template:
 modules:
   active:
     - pebble-module
+content:
+  pipeline:
+    - template
+    - markdown
+    - shortcode
