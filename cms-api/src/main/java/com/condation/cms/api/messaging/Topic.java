@@ -1,8 +1,8 @@
-package com.condation.cms.api.annotations;
+package com.condation.cms.api.messaging;
 
 /*-
  * #%L
- * cms-api
+ * cms-core
  * %%
  * Copyright (C) 2023 - 2024 CondationCMS
  * %%
@@ -22,28 +22,39 @@ package com.condation.cms.api.annotations;
  * #L%
  */
 
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
  *
  * @author t.marx
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE })
-public @interface FeatureScope {
+public interface Topic {
+
+	public static enum Mode {
+		ASYNC, SYNC;
+	}
 	
-	public FeatureScope.Scope[] value() default {};
+	/**
+	 * Subscribe to a topic.
+	 * 
+	 * @param <RT>
+	 * @param listener
+	 * @param dataType 
+	 */
+	<RT> void subscribe(Listener<RT> listener, Class<RT> dataType);
 	
-	public enum Scope {
-		REQUEST,
-		GLOBAL,
-		MODULE
+	/**
+	 * Publish a message on the topic with mode.
+	 * 
+	 * @param object
+	 * @param mode 
+	 */
+	void publish(Object object, Mode mode);
+	
+	/**
+	 * Publish a message on the topic with default mode: Mode.ASYNC
+	 * 
+	 * @param object
+	 */
+	default void publish (Object object) {
+		publish(object, Topic.Mode.ASYNC);
 	}
 }
-

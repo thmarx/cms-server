@@ -31,7 +31,6 @@ import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.eventbus.events.ConfigurationFileChanged;
 import com.condation.cms.api.scheduler.CronJobContext;
 import com.condation.cms.api.scheduler.CronJobScheduler;
-import com.google.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,8 +47,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author t.marx
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__({
-	@Inject}))
+@RequiredArgsConstructor
 public class ConfigurationManagement {
 
 	final DB db;
