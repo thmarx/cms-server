@@ -59,6 +59,7 @@ import com.condation.cms.content.DefaultContentParser;
 import com.condation.cms.content.DefaultContentRenderer;
 import com.condation.cms.content.TaxonomyResolver;
 import com.condation.cms.content.ViewResolver;
+import com.condation.cms.content.shortcodes.TagParser;
 import com.condation.cms.extensions.ExtensionManager;
 import com.condation.cms.filesystem.FileDB;
 import com.condation.cms.filesystem.MetaData;
@@ -80,6 +81,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.jexl3.JexlBuilder;
 import org.graalvm.polyglot.Engine;
 
 /**
@@ -107,6 +109,24 @@ public class SiteModule extends AbstractModule {
 	@Singleton
 	public ContentNodeMapper contentNodeMapper (DB db, ContentParser contentParser) {
 		return new ContentNodeMapper(db, contentParser);
+	}
+	
+	@Provides
+	@Singleton
+	public TagParser tagParser (Configuration configuration) {
+		var engine = new JexlBuilder()
+				.strict(true)
+				.cache(512);
+		
+		boolean IS_DEV = configuration.get(ServerConfiguration.class).serverProperties().dev();
+		
+		if (IS_DEV) {
+			engine.silent(false);
+		} else {
+			engine.silent(true);
+		}
+		
+		return new TagParser(engine.create());
 	}
 	
 	@Provides

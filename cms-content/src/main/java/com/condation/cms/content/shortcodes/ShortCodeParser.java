@@ -22,6 +22,7 @@ package com.condation.cms.content.shortcodes;
  * #L%
  */
 import com.condation.cms.api.model.Parameter;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.*;
@@ -29,20 +30,27 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.MapContext;
 
 @Slf4j
 public class ShortCodeParser {
 
 	public static final String SHORTCODE_REGEX = "\\[\\[(\\w+)([^\\]]*)\\]\\](.*?)\\[\\[\\/\\1\\]\\]|\\[\\[(\\w+)([^\\]]*)\\s*\\/\\]\\]";
 	public static final Pattern SHORTCODE_PATTERN = Pattern.compile(SHORTCODE_REGEX, Pattern.DOTALL);
-	public static final Pattern PARAM_PATTERN = Pattern.compile("(\\w+)=(\"[^\"]*\"|'[^']*')");
+	//public static final Pattern PARAM_PATTERN = Pattern.compile("(\\w+)=(\"[^\"]*\"|'[^']*')");
+	public static final Pattern PARAM_PATTERN = Pattern.compile("(\\w+)=((\"[^\"]*\"|'[^']*'|\\[[^\\]]*\\]))");
 
-	public static List<Match> parseShortcodes(String text) {
+	public ShortCodeParser() {
+	}
+
+	public List<Match> parseShortcodes(String text) {
 		List<Match> shortcodes = new ArrayList<>();
 		Matcher matcher = SHORTCODE_PATTERN.matcher(text);
 
 		while (matcher.find()) {
-
 			String name = matcher.group(1) != null ? matcher.group(1) : matcher.group(4);
 			String params = matcher.group(2) != null ? matcher.group(2).trim() : matcher.group(5).trim();
 			String content = matcher.group(3) != null ? matcher.group(3).trim() : "";
@@ -56,8 +64,7 @@ public class ShortCodeParser {
 			while (paramMatcher.find()) {
 				String key = paramMatcher.group(1);
 				String value = paramMatcher.group(2);
-				// Remove the surrounding quotes
-				value = value.substring(1, value.length() - 1);
+				value = value.substring(1, value.length() - 1); // Entfernt die Anführungszeichen oder Klammern bei Arrays
 				match.getParameters().put(key, value);
 			}
 
@@ -67,17 +74,16 @@ public class ShortCodeParser {
 		return shortcodes;
 	}
 
-	public static String replace(String content, Codes codes) {
-		String newContent = "";
-
+	public String replace(String content, Codes codes) {
+		StringBuilder newContent = new StringBuilder();
 		int lastPosition = 0;
 		var matches = parseShortcodes(content);
-		for (var match : matches) {
 
-			newContent += content.substring(lastPosition, match.getStart());
+		for (var match : matches) {
+			newContent.append(content, lastPosition, match.getStart());
 
 			try {
-				newContent += codes.get(match.getName()).apply(match.getParameters());
+				newContent.append(codes.get(match.getName()).apply(match.getParameters()));
 			} catch (Exception e) {
 				log.error("error executing shortcode", e);
 			}
@@ -86,10 +92,10 @@ public class ShortCodeParser {
 		}
 
 		if (content.length() > lastPosition) {
-			newContent += content.substring(lastPosition);
+			newContent.append(content.substring(lastPosition));
 		}
 
-		return newContent;
+		return newContent.toString();
 	}
 
 	@RequiredArgsConstructor

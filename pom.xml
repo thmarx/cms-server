@@ -21,7 +21,6 @@
 		<module>cms-filesystem</module>
 		<module>cms-media</module>
 		<module>cms-git</module>
-		<module>cms-sandbox</module>
 		<module>cms-content</module>
 		<module>cms-extensions</module>
 		<module>cms-auth</module>
@@ -109,6 +108,12 @@
 				<groupId>com.condation.cms.module.framework</groupId>
 				<artifactId>modules-api</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-jexl3</artifactId>
+				<version>3.4.0</version>
 			</dependency>
 			
 			<dependency>

@@ -24,23 +24,24 @@ package com.condation.cms.content.shortcodes;
 
 
 import com.condation.cms.api.model.Parameter;
+import com.condation.cms.content.ContentBaseTest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author t.marx
  */
-public class ShortCodesTest {
+public class ShortCodesTest extends ContentBaseTest {
 	
 	static ShortCodes shortCodes;
 	
-	@BeforeAll
-	public static void init () {
+	@BeforeEach
+	public void init () {
 		Map<String, Function<Parameter, String>> tags = new HashMap<>();
 		tags.put(
 				"youtube", 
@@ -51,15 +52,20 @@ public class ShortCodesTest {
 		
 		tags.put(
 				"mark",
-				params -> "<mark>%s</mark>".formatted(params.get("content"))
+				params -> "<mark>%s</mark>".formatted(params.get("_content"))
 		);
 		
 		tags.put(
 				"mark2",
-				params -> "<mark class='%s'>%s</mark>".formatted(params.get("class"), params.get("content"))
+				params -> "<mark class='%s'>%s</mark>".formatted(params.get("class"), params.get("_content"))
 		);
 		
-		shortCodes = new ShortCodes(tags);
+		tags.put(
+				"exp",
+				params -> "<span>%s</span>".formatted(params.get("expression"))
+		);
+		
+		shortCodes = new ShortCodes(tags, getTagParser());
 	}
 	
 
@@ -105,18 +111,18 @@ public class ShortCodesTest {
 	@Test
 	void unknown_tag () {
 		var result = shortCodes.replace("before [[vimeo id='TEST' /]] after");
-		Assertions.assertThat(result).isEqualToIgnoringWhitespace("before  after");
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace("before [[vimeo id='TEST' /]] after");
 	}
 	
 	@Test
 	void hello_from () {
-		var result = shortCodes.replace("[[hello_from name='Thorsten',from='Bochum' /]]");
+		var result = shortCodes.replace("[[hello_from name=\"Thorsten\" from=\"Bochum\" /]]");
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 		
-		result = shortCodes.replace("[[hello_from name='Thorsten',from='Bochum'    /]]");
+		result = shortCodes.replace("[[hello_from name='Thorsten' from='Bochum'    /]]");
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 		
-		result = shortCodes.replace("[[hello_from name='Thorsten', from='Bochum' /]]");
+		result = shortCodes.replace("[[hello_from name='Thorsten' from='Bochum' /]]");
 		Assertions.assertThat(result).isEqualTo("<p><h3>Thorsten</h3><small>from Bochum</small></p>");
 	}
 	
@@ -161,7 +167,7 @@ public class ShortCodesTest {
 	@Test
 	void multiple_hello () {
 		var input = """
-              [[hello_from name='Thorsten',from='Bochum']][[/hello_from]][[hello_from name='Thorsten',from='Bochum']][[/hello_from]]
+              [[hello_from name='Thorsten' from='Bochum']][[/hello_from]][[hello_from name='Thorsten' from='Bochum']][[/hello_from]]
               """;
 		var expected = """
               <p><h3>Thorsten</h3><small>from Bochum</small></p><p><h3>Thorsten</h3><small>from Bochum</small></p>
@@ -170,12 +176,30 @@ public class ShortCodesTest {
 		Assertions.assertThat(result).isEqualTo(expected);
 		
 		input = """
-              [[hello_from name='Thorsten',from='Bochum'/]][[hello_from name='Thorsten',from='Bochum'/]]
+              [[hello_from name='Thorsten' from='Bochum'/]][[hello_from name='Thorsten' from='Bochum'/]]
               """;
 		expected = """
               <p><h3>Thorsten</h3><small>from Bochum</small></p><p><h3>Thorsten</h3><small>from Bochum</small></p>
               """;
 		result = shortCodes.replace(input);
 		Assertions.assertThat(result).isEqualTo(expected);
+	}
+	
+	@Test
+	void test_mismach() {
+		var result = shortCodes.replace("[[mark1 class='test-class']]Important[[/mark2]]");
+		
+		Assertions.assertThat(result).isEqualTo("[[mark1 class='test-class']]Important[[/mark2]]");
+	}
+	
+	@Test
+	void test_expression() {
+		var result = shortCodes.replace("[[exp expression='${meta.title}' /]]",
+				Map.of(
+						"meta", Map.of("title", "CondationCMS")
+				)
+		);
+		
+		Assertions.assertThat(result).isEqualTo("<span>CondationCMS</span>");
 	}
 }

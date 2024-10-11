@@ -24,6 +24,7 @@ package com.condation.cms.content.shortcodes;
 
 
 import com.condation.cms.api.model.Parameter;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
@@ -37,19 +38,25 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ShortCodes {
 
-	private final ShortCodeParser.Codes codes;
+	private final TagMap tagMap;
+	private final TagParser parser;
 
-	public ShortCodes (Map<String, Function<Parameter, String>> codes) {
-		this.codes = new ShortCodeParser.Codes();
-		this.codes.addAll(codes);
+	public ShortCodes (Map<String, Function<Parameter, String>> codes, TagParser tagParser) {
+		this.parser = tagParser;
+		this.tagMap = new TagMap();
+		this.tagMap.putAll(codes);
 	}
 	
 	public String replace (final String content) {
-		return ShortCodeParser.replace(content, codes);
+		return replace(content, Collections.emptyMap());
+	}
+	
+	public String replace (final String content, Map<String, Object> contextModel) {
+		return parser.parse(content, tagMap, contextModel);
 	}
 	
 	public String execute (String name, Map<String, Object> parameters) {
-		if (codes.get(name) == null) {
+		if (!tagMap.has(name)) {
 			return "";
 		}
 		try {
@@ -59,7 +66,7 @@ public class ShortCodes {
 			} else {
 				params = new Parameter();
 			}
-			return codes.get(name).apply(params);
+			return tagMap.get(name).apply(params);
 		} catch (Exception e) {
 			log.error("",e);
 		}
