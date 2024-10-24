@@ -133,4 +133,9 @@ public class ExtendedSiteProperties implements SiteProperties {
 	public Object get (String field) {
 		return configuration.get(field);
 	}
+
+	@Override
+	public <T> T getOrDefault(String field, T defaultValue) {
+		return (T) configuration.getOrDefault(field, defaultValue);
+	}
 }

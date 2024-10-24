@@ -47,6 +47,11 @@ public class EmptyThemeProperties implements ThemeProperties {
 	}
 
 	@Override
+	public <T> T getOrDefault(String field, T defaultValue) {
+		return (T) properties.getOrDefault(field, defaultValue);
+	}
+
+	@Override
 	public String parent() {
 		return (String) properties.get("parent");
 	}

@@ -42,6 +42,8 @@ public interface SiteProperties {
 	
 	public Object get (String field);
 	
+	public <T> T getOrDefault (String field, T defaultValue);
+	
 	public String theme ();
 
 	public String queryIndexMode ();

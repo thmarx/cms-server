@@ -42,6 +42,11 @@ public class TestThemeProperties implements ThemeProperties {
 	public Object get(String field) {
 		return values.get(field);
 	}
+
+	@Override
+	public <T> T getOrDefault(String field, T defaultValue) {
+		return (T) values.getOrDefault(field, defaultValue);
+	}
 	
 	@Override
 	public String name() {

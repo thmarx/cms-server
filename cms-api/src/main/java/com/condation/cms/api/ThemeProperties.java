@@ -42,4 +42,6 @@ public interface ThemeProperties {
 	public List<String> activeModules();
 	
 	public Object get (String field);
+	
+	public <T> T getOrDefault (String field, T defaultValue);
 }

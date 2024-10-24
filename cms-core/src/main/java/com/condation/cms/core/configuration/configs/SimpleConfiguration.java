@@ -92,6 +92,15 @@ public class SimpleConfiguration extends AbstractConfiguration implements IConfi
 		return value.isPresent() ? value.get() : null;
 	}
 	
+	public Object getOrDefault (String field, Object defaultValue) {
+		var value = sources.reversed().stream()
+				.filter(ConfigSource::exists)
+				.map(config -> config.get(field))
+				.filter(cv -> cv != null)
+				.findFirst();
+		return value.isPresent() ? value.get() : defaultValue;
+	}
+	
 	public <T> T getValue (String field, Class<T> typeClass) {
 		var value = sources.reversed().stream()
 				.filter(ConfigSource::exists)
