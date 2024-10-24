@@ -29,6 +29,9 @@ import com.condation.cms.core.messages.EmptyMessageSource;
 import com.condation.cms.api.messages.MessageSource;
 import com.condation.cms.core.messages.ThemeMessageSource;
 import com.condation.cms.api.theme.Theme;
+import com.condation.cms.core.configuration.ConfigManagement;
+import com.condation.cms.core.configuration.ConfigurationFactory;
+import com.condation.cms.core.configuration.properties.ExtendedThemeProperties;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -47,7 +50,7 @@ import org.yaml.snakeyaml.Yaml;
 @RequiredArgsConstructor
 public class DefaultTheme implements Theme {
 
-	public static final Theme EMPTY = new DefaultTheme(null, new ThemeProperties(Collections.emptyMap()), true, new EmptyMessageSource());
+	public static final Theme EMPTY = new DefaultTheme(null, new EmptyThemeProperties(Map.of()), true, new EmptyMessageSource());
 
 	private final Path themePath;
 	private final ThemeProperties properties;
@@ -75,15 +78,11 @@ public class DefaultTheme implements Theme {
 			SiteProperties siteProperties, 
 			MessageSource siteMessages, 
 			ServerProperties serverProperties, boolean withParent) throws IOException {
-		Yaml yaml = new Yaml();
-		Path themeYaml = themePath.resolve("theme.yaml");
-
 		MessageSource messages = new ThemeMessageSource(siteProperties, themePath.resolve("messages/"), siteMessages);
-
-		var content = Files.readString(themeYaml, StandardCharsets.UTF_8);
-		Map<String, Object> config = (Map<String, Object>) yaml.load(content);
 		
-		final ThemeProperties themeProperties = new ThemeProperties(config);
+		var themeConfiguration = ConfigurationFactory.themeConfiguration("theme", themePath.getFileName().toString());
+		
+		final ThemeProperties themeProperties = new ExtendedThemeProperties(themeConfiguration);
 		final DefaultTheme defaultTheme = new DefaultTheme(themePath, themeProperties, messages);
 		if (withParent && themeProperties.parent() != null) {
 			var parentTheme = DefaultTheme.load(
@@ -111,7 +110,7 @@ public class DefaultTheme implements Theme {
 
 	@Override
 	public String getName() {
-		return (String) properties.get("name");
+		return (String) properties.name();
 	}
 
 	@Override

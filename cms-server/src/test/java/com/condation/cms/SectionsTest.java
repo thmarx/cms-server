@@ -39,6 +39,7 @@ import com.condation.cms.core.cache.LocalCacheProvider;
 import com.condation.cms.core.eventbus.DefaultEventBus;
 import com.condation.cms.filesystem.FileDB;
 import com.condation.cms.template.TemplateEngineTest;
+import com.condation.cms.test.TestSiteProperties;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -62,7 +63,7 @@ public class SectionsTest extends TemplateEngineTest {
 	public static void beforeClass() throws IOException {
 		var contentParser = new DefaultContentParser();
 		var hostBase = Path.of("hosts/test/");
-		var config = new Configuration(Path.of("hosts/test/"));
+		var config = new Configuration();
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
 				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
@@ -78,7 +79,7 @@ public class SectionsTest extends TemplateEngineTest {
 		contentRenderer = new DefaultContentRenderer(contentParser,
 				() -> templates,
 				db,
-				new SiteProperties(Map.of()),
+				new TestSiteProperties(Map.of()),
 				new MockModuleManager()
 		);
 	}

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.condation.cms</groupId>
 	<artifactId>cms-parent</artifactId>
-	<version>6.4.0</version>
+	<version>7.0.0</version>
 	<packaging>pom</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -12,6 +12,7 @@
 		<exec.mainClass>com.condation.cms.Startup</exec.mainClass>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 		<jetty.version>12.0.14</jetty.version>
+		<lucene.version>10.0.0</lucene.version>
 	</properties>
 	<modules>
 		<module>cms-api</module>
@@ -26,6 +27,7 @@
 		<module>cms-auth</module>
 		<module>integration-tests</module>
 		<module>cms-core</module>
+		<module>cms-test</module>
 	</modules>
 	<inceptionYear>2023</inceptionYear>
 	<organization>
@@ -100,6 +102,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.condation.cms</groupId>
+				<artifactId>cms-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.condation.cms.module.framework</groupId>
 				<artifactId>modules-manager</artifactId>
 				<version>${project.version}</version>
@@ -147,6 +154,11 @@
 				<version>2.3</version>            
 			</dependency>
 			<dependency>
+				<groupId>org.tomlj</groupId>
+				<artifactId>tomlj</artifactId>
+				<version>1.1.1</version>
+			</dependency>
+			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-server</artifactId>
 				<version>${jetty.version}</version>
@@ -176,12 +188,17 @@
 			<dependency>
 				<groupId>org.apache.lucene</groupId>
 				<artifactId>lucene-core</artifactId>
-				<version>10.0.0</version>
+				<version>${lucene.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.lucene</groupId>
 				<artifactId>lucene-analysis-common</artifactId>
-				<version>10.0.0</version>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-backward-codecs</artifactId>
+				<version>${lucene.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.h2database</groupId>
@@ -345,6 +362,11 @@
 								<artifactId>auto-service</artifactId>
 								<version>1.1.1</version>
 							</path>
+							<path>
+								<groupId>com.condation.cms.module.framework</groupId>
+								<artifactId>modules-api</artifactId>
+								<version>6.4.0</version>
+							</path>
 						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
@@ -445,6 +467,30 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.34</version>
+						</path>
+						<path>
+							<groupId>com.google.auto.service</groupId>
+							<artifactId>auto-service</artifactId>
+							<version>1.1.1</version>
+						</path>
+						<path>
+							<groupId>com.condation.cms.module.framework</groupId>
+							<artifactId>modules-api</artifactId>
+							<version>6.4.0</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

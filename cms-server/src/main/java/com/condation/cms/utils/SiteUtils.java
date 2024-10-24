@@ -39,7 +39,15 @@ public abstract class SiteUtils {
 		activeModules.addAll(siteProperties.activeModules());
 		if (!theme.empty()) {
 			activeModules.addAll(theme.properties().activeModules());
+			
+			if (theme.getParentTheme() != null) {
+				activeModules.addAll(theme.getParentTheme().properties().activeModules());
+			}
 		}
 		return activeModules;
+	}
+	
+	public static String getRequiredTheme(SiteProperties siteProperties, Theme theme) {
+		return siteProperties.theme();
 	}
 }

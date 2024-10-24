@@ -25,69 +25,40 @@ package com.condation.cms.api;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  *
  * @author t.marx
  */
-public class SiteProperties extends ThemeProperties {
+public interface SiteProperties {
 	
-	public SiteProperties (final Map<String, Object> properties) {
-		super(properties);
-	}
+	public List<String> hostnames ();
 	
-	public List<String> hostnames () {
-		var hostnames = properties.getOrDefault("hostname", "localhost");
-		
-		if (hostnames instanceof String hostname) {
-			return List.of(hostname);
-		} else if (hostnames instanceof List) {
-			return (List<String>) hostnames;
-		} else {
-			return List.of("localhost");
-		}
-	}
+	public String markdownEngine ();
 	
-	public String markdownEngine () {
-		return (String)getSubMap("markdown").get("engine");
-	}
+	public String contextPath ();
 	
-	public String contextPath () {
-		return (String) properties.getOrDefault("context_path", "/");
-	}
+	public String id ();
 	
-	public String id () {
-		return (String) properties.getOrDefault("id", "default");
-	}
+	public Object get (String field);
 	
-	public String theme () {
-		return (String) properties.get("theme");
-	}
+	public String theme ();
 
-	public String queryIndexMode () {
-		return (String) getSubMap("index", getSubMap("query")).getOrDefault("mode", "MEMORY");
-	}
+	public String queryIndexMode ();
 	
-	public Locale locale () {
-		if (properties.containsKey("language")) {
-			Locale.forLanguageTag((String)properties.get("language"));
-		}
-		return Locale.getDefault();
-	}
+	public Locale locale ();
 	
-	public String defaultContentType () {
-		return (String)getSubMap("content").getOrDefault("type", Constants.DEFAULT_CONTENT_TYPE);
-	}
+	public String language();
 	
-	public List<String> contentPipeline () {
-		return (List<String>)getSubMap("content").getOrDefault("pipeline", Constants.DEFAULT_CONTENT_PIPELINE);
-	}
+	public String defaultContentType ();
 	
-	public String cacheEngine() {
-		return (String) getSubMap("cache").getOrDefault("engine", Constants.DEFAULT_CACHE_ENGINE);
-	}
-	public boolean cacheContent() {
-		return (boolean) getSubMap("cache").getOrDefault("content", Constants.DEFAULT_CONTENT_CACHE_ENABLED);
-	}
+	public List<String> contentPipeline ();
+	
+	public String cacheEngine();
+	
+	public boolean cacheContent();
+	
+	public String templateEngine();
+
+	public List<String> activeModules();
 }

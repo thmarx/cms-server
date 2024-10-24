@@ -21,8 +21,6 @@ package com.condation.cms.api;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -30,46 +28,21 @@ import java.util.Map;
  *
  * @author t.marx
  */
-public class ServerProperties extends YamlProperties {
-	
-	public ServerProperties (final Map<String, Object> properties) {
-		super(properties);
-	}
-	
-	public boolean dev () {
-		return !Constants.Environments.PROD.equals(env());
-	}
-	
-	public String env () {
-		if (System.getenv().containsKey("CMS_ENV")) {
-			return System.getenv("CMS_ENV");
-		}
-		if (System.getProperties().containsKey("cms.env")) {
-			return System.getProperty("cms.env");
-		}
-		return (String) properties.getOrDefault("env", Constants.Environments.PROD);
-	}
-	
-	public String serverIp () {
-		return (String)getSubMap("server").getOrDefault("ip", "127.0.0.1");
-	}
-	public int serverPort () {
-		return (int)getSubMap("server").getOrDefault("port", 8080);
-	}
-	
-	public Path getThemesFolder () {
-		return Path.of("themes/");
-	}
-	
-	public APMProperties apm () {
-		return new APMProperties(getSubMap("apm"));
-	}
-	
-	public IPCProperties ipc () {
-		return new IPCProperties(getSubMap("ipc"));
-	}
-	
-	public PerformanceProperties performance () {
-		return new PerformanceProperties(getSubMap("performance"));
-	}
+public interface ServerProperties  {
+
+	public boolean dev();
+
+	public String env();
+
+	public String serverIp();
+
+	public int serverPort();
+
+	public Path getThemesFolder();
+
+	public APMProperties apm();
+
+	public IPCProperties ipc();
+
+	public PerformanceProperties performance();
 }

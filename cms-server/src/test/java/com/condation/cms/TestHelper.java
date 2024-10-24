@@ -23,7 +23,6 @@ package com.condation.cms;
  */
 
 
-import com.condation.cms.api.ServerProperties;
 import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.SiteConfiguration;
@@ -43,15 +42,18 @@ import com.condation.cms.api.mapper.ContentNodeMapper;
 import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.content.RenderContext;
-import com.condation.cms.content.shortcodes.ShortCodeParser;
 import com.condation.cms.content.shortcodes.ShortCodes;
 import com.condation.cms.content.shortcodes.TagParser;
+import com.condation.cms.core.configuration.ConfigurationFactory;
+import com.condation.cms.core.configuration.properties.ExtendedServerProperties;
 import com.condation.cms.extensions.hooks.DBHooks;
 import com.condation.cms.extensions.hooks.TemplateHooks;
 import com.condation.cms.extensions.request.RequestExtensions;
 import com.condation.cms.media.FileMediaService;
 import com.condation.cms.core.theme.DefaultTheme;
+import com.condation.cms.test.TestSiteProperties;
 import com.google.inject.Injector;
+import java.io.IOException;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.mockito.Mockito;
@@ -66,11 +68,11 @@ public abstract class TestHelper {
 		return new TestMarkdownRenderer();
 	}
 
-	public static RequestContext requestContext() {
+	public static RequestContext requestContext() throws IOException {
 		return requestContext("");
 	}
 
-	public static RequestContext requestContext(String uri) {
+	public static RequestContext requestContext(String uri) throws IOException {
 		var markdownRenderer = TestHelper.getRenderer();
 		RequestContext context = new RequestContext();
 		
@@ -88,7 +90,7 @@ public abstract class TestHelper {
 		context.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(null));
 		context.add(ContentParserFeature.class, new ContentParserFeature(null));
 		
-		final SiteProperties siteProperties = new SiteProperties(Map.of(
+		final SiteProperties siteProperties = new TestSiteProperties(Map.of(
 				"context_path", "/"
 		));
 		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
@@ -99,8 +101,10 @@ public abstract class TestHelper {
 		Mockito.when(config.get(SiteConfiguration.class)).thenReturn(siteConfig);
 		context.add(ConfigurationFeature.class, new ConfigurationFeature(config));
 		
-		context.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(new ServerProperties(Map.of(
-		))));
+		context.add(
+				ServerPropertiesFeature.class, 
+				new ServerPropertiesFeature(new ExtendedServerProperties(ConfigurationFactory.serverConfiguration()))
+		);
 		
 		context.add(TemplateHooks.class, new TemplateHooks(context));
 		context.add(DBHooks.class, new DBHooks(context));
@@ -108,14 +112,14 @@ public abstract class TestHelper {
 		return context;
 	}
 
-	public static RequestContext requestContext(String uri, ContentParser contentParser, MarkdownRenderer markdownRenderer, ContentNodeMapper contentMapper) {
+	public static RequestContext requestContext(String uri, ContentParser contentParser, MarkdownRenderer markdownRenderer, ContentNodeMapper contentMapper) throws IOException {
 
 		RequestContext context = requestContext(uri);
 		context.add(ContentParserFeature.class, new ContentParserFeature(contentParser));
 		context.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(markdownRenderer));
 		context.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(contentMapper));
 		context.add(HookSystemFeature.class, new HookSystemFeature(new HookSystem()));
-		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(new SiteProperties(Map.of(
+		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(new TestSiteProperties(Map.of(
 				"context_path", "/"
 		))));
 

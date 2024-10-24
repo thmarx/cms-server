@@ -23,8 +23,11 @@ package com.condation.cms.cli.tools;
  */
 
 
-import com.condation.cms.api.PropertiesLoader;
+import com.condation.cms.api.utils.SiteUtil;
 import com.condation.cms.cli.commands.modules.AbstractModuleCommand;
+import com.condation.cms.core.configuration.ConfigurationFactory;
+import com.condation.cms.core.configuration.properties.ExtendedSiteProperties;
+import com.condation.cms.core.configuration.properties.ExtendedThemeProperties;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,10 +60,9 @@ public class ModulesUtil {
 			if (Files.exists(hosts)) {
 				Files.list(hosts)
 						.filter(ModulesUtil::isHost)
-						.map(host -> host.resolve("site.yaml"))
 						.forEach(site -> {
 							try {
-								var hostProperties = PropertiesLoader.hostProperties(site);
+								var hostProperties = new ExtendedSiteProperties(ConfigurationFactory.siteConfiguration("bla", site));
 								requiredModules.addAll(hostProperties.activeModules());
 							} catch (IOException ex) {
 								log.error("", ex);
@@ -70,11 +72,10 @@ public class ModulesUtil {
 			if (Files.exists(themes)) {
 				Files.list(themes)
 						.filter(ModulesUtil::isTheme)
-						.map(host -> host.resolve("theme.yaml"))
-						.forEach(site -> {
+						.forEach(themeConfig -> {
 							try {
-								var hostProperties = PropertiesLoader.themeProperties(site);
-								requiredModules.addAll(hostProperties.activeModules());
+								var themeProperties = new ExtendedThemeProperties(ConfigurationFactory.themeConfiguration("theme", themeConfig.getFileName().toString()));
+								requiredModules.addAll(themeProperties.activeModules());
 							} catch (IOException ex) {
 								log.error("", ex);
 							}
@@ -88,10 +89,11 @@ public class ModulesUtil {
 	}
 
 	public static boolean isHost(Path host) {
-		return Files.exists(host.resolve("site.yaml"));
+		return SiteUtil.isSite(host);
 	}
 
 	public static boolean isTheme(Path host) {
-		return Files.exists(host.resolve("theme.yaml"));
+		return Files.exists(host.resolve("theme.yaml"))
+				|| Files.exists(host.resolve("theme.toml"));
 	}
 }

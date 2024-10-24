@@ -25,20 +25,16 @@ package com.condation.cms.server;
 
 import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.cache.CacheManager;
-import com.condation.cms.api.configuration.Config;
 import com.condation.cms.api.configuration.Configuration;
-import com.condation.cms.api.configuration.ConfigurationManagement;
 import com.condation.cms.api.configuration.configs.ServerConfiguration;
 import com.condation.cms.api.configuration.configs.SiteConfiguration;
-import com.condation.cms.api.configuration.configs.TaxonomyConfiguration;
 import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.eventbus.EventListener;
-import com.condation.cms.api.eventbus.events.ConfigurationFileChanged;
+import com.condation.cms.api.eventbus.events.ConfigurationReloadEvent;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
-import com.condation.cms.api.eventbus.events.SitePropertiesChanged;
 import com.condation.cms.api.eventbus.events.lifecycle.HostReloadedEvent;
 import com.condation.cms.api.eventbus.events.lifecycle.HostStoppedEvent;
 import com.condation.cms.api.feature.features.ContentRenderFeature;
@@ -47,6 +43,7 @@ import com.condation.cms.api.module.CMSModuleContext;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.theme.Theme;
 import com.condation.cms.content.ContentResolver;
+import com.condation.cms.core.configuration.ConfigManagement;
 import com.condation.cms.extensions.GlobalExtensions;
 import com.condation.cms.extensions.hooks.GlobalHooks;
 import com.condation.cms.filesystem.FileDB;
@@ -100,8 +97,6 @@ import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 @Slf4j
 public class VHost {
 
-	protected final Configuration configuration;
-
 	private final Path hostBase;
 
 	@Getter
@@ -109,14 +104,15 @@ public class VHost {
 
 	@Getter
 	protected Injector injector;
+	
+	private final Configuration configuration = new Configuration();
 
-	public VHost(final Path hostBase, final Configuration configuration) {
+	public VHost(final Path hostBase) {
 		this.hostBase = hostBase;
-		this.configuration = configuration;
 	}
 
 	public String id() {
-		return configuration.get(SiteConfiguration.class).siteProperties().id();
+		return injector.getInstance(Configuration.class).get(SiteConfiguration.class).siteProperties().id();
 	}
 
 	public void shutdown() {
@@ -132,10 +128,7 @@ public class VHost {
 		log.trace("reload theme");
 
 		try {
-
-			reloadConfiguration(SiteConfiguration.class);
-			reloadConfiguration(TaxonomyConfiguration.class);
-			injector.getInstance(ConfigurationManagement.class).reload();
+			injector.getInstance(ConfigManagement.class).reload();
 
 			var theme = this.injector.getInstance(Theme.class);
 
@@ -157,13 +150,6 @@ public class VHost {
 		}
 	}
 
-	public void reloadConfiguration(Class<? extends Config> configToReload) {
-		configuration.reload(configToReload);
-		if (SiteConfiguration.class.equals(configToReload)) {
-			injector.getInstance(EventBus.class).publish(new SitePropertiesChanged());
-		}
-	}
-
 	public List<String> hostnames() {
 		return injector.getInstance(SiteProperties.class).hostnames();
 	}
@@ -171,17 +157,18 @@ public class VHost {
 	public void init(Path modulesPath, Injector globalInjector) throws IOException {
 		this.injector = globalInjector.createChildInjector(
 				new SiteGlobalModule(),
-				new SiteModule(hostBase, configuration),
+				new SiteModule(hostBase, this.configuration),
 				new ModulesModule(modulesPath),
 				new SiteHandlerModule(),
 				new ThemeModule());
 
+		// start configuration managment
+		injector.getInstance(ConfigManagement.class).initConfiguration(configuration);
+		
 		final CMSModuleContext cmsModuleContext = injector.getInstance(CMSModuleContext.class);
 		var moduleManager = injector.getInstance(ModuleManager.class);
 		var contentResolver = injector.getInstance(ContentResolver.class);
 		var requestContextFactory = injector.getInstance(RequestContextFactory.class);
-		// start configuration managment
-		injector.getInstance(ConfigurationManagement.class);
 
 		cmsModuleContext.add(
 				ContentRenderFeature.class,
@@ -209,8 +196,6 @@ public class VHost {
 			log.debug("invalidate template cache");
 			injector.getInstance(TemplateEngine.class).invalidateCache();
 		});
-		injector.getInstance(EventBus.class).register(ConfigurationFileChanged.class,
-				(event) -> reloadConfiguration(event.clazz()));
 
 		initSiteGlobals();
 	}
@@ -235,7 +220,7 @@ public class VHost {
 	public Handler buildHttpHandler() {
 
 		Handler contentHandler = null;
-		if (configuration.get(SiteConfiguration.class).siteProperties().cacheContent()) {
+		if (injector.getInstance(Configuration.class).get(SiteConfiguration.class).siteProperties().cacheContent()) {
 			contentHandler = new CacheHandler(injector.getInstance(JettyContentHandler.class), injector.getInstance(CacheManager.class));
 		} else {
 			contentHandler = injector.getInstance(JettyContentHandler.class);
@@ -277,7 +262,7 @@ public class VHost {
 		pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
 
 		var assetsMediaManager = this.injector.getInstance(SiteMediaManager.class);
-		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, assetsMediaManager);
+		injector.getInstance(EventBus.class).register(ConfigurationReloadEvent.class, assetsMediaManager);
 		final JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("site")));
 		pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
 
@@ -344,7 +329,7 @@ public class VHost {
 	}
 
 	private Handler.Wrapper requestContextFilter(Handler handler, Injector injector) {
-		var performance = configuration.get(ServerConfiguration.class).serverProperties().performance();
+		var performance = injector.getInstance(Configuration.class).get(ServerConfiguration.class).serverProperties().performance();
 		if (performance.pool_enabled()) {
 			return new PooledRequestContextFilter(handler, injector.getInstance(RequestContextFactory.class), performance);
 		}
@@ -363,7 +348,7 @@ public class VHost {
 
 	private ContextHandler themeContextHandler() {
 		final MediaManager themeAssetsMediaManager = this.injector.getInstance(ThemeMediaManager.class);
-		injector.getInstance(EventBus.class).register(SitePropertiesChanged.class, themeAssetsMediaManager);
+		injector.getInstance(EventBus.class).register(ConfigurationReloadEvent.class, themeAssetsMediaManager);
 		JettyMediaHandler mediaHandler = this.injector.getInstance(Key.get(JettyMediaHandler.class, Names.named("theme")));
 		ResourceHandler assetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme")));
 

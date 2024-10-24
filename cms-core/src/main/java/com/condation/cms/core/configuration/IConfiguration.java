@@ -2,7 +2,7 @@ package com.condation.cms.core.configuration;
 
 /*-
  * #%L
- * cms-core
+ * tests
  * %%
  * Copyright (C) 2023 - 2024 CondationCMS
  * %%
@@ -22,15 +22,14 @@ package com.condation.cms.core.configuration;
  * #L%
  */
 
-import java.util.Optional;
-
-
 /**
  *
  * @author t.marx
  */
 public interface IConfiguration {
 
-	<T extends ConfigProperties> Optional<T> load (String filename, Class<T> dataClass);
+	String id();
+
+	void reload();
 	
 }

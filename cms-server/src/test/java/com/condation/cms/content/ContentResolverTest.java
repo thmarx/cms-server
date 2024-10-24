@@ -41,6 +41,7 @@ import static com.condation.cms.content.ContentRendererNGTest.moduleManager;
 import com.condation.cms.core.cache.LocalCacheProvider;
 import com.condation.cms.core.eventbus.DefaultEventBus;
 import com.condation.cms.filesystem.FileDB;
+import com.condation.cms.test.TestSiteProperties;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class ContentResolverTest {
 	public static void setup() throws IOException {
 		var contentParser = new DefaultContentParser();
 		var hostBase = Path.of("hosts/test/");
-		var config = new Configuration(Path.of("hosts/test/"));
+		var config = new Configuration();
 		db = new FileDB(Path.of("hosts/test/"), new DefaultEventBus(), (file) -> {
 			try {
 				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
@@ -79,7 +80,7 @@ public class ContentResolverTest {
 		contentRenderer = new DefaultContentRenderer(contentParser,
 				() -> templates,
 				db,
-				new SiteProperties(Map.of()),
+				new TestSiteProperties(Map.of()),
 				moduleManager);
 		contentResolver = new ContentResolver(contentRenderer, db);
 	}

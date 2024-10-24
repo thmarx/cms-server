@@ -62,7 +62,7 @@ public class NodeListFunctionBuilderNGTest {
 	@BeforeAll
 	static void setup () throws IOException {
 		
-		var config = new Configuration(Path.of("hosts/test/"));
+		var config = new Configuration();
 		db = new FileDB(Path.of("hosts/test"), new DefaultEventBus(), (file) -> {
 			try {
 				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
@@ -161,7 +161,7 @@ public class NodeListFunctionBuilderNGTest {
 	}
 	
 	@Test
-	void test_from_subfolder () {
+	void test_from_subfolder () throws IOException {
 		var nodeList = new NodeListFunctionBuilder(db, 
 				new NIOReadOnlyFile(db.getFileSystem().resolve("content/nodelist2/index.md"), hostBase), 
 				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
@@ -177,7 +177,7 @@ public class NodeListFunctionBuilderNGTest {
 	}
 	
 	@Test
-	void test_json () {
+	void test_json () throws IOException {
 		var nodeList = new NodeListFunctionBuilder(db, 
 				new NIOReadOnlyFile(db.getFileSystem().resolve("content/index.md"), hostBase), 
 				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
