@@ -25,7 +25,8 @@ import com.condation.cms.api.ServerProperties;
 import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.eventbus.EventBus;
-import com.condation.cms.api.extensions.MarkdownRendererProviderExtentionPoint;
+import com.condation.cms.api.extensions.MarkdownRendererProviderExtensionPoint;
+import com.condation.cms.api.extensions.TemplateEngineProviderExtensionPoint;
 import com.condation.cms.api.extensions.TemplateEngineProviderExtentionPoint;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.feature.features.CronJobSchedulerFeature;
@@ -119,17 +120,8 @@ public class ModulesModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public CMSModuleContext moduleContext(SiteProperties siteProperties, ServerProperties serverProperties, FileDB db, EventBus eventBus, Theme theme,
-			Configuration configuration, SiteCronJobScheduler cronJobScheduler, Messaging messaging) {
+	public CMSModuleContext moduleContext() {
 		final CMSModuleContext cmsModuleContext = new CMSModuleContext();
-		cmsModuleContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
-		cmsModuleContext.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(serverProperties));
-		cmsModuleContext.add(DBFeature.class, new DBFeature(db));
-		cmsModuleContext.add(EventBusFeature.class, new EventBusFeature(eventBus));
-		cmsModuleContext.add(MessagingFeature.class, new MessagingFeature(messaging));
-		cmsModuleContext.add(ThemeFeature.class, new ThemeFeature(theme));
-		cmsModuleContext.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
-		cmsModuleContext.add(CronJobSchedulerFeature.class, new CronJobSchedulerFeature(cronJobScheduler));
 
 		return cmsModuleContext;
 	}
@@ -141,7 +133,7 @@ public class ModulesModule extends AbstractModule {
 	}
 
 	/**
-	 * The markedjs markdown renderer is implemented using graaljs, so we need a fresh instance for every request
+	 * 
 	 *
 	 * @param siteProperties
 	 * @param moduleManager
@@ -154,8 +146,8 @@ public class ModulesModule extends AbstractModule {
 			CMSMarkdownRenderer defaultMarkdownRenderer) {
 		var engine = siteProperties.markdownEngine();
 
-		List<MarkdownRendererProviderExtentionPoint> extensions = moduleManager.extensions(MarkdownRendererProviderExtentionPoint.class);
-		Optional<MarkdownRendererProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
+		List<MarkdownRendererProviderExtensionPoint> extensions = moduleManager.extensions(MarkdownRendererProviderExtensionPoint.class);
+		Optional<MarkdownRendererProviderExtensionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
 
 		if (extOpt.isPresent()) {
 			return extOpt.get().getRenderer();
@@ -185,14 +177,21 @@ public class ModulesModule extends AbstractModule {
 	public TemplateEngine resolveTemplateEngine(SiteProperties siteProperties, Theme theme, ModuleManager moduleManager) {
 		var engine = getTemplateEngine(siteProperties, theme);
 
-		List<TemplateEngineProviderExtentionPoint> extensions = moduleManager.extensions(TemplateEngineProviderExtentionPoint.class);
-		Optional<TemplateEngineProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
+		List<TemplateEngineProviderExtensionPoint> extensions = moduleManager.extensions(TemplateEngineProviderExtensionPoint.class);
+		Optional<TemplateEngineProviderExtensionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
 
 		if (extOpt.isPresent()) {
 			return extOpt.get().getTemplateEngine();
-		} else {
-			throw new RuntimeException("no template engine found");
 		}
+
+		List<TemplateEngineProviderExtentionPoint> extensionsLegacy = moduleManager.extensions(TemplateEngineProviderExtentionPoint.class);
+		Optional<TemplateEngineProviderExtentionPoint> extLegacyOpt = extensionsLegacy.stream().filter((ext) -> ext.getName().equals(engine)).findFirst();
+
+		if (extLegacyOpt.isPresent()) {
+			return extLegacyOpt.get().getTemplateEngine();
+		}
+		
+		throw new RuntimeException("no template engine found");
 	}
 
 	/**

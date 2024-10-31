@@ -27,7 +27,7 @@ import com.condation.cms.api.Constants;
 import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.cache.CacheManager;
 import com.condation.cms.api.cache.CacheProvider;
-import com.condation.cms.api.extensions.CacheProviderExtentionPoint;
+import com.condation.cms.api.extensions.CacheProviderExtensionPoint;
 import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.scheduler.CronJobContext;
 import com.condation.cms.core.cache.LocalCacheProvider;
@@ -37,6 +37,7 @@ import com.condation.cms.extensions.GlobalExtensions;
 import com.condation.cms.extensions.hooks.GlobalHooks;
 import com.condation.modules.api.ModuleManager;
 import com.google.inject.Binder;
+import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -117,12 +118,18 @@ public class SiteGlobalModule implements com.google.inject.Module {
 		if (Constants.DEFAULT_CACHE_ENGINE.equals(cacheEngine)) {
 			return new LocalCacheProvider();
 		}
-		List<CacheProviderExtentionPoint> extensions = moduleManager.extensions(CacheProviderExtentionPoint.class);
-		Optional<CacheProviderExtentionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(cacheEngine)).findFirst();
+		List<CacheProviderExtensionPoint> extensions = moduleManager.extensions(CacheProviderExtensionPoint.class);
+		Optional<CacheProviderExtensionPoint> extOpt = extensions.stream().filter((ext) -> ext.getName().equals(cacheEngine)).findFirst();
 
 		if (extOpt.isPresent()) {
 			return extOpt.get().getCacheProvider();
 		}
 		return new LocalCacheProvider();
+	}
+
+	@Provides
+	@Singleton
+	public SiteConfigInitializer siteConfigInitializer (Injector injector) {
+		return new SiteConfigInitializer(injector);
 	}
 }

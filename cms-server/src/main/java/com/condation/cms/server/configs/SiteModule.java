@@ -2,6 +2,9 @@ package com.condation.cms.server.configs;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.apache.commons.jexl3.JexlBuilder;
 import org.graalvm.polyglot.Engine;
@@ -32,6 +35,8 @@ import org.graalvm.polyglot.Engine;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.ServerProperties;
 import com.condation.cms.api.SiteProperties;
+import com.condation.cms.api.cache.CacheManager;
+import com.condation.cms.api.cache.ICache;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.ServerConfiguration;
 import com.condation.cms.api.content.ContentParser;
@@ -149,11 +154,15 @@ public class SiteModule extends AbstractModule {
 	}
 
 	@Provides
-	public Theme loadTheme(SiteProperties siteProperties, ServerProperties serverProperties, MessageSource messageSource) throws IOException {
+	public Theme loadTheme(
+		SiteProperties siteProperties, 
+		ServerProperties serverProperties, 
+		MessageSource messageSource,
+		CacheManager cacheManager) throws IOException {
 
 		if (siteProperties.theme() != null) {
 			Path themeFolder = serverProperties.getThemesFolder().resolve(siteProperties.theme());
-			return DefaultTheme.load(themeFolder, siteProperties, messageSource, serverProperties);
+			return DefaultTheme.load(themeFolder, siteProperties, messageSource, serverProperties, cacheManager);
 		}
 
 		return DefaultTheme.EMPTY;
@@ -200,8 +209,9 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public MessageSource messages(SiteProperties site, DB db) throws IOException {
-		var messages = new DefaultMessageSource(site, db.getFileSystem().resolve("messages/"));
+	public MessageSource messages(SiteProperties site, DB db, CacheManager cacheManager) throws IOException {
+		ICache<String, String> cache = cacheManager.get("messages", new CacheManager.CacheConfig(500l, Duration.ofMinutes(5)));
+		var messages = new DefaultMessageSource(site, db.getFileSystem().resolve("messages/"), cache);
 		return messages;
 	}
 
@@ -287,16 +297,8 @@ public class SiteModule extends AbstractModule {
 	
 	@Provides
 	@Singleton
-	public CronJobContext cronJobContext(SiteProperties siteProperties, ServerProperties serverProperties, FileDB db, EventBus eventBus, Theme theme,
-			Configuration configuration, Messaging messaging) {
+	public CronJobContext cronJobContext() {
 		final CronJobContext cronJobContext = new CronJobContext();
-		cronJobContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
-		cronJobContext.add(ServerPropertiesFeature.class, new ServerPropertiesFeature(serverProperties));
-		cronJobContext.add(DBFeature.class, new DBFeature(db));
-		cronJobContext.add(EventBusFeature.class, new EventBusFeature(eventBus));
-		cronJobContext.add(ThemeFeature.class, new ThemeFeature(theme));
-		cronJobContext.add(MessagingFeature.class, new MessagingFeature(messaging));
-		cronJobContext.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
 		
 		return cronJobContext;
 	}
