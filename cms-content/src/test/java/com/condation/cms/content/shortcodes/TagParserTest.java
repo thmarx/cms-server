@@ -60,6 +60,13 @@ public class TagParserTest {
 			return "message: " + params.get("message");
 		});
 		
+		tagMap.put("parent", params -> {
+			return "<div class='parent'>%s</div>".formatted((String)params.get("_content"));
+		});
+		tagMap.put("nested", params -> {
+			return "nested";
+		});
+		
 		this.tagParser = new TagParser(new JexlBuilder().create());
 	}
 
@@ -142,5 +149,32 @@ public class TagParserTest {
 		
 		result = tagParser.parse("[[ns1:print message='Hello CondationCMS' /]]", tagMap);
 		Assertions.assertThat(result).isEqualTo("message: Hello CondationCMS");
+	}
+	
+		@Test
+	public void multiline () {
+		String content = """
+				[[content]]
+					This is a multiline shortcode!
+				[[/content]]
+				""";
+
+		String result = tagParser.parse(content, tagMap);
+
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace("This is a multiline shortcode!");
+	}
+	
+	@Test
+	public void nested () {
+		String content = """
+                   [[parent]]
+                   [[nested /]]
+                   [[/parent]]
+                   """;
+		
+		var tags = tagParser.findTags(content, tagMap);
+		Assertions.assertThat(tags.size()).isEqualTo(1);
+		String result = tagParser.parse(content, tagMap);
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace("<div class='parent'>nested</div>");
 	}
 }
