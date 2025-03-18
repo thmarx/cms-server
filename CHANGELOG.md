@@ -9,6 +9,7 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 ## 7.8.0
 
 * **BUG** Namespaces not set when executing content pipeline [#416](https://github.com/CondationCMS/cms-server/pull/416)  
+* **BUG** CLI command to start git checkout for repo [#415](https://github.com/CondationCMS/cms-server/issues/415)  
 
 ## 7.7.0
 
