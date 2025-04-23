@@ -11,6 +11,61 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 * **MAINTENANCE** multiple dependencies updated
 * **MAINTENANCE** maven wrapper added to project
 
+### Developer experience
+
+In this release we introduced some features to make life of developers easier.
+
+#### Registering hooks via annotations
+
+It is now possible to pass an object with annotated hook definitions to the HookSystem.register method.
+
+```java
+@Filter("test/annotation/filter1")
+public List<String> filter (FilterContext<List<String>> context) {
+	context.value().remove("2");
+	return context.value();
+}
+@Action("test/annotation/action1")
+public void action1 (ActionContext<?> context) {
+	// do something
+}
+```
+
+#### HTTP-Controllers
+
+The RoutesExtensionPoint is an extension point for defining HTTP routes. 
+It allows developers to provide a list of objects whose methods can be registered as routes using annotations.
+
+```java
+@Route("/test2")
+public boolean handle2 (Request request, Response response, Callback callback) {
+	return true;
+}
+```
+
+#### ShortCodes
+
+The RegisterShortCodesExtensionPoint interface now includes a new method, shortCodeDefinitions, which returns a list of objects that contain shortcode definitions provided through annotations.
+
+```java
+@ShortCode("printHello")
+public String printHello (Parameter parameter) {
+	return "hello " + parameter.getOrDefault("name", "");
+}
+```
+
+#### TemplateComponents
+
+A new method, componentDefinitions, has been added to the RegisterTemplateComponentExtensionPoint interface. It returns a list of objects that define template components using annotations.
+
+```java
+@TemplateComponent("tag3")
+public String tag3 (Parameter parameter) {
+	return "<div>%s</div>".formatted(parameter.get("_content"));
+}
+
+```
+
 ## 7.8.0
 
 * **BUG** Namespaces not set when executing content pipeline [#416](https://github.com/CondationCMS/cms-server/pull/416)  

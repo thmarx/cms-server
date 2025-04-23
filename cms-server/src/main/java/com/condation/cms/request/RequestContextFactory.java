@@ -171,16 +171,23 @@ public class RequestContextFactory {
 	}
 
 	private ShortCodes initShortCodes(RequestContext requestContext) {
-		Map<String, Function<Parameter, String>> codes = new HashMap<>();
-
-		injector.getInstance(ModuleManager.class).extensions(RegisterShortCodesExtensionPoint.class)
-				.forEach(extension -> codes.putAll(extension.shortCodes()));
-
-		var wrapper = requestContext.get(ContentHooks.class).getShortCodes(codes);
-		
 		var parser = injector.getInstance(TagParser.class);
 
-		return new ShortCodes(wrapper.getShortCodes(), parser);
+		var builder = ShortCodes.builder(parser);
+		
+		injector.getInstance(ModuleManager.class).extensions(RegisterShortCodesExtensionPoint.class)
+				.forEach(extension -> {
+					builder.register(extension.shortCodes());
+					
+					builder.register(extension.shortCodeDefinitions());
+				});
+
+		var codes = new HashMap<String, Function<Parameter, String>>();
+		var wrapper = requestContext.get(ContentHooks.class).getShortCodes(codes);
+		
+		builder.register(wrapper.getShortCodes());
+
+		return builder.build();
 	}
 	
 	public RequestContext create() throws IOException {
@@ -219,7 +226,7 @@ public class RequestContextFactory {
 
 		RenderContext renderContext = new RenderContext(
 				markdownRenderer,
-				createShortCodes(requestContext),
+				initShortCodes(requestContext),
 				theme);
 		requestContext.add(RenderContext.class, renderContext);
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(markdownRenderer));
@@ -253,16 +260,4 @@ public class RequestContextFactory {
 
 		return requestContext;
 	}
-
-	private ShortCodes createShortCodes(RequestContext requestContext) {
-		Map<String, Function<Parameter, String>> codes = new HashMap<>();
-
-		injector.getInstance(ModuleManager.class).extensions(RegisterShortCodesExtensionPoint.class)
-				.forEach(extension -> codes.putAll(extension.shortCodes()));
-
-		var wrapper = requestContext.get(ContentHooks.class).getShortCodes(codes);
-		var parser = injector.getInstance(TagParser.class);
-		return new ShortCodes(wrapper.getShortCodes(), parser);
-	}
-
 }

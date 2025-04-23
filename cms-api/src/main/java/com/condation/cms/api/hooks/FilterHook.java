@@ -27,5 +27,5 @@ package com.condation.cms.api.hooks;
  *
  * @author t.marx
  */
-public record Action<T>(String name, int priority, ActionFunction<T> function) implements Hook {
+record FilterHook<T>(String name, int priority, FilterFunction<T> function) implements Hook {
 }
