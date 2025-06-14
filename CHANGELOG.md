@@ -16,6 +16,7 @@ see wiki for more information: [wiki](https://github.com/thmarx/cms/wiki)
 * **FEATURE** Developer Experience [PR-440](https://github.com/CondationCMS/cms-server/pull/440)
 * **FEATURE** Aliases for content [442](https://github.com/CondationCMS/cms-server/issues/442)
 * **FEATURE** Add redirect support for aliases [454](https://github.com/CondationCMS/cms-server/issues/454)
+* **FEATURE** Signature for modules and themes [471](https://github.com/CondationCMS/cms-server/issues/471)
 * **FEATURE** Switch password has to secure algorithm [472](https://github.com/CondationCMS/cms-server/issues/472)
 
 ### Developer experience
