@@ -31,6 +31,9 @@ import com.condation.cms.api.feature.Feature;
  * @author t.marx
  */
 @FeatureScope({FeatureScope.Scope.REQUEST})
-public record IsPreviewFeature() implements Feature {
-
+public record IsPreviewFeature(String value) implements Feature {
+	
+	public boolean isDraft () {
+		return "draft".equals(value);
+	}
 }

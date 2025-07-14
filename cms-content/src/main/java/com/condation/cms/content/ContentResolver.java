@@ -21,7 +21,6 @@ package com.condation.cms.content;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.content.ContentResponse;
 import com.condation.cms.api.content.DefaultContentResponse;
@@ -30,6 +29,7 @@ import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
+import com.condation.cms.api.feature.features.IsPreviewFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.utils.HTTPUtil;
@@ -51,10 +51,10 @@ import lombok.extern.slf4j.Slf4j;
 public class ContentResolver {
 
 	private final ContentRenderer contentRenderer;
-	
+
 	private final DB db;
-	
-	public Optional<ContentResponse> getStaticContent (String uri) {
+
+	public Optional<ContentResponse> getStaticContent(String uri) {
 		if (uri.endsWith(".md")) {
 			return Optional.empty();
 		}
@@ -66,8 +66,8 @@ public class ContentResolver {
 		try {
 			if (staticFile.exists()) {
 				return Optional.ofNullable(new DefaultContentResponse(
-						staticFile.getContent(), 
-						staticFile.getContentType(), 
+						staticFile.getContent(),
+						staticFile.getContentType(),
 						null
 				));
 			}
@@ -76,15 +76,15 @@ public class ContentResolver {
 		}
 		return Optional.empty();
 	}
-	
-	public Optional<ContentResponse> getContent (final RequestContext context) {
+
+	public Optional<ContentResponse> getContent(final RequestContext context) {
 		return getContent(context, true);
 	}
-	
-	public Optional<ContentResponse> getErrorContent (final RequestContext context) {
+
+	public Optional<ContentResponse> getErrorContent(final RequestContext context) {
 		return getContent(context, false);
 	}
-	
+
 	private Optional<ContentResponse> getContent(final RequestContext context, boolean checkVisibility) {
 		String path;
 		if (Strings.isNullOrEmpty(context.get(RequestFeature.class).uri())) {
@@ -95,7 +95,7 @@ public class ContentResolver {
 		} else {
 			path = context.get(RequestFeature.class).uri();
 		}
-		
+
 		var contentBase = db.getReadOnlyFileSystem().contentBase();
 		var contentPath = contentBase.resolve(path);
 		ReadOnlyFile contentFile = null;
@@ -111,7 +111,7 @@ public class ContentResolver {
 				contentFile = temp;
 			}
 		}
-		
+
 		// handle alias
 		ContentNode contentNode = null;
 		boolean aliasRedirect = false;
@@ -124,47 +124,54 @@ public class ContentResolver {
 				aliasRedirect = true;
 			}
 		} else {
-			var uri = PathUtil.toRelativeFile(contentFile, contentBase);
-			contentNode = db.getContent().byUri(uri).get();
+			if (contentFile.hasDraft() 
+					&& context.has(IsPreviewFeature.class)
+					&& context.get(IsPreviewFeature.class).isDraft()) {
+				contentFile = contentFile.getDraft().get();
+				var uri = PathUtil.toRelativeFile(contentFile, contentBase);
+				contentNode = db.getContent().byUri(uri).get();
+			} else {
+				var uri = PathUtil.toRelativeFile(contentFile, contentBase);
+				contentNode = db.getContent().byUri(uri).get();
+			}
 		}
-		
+
 		if (contentNode == null) {
 			return Optional.empty();
 		}
-		
+
 		if (checkVisibility && !db.getContent().isVisible(contentNode)) {
 			return Optional.empty();
 		}
-		
-		
+
 		if (contentNode.isRedirect()) {
 			return Optional.of(new DefaultContentResponse(contentNode));
 		} else if (!Constants.NodeType.PAGE.equals(contentNode.nodeType())) {
 			return Optional.empty();
 		}
 		context.add(CurrentNodeFeature.class, new CurrentNodeFeature(contentNode));
-		
+
 		if (contentNode.isRedirect()) {
 			return Optional.of(new RedirectContentResponse(contentNode.getRedirectLocation(), contentNode.getRedirectStatus()));
 		} else if (aliasRedirect) {
 			var doRedirect = contentNode.getMetaValue(Constants.MetaFields.ALIASES_REDIRECT, true);
 			if (doRedirect) {
-				var url = PathUtil.toURI(contentFile, contentBase);
+				var url = PathUtil.toURL(contentFile, contentBase);
 				url = HTTPUtil.modifyUrl(url, context);
 				return Optional.of(new RedirectContentResponse(url, 301));
 			}
 		}
-		
+
 		try {
-			
+
 			List<ContentNode> sections = db.getContent().listSections(contentFile);
-			
+
 			Map<String, List<Section>> renderedSections = contentRenderer.renderSections(sections, context);
-			
+
 			var content = contentRenderer.render(contentFile, context, renderedSections);
-			
+
 			var contentType = contentNode.contentType();
-			
+
 			return Optional.of(new DefaultContentResponse(content, contentType, contentNode));
 		} catch (IOException ex) {
 			log.error(null, ex);

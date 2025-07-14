@@ -99,18 +99,26 @@ public record ContentNode(String uri, String name, Map<String, Object> data,
 	public boolean isHidden() {
 		return name.startsWith(".");
 	}
-
-	public boolean isDraft() {
-		return !((boolean) data().getOrDefault(Constants.MetaFields.PUBLISHED, true));
+	
+	/**
+	 * check if the node is in an hidden path
+	 * @return 
+	 */
+	public boolean isParentPathHidden () {
+		return uri().startsWith(".") || uri().contains("/.");
 	}
 
 	public boolean isPublished() {
+		return !((boolean) data().getOrDefault(Constants.MetaFields.PUBLISHED, true));
+	}
+
+	public boolean isVisible() {
 		if (ThreadLocalRequestContext.REQUEST_CONTEXT.get() != null
 				&& ThreadLocalRequestContext.REQUEST_CONTEXT.get().has(IsPreviewFeature.class)) {
 			return true;
 		}
 
-		if (isDraft()) {
+		if (isPublished()) {
 			return false;
 		}
 		var publish_date = (Date) data.getOrDefault(Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now()));

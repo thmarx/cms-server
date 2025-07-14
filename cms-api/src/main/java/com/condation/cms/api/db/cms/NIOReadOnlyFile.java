@@ -21,8 +21,6 @@ package com.condation.cms.api.db.cms;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 import com.condation.cms.api.exceptions.AccessNotAllowedException;
 import com.condation.cms.api.utils.PathUtil;
 import java.io.IOException;
@@ -32,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,12 +44,12 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 
 	protected final Path file;
 	private final Path basePath;
-	
+
 	@Override
-	public String uri () {
-		return PathUtil.toURI(file, basePath);
+	public String uri() {
+		return PathUtil.toURL(file, basePath);
 	}
-	
+
 	@Override
 	public boolean exists() {
 		return Files.exists(file);
@@ -59,11 +58,11 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 	@Override
 	public ReadOnlyFile resolve(String uri) {
 		var resolved = file.resolve(uri);
-		
+
 		if (!PathUtil.isChild(basePath, resolved)) {
 			throw new AccessNotAllowedException("not allowed to access nodes outside the host base directory");
 		}
-		
+
 		return new NIOReadOnlyFile(resolved, basePath);
 	}
 
@@ -76,7 +75,27 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 	public String getContent(Charset charset) throws IOException {
 		return Files.readString(file, charset);
 	}
-	
+
+	@Override
+	public boolean hasDraft() {
+		return getDraft().isPresent();
+	}
+	@Override
+	public Optional<ReadOnlyFile> getDraft() {
+		// file = this.file, z. B. /cms/content/about.md oder /cms/content/about/index.md
+		Path parent = file.getParent();
+		Path fileName = file.getFileName();
+
+		// Draft liegt in: parent/.drafts/filename
+		Path draftPath = parent.resolve(".drafts").resolve(fileName);
+
+		if (Files.exists(draftPath)) {
+			return Optional.of(new NIOReadOnlyFile(draftPath, basePath));
+		} else {
+			return Optional.empty();
+		}
+	}
+
 	@Override
 	public List<String> getAllLines() throws IOException {
 		return getAllLines(StandardCharsets.UTF_8);
@@ -89,7 +108,7 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 
 	@Override
 	public ReadOnlyFile relativize(ReadOnlyFile node) {
-		var resolved = file.relativize(((NIOReadOnlyFile)node).file);
+		var resolved = file.relativize(((NIOReadOnlyFile) node).file);
 		return new NIOReadOnlyFile(resolved, basePath);
 	}
 
@@ -111,11 +130,11 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 	@Override
 	public ReadOnlyFile getParent() {
 		var resolved = file.getParent();
-		
+
 		if (!PathUtil.isChild(basePath, resolved)) {
 			throw new AccessNotAllowedException("not allowed to access nodes outside the host base directory");
 		}
-		
+
 		return new NIOReadOnlyFile(resolved, basePath);
 	}
 
@@ -146,7 +165,7 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 
 	@Override
 	public boolean isChild(ReadOnlyFile maybeChild) {
-	
+
 		try {
 			if (maybeChild == null) {
 				return false;
@@ -155,14 +174,14 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 		} catch (IOException ex) {
 			log.error("", ex);
 		}
-		
+
 		return false;
 	}
 
 	@Override
 	public boolean hasParent() {
 		var resolved = file.getParent();
-		
+
 		return PathUtil.isChild(basePath, resolved);
 	}
 
@@ -187,7 +206,5 @@ public class NIOReadOnlyFile implements ReadOnlyFile {
 		final NIOReadOnlyFile other = (NIOReadOnlyFile) obj;
 		return Objects.equals(this.file, other.file);
 	}
-	
-	
-	
+
 }

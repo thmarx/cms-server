@@ -129,7 +129,7 @@ public class RequestContextFactory {
 		requestContext.add(RequestFeature.class, new RequestFeature(request.getContext().getContextPath(), uri, queryParameters, request));
 		if (ServerContext.IS_DEV) {
 			if (queryParameters.containsKey("preview")) {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
+				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(queryParameters.get("preview").getFirst()));
 			}
 		}
 		
@@ -262,7 +262,7 @@ public class RequestContextFactory {
 		requestContext.add(RequestFeature.class, new RequestFeature(contextPath, uri, queryParameters, request.orElse(null)));
 		if (ServerContext.IS_DEV) {
 			if (queryParameters.containsKey("preview")) {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
+				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(queryParameters.get("preview").getFirst()));
 			}
 		}
 

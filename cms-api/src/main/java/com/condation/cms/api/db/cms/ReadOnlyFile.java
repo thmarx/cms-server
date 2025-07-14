@@ -26,6 +26,7 @@ package com.condation.cms.api.db.cms;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -39,6 +40,10 @@ public interface ReadOnlyFile {
 	ReadOnlyFile resolve (String uri);
 	
 	String getContent () throws IOException;
+	
+	boolean hasDraft();
+	
+	Optional<ReadOnlyFile> getDraft();
 	
 	String getContent (Charset charset) throws IOException;
 	

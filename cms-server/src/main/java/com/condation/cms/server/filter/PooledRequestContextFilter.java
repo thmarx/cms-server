@@ -85,7 +85,7 @@ public class PooledRequestContextFilter extends Handler.Wrapper {
 
 			requestContext.add(RequestFeature.class, new RequestFeature(contextPath, uri, queryParameters, httpRequest));
 			if (ServerContext.IS_DEV && queryParameters.containsKey("preview")) {
-				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature());
+				requestContext.add(IsPreviewFeature.class, new IsPreviewFeature(queryParameters.get("preview").getFirst()));
 			}
 
 			ThreadLocalRequestContext.REQUEST_CONTEXT.set(requestContext);

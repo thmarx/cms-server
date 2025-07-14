@@ -21,8 +21,6 @@ package com.condation.cms.content;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 import com.condation.cms.TestHelper;
 import com.condation.cms.TestTemplateEngine;
 import com.condation.cms.api.Constants;
@@ -31,7 +29,9 @@ import com.condation.cms.api.content.DefaultContentResponse;
 import com.condation.cms.api.content.RedirectContentResponse;
 import com.condation.cms.api.db.cms.NIOReadOnlyFile;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
+import com.condation.cms.api.feature.features.IsPreviewFeature;
 import com.condation.cms.api.markdown.MarkdownRenderer;
+import com.condation.cms.api.request.ThreadLocalRequestContext;
 import com.condation.cms.api.template.TemplateEngine;
 import static com.condation.cms.content.ContentRendererNGTest.contentRenderer;
 import static com.condation.cms.content.ContentRendererNGTest.moduleManager;
@@ -96,7 +96,7 @@ public class ContentResolverTest {
 		optional = contentResolver.getErrorContent(context);
 		Assertions.assertThat(optional).isPresent();
 	}
-	
+
 	@Test
 	public void testAliases() throws IOException {
 
@@ -104,15 +104,15 @@ public class ContentResolverTest {
 		var optional = contentResolver.getContent(context);
 		Assertions.assertThat(optional).isPresent();
 		Assertions.assertThat(optional.get()).isInstanceOf(RedirectContentResponse.class);
-		Assertions.assertThat(((RedirectContentResponse)optional.get()).location()).isEqualTo("/test");
-		
+		Assertions.assertThat(((RedirectContentResponse) optional.get()).location()).isEqualTo("/test");
+
 		context = TestHelper.requestContext("alias3/sub1");
 		optional = contentResolver.getContent(context);
 		Assertions.assertThat(optional).isPresent();
 		Assertions.assertThat(optional.get()).isInstanceOf(RedirectContentResponse.class);
-		Assertions.assertThat(((RedirectContentResponse)optional.get()).location()).isEqualTo("/test");
+		Assertions.assertThat(((RedirectContentResponse) optional.get()).location()).isEqualTo("/test");
 	}
-	
+
 	@Test
 	public void alias_no_redirect() throws IOException {
 
@@ -120,22 +120,55 @@ public class ContentResolverTest {
 		var optional = contentResolver.getContent(context);
 		Assertions.assertThat(optional).isPresent();
 		Assertions.assertThat(optional.get()).isInstanceOf(DefaultContentResponse.class);
-		
-		var defaultContent = (DefaultContentResponse)optional.get();
+
+		var defaultContent = (DefaultContentResponse) optional.get();
 		Assertions.assertThat(defaultContent.content()).isNotNull();
 		Assertions.assertThat(defaultContent.node().getMetaValue(Constants.MetaFields.TITLE, String.class).get()).isEqualTo("Alias without redirect");
 	}
-	
+
 	@Test
 	public void test_not_published() throws IOException {
 
 		var context = TestHelper.requestContext("alias-hidden");
 		var optional = contentResolver.getContent(context);
 		Assertions.assertThat(optional).isEmpty();
-		
+
 		context = TestHelper.requestContext("hidden");
 		optional = contentResolver.getContent(context);
 		Assertions.assertThat(optional).isEmpty();
 	}
 
+	@Test
+	public void test_preview_doesnt_deliver_draft() throws IOException {
+		var context = TestHelper.requestContext("draft-test");
+		var optional = contentResolver.getContent(context);
+
+		Assertions.assertThat(optional).isPresent();
+
+		var response = (DefaultContentResponse) optional.get();
+
+		Assertions.assertThat(response.content()).contains("Main content");
+	}
+
+	@Test
+	public void test_draftpreview_delivers_draft() throws IOException {
+		var context = TestHelper.requestContext("draft-test");
+		context.add(IsPreviewFeature.class, new IsPreviewFeature("draft"));
+
+		try {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.set(context);
+
+			var optional = contentResolver.getContent(context);
+
+			Assertions.assertThat(optional).isPresent();
+
+			var response = (DefaultContentResponse) optional.get();
+
+			Assertions.assertThat(response.content()).contains("Draft Content");
+
+		} finally {
+			ThreadLocalRequestContext.REQUEST_CONTEXT.remove();
+		}
+
+	}
 }

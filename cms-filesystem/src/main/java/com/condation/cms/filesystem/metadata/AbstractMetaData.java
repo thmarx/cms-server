@@ -21,10 +21,10 @@ package com.condation.cms.filesystem.metadata;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
+import com.condation.cms.api.feature.features.IsPreviewFeature;
+import com.condation.cms.api.request.ThreadLocalRequestContext;
 import com.condation.cms.filesystem.MetaData;
 import com.google.common.base.Strings;
 import java.util.Arrays;
@@ -42,11 +42,11 @@ import java.util.stream.Stream;
  * @author t.marx
  */
 public abstract class AbstractMetaData implements MetaData {
-	
+
 	protected ConcurrentMap<String, ContentNode> nodes;
 
 	protected ConcurrentMap<String, ContentNode> tree;
-	
+
 	@Override
 	public void clear() {
 		if (nodes != null) {
@@ -54,7 +54,7 @@ public abstract class AbstractMetaData implements MetaData {
 			tree.clear();
 		}
 	}
-	
+
 	@Override
 	public ConcurrentMap<String, ContentNode> getNodes() {
 		if (nodes == null) {
@@ -70,16 +70,26 @@ public abstract class AbstractMetaData implements MetaData {
 		}
 		return new ConcurrentHashMap<>(tree);
 	}
-	
-	public static boolean isVisible (ContentNode node) {
-		return node != null 
-				// check if some parent is hidden
-				&& !node.uri().startsWith(".") && !node.uri().contains("/.")
-				&& node.isPublished() 
-				&& !node.isHidden() 
-				&& !node.isSection();
+
+	public static boolean isVisible(ContentNode node) {
+
+		if (node == null || node.isSection()) {
+			return false;
+		}
+
+		if (node.uri().contains(".drafts/")
+				&& ThreadLocalRequestContext.REQUEST_CONTEXT.get() != null
+				&& ThreadLocalRequestContext.REQUEST_CONTEXT.get().has(IsPreviewFeature.class)
+				&& ThreadLocalRequestContext.REQUEST_CONTEXT.get().get(IsPreviewFeature.class).isDraft()
+			) {
+			return true;
+		}
+
+		return !node.isParentPathHidden()
+				&& node.isVisible()
+				&& !node.isHidden();
 	}
-	
+
 	@Override
 	public Optional<ContentNode> byUri(String uri) {
 		if (!nodes.containsKey(uri)) {
@@ -87,7 +97,7 @@ public abstract class AbstractMetaData implements MetaData {
 		}
 		return Optional.of(nodes.get(uri));
 	}
-	
+
 	@Override
 	public Optional<ContentNode> findFolder(String uri) {
 		return getFolder(uri);
@@ -109,7 +119,7 @@ public abstract class AbstractMetaData implements MetaData {
 		});
 		return Optional.ofNullable(folder.get());
 	}
-	
+
 	@Override
 	public void createDirectory(String uri) {
 		if (Strings.isNullOrEmpty(uri)) {
