@@ -95,19 +95,15 @@ export const initMediaToolbar = (img) => {
     };
     img.addEventListener('mouseenter', () => {
         positionToolbar();
-        //toolbar.style.display = 'block';
         toolbar.classList.add('visible');
     });
     img.addEventListener('mouseleave', (event) => {
-        // nur ausblenden, wenn die Maus nicht gerade über der Toolbar ist
         if (!event.relatedTarget || !toolbar.contains(event.relatedTarget)) {
-            //toolbar.style.display = 'none';
             toolbar.classList.remove('visible');
         }
     });
     toolbar.addEventListener('mouseleave', (event) => {
         if (!event.relatedTarget || event.relatedTarget !== img) {
-            //toolbar.style.display = 'none';
             toolbar.classList.remove('visible');
         }
     });

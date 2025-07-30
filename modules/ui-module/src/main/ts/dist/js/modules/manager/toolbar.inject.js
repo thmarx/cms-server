@@ -94,11 +94,15 @@ export const initToolbar = (container) => {
     if (!toolbarDefinition.actions) {
         return;
     }
+    var toolbarContainer = document.createElement('div');
+    toolbarContainer.dataset.cmsToolbar = JSON.stringify(toolbarDefinition);
+    toolbarContainer.style.position = 'absolute';
+    toolbarContainer.style.zIndex = '9999'; // optional: damit sie über allem liegt
     if (toolbarDefinition.type === "sections") {
-        container.classList.add("cms-ui-editable-sections");
+        toolbarContainer.classList.add("cms-ui-editable-sections");
     }
     else {
-        container.classList.add("cms-ui-editable");
+        toolbarContainer.classList.add("cms-ui-editable");
     }
     const toolbar = document.createElement('div');
     toolbar.className = 'cms-ui-toolbar';
@@ -109,14 +113,6 @@ export const initToolbar = (container) => {
         toolbar.classList.add("cms-ui-toolbar-tr");
     }
     toolbar.classList.add("cms-ui-toolbar");
-    toolbar.addEventListener('mouseover', () => {
-        toolbar.classList.add('visible');
-    });
-    toolbar.addEventListener('mouseleave', (event) => {
-        if (!event.relatedTarget || !toolbar.contains(event.relatedTarget)) {
-            toolbar.classList.remove('visible');
-        }
-    });
     toolbarDefinition.actions.forEach(action => {
         if (action === "editContent") {
             const button = document.createElement('button');
@@ -169,18 +165,44 @@ export const initToolbar = (container) => {
         button.addEventListener('click', setPublishForSection);
         toolbar.appendChild(button);
     }
-    container.insertBefore(toolbar, container.firstChild);
-    container.addEventListener('mouseover', () => {
+    toolbarContainer.appendChild(toolbar);
+    document.body.appendChild(toolbarContainer);
+    const positionToolbarContainer = () => {
+        const rect = container.getBoundingClientRect();
+        toolbarContainer.style.top = `${window.scrollY + rect.top - 2}px`;
+        toolbarContainer.style.left = `${window.scrollX + rect.left - 2}px`;
+        toolbarContainer.style.width = `${rect.width}px`;
+        toolbarContainer.style.height = `${rect.height}px`;
+        toolbarContainer.style.display = 'block';
+    };
+    container.addEventListener('mouseenter', (event) => {
+        event.stopPropagation();
+        console.log("mouseenter container");
+        positionToolbarContainer();
         toolbar.classList.add('visible');
     });
     container.addEventListener('mouseleave', (event) => {
-        if (!event.relatedTarget || !container.contains(event.relatedTarget)) {
+        event.stopPropagation();
+        if (!event.relatedTarget || !toolbar.contains(event.relatedTarget)) {
+            console.log("mouseleave container");
             toolbar.classList.remove('visible');
+            toolbarContainer.style.display = 'none';
         }
     });
-    toolbar.addEventListener('mouseleave', (event) => {
-        if (!event.relatedTarget || !container.contains(event.relatedTarget)) {
-            toolbar.classList.remove('visible');
-        }
+    /*
+        toolbar.addEventListener('mouseleave', (event : MouseEvent) => {
+            if (!event.relatedTarget || event.relatedTarget as Node !== container) {
+                toolbar.classList.remove('visible');
+                toolbarContainer.style.display = 'none';
+            }
+        });
+    */
+    window.addEventListener('scroll', () => {
+        if (toolbarContainer.style.display === 'block')
+            positionToolbarContainer();
+    });
+    window.addEventListener('resize', () => {
+        if (toolbarContainer.style.display === 'block')
+            positionToolbarContainer();
     });
 };

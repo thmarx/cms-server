@@ -45,9 +45,10 @@
 			{% endif %}
 		</div>
 
-		<div class="container sections" 
+		<div class="container sections" >
+			<!--
 			{{ ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
-			>
+			-->
 			{% if sections.containsKey('asection') %}
 				{% for section in sections.get('asection') %}
 					{{ section.content() | raw }}
