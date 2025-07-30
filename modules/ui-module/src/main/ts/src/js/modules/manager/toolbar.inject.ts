@@ -1,11 +1,11 @@
 import frameMessenger from "../frameMessenger";
 import { EDIT_ATTRIBUTES_ICON, EDIT_PAGE_ICON, SECTION_ADD_ICON, SECTION_DELETE_ICON, SECTION_SORT_ICON, SECTION_UNPUBLISHED_ICON } from "./toolbar-icons";
 
-const addSection = (event : Event) => {
+const addSection = (event: Event) => {
 	var toolbar = (event.target as HTMLElement).closest('[data-cms-toolbar]') as HTMLElement;
 	var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar)
 
-	var command : any = {
+	var command: any = {
 		type: 'add-section',
 		payload: {
 			sectionName: toolbarDefinition.sectionName,
@@ -43,7 +43,7 @@ const setPublishForSection = (event: Event) => {
 	frameMessenger.send(window.parent, command);
 }
 
-const orderSections = (event : Event) => {
+const orderSections = (event: Event) => {
 	var toolbar = (event.target as HTMLElement).closest('[data-cms-toolbar]') as HTMLElement;
 	var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar)
 
@@ -61,7 +61,7 @@ const editContent = (event: Event) => {
 	var toolbar = (event.target as HTMLElement).closest('[data-cms-toolbar]') as HTMLElement;
 	var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar)
 
-	var command : any = {
+	var command: any = {
 		type: 'edit',
 		payload: {
 			editor: "markdown",
@@ -79,7 +79,7 @@ const editAttributes = (event: Event) => {
 	var toolbar = (event.target as HTMLElement).closest('[data-cms-toolbar]') as HTMLElement;
 	var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar)
 
-	var command : any = {
+	var command: any = {
 		type: 'edit',
 		payload: {
 			editor: "form",
@@ -90,7 +90,7 @@ const editAttributes = (event: Event) => {
 		command.payload.uri = toolbarDefinition.uri;
 	}
 	var elements = []
-	toolbar.parentNode.querySelectorAll("[data-cms-editor]").forEach(($elem : HTMLElement) => {
+	toolbar.parentNode.querySelectorAll("[data-cms-editor]").forEach(($elem: HTMLElement) => {
 		var toolbar = $elem.dataset.cmsToolbar ? JSON.parse($elem.dataset.cmsToolbar) : {};
 		if ($elem.dataset.cmsElement === "meta"
 			&& (!toolbar.id || toolbar.id === toolbarDefinition.id)
@@ -114,10 +114,16 @@ export const initToolbar = (container: HTMLElement) => {
 	if (!toolbarDefinition.actions) {
 		return
 	}
+
+	var toolbarContainer = document.createElement('div');
+	toolbarContainer.dataset.cmsToolbar = JSON.stringify(toolbarDefinition);
+	toolbarContainer.style.position = 'absolute';
+	toolbarContainer.style.zIndex = '9999'; // optional: damit sie über allem liegt
+
 	if (toolbarDefinition.type === "sections") {
-		container.classList.add("cms-ui-editable-sections");
+		toolbarContainer.classList.add("cms-ui-editable-sections");
 	} else {
-		container.classList.add("cms-ui-editable");
+		toolbarContainer.classList.add("cms-ui-editable");
 	}
 
 	const toolbar = document.createElement('div');
@@ -130,14 +136,6 @@ export const initToolbar = (container: HTMLElement) => {
 	}
 
 	toolbar.classList.add("cms-ui-toolbar");
-	toolbar.addEventListener('mouseover', () => {
-		toolbar.classList.add('visible');
-	});
-	toolbar.addEventListener('mouseleave', (event : MouseEvent) => {
-		if (!event.relatedTarget || !toolbar.contains(event.relatedTarget as Node)) {
-			toolbar.classList.remove('visible');
-		}
-	});
 
 	toolbarDefinition.actions.forEach(action => {
 		if (action === "editContent") {
@@ -195,21 +193,45 @@ export const initToolbar = (container: HTMLElement) => {
 		toolbar.appendChild(button);
 	}
 
-	container.insertBefore(toolbar, container.firstChild);
+	toolbarContainer.appendChild(toolbar);
+	document.body.appendChild(toolbarContainer);
 
-	container.addEventListener('mouseover', () => {
+	const positionToolbarContainer = () => {
+		const rect = container.getBoundingClientRect();
+		toolbarContainer.style.top = `${window.scrollY + rect.top - 2}px`;
+		toolbarContainer.style.left = `${window.scrollX + rect.left - 2}px`;
+		toolbarContainer.style.width = `${rect.width}px`;
+		toolbarContainer.style.height = `${rect.height}px`;
+		toolbarContainer.style.display = 'block';
+	}
+
+	container.addEventListener('mouseenter', (event : Event) => {
+		event.stopPropagation();
+		console.log("mouseenter container");
+		positionToolbarContainer();
 		toolbar.classList.add('visible');
 	});
 
-	container.addEventListener('mouseleave', (event: MouseEvent) => {
-		if (!event.relatedTarget || !container.contains(event.relatedTarget as Node)) {
+	container.addEventListener('mouseleave', (event : MouseEvent) => {
+		event.stopPropagation();
+		if (!event.relatedTarget || !toolbar.contains(event.relatedTarget as Node)) {
+			console.log("mouseleave container");
 			toolbar.classList.remove('visible');
+			toolbarContainer.style.display = 'none';
 		}
 	});
-
-	toolbar.addEventListener('mouseleave', (event: MouseEvent) => {
-		if (!event.relatedTarget || !container.contains(event.relatedTarget as Node)) {
+/*
+	toolbar.addEventListener('mouseleave', (event : MouseEvent) => {
+		if (!event.relatedTarget || event.relatedTarget as Node !== container) {
 			toolbar.classList.remove('visible');
+			toolbarContainer.style.display = 'none';
 		}
+	});
+*/
+	window.addEventListener('scroll', () => {
+		if (toolbarContainer.style.display === 'block') positionToolbarContainer();
+	});
+	window.addEventListener('resize', () => {
+		if (toolbarContainer.style.display === 'block') positionToolbarContainer();
 	});
 }
