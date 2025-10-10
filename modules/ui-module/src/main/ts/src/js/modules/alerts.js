@@ -31,23 +31,39 @@ const sweetalert2 = Swal.mixin({
   buttonsStyling: false
 });
 
+const adjustZIndexHelper = (options) => {
+	const modal = document.querySelector('.modal.show');
+	if (modal) {
+		const zIndex = parseInt(window.getComputedStyle(modal).zIndex);
+		if (!isNaN(zIndex)) {
+			// SweetAlert2 Container
+			const container = document.querySelector('.swal2-container');
+			if (container) {
+				container.style.zIndex = zIndex + 2;
+			}
+		}
+	}
+}
+
 const alertSelect = async (options) => {
 	const { value: selectedValue } = await sweetalert2.fire({
 		title: options.title || i18n.t("alerts.select.title", "Select element"),
 		input: "select",
 		inputOptions: options.values || {},
 		inputPlaceholder: options.placeholder || i18n.t("alerts.select.placeholder", "Select a element"),
-		showCancelButton: true
+		showCancelButton: true,
+		didOpen: () => adjustZIndexHelper()
 	});
 
 	return selectedValue
 };
 
-const alertError = async () => {
+const alertError = async (options) => {
 	sweetalert2.fire({
   		icon: "error",
   		title: options.title || i18n.t("alerts.error.title", "Error"),
   		text: options.message || i18n.t("alerts.error.message", "Some error occured"),
+		didOpen: () => adjustZIndexHelper()
 	});
 }
 
@@ -59,6 +75,7 @@ const alertConfirm = async (options) => {
 		showCancelButton: true,
 		confirmButtonText: options.confirmText || i18n.t("alerts.confirm.button.ok", "Yes, delete it!"),
 		cancelButtonText: options.cancelText || i18n.t("alerts.confirm.button.cancel", "No, cancel!"),
+		didOpen: () => adjustZIndexHelper()
 	});
 
 	return isConfirmed
@@ -71,7 +88,8 @@ const alertPrompt = async (options) => {
 		inputLabel: options.label || i18n.t("alerts.prompt.label", "Input"),
 		inputPlaceholder: options.placeholder || i18n.t("alerts.prompt.placeholder", "Enter your input"),
 		showCancelButton: true,
-		inputValidator: options.validator || null
+		inputValidator: options.validator || null,
+		didOpen: () => adjustZIndexHelper()
 	});
 
 	return value
