@@ -45,11 +45,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.SubmissionPublisher;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -63,8 +66,10 @@ public class MultiRootRecursiveWatcher {
 	private WatchService watchService;
 	private Thread watchThread;
 	private final Map<Path, WatchKey> watchPathKeyMap;
+	private final ReentrantLock mapLock = new ReentrantLock();
 
-	private Timer timer;
+	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+	private ScheduledFuture<?> scheduledFuture;
 
 	private final Map<Path, Root> roots;
 
@@ -78,8 +83,6 @@ public class MultiRootRecursiveWatcher {
 		this.watchService = null;
 		this.watchThread = null;
 		this.watchPathKeyMap = new HashMap<>();
-
-		this.timer = null;
 
 		this.roots = new HashMap<>();
 		roots.forEach(path -> {
@@ -115,14 +118,25 @@ public class MultiRootRecursiveWatcher {
 				try {
 					WatchKey watchKey = watchService.take();
 					List<WatchEvent<?>> events = watchKey.pollEvents();
-					
-					events.forEach((event) -> {
+
+					for (WatchEvent<?> event : events) {
+						WatchEvent.Kind<?> kind = event.kind();
+
+						// TBD - might be a server overflow (Events cast)
+						if (kind == OVERFLOW) {
+							resetWaitSettlementTimer();
+							continue;
+						}
+
 						Path path = (Path) watchKey.watchable();
 						File file = path.resolve((Path) event.context()).toFile();
-						
+
 						final FileEvent fileEvent;
 						if (event.kind().equals(ENTRY_CREATE)) {
 							fileEvent = new FileEvent(file, FileEvent.Type.CREATED);
+							if (file.isDirectory()) {
+								walkTreeAndSetWatches(file.toPath());
+							}
 						} else if (event.kind().equals(ENTRY_DELETE)) {
 							fileEvent = new FileEvent(file, FileEvent.Type.DELETED);
 						} else if (event.kind().equals(ENTRY_MODIFY)) {
@@ -130,7 +144,7 @@ public class MultiRootRecursiveWatcher {
 						} else {
 							fileEvent = null;
 						}
-						
+
 						if (fileEvent != null) {
 							roots.values().forEach((root) -> {
 								if (PathUtil.isChild(root.path, file.toPath())) {
@@ -138,11 +152,13 @@ public class MultiRootRecursiveWatcher {
 								}
 							});
 						}
-					});
-					
+					}
+
 					// fire events
-					watchKey.reset();
-					resetWaitSettlementTimer();
+					if (!watchKey.reset()) {
+						Path path = (Path) watchKey.watchable();
+						unregisterWatch(path);
+					}
 				} catch (InterruptedException | ClosedWatchServiceException e) {
 					running.set(false);
 				} catch (Exception e) {
@@ -159,103 +175,93 @@ public class MultiRootRecursiveWatcher {
 				watchService.close();
 				running.set(false);
 				watchThread.interrupt();
+				scheduler.shutdown();
 			} catch (IOException e) {
-				// Don't care
+				log.error("could not close watch service", e);
 			}
 		}
 	}
 
 	private synchronized void resetWaitSettlementTimer() {
-		if (timer != null) {
-			timer.cancel();
-			timer = null;
+		if (scheduledFuture != null) {
+			scheduledFuture.cancel(false);
 		}
 
-		timer = new Timer("WatchTimer");
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				log.debug("File system actions (on watched folders) settled. Updating watches ...");
-				walkTreeAndSetWatches();
-				unregisterStaleWatches();
-			}
-		}, 10000);
+		scheduledFuture = scheduler.schedule(() -> {
+			log.debug("File system actions (on watched folders) settled. Updating watches ...");
+			walkTreeAndSetWatches();
+		}, 10, TimeUnit.SECONDS);
 	}
 
-	private synchronized void walkTreeAndSetWatches() {
+	private void walkTreeAndSetWatches() {
 		log.debug("Registering new folders at watch service ...");
 
 		roots.values().forEach(root -> {
-			try {
-				Files.walkFileTree(root.path, new FileVisitor<Path>() {
-					@Override
-					public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-						registerWatch(dir);
-						return FileVisitResult.CONTINUE;
-					}
-
-					@Override
-					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-						return FileVisitResult.CONTINUE;
-					}
-
-					@Override
-					public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-						return FileVisitResult.CONTINUE;
-					}
-
-					@Override
-					public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-						return FileVisitResult.CONTINUE;
-					}
-				});
-			} catch (IOException e) {
-				// Don't care
-			}
+			walkTreeAndSetWatches(root.path);
 		});
 
 	}
 
-	private synchronized void unregisterStaleWatches() {
-		Set<Path> paths = new HashSet<>(watchPathKeyMap.keySet());
-		Set<Path> stalePaths = new HashSet<>();
+	private void walkTreeAndSetWatches(Path path) {
+		try {
+			Files.walkFileTree(path, new FileVisitor<Path>() {
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					registerWatch(dir);
+					return FileVisitResult.CONTINUE;
+				}
 
-		for (Path path : paths) {
-			if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
-				stalePaths.add(path);
-			}
-		}
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					return FileVisitResult.CONTINUE;
+				}
 
-		if (!stalePaths.isEmpty()) {
-			log.debug("Cancelling stale path watches ...");
+				@Override
+				public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+					return FileVisitResult.CONTINUE;
+				}
 
-			for (Path stalePath : stalePaths) {
-				unregisterWatch(stalePath);
-			}
-		}
-	}
-
-	private synchronized void registerWatch(Path dir) {
-		if (!watchPathKeyMap.containsKey(dir)) {
-			log.debug("- Registering " + dir);
-
-			try {
-				WatchKey watchKey = dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY, OVERFLOW);
-				watchPathKeyMap.put(dir, watchKey);
-			} catch (IOException e) {
-				// Don't care!
-			}
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			log.error("could not walk file tree for path {}", path, e);
 		}
 	}
 
-	private synchronized void unregisterWatch(Path dir) {
-		WatchKey watchKey = watchPathKeyMap.get(dir);
+	private void registerWatch(Path dir) {
+		mapLock.lock();
+		try {
+			if (!watchPathKeyMap.containsKey(dir)) {
+				log.debug("- Registering " + dir);
 
-		if (watchKey != null) {
-			log.debug("- Cancelling " + dir);
+				try {
+					WatchKey watchKey = dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY, OVERFLOW);
+					watchPathKeyMap.put(dir, watchKey);
+				} catch (IOException e) {
+					log.error("could not register watch for path {}", dir, e);
+				}
+			}
+		} finally {
+			mapLock.unlock();
+		}
+	}
 
-			watchKey.cancel();
-			watchPathKeyMap.remove(dir);
+	private void unregisterWatch(Path dir) {
+		mapLock.lock();
+		try {
+			WatchKey watchKey = watchPathKeyMap.get(dir);
+
+			if (watchKey != null) {
+				log.debug("- Cancelling " + dir);
+
+				watchKey.cancel();
+				watchPathKeyMap.remove(dir);
+			}
+		} finally {
+			mapLock.unlock();
 		}
 	}
 
