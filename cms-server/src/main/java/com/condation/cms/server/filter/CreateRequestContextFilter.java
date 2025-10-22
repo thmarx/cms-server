@@ -24,7 +24,13 @@ package com.condation.cms.server.filter;
 
 
 import com.condation.cms.api.Constants;
+import com.condation.cms.api.configuration.configs.SiteConfiguration;
+import com.condation.cms.api.db.DB;
+import com.condation.cms.api.feature.features.ConfigurationFeature;
+import com.condation.cms.api.feature.features.InjectorFeature;
+import com.condation.cms.api.feature.features.ThemeFeature;
 import com.condation.cms.api.request.RequestContextScope;
+import com.condation.cms.filesystem.virtual.SiteContext;
 import com.condation.cms.request.RequestContextFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Handler;
@@ -52,7 +58,15 @@ public class CreateRequestContextFilter extends Handler.Wrapper {
 			httpRequest.setAttribute(Constants.REQUEST_CONTEXT_ATTRIBUTE_NAME, requestContext);
 
 			return ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, requestContext).call(() -> {
-				return super.handle(httpRequest, rspns, clbck);
+				
+				SiteContext siteContext = new SiteContext(
+						requestContext.get(ConfigurationFeature.class).configuration().get(SiteConfiguration.class).siteProperties().id(),
+						requestContext.get(InjectorFeature.class).injector().getInstance(DB.class),
+						requestContext.get(ThemeFeature.class).theme()
+				);
+				return ScopedValue.where(SiteContext.SCOPE, siteContext).call(() -> {
+					return super.handle(httpRequest, rspns, clbck);
+				});
 			});
 			
 		} catch (Exception e) {

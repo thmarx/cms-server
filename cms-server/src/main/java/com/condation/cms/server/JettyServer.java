@@ -39,6 +39,9 @@ import com.condation.cms.api.site.SiteService;
 import com.condation.cms.api.utils.ServerUtil;
 import com.condation.cms.api.utils.SiteUtil;
 import com.condation.cms.core.eventbus.DefaultEventBus;
+import com.condation.cms.filesystem.virtual.RootFileSystemProvider;
+import com.condation.cms.filesystem.virtual.TemplateFileSystemProvider;
+import com.condation.cms.filesystem.virtual.VFS;
 import com.condation.modules.api.ModuleManager;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -99,6 +102,11 @@ public class JettyServer implements AutoCloseable {
 	}
 
 	public void startup() throws IOException {
+		
+		VFS.register(new TemplateFileSystemProvider("templates"));
+		VFS.register(new RootFileSystemProvider("content", (context) -> context.db().getFileSystem().resolve(Constants.Folders.CONTENT)));
+		VFS.register(new RootFileSystemProvider("site+assets", (context) -> context.db().getFileSystem().resolve(Constants.Folders.ASSETS)));
+		VFS.register(new RootFileSystemProvider("site+extensions", (context) -> context.db().getFileSystem().resolve(Constants.Folders.EXTENSIONS)));
 
 		var properties = globalInjector.getInstance(ServerProperties.class);
 
