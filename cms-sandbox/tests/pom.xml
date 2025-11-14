@@ -29,6 +29,13 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-jexl3</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.google.mug</groupId>
+			<artifactId>dot-parse</artifactId>
+			<version>9.4</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.tomlj</groupId>
 			<artifactId>tomlj</artifactId>
