@@ -31,7 +31,6 @@ import com.condation.cms.templates.tags.AbstractTag;
 import java.io.StringWriter;
 import java.io.Writer;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.jexl3.JexlExpression;
 
 /**
  *
@@ -65,7 +64,6 @@ public class IncludeTag extends AbstractTag implements Tag {
 		var template = node.getCondition().trim();
 		
 		var scope = context.createEngineContext();
-		final JexlExpression expression = context.engine().createExpression(template);
-		return (String)evaluateExpression(node, expression, context, scope);
+		return (String)evaluateExpression(node, template, context, scope);
 	}
 }

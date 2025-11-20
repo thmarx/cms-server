@@ -26,7 +26,6 @@ import com.condation.cms.templates.exceptions.RenderException;
 import com.condation.cms.templates.parser.TagNode;
 import com.condation.cms.templates.renderer.Renderer;
 import com.condation.cms.templates.renderer.ScopeContext;
-import org.apache.commons.jexl3.JexlExpression;
 
 /**
  *
@@ -34,9 +33,9 @@ import org.apache.commons.jexl3.JexlExpression;
  */
 public class AbstractTag {
 	
-	protected Object evaluateExpression (TagNode node, JexlExpression expression, Renderer.Context context, ScopeContext scopeContext) {
+	protected Object evaluateExpression (TagNode node, String expression, Renderer.Context context, ScopeContext scopeContext) {
 		try {
-			return expression.evaluate(scopeContext);
+			return context.expressionCache().get(expression).evaluate(scopeContext);
 		} catch (Exception e) {
 			throw new RenderException(e.getLocalizedMessage(), node.getLine(), node.getColumn());
 		}

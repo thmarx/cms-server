@@ -2,7 +2,6 @@ package com.condation.cms.templates.parser;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.jexl3.JexlExpression;
 
 /*-
  * #%L
@@ -35,7 +34,7 @@ public class TagNode extends ASTNode {
     private String condition;
 	@Getter
 	@Setter
-	private JexlExpression expression;
+	private String expression;
 
 	public TagNode(int line, int column) {
 		super(line, column);

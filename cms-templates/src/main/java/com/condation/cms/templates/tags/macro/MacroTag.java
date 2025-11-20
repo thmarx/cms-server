@@ -110,7 +110,7 @@ public class MacroTag implements Tag {
 			StringWriter writer = new StringWriter();
 			
 			var newContext = new Renderer.Context(
-					context.engine(), 
+					context.expressionCache(),
 					scope, 
 					context.renderer(), 
 					context.templateEngine(), 

@@ -61,7 +61,7 @@ public class ComponentTag implements Component {
 	public void render(ComponentNode node, Renderer.Context context, Writer writer) {
 		try {
 			
-			var params = ParameterUtil.parseAndEvaluate(node.getParameters(), context.createEngineContext(), context.engine());
+			var params = ParameterUtil.parseAndEvaluate(node.getParameters(), context.createEngineContext(), context.expressionCache());
 			var content = renderChildren(node, context);
 
 			params.put("_content", content);

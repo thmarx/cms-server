@@ -51,28 +51,30 @@ public class Renderer {
 	private final CMSTemplateEngine templateEngine;
 	private final JexlEngine engine;
 	private final VariableNodeRenderer variableNodeRenderer;
+	private final ExpressionCache expressionCache;
 
-	public Renderer(TemplateConfiguration configuration, CMSTemplateEngine templateEngine, JexlEngine engine) {
+	public Renderer(TemplateConfiguration configuration, CMSTemplateEngine templateEngine, JexlEngine engine, ExpressionCache expressionCache) {
 		this.configuration = configuration;
 		this.templateEngine = templateEngine;
 		this.engine = engine;
-		this.variableNodeRenderer = new VariableNodeRenderer(configuration);
+		this.expressionCache = expressionCache;
+		this.variableNodeRenderer = new VariableNodeRenderer(configuration, expressionCache);
 	}
 
 	public static record Context(
-			JexlEngine engine,
+			ExpressionCache expressionCache,
 			ScopeStack scopes,
 			RenderFunction renderer,
 			CMSTemplateEngine templateEngine,
 			Map<String, Object> context,
 			DynamicConfiguration dynamicConfiguration) {
 
-		public Context(JexlEngine engine,
+		public Context(ExpressionCache expressionCache,
 				ScopeStack scopes,
 				RenderFunction renderer,
 				CMSTemplateEngine templateEngine,
 				DynamicConfiguration dynamicConfiguration) {
-			this(engine, scopes, renderer, templateEngine, new HashMap<>(), dynamicConfiguration);
+			this(expressionCache, scopes, renderer, templateEngine, new HashMap<>(), dynamicConfiguration);
 		}
 
 		public ScopeContext createEngineContext() {
@@ -88,7 +90,7 @@ public class Renderer {
 
 		var contentWriter = new StringWriter();
 		final Context renderContext = new Context(
-				engine,
+				expressionCache,
 				scopes,
 				renderFunction,
 				templateEngine,

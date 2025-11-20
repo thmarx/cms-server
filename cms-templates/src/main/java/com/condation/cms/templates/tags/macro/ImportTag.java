@@ -38,7 +38,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.jexl3.JexlExpression;
 
 /**
  *
@@ -63,8 +62,7 @@ public class ImportTag extends AbstractTag implements Tag {
 			var importDefinition = parseImport(node.getCondition(), node);
 
 			var scope = context.createEngineContext();
-			final JexlExpression expression = context.engine().createExpression(importDefinition.template);
-			var templateString = (String) evaluateExpression(node, expression, context, scope);
+			var templateString = (String) evaluateExpression(node, importDefinition.template, context, scope);
 
 			var template = (DefaultTemplate) context.templateEngine().getTemplate(templateString);
 			if (template != null) {

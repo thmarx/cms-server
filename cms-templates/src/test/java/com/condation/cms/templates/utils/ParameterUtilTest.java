@@ -42,7 +42,7 @@ public class ParameterUtilTest {
 		var context = new MapContext();
 		context.set("variable", "CMS");
 		
-		var parameters = ParameterUtil.parseAndEvaluate("param1=\"CondationCMS\" param2=30 param3=variable", context, engine);
+		var parameters = ParameterUtil.parseAndEvaluate("param1=\"CondationCMS\" param2=30 param3=variable", context, new com.condation.cms.templates.renderer.ExpressionCache(engine));
 		
 		Assertions.assertThat(parameters)
 				.hasSize(3)

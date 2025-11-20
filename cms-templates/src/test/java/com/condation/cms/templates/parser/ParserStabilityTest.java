@@ -49,7 +49,7 @@ public class ParserStabilityTest {
         var config = new TemplateConfiguration();
         config.registerTag(new com.condation.cms.templates.tags.IfTag());
         config.registerTag(new com.condation.cms.templates.tags.EndIfTag());
-        parser = new Parser(config, jexl);
+        parser = new Parser(config);
         lexer = new Lexer();
     }
 

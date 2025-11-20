@@ -34,14 +34,10 @@ import com.condation.cms.templates.lexer.Token;
 import static com.condation.cms.templates.lexer.Token.Type.TAG_END;
 import static com.condation.cms.templates.lexer.Token.Type.TAG_START;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.jexl3.JexlEngine;
-
 @RequiredArgsConstructor
 public class Parser {
 
 	private final TemplateConfiguration configuration;
-
-	private final JexlEngine engine;
 
 	public ASTNode parse (final TokenStream tokenStream) {
 		return _parse(tokenStream, new ParserConfiguration(configuration));
@@ -191,7 +187,7 @@ public class Parser {
 								var variable = TemplateUtils.extractVariableName(identifier);
 
 								variableNode1.setVariable(variable); // Variable setzen
-								variableNode1.setExpression(engine.createExpression(variable));
+								variableNode1.setExpression(variable);
 
 								variableNode1.setFilters(TemplateUtils.extractFilters(identifier)
 										.stream()
@@ -201,7 +197,7 @@ public class Parser {
 							} else {
 								variableNode1.setVariable(token.value); // Variable setzen
 								if (token.value != null) {
-									variableNode1.setExpression(engine.createExpression(token.value));
+									variableNode1.setExpression(token.value);
 								}
 							}
 						} else if (currentNode instanceof ComponentNode compNode) {
@@ -222,7 +218,7 @@ public class Parser {
 
 							Tag tag = parserConfiguration.getTag(tagNode.getName()).get();
 							if (tag.parseExpressions() && token.value != null) {
-								tagNode.setExpression(engine.createExpression(token.value));
+								tagNode.setExpression(token.value);
 							}
 						} else if (currentNode instanceof ComponentNode compNode) {
 							compNode.setParameters(token.value);

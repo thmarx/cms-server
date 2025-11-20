@@ -31,8 +31,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.jexl3.JexlExpression;
-
 /**
  *
  * @author t.marx
@@ -63,7 +61,6 @@ public class IfTag extends AbstractTag implements Tag {
 			context.scopes().pushScope();
 			try {
 				if (!condition.name.equals("else")) {
-					//Object value = condition.expression().evaluate(scopeContext);
 					Object value = evaluateExpression(node, condition.expression, context, scopeContext);
 					if (value instanceof Boolean boolValue && boolValue == true) {
 						for (var child : condition.currentChildren) {
@@ -114,7 +111,7 @@ public class IfTag extends AbstractTag implements Tag {
 		return conditions;
 	}
 
-	private static record Condition(String name, JexlExpression expression, List<ASTNode> currentChildren) {
+	private static record Condition(String name, String expression, List<ASTNode> currentChildren) {
 
 	}
 }

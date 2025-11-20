@@ -41,10 +41,11 @@ import org.apache.commons.text.StringEscapeUtils;
 class VariableNodeRenderer {
 
 	private final TemplateConfiguration templateConfiguration;
+	private final ExpressionCache expressionCache;
 
 	protected void render(VariableNode node, Context context, Writer writer) {
 		try {
-			Object variableValue = node.getExpression().evaluate(context.createEngineContext());
+			Object variableValue = expressionCache.get(node.getExpression()).evaluate(context.createEngineContext());
 			if (variableValue != null && variableValue instanceof String stringValue) {
 				writer.append(evaluateStringFilters(stringValue, node.getFilters(), context));
 			} else if (variableValue != null)  {
@@ -87,7 +88,7 @@ class VariableNodeRenderer {
 			var params = filter.parameters()
 					.stream()
 					.map(param -> {
-						var exp = context.engine().createExpression(param);
+						var exp = context.expressionCache().get(param);
 						return exp.evaluate(engineScope);
 					}).toArray();
 			filterPipeline.addStep(filter.name(), params);

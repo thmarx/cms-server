@@ -47,7 +47,7 @@ public class ParserTest {
 	@BeforeAll
 	public static void setup() {
 		var config = new TemplateConfiguration();
-		parser = new Parser(config, jexl);
+		parser = new Parser(config);
 		lexer = new Lexer();
 	}
 

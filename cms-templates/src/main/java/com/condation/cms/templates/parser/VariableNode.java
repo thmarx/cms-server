@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.jexl3.JexlExpression;
 
 /*-
  * #%L
@@ -34,7 +33,7 @@ public class VariableNode extends ASTNode {
     private String variable;
 	@Getter
 	@Setter
-	private JexlExpression expression;
+	private String expression;
 	@Setter
 	@Getter
 	private List<Filter> filters = new ArrayList<>();

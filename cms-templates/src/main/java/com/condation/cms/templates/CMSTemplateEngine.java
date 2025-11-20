@@ -27,6 +27,7 @@ import com.condation.cms.templates.expression.CMSPermissions;
 import com.condation.cms.templates.expression.RecordResolverStrategy;
 import com.condation.cms.templates.lexer.Lexer;
 import com.condation.cms.templates.parser.Parser;
+import com.condation.cms.templates.renderer.ExpressionCache;
 import com.condation.cms.templates.renderer.Renderer;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
@@ -42,14 +43,16 @@ public class CMSTemplateEngine {
 	private final Renderer renderer;
 	
 	private final TemplateCache templateCache;
+	private final ExpressionCache expressionCache;
 
 	public CMSTemplateEngine(TemplateConfiguration configuration) {
 		this.configuration = configuration;
 		jexl = createJexlEngine();
 		this.templateCache = configuration.getTemplateCache();
-		this.parser = new Parser(configuration, jexl);
+		this.expressionCache = new ExpressionCache(jexl);
+		this.parser = new Parser(configuration);
 		this.lexer = new Lexer();
-		this.renderer = new Renderer(configuration, this, jexl);
+		this.renderer = new Renderer(configuration, this, jexl, expressionCache);
 	}
 	
 	private JexlEngine createJexlEngine() {
@@ -79,6 +82,7 @@ public class CMSTemplateEngine {
 	
 	public void invalidateTemplateCache () {
 		templateCache.invalidate();
+		expressionCache.invalidate();
 	}
 	
 	public Template getTemplateFromString (String templateContent) {

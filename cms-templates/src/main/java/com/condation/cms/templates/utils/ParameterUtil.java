@@ -25,9 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.condation.cms.templates.renderer.ExpressionCache;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlExpression;
 
 /**
  *
@@ -35,7 +38,7 @@ import org.apache.commons.jexl3.JexlExpression;
  */
 public class ParameterUtil {
 
-	public static Map<String, Object> parseAndEvaluate(String input, JexlContext jexlContext, JexlEngine engine) {
+	public static Map<String, Object> parseAndEvaluate(String input, JexlContext jexlContext, ExpressionCache cache) {
 		Map<String, Object> resultMap = new HashMap<>();
 
 		// Tokenize den Eingabestring (Leerzeichen als Trennung der Parameter)
@@ -58,8 +61,7 @@ public class ParameterUtil {
 					// Wert mit JEXL evaluieren
 					Object evaluatedValue;
 					try {
-						JexlExpression expression = engine.createExpression(value);
-						evaluatedValue = expression.evaluate(jexlContext);
+						evaluatedValue = cache.get(value).evaluate(jexlContext);
 					} catch (Exception e) {
 						// Falls der Wert keine JEXL-Expression ist, einfach als String speichern
 						evaluatedValue = value;
