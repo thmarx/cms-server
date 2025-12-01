@@ -30,6 +30,7 @@ import com.condation.cms.core.configuration.configs.MediaConfiguration;
 import com.condation.cms.core.configuration.configs.TaxonomyConfiguration;
 import com.condation.cms.core.configuration.reload.CronReload;
 import com.condation.cms.core.configuration.reload.NoReload;
+import com.condation.cms.core.configuration.source.EnvConfigSource;
 import com.condation.cms.core.configuration.source.TomlConfigSource;
 import com.condation.cms.core.configuration.source.YamlConfigSource;
 import java.io.IOException;
@@ -100,6 +101,7 @@ public class ConfigurationFactory {
 				.reloadStrategy(new NoReload())
 				.addSource(YamlConfigSource.build(themeBase.resolve("%s/theme.yaml".formatted(theme))))
 				.addSource(TomlConfigSource.build(themeBase.resolve("%s/theme.toml".formatted(theme))))
+				.addSource(new EnvConfigSource())
 				.build();
 	}
 
@@ -112,6 +114,7 @@ public class ConfigurationFactory {
 				.reloadStrategy(new NoReload())
 				.addSource(TomlConfigSource.build(ServerUtil.getPath("server.toml")))
 				.addSource(YamlConfigSource.build(ServerUtil.getPath("server.yaml")))
+				.addSource(new EnvConfigSource())
 				.build();
 	}
 
@@ -132,6 +135,7 @@ public class ConfigurationFactory {
 				.id("media")
 				.reloadStrategy(new NoReload())
 				.addAllSources(themeSources)
+				.addSource(new EnvConfigSource())
 				.build();
 	}
 
@@ -159,6 +163,7 @@ public class ConfigurationFactory {
 				.reloadStrategy(reloadStrategy);
 
 		siteSources.forEach(config::addSource);
+		config.addSource(new EnvConfigSource());
 
 		return config.build();
 	}
@@ -171,6 +176,7 @@ public class ConfigurationFactory {
 				.hostBase(hostBase)
 				.addSource(YamlConfigSource.build(hostBase.resolve("config/taxonomy.yaml")))
 				.addSource(TomlConfigSource.build(hostBase.resolve("config/taxonomy.toml")))
+				.addSource(new EnvConfigSource())
 				.build();
 	}
 }
