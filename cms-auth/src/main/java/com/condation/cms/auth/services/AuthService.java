@@ -25,6 +25,7 @@ package com.condation.cms.auth.services;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -32,7 +33,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 
 /**
@@ -53,7 +56,7 @@ public class AuthService {
 			return Optional.empty();
 		}
 		try (InputStream in = Files.newInputStream(authFile)) {
-			return Optional.ofNullable(new Yaml().loadAs(in, Auth.class));
+			return Optional.ofNullable(new Yaml(new Constructor(Auth.class, new LoaderOptions())).loadAs(in, Auth.class));
 		} catch (Exception e) {
 			log.error("error loading auth file", e);
 			return Optional.empty();
@@ -69,7 +72,11 @@ public class AuthService {
 		private List<AuthPath> paths;
 		
 		public Optional<AuthPath> find (final String path) {
-			return paths.stream().filter(secPath -> path.startsWith(secPath.path)).findFirst();
+			return paths.stream().filter(secPath -> {
+				Path p = Paths.get(path).normalize();
+				Path secP = Paths.get(secPath.path).normalize();
+				return p.startsWith(secP);
+			}).findFirst();
 		}
 	}
 	
