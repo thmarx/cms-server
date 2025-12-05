@@ -51,7 +51,7 @@ import com.condation.cms.api.feature.features.ThemeFeature;
 import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.theme.Theme;
-import com.condation.cms.api.utils.SiteUtil;
+import com.condation.cms.core.utils.SiteUtil;
 import com.condation.cms.core.configuration.ConfigManagement;
 import com.condation.cms.extensions.GlobalExtensions;
 import com.condation.cms.extensions.hooks.GlobalHooks;
@@ -97,6 +97,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class VHost {
 
+	private final String siteId;
 	private final Path hostBase;
 
 	@Getter
@@ -107,8 +108,20 @@ public class VHost {
 
 	private final Configuration configuration = new Configuration();
 
-	public VHost(final Path hostBase) {
+	public VHost(final String siteId, final Path hostBase, Path modulesPath, Injector globalInjector) {
+		this.siteId = siteId;
 		this.hostBase = hostBase;
+		
+		this.injector = globalInjector.createChildInjector(new SiteGlobalModule(),
+				new SiteModule(siteId, hostBase, this.configuration),
+				new SiteModulesModule(modulesPath),
+				new SiteHandlerModule(),
+				new ThemeModule());
+		
+		// start configuration managment
+		injector.getInstance(ConfigManagement.class).initConfiguration(configuration);
+		// run site initializer
+		injector.getInstance(SiteConfigInitializer.class).init();
 	}
 
 	public String id() {
@@ -154,18 +167,8 @@ public class VHost {
 		return injector.getInstance(SiteProperties.class).hostnames();
 	}
 
-	public void init(Path modulesPath, Injector globalInjector) throws IOException {
-		this.injector = globalInjector.createChildInjector(new SiteGlobalModule(),
-				new SiteModule(hostBase, this.configuration),
-				new SiteModulesModule(modulesPath),
-				new SiteHandlerModule(),
-				new ThemeModule());
-
-		// start configuration managment
-		injector.getInstance(ConfigManagement.class).initConfiguration(configuration);
-		// run site initializer
-		injector.getInstance(SiteConfigInitializer.class).init();
-
+	public void init() throws IOException {
+		
 		var moduleManager = injector.getInstance(ModuleManager.class);
 		moduleManager.initModules();
 		List<String> activeModules = getActiveModules();

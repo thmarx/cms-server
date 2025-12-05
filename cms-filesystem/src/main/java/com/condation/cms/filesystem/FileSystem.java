@@ -34,6 +34,7 @@ import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.condation.cms.api.eventbus.events.TemplateChangedEvent;
 import com.condation.cms.api.exceptions.AccessNotAllowedException;
 import com.condation.cms.api.utils.PathUtil;
+import com.condation.cms.core.utils.MdcScope;
 import com.condation.cms.filesystem.metadata.AbstractMetaData;
 import com.condation.cms.filesystem.metadata.memory.MemoryMetaData;
 import com.condation.cms.filesystem.metadata.persistent.PersistentMetaData;
@@ -66,6 +67,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
+	private final String siteId;
 	private final Path hostBaseDirectory;
 	private final EventBus eventBus;
 	final Function<Path, Map<String, Object>> contentParser;
@@ -302,20 +304,21 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 		this.contentBase = resolve("content/");
 		var templateBase = resolve("templates/");
 		log.debug("init filewatcher");
-		this.fileWatcher = new MultiRootRecursiveWatcher(List.of(contentBase, templateBase));
+		this.fileWatcher = new MultiRootRecursiveWatcher(siteId, List.of(contentBase, templateBase));
 		fileWatcher.getPublisher(contentBase).subscribe(new MultiRootRecursiveWatcher.AbstractFileEventSubscriber() {
 			@Override
 			public void onNext(FileEvent item) {
-				try {
-
-					if (item.file().isDirectory() || FileEvent.Type.DELETED.equals(item.type())) {
-						swapMetaData();
-					} else {
-						addOrUpdateMetaData(item.file().toPath());
+				MdcScope.forSite(siteId).run(() -> {
+					try {
+						if (item.file().isDirectory() || FileEvent.Type.DELETED.equals(item.type())) {
+							swapMetaData();
+						} else {
+							addOrUpdateMetaData(item.file().toPath());
+						}
+					} catch (IOException ex) {
+						log.error("", ex);
 					}
-				} catch (IOException ex) {
-					log.error("", ex);
-				}
+				});
 
 				this.subscription.request(1);
 			}
@@ -323,12 +326,15 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 		fileWatcher.getPublisher(templateBase).subscribe(new MultiRootRecursiveWatcher.AbstractFileEventSubscriber() {
 			@Override
 			public void onNext(FileEvent item) {
-				try {
-					eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
-					eventBus.publish(new InvalidateTemplateCacheEvent());
-				} catch (Exception e) {
-					log.error("", e);
-				}
+				MdcScope.forSite(siteId).run(() -> {
+					try {
+						eventBus.publish(new TemplateChangedEvent(item.file().toPath()));
+						eventBus.publish(new InvalidateTemplateCacheEvent());
+					} catch (Exception e) {
+						log.error("", e);
+					}
+				});
+
 				this.subscription.request(1);
 			}
 		});

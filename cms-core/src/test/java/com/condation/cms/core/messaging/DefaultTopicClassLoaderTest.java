@@ -50,9 +50,9 @@ class DefaultTopicClassLoaderTest {
 
         // DefaultTopic-Instanz in loader1 erstellen
         Class<?> topicClass = loader1.loadClass("com.condation.cms.core.messaging.DefaultTopic");
-        Constructor<?> constructor = topicClass.getDeclaredConstructor(String.class);
+        Constructor<?> constructor = topicClass.getDeclaredConstructor(String.class, String.class);
         constructor.setAccessible(true);
-        topic = (DefaultTopic) constructor.newInstance("TestTopic");
+        topic = (DefaultTopic) constructor.newInstance("TestTopic", "test-site");
     }
 	
 	@AfterEach

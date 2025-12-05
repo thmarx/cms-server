@@ -1,4 +1,3 @@
-
 package com.condation.cms.filesystem;
 
 /*-
@@ -23,6 +22,7 @@ package com.condation.cms.filesystem;
  * #L%
  */
 import com.condation.cms.api.utils.PathUtil;
+import com.condation.cms.core.utils.MdcScope;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
@@ -57,7 +57,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * The recursive file watcher monitors a folder (and its sub-folders).
  */
-
 @Slf4j
 public class MultiRootRecursiveWatcher {
 
@@ -76,7 +75,10 @@ public class MultiRootRecursiveWatcher {
 
 	}
 
-	public MultiRootRecursiveWatcher(List<Path> roots) {
+	private final String siteId;
+
+	public MultiRootRecursiveWatcher(String siteId, List<Path> roots) {
+		this.siteId = siteId;
 		this.running = new AtomicBoolean(false);
 
 		this.watchService = null;
@@ -114,50 +116,54 @@ public class MultiRootRecursiveWatcher {
 
 		watchThread = Thread.ofVirtual().name("Watcher").start(() -> {
 			running.set(true);
-			walkTreeAndSetWatches();
+			
+			
+			MdcScope.forSite(siteId).run(() -> {
+				walkTreeAndSetWatches();
 
-			while (running.get()) {
-				try {
-					WatchKey watchKey = watchService.take();
-					List<WatchEvent<?>> events = watchKey.pollEvents();
+				while (running.get()) {
+					try {
+						WatchKey watchKey = watchService.take();
+						List<WatchEvent<?>> events = watchKey.pollEvents();
 
-					events.forEach((event) -> {
-						Path path = (Path) watchKey.watchable();
-						File file = path.resolve((Path) event.context()).toFile();
+						events.forEach((event) -> {
+							Path path = (Path) watchKey.watchable();
+							File file = path.resolve((Path) event.context()).toFile();
 
-						final FileEvent fileEvent;
-						if (event.kind().equals(ENTRY_CREATE)) {
-							fileEvent = new FileEvent(file, FileEvent.Type.CREATED);
-						} else if (event.kind().equals(ENTRY_DELETE)) {
-							fileEvent = new FileEvent(file, FileEvent.Type.DELETED);
-						} else if (event.kind().equals(ENTRY_MODIFY)) {
-							fileEvent = new FileEvent(file, FileEvent.Type.MODIFIED);
-						} else if (event.kind() == OVERFLOW) {
-							log.warn("Overflow occurred, resyncing watches");
-							walkTreeAndSetWatches();
-							fileEvent = null;
-						} else {
-							fileEvent = null;
-						}
+							final FileEvent fileEvent;
+							if (event.kind().equals(ENTRY_CREATE)) {
+								fileEvent = new FileEvent(file, FileEvent.Type.CREATED);
+							} else if (event.kind().equals(ENTRY_DELETE)) {
+								fileEvent = new FileEvent(file, FileEvent.Type.DELETED);
+							} else if (event.kind().equals(ENTRY_MODIFY)) {
+								fileEvent = new FileEvent(file, FileEvent.Type.MODIFIED);
+							} else if (event.kind() == OVERFLOW) {
+								log.warn("Overflow occurred, resyncing watches");
+								walkTreeAndSetWatches();
+								fileEvent = null;
+							} else {
+								fileEvent = null;
+							}
 
-						if (fileEvent != null) {
-							roots.values().forEach((root) -> {
-								if (PathUtil.isChild(root.path, file.toPath())) {
-									root.publisher.submit(fileEvent);
-								}
-							});
-						}
-					});
+							if (fileEvent != null) {
+								roots.values().forEach((root) -> {
+									if (PathUtil.isChild(root.path, file.toPath())) {
+										root.publisher.submit(fileEvent);
+									}
+								});
+							}
+						});
 
-					// fire events
-					watchKey.reset();
-					resetWaitSettlementTimer();
-				} catch (InterruptedException | ClosedWatchServiceException e) {
-					running.set(false);
-				} catch (Exception e) {
-					log.error("an error occured", e);
+						// fire events
+						watchKey.reset();
+						resetWaitSettlementTimer();
+					} catch (InterruptedException | ClosedWatchServiceException e) {
+						running.set(false);
+					} catch (Exception e) {
+						log.error("an error occured", e);
+					}
 				}
-			}
+			});
 		});
 	}
 
@@ -168,7 +174,7 @@ public class MultiRootRecursiveWatcher {
 				watchService.close();
 				running.set(false);
 				watchThread.interrupt();
-				
+
 				scheduler.shutdown();
 			} catch (IOException e) {
 				// Don't care
@@ -184,9 +190,11 @@ public class MultiRootRecursiveWatcher {
 	}
 
 	private void updateWatches() {
-		log.debug("File system actions settled. Updating watches...");
-		walkTreeAndSetWatches();
-		unregisterStaleWatches();
+		MdcScope.forSite(siteId).run(() -> {
+			log.debug("File system actions settled. Updating watches...");
+			walkTreeAndSetWatches();
+			unregisterStaleWatches();
+		});
 	}
 
 	private synchronized void walkTreeAndSetWatches() {

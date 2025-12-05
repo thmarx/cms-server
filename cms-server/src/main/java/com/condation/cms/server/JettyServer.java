@@ -37,8 +37,9 @@ import com.condation.cms.api.module.ServerModuleContext;
 import com.condation.cms.api.site.Site;
 import com.condation.cms.api.site.SiteService;
 import com.condation.cms.api.utils.ServerUtil;
-import com.condation.cms.api.utils.SiteUtil;
+import com.condation.cms.core.utils.SiteUtil;
 import com.condation.cms.core.eventbus.DefaultEventBus;
+import com.condation.cms.core.utils.MdcScope;
 import com.condation.modules.api.ModuleManager;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -91,11 +92,13 @@ public class JettyServer implements AutoCloseable {
 		vhosts.stream()
 				.filter(host -> host.id().equals(vhost))
 				.forEach(host -> {
-					try {
-						host.reload();
-					} catch (Exception e) {
-						log.error("", e);
-					}
+					MdcScope.forSite(host.id()).run(() -> {
+						try {
+							host.reload();
+						} catch (Exception e) {
+							log.error("", e);
+						}
+					});
 				});
 	}
 
@@ -104,21 +107,28 @@ public class JettyServer implements AutoCloseable {
 		var properties = globalInjector.getInstance(ServerProperties.class);
 
 		SiteUtil.sitesStream().forEach((site) -> {
-			try {
-				var host = new VHost(site.basePath());
-				host.init(ServerUtil.getPath(Constants.Folders.MODULES), globalInjector);
-				vhosts.add(host);
-
-				globalInjector.getInstance(SiteService.class).add(new Site(host.getInjector()));
-			} catch (IOException ex) {
-				log.error(null, ex);
-			}
+			MdcScope.forSite(site.id()).run(() -> {
+				try {
+					var host = new VHost(site.id(), site.basePath(), ServerUtil.getPath(Constants.Folders.MODULES), globalInjector);
+					host.init();
+					vhosts.add(host);
+					globalInjector.getInstance(SiteService.class).add(new Site(host.getInjector()));
+				} catch (IOException ex) {
+					log.error(null, ex);
+				}
+			});
 		});
 
 		vhosts.forEach(host -> {
-			log.info("add virtual host : " + host.hostnames());
-			var httpHandler = host.buildHttpHandler();
-			handlerCollection.addHandler(httpHandler);
+			MdcScope.forSite(host.id()).run(() -> {
+				try {
+					log.info("add virtual host : " + host.hostnames());
+					var httpHandler = host.buildHttpHandler();
+					handlerCollection.addHandler(httpHandler);
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			});
 		});
 
 		serverEventBus.register(ServerShutdownInitiated.class, (event) -> {
@@ -134,10 +144,16 @@ public class JettyServer implements AutoCloseable {
 
 			var moduleManager = globalInjector.getInstance(Key.get(ModuleManager.class, Names.named("server")));
 			moduleManager.extensions(ServerLifecycleExtensionPoint.class).forEach(ServerLifecycleExtensionPoint::stopped);
-			
+
 			vhosts.forEach(host -> {
-				log.debug("shutting down vhost : " + host.hostnames());
-				host.shutdown();
+				MdcScope.forSite(host.id()).run(() -> {
+					try {
+						log.debug("shutting down vhost : " + host.hostnames());
+						host.shutdown();
+					} catch (Exception e) {
+						log.error("", e);
+					}
+				});
 			});
 //			scheduledExecutorService.shutdownNow();
 
@@ -202,7 +218,7 @@ public class JettyServer implements AutoCloseable {
 				host.getInjector().getInstance(EventBus.class).publish(new HostReadyEvent(host.id()));
 				host.getInjector().getInstance(EventBus.class).publish(new ServerReadyEvent());
 			});
-			
+
 			initServerModules();
 
 		} catch (Exception ex) {
@@ -226,13 +242,13 @@ public class JettyServer implements AutoCloseable {
 					}
 				});
 		var context = globalInjector.getInstance(ServerModuleContext.class);
-		
+
 		var hookSystem = globalInjector.getInstance(Key.get(HookSystem.class, Names.named("server")));
 		moduleManager.extensions(ServerHookSystemRegisterExtensionPoint.class).forEach(extensionPoint -> {
 			extensionPoint.register(hookSystem);
 			hookSystem.register(extensionPoint);
 		});
-		
+
 		moduleManager.extensions(ServerLifecycleExtensionPoint.class).forEach(ServerLifecycleExtensionPoint::started);
 	}
 

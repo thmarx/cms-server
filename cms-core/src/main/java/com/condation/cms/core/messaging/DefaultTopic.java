@@ -23,9 +23,9 @@ package com.condation.cms.core.messaging;
  */
 import com.condation.cms.api.messaging.Topic;
 import com.condation.cms.api.messaging.Listener;
+import com.condation.cms.core.utils.MdcScope;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -37,7 +37,8 @@ public final class DefaultTopic implements Topic {
 
 	private final List<ListenerHolder> listeners;
 
-	String name;
+	final String name;
+	final String siteId;
 
 	record ListenerHolder<T>(Listener<T> listener, Class<T> dataType) {
 
@@ -45,8 +46,9 @@ public final class DefaultTopic implements Topic {
 
 	;
 	
-	protected DefaultTopic(String name) {
+	public DefaultTopic(String name, String siteId) {
 		this.name = name;
+		this.siteId = siteId;
 		listeners = new ArrayList<>();
 	}
 
@@ -63,7 +65,9 @@ public final class DefaultTopic implements Topic {
 				sendMessage(data, listener);
 			} else {
 				Thread.startVirtualThread(() -> {
-					sendMessage(data, listener);
+					MdcScope.forSite(siteId).run(() -> {
+						sendMessage(data, listener);
+					});
 				});
 			}
 		});
