@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import { EventBus } from "./event-bus.js";
+import { EventBus } from "@cms/modules/event-bus.js";
 //PreviewHistory.init();
 // close overlay on preview loaded
 EventBus.on("preview:loaded", (data) => {
@@ -63,6 +63,8 @@ const loadPreview = (url) => {
         if (!parsedUrl.searchParams.has("preview")) {
             parsedUrl.searchParams.append("preview", "manager");
         }
+        parsedUrl.searchParams.delete("preview-token");
+        //parsedUrl.searchParams.append("preview-token", window.manager.previewToken);
         parsedUrl.searchParams.delete("nocache");
         parsedUrl.searchParams.append("nocache", Date.now());
         // Setze zusammengesetzten Pfad + Query zurück in das iframe

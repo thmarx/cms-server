@@ -19,9 +19,10 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import frameMessenger from '../frameMessenger';
-import { getPreviewFrame, getPreviewUrl } from '../preview.utils';
-import { getContentNode } from '../rpc/rpc-content';
+import { executeScriptAction } from '@cms/js/manager-globals.js';
+import frameMessenger from '@cms/modules/frameMessenger.js';
+import { getPreviewFrame, getPreviewUrl } from '@cms/modules/preview.utils.js';
+import { getContentNode } from '@cms/modules/rpc/rpc-content.js';
 const executeImageForm = (payload) => {
     const cmd = {
         "module": window.manager.baseUrl + "/actions/media/edit-media-form",

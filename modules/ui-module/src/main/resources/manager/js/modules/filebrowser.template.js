@@ -19,7 +19,8 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import Handlebars from '../libs/handlebars.min.js';
+import Handlebars from 'https://cdn.jsdelivr.net/npm/handlebars@4.7.8/+esm';
+import { patchPathWithContext } from "@cms/js/manager-globals";
 Handlebars.registerHelper("patchPathWithContext", patchPathWithContext);
 Handlebars.registerHelper('concat', function (...args) {
     args.pop();

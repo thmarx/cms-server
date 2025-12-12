@@ -20,7 +20,7 @@
  * #L%
  */
 
-import { executeRemoteCall } from './rpc.js'
+import { executeRemoteCall } from '@cms/modules/rpc/rpc.js'
 
 const getSectionTemplates = async (options : any) => {
 	var data = {
@@ -49,6 +49,14 @@ const getListItemTypes = async (options : any) => {
 const getMediaForm = async (options : any) => {
 	var data = {
 		method: "manager.media.form",
+		parameters: options
+	}
+	return await executeRemoteCall(data);
+};
+
+const createCSRFToken = async (options : any) => {
+	var data = {
+		method: "manager.token.createCSRF",
 		parameters: options
 	}
 	return await executeRemoteCall(data);
@@ -94,5 +102,6 @@ export {
 	getMediaForm, 
 	getTagNames, 
 	getMediaFormats,
-	getListItemTypes
+	getListItemTypes,
+	createCSRFToken
 };

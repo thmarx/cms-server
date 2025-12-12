@@ -27,6 +27,7 @@ import com.condation.cms.api.ui.annotations.MenuEntry;
 import com.condation.cms.api.ui.annotations.ShortCut;
 import com.condation.cms.api.ui.extensions.UIActionsExtensionPoint;
 import com.condation.cms.api.ui.extensions.UIScriptActionSourceExtension;
+import com.condation.cms.api.utils.ClasspathResourceLoader;
 import com.condation.modules.api.annotation.Extension;
 import com.condation.modules.api.annotation.Extensions;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class ExampleUiScriptActionSourceExtension extends AbstractExtensionPoint
 
 	@Override
 	public Map<String, String> getActionSources() {
-		return Map.of("example/source", "// this is an example script source");
+		return Map.of("example/source", ClasspathResourceLoader.loadRelative(ExampleUiScriptActionSourceExtension.class, "example-action.js"));
 	}
 
 	@MenuEntry(
