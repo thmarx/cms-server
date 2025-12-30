@@ -66,7 +66,7 @@ public class TaxonomyConfiguration extends AbstractConfiguration implements ICon
 		this.eventBus = builder.eventBus;
 		this.id = builder.id;
 		this.hostBase = builder.hostBase;
-		reloadStrategy.register(this);
+		reloadStrategy.register(this, sources);
 		
 		reload();
 	}

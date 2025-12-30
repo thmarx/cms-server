@@ -22,6 +22,7 @@ package com.condation.cms.core.configuration;
  * #L%
  */
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,10 @@ import java.util.Map;
  * @author t.marx
  */
 public interface ConfigSource {
+
+	default Path getConfigFile() {
+		return null;
+	}
 
 	default boolean reload () {
 		return false;

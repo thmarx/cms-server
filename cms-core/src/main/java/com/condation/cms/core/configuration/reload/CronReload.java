@@ -23,8 +23,11 @@ package com.condation.cms.core.configuration.reload;
  */
 
 import com.condation.cms.api.scheduler.CronJobScheduler;
+import com.condation.cms.api.scheduler.CronJobScheduler;
+import com.condation.cms.core.configuration.ConfigSource;
 import com.condation.cms.core.configuration.IConfiguration;
 import com.condation.cms.core.configuration.ReloadStrategy;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +43,7 @@ public class CronReload implements ReloadStrategy {
 	private final CronJobScheduler scheduler;
 	
 	@Override
-	public void register(IConfiguration configuration) {
+	public void register(IConfiguration configuration, List<ConfigSource> sources) {
 		scheduler.schedule(cronExpression, configuration.id(), (context) -> {
 			log.trace("reload of config %s triggered", configuration.id());
 			configuration.reload();

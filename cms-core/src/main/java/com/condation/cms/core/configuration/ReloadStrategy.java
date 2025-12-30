@@ -26,7 +26,14 @@ package com.condation.cms.core.configuration;
  *
  * @author t.marx
  */
+import com.condation.cms.core.configuration.configs.SimpleConfiguration;
+import java.util.List;
+
+/**
+ *
+ * @author t.marx
+ */
 public interface ReloadStrategy {
 	
-	void register (IConfiguration configuration);
+	void register (IConfiguration configuration, List<ConfigSource> sources);
 }

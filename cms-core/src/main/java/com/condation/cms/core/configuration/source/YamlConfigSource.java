@@ -119,4 +119,9 @@ public class YamlConfigSource implements ConfigSource {
 	public boolean exists() {
 		return Files.exists(configFile);
 	}
+
+	@Override
+	public Path getConfigFile() {
+		return configFile;
+	}
 }

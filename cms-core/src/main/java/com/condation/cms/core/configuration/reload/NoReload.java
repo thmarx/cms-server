@@ -22,8 +22,10 @@ package com.condation.cms.core.configuration.reload;
  * #L%
  */
 
+import com.condation.cms.core.configuration.ConfigSource;
 import com.condation.cms.core.configuration.IConfiguration;
 import com.condation.cms.core.configuration.ReloadStrategy;
+import java.util.List;
 
 /**
  *
@@ -32,6 +34,8 @@ import com.condation.cms.core.configuration.ReloadStrategy;
 public class NoReload implements ReloadStrategy {
 
 	@Override
-	public void register(IConfiguration configuration) {
-	}	
+	public void register(IConfiguration configuration, List<ConfigSource> sources) {
+		// do nothing
+	}
+
 }

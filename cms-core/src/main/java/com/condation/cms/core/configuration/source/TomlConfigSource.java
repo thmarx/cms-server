@@ -30,6 +30,9 @@ import io.github.wasabithumb.jtoml.JToml;
 import io.github.wasabithumb.jtoml.document.TomlDocument;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,26 +50,26 @@ public class TomlConfigSource implements ConfigSource {
 	
 	private static JToml JTOML = JToml.jToml();
 	
-	public static ConfigSource build(Path tomlfile) throws IOException {
+	public static ConfigSource build(Path configFile) throws IOException {
 		
 		TomlDocument document = null;
-		if (Files.exists(tomlfile)) {
-			document = JTOML.read(tomlfile);
+		if (Files.exists(configFile)) {
+			document = JTOML.read(configFile);
 		} else {
 			document = JTOML.readFromString("");
 		}
 		
-		return new TomlConfigSource(tomlfile, document);
+		return new TomlConfigSource(configFile, document);
 	}
 
 	private Map<String, Object> result;
 
-	private final Path tomlFile;
+	private final Path configFile;
 
 	private long lastModified = 0;
 
-	private TomlConfigSource(Path tomlFile, TomlDocument document) {
-		this.tomlFile = tomlFile;
+	private TomlConfigSource(Path configFile, TomlDocument document) {
+		this.configFile = configFile;
 		try {
 			
 			var json = JTOML.fromToml(JsonObject.class, document);
@@ -74,8 +77,8 @@ public class TomlConfigSource implements ConfigSource {
 					GSONProvider.GSON.toJson(json), 
 					HashMap.class);
 			
-			if (Files.exists(tomlFile)) {
-				this.lastModified = Files.getLastModifiedTime(tomlFile).toMillis();
+			if (Files.exists(configFile)) {
+				this.lastModified = Files.getLastModifiedTime(configFile).toMillis();
 			}
 		} catch (IOException ex) {
 			log.error("", ex);
@@ -84,17 +87,17 @@ public class TomlConfigSource implements ConfigSource {
 
 	@Override
 	public boolean reload() {
-		if (!Files.exists(tomlFile)) {
+		if (!Files.exists(configFile)) {
 			return false;
 		}
 		try {
 
-			var modified = Files.getLastModifiedTime(tomlFile).toMillis();
+			var modified = Files.getLastModifiedTime(configFile).toMillis();
 			if (modified <= lastModified) {
 				return false;
 			}
 			lastModified = modified;
-			var document = JTOML.read(tomlFile);
+			var document = JTOML.read(configFile);
 			
 			var json = JTOML.fromToml(JsonObject.class, document);
 			this.result = GSONProvider.GSON.fromJson(
@@ -126,6 +129,11 @@ public class TomlConfigSource implements ConfigSource {
 
 	@Override
 	public boolean exists() {
-		return Files.exists(tomlFile);
+		return Files.exists(configFile);
+	}
+
+	@Override
+	public Path getConfigFile() {
+		return configFile;
 	}
 }

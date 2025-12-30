@@ -54,7 +54,7 @@ public class SimpleConfiguration extends AbstractConfiguration implements IConfi
 		this.reloadStrategy = builder.reloadStrategy;
 		this.eventBus = builder.eventBus;
 		this.id = builder.id;
-		reloadStrategy.register(this);
+		reloadStrategy.register(this, sources);
 	}
 
 	@Override
