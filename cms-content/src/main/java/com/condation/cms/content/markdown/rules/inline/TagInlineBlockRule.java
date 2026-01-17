@@ -23,6 +23,7 @@ package com.condation.cms.content.markdown.rules.inline;
  */
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
 import com.condation.cms.content.tags.TagMap;
 import com.condation.cms.content.tags.TagParser;
 import java.util.List;
@@ -36,7 +37,7 @@ public class TagInlineBlockRule implements InlineElementRule {
 	private static final TagParser tagParser = new TagParser(null);
 	
 	@Override
-	public InlineBlock next(final String md) {
+	public InlineBlock next(InlineElementTokenizer tokenizer, final String md) {
 
 		List<TagParser.TagInfo> tags = tagParser.findTags(md, new TagMap() {
 			@Override

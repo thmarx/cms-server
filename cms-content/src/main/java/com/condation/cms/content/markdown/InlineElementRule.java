@@ -29,5 +29,5 @@ package com.condation.cms.content.markdown;
  */
 public interface InlineElementRule {
 	
-	InlineBlock next (final String md);
+	InlineBlock next (final InlineElementTokenizer tokenizer, final String md);
 }

@@ -25,6 +25,8 @@ package com.condation.cms.content.markdown.rules.inline;
 
 
 import com.condation.cms.content.markdown.InlineBlock;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -37,13 +39,15 @@ import org.junit.jupiter.api.Test;
 public class TagInlineBlockRuleTest {
 	
 	private TagInlineBlockRule sut = new TagInlineBlockRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Test
 	void long_form() {
 
 		String md = "[[link url=\"https://google.de/\"]]Google[[/link]]";
 
-		InlineBlock next = sut.next(md);
+		InlineBlock next = sut.next(tokenizer, md);
 
 		Assertions.assertThat(next)
 				.isNotNull()
@@ -65,7 +69,7 @@ public class TagInlineBlockRuleTest {
 
 		String md = "[[link url=\"https://google.de/\" /]]";
 
-		InlineBlock next = sut.next(md);
+		InlineBlock next = sut.next(tokenizer, md);
 
 		Assertions.assertThat(next)
 				.isNotNull()

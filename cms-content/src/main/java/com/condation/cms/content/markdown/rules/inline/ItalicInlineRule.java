@@ -25,7 +25,10 @@ package com.condation.cms.content.markdown.rules.inline;
 
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import java.io.IOException;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -33,22 +36,28 @@ import java.util.regex.Pattern;
  */
 public class ItalicInlineRule implements InlineElementRule {
 	
-	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{1}|\\*{1})(?<content>.*?)(\\k<selector>)");
+	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{1}|\\*{1})(?<content>.*?)(?<!\\\\)(\\k<selector>)");
 
-	@Override
-	public InlineBlock next(String md) {
-		var matcher = PATTERN.matcher(md);
-		if (matcher.find()) {
-			return new ItalicInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));
-		}
-		return null;
-	}
-	
-	public static record ItalicInlineBlock(int start, int end, String content) implements InlineBlock {
-		@Override
-		public String render() {
-			return "<em>%s</em>".formatted(content);
-		}
-	}
+    @Override
+    public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
+        var matcher = PATTERN.matcher(md);
+        if (matcher.find()) {
+            return new ItalicInlineBlock(tokenizer, matcher.start(), matcher.end(), matcher.group("content"));
+        }
+        return null;
+    }
+
+    public static record ItalicInlineBlock(InlineElementTokenizer tokenizer, int start, int end, String content) implements InlineBlock {
+
+        @Override
+        public String render() {
+            try {
+                var renderedContent = tokenizer.tokenize(content).stream().map(b -> b.render()).collect(Collectors.joining());
+                return "<em>%s</em>".formatted(renderedContent);
+            } catch (IOException ex) {
+                return "<em>%s</em>".formatted(content);
+            }
+        }
+    }
 	
 }

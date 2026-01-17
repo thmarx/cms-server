@@ -24,6 +24,8 @@ package com.condation.cms.content.markdown.rules.inline;
 
 
 import com.condation.cms.content.markdown.rules.inline.StrikethroughInlineRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,10 +36,12 @@ import org.junit.jupiter.api.Test;
 public class StrikethroughInlineRuleTest {
 	
 	private StrikethroughInlineRule sut = new StrikethroughInlineRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.next("this is ~~not~~ correct").render()).isEqualTo("<del>not</del>");
+		Assertions.assertThat(sut.next(tokenizer, "this is ~~not~~ correct").render()).isEqualTo("<del>not</del>");
 	}
 	
 }

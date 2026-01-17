@@ -24,6 +24,8 @@ package com.condation.cms.content.markdown.rules.inline;
 
 
 import com.condation.cms.content.markdown.rules.inline.SubscriptInlineRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,10 +36,12 @@ import org.junit.jupiter.api.Test;
 public class SubscriptInlineRuleTest {
 	
 	private SubscriptInlineRule sut = new SubscriptInlineRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.next("H=2=O").render()).isEqualTo("<sub>2</sub>");
+		Assertions.assertThat(sut.next(tokenizer, "H=2=O").render()).isEqualTo("<sub>2</sub>");
 	}
 	
 }

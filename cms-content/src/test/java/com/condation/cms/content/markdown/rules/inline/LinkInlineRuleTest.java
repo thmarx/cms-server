@@ -26,6 +26,8 @@ import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.content.markdown.InlineBlock;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +43,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class LinkInlineRuleTest {
 
 	LinkInlineRule SUT = new LinkInlineRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Mock
 	SiteProperties siteProperties;
@@ -48,7 +52,7 @@ public class LinkInlineRuleTest {
 	@Test
 	public void test_link() {
 
-		var result = SUT.next("[google](https://google.de)");
+		var result = SUT.next(tokenizer, "[google](https://google.de)");
 
 		Assertions.assertThat(result.render())
 				.isEqualTo("<a href=\"https://google.de\" id=\"google\">google</a>");
@@ -57,7 +61,7 @@ public class LinkInlineRuleTest {
 	@Test
 	public void test_link_title() {
 
-		var result = SUT.next("[google](https://google.de \"The Google\")");
+		var result = SUT.next(tokenizer, "[google](https://google.de \"The Google\")");
 
 		Assertions.assertThat(result.render())
 				.isEqualTo("<a href=\"https://google.de\" id=\"google\" title=\"The Google\">google</a>");
@@ -66,7 +70,7 @@ public class LinkInlineRuleTest {
 	@Test
 	public void test_relativ_linking() {
 
-		var result = SUT.next("[relative link](../sibling/test)");
+		var result = SUT.next(tokenizer, "[relative link](../sibling/test)");
 
 		Assertions.assertThat(result.render())
 				.isEqualTo("<a href=\"../sibling/test\" id=\"relative-link\">relative link</a>");
@@ -83,7 +87,7 @@ public class LinkInlineRuleTest {
 		InlineBlock result = null;
 		try {
 			result = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, requestContext).call(() -> {
-				return SUT.next("[relative link](../sibling/test)");
+				return SUT.next(tokenizer, "[relative link](../sibling/test)");
 			});
 		} catch (Exception ex) {
 			System.getLogger(LinkInlineRuleTest.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);

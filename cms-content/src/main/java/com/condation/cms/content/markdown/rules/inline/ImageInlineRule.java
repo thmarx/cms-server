@@ -27,6 +27,7 @@ import com.condation.cms.api.feature.features.SiteMediaServiceFeature;
 import com.condation.cms.api.utils.ImageUtil;
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
 import com.google.common.base.Strings;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,7 @@ public class ImageInlineRule implements InlineElementRule {
 	public static final Pattern PATTERN = Pattern.compile("!\\[(?<alt>[^\\]]*)\\]\\((?<url>[^\\s)]+)(?: \"(?<title>[^\"]*)\")?\\)");
 
 	@Override
-	public InlineBlock next(String md) {
+	public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
 		Matcher matcher = PATTERN.matcher(md);
 		if (matcher.find()) {
 			return new ImageInlineRule.ImageInlineBlock(matcher.start(), matcher.end(), 

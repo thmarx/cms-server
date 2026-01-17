@@ -25,31 +25,39 @@ package com.condation.cms.content.markdown.rules.inline;
 
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import java.io.IOException;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author t.marx
  */
 public class StrongInlineRule implements InlineElementRule {
-	
-	private static final Pattern PATTERN = Pattern.compile("(?<selector>_{2}|\\*{2})(?<content>.*?)(\\k<selector>)");
 
-	@Override
-	public InlineBlock next(String md) {
-		var matcher = PATTERN.matcher(md);
-		if (matcher.find()) {
-			return new StrongInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));
-		}
-		return null;
-	}
-	
-	public static record StrongInlineBlock(int start, int end, String content) implements InlineBlock {
+    private static final Pattern PATTERN = Pattern.compile("(?<selector>_{2}|\\*{2})(?<content>.*?)(?<!\\\\)(\\k<selector>)");
 
-		@Override
-		public String render() {
-			return "<strong>%s</strong>".formatted(content);
-		}
-	}
-	
+    @Override
+    public InlineBlock next(final InlineElementTokenizer tokenizer, final String md) {
+        var matcher = PATTERN.matcher(md);
+        if (matcher.find()) {
+            return new StrongInlineBlock(tokenizer, matcher.start(), matcher.end(), matcher.group("content"));
+        }
+        return null;
+    }
+
+    public static record StrongInlineBlock(InlineElementTokenizer tokenizer, int start, int end, String content) implements InlineBlock {
+
+        @Override
+        public String render() {
+            try {
+                var renderedContent = tokenizer.tokenize(content).stream().map(b -> b.render()).collect(Collectors.joining());
+                return "<strong>%s</strong>".formatted(renderedContent);
+            } catch (IOException ex) {
+                return "<strong>%s</strong>".formatted(content);
+            }
+        }
+    }
+
 }

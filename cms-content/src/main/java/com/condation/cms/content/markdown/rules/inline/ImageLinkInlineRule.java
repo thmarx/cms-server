@@ -28,6 +28,7 @@ import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.utils.HTTPUtil;
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
 import java.util.regex.Pattern;
 
 /**
@@ -42,7 +43,7 @@ public class ImageLinkInlineRule implements InlineElementRule {
 	static final Pattern PATTERN = Pattern.compile("\\[(" + IMAGE_PATTERN + ")\\]\\((?<url>.*?)\\)");
 
 	@Override
-	public InlineBlock next(String md) {
+	public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
 		var matcher = PATTERN.matcher(md);
 
 		if (matcher.find()) {

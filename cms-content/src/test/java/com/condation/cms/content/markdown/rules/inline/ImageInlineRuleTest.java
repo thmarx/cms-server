@@ -23,6 +23,8 @@ package com.condation.cms.content.markdown.rules.inline;
  */
 
 
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,17 +36,19 @@ import org.junit.jupiter.api.Test;
 public class ImageInlineRuleTest {
 	
 	ImageInlineRule SUT = new ImageInlineRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Test
 	public void test_image_rule() {
-		var result = SUT.next("![TestBild!](/assets/images/test.jpg)");
+		var result = SUT.next(tokenizer, "![TestBild!](/assets/images/test.jpg)");
 		Assertions.assertThat(result.render())
 				.isEqualToIgnoringWhitespace("<img src=\"/assets/images/test.jpg\" alt=\"TestBild!\" />");
 	}
 	
 	@Test
 	public void test_image_rule_title() {
-		var result = SUT.next("![TestBild!](/assets/images/test.jpg \"Test Bild\")");
+		var result = SUT.next(tokenizer, "![TestBild!](/assets/images/test.jpg \"Test Bild\")");
 		Assertions.assertThat(result.render())
 				.isEqualToIgnoringWhitespace("<img src=\"/assets/images/test.jpg\" alt=\"TestBild!\" title=\"Test Bild\" />");
 	}
