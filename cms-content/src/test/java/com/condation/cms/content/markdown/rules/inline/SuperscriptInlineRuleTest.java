@@ -24,6 +24,8 @@ package com.condation.cms.content.markdown.rules.inline;
 
 
 import com.condation.cms.content.markdown.rules.inline.SuperscriptInlineRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,10 +36,12 @@ import org.junit.jupiter.api.Test;
 public class SuperscriptInlineRuleTest {
 	
 	private SuperscriptInlineRule sut = new SuperscriptInlineRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.next("x^2^").render()).isEqualTo("<sup>2</sup>");
+		Assertions.assertThat(sut.next(tokenizer, "x^2^").render()).isEqualTo("<sup>2</sup>");
 	}
 	
 }

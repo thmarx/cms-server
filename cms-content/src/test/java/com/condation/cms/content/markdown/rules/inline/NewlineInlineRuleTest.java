@@ -23,6 +23,8 @@ package com.condation.cms.content.markdown.rules.inline;
  */
 
 
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -33,14 +35,16 @@ import org.junit.jupiter.api.Test;
 public class NewlineInlineRuleTest {
 	
 	NewlineInlineRule sut = new NewlineInlineRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Test
 	public void test_line_with_2_spaces() {
-		Assertions.assertThat(sut.next("  \n").render()).isEqualTo("<br/>");
+		Assertions.assertThat(sut.next(tokenizer, "  \n").render()).isEqualTo("<br/>");
 	}
 	
 	@Test
 	public void test_line_ending_with_2_spaces() {
-		Assertions.assertThat(sut.next("the line  \n").render()).isEqualTo("<br/>");
+		Assertions.assertThat(sut.next(tokenizer, "the line  \n").render()).isEqualTo("<br/>");
 	}
 }

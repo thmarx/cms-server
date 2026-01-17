@@ -23,7 +23,8 @@ package com.condation.cms.content.markdown.rules.inline;
  */
 
 
-import com.condation.cms.content.markdown.rules.inline.StrongInlineRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,17 +35,19 @@ import org.junit.jupiter.api.Test;
 public class StrongInlineRuleTest {
 	
 	private StrongInlineRule sut = new StrongInlineRule();
+	Options options = new Options();
+	InlineElementTokenizer tokenizer = new InlineElementTokenizer(options);
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.next("__bold__").render()).isEqualTo("<strong>bold</strong>");
-		Assertions.assertThat(sut.next("**bold**").render()).isEqualTo("<strong>bold</strong>");
+		Assertions.assertThat(sut.next(tokenizer, "__bold__").render()).isEqualTo("<strong>bold</strong>");
+		Assertions.assertThat(sut.next(tokenizer, "**bold**").render()).isEqualTo("<strong>bold</strong>");
 	}
 	
 	@Test
 	public void wrong_pattern() {
 		
-		Assertions.assertThat(sut.next("**bold__")).isNull();
+		Assertions.assertThat(sut.next(tokenizer, "**bold__")).isNull();
 	}
 	
 }

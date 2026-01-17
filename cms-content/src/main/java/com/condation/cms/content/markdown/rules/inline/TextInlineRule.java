@@ -25,6 +25,7 @@ package com.condation.cms.content.markdown.rules.inline;
 
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
 import com.google.common.base.Strings;
 
 /**
@@ -34,7 +35,7 @@ import com.google.common.base.Strings;
 public class TextInlineRule implements InlineElementRule {
 	
 	@Override
-	public InlineBlock next(String md) {
+	public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
 		if (Strings.isNullOrEmpty(md)) {
 			return null;
 		}

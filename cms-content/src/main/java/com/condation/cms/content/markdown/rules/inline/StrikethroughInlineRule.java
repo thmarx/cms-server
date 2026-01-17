@@ -24,7 +24,10 @@ package com.condation.cms.content.markdown.rules.inline;
 
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import java.io.IOException;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -32,23 +35,28 @@ import java.util.regex.Pattern;
  */
 public class StrikethroughInlineRule implements InlineElementRule {
 	
-	private static final Pattern PATTERN = Pattern.compile("(~{2})(?<content>.*?)(~{2})");
-	
-	@Override
-	public InlineBlock next(String md) {
-		var matcher = PATTERN.matcher(md);
-		if (matcher.find()) {
-			return new StrikethroughInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));
-		}
-		return null;
-	}
-	
-	public static record StrikethroughInlineBlock(int start, int end, String content) implements InlineBlock {
+    private static final Pattern PATTERN = Pattern.compile("(?<selector>~{2})(?<content>.*?)(?<!\\\\)(\\k<selector>)");
 
-		@Override
-		public String render() {
-			return "<del>%s</del>".formatted(content);
-		}
-	}
+    @Override
+    public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
+        var matcher = PATTERN.matcher(md);
+        if (matcher.find()) {
+            return new StrikethroughInlineBlock(tokenizer, matcher.start(), matcher.end(), matcher.group("content"));
+        }
+        return null;
+    }
+
+    public static record StrikethroughInlineBlock(InlineElementTokenizer tokenizer, int start, int end, String content) implements InlineBlock {
+
+        @Override
+        public String render() {
+            try {
+                var renderedContent = tokenizer.tokenize(content).stream().map(b -> b.render()).collect(Collectors.joining());
+                return "<del>%s</del>".formatted(renderedContent);
+            } catch (IOException ex) {
+                return "<del>%s</del>".formatted(content);
+            }
+        }
+    }
 	
 }

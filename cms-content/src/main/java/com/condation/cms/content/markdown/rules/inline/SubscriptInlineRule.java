@@ -25,6 +25,7 @@ package com.condation.cms.content.markdown.rules.inline;
 
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
 import java.util.regex.Pattern;
 
 /**
@@ -33,13 +34,12 @@ import java.util.regex.Pattern;
  */
 public class SubscriptInlineRule implements InlineElementRule {
 	
-	private static final Pattern PATTERN = Pattern.compile("(={1})(?<content>.*?)(={1})");
+	private static final Pattern PATTERN = Pattern.compile("(?<selector>=)(?<content>.*?)(?<!\\\\)(\\k<selector>)");
 
-	
-	@Override
-	public InlineBlock next(String md) {
-		var matcher = PATTERN.matcher(md);
-		if (matcher.find()) {
+    @Override
+    public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
+        var matcher = PATTERN.matcher(md);
+        if (matcher.find()) {
 			return new SubscriptInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));
 		}
 		return null;

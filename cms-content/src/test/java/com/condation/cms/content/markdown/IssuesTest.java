@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -52,5 +53,13 @@ public class IssuesTest extends MarkdownTest {
 		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
 	}
 
+	@Test
+	public void issue_with_nested_bold_link() throws IOException {
+		var md = "**[latest release](https://github.com/ConditionCMS/distribution/releases)**";
+		var expected = "<p><strong><a href=\"https://github.com/ConditionCMS/distribution/releases\" id=\"latest-release\">latest release</a></strong></p>";
+
+		var result = SUT.render(md);
+		Assertions.assertThat(result).isEqualToIgnoringWhitespace(expected);
+	}
 	
 }

@@ -23,6 +23,8 @@ package com.condation.cms.content.markdown.rules.inline;
  */
 
 
+import com.condation.cms.content.markdown.InlineElementTokenizer;
+import com.condation.cms.content.markdown.Options;
 import com.condation.cms.content.markdown.rules.inline.HighlightInlineRule;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,10 +36,11 @@ import org.junit.jupiter.api.Test;
 public class HighlightInlineRuleTest {
 	
 	private HighlightInlineRule sut = new HighlightInlineRule();
+	private InlineElementTokenizer tokenizer = new InlineElementTokenizer(new Options());
 
 	@Test
 	public void correct_pattern() {
-		Assertions.assertThat(sut.next("this is ==important==").render()).isEqualTo("<mark>important</mark>");
+		Assertions.assertThat(sut.next(tokenizer, "this is ==important==").render()).isEqualTo("<mark>important</mark>");
 	}
 	
 }

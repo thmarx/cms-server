@@ -24,6 +24,7 @@ package com.condation.cms.content.markdown.rules.inline;
 
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
 import java.util.regex.Pattern;
 
 /**
@@ -35,7 +36,7 @@ public class HighlightInlineRule implements InlineElementRule {
 	private static final Pattern PATTERN = Pattern.compile("(={2})(?<content>.*?)(={2})");
 
 	@Override
-	public InlineBlock next(String md) {
+    public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
 		var matcher = PATTERN.matcher(md);
 		if (matcher.find()) {
 			return new HighlightInlineBlock(matcher.start(), matcher.end(), matcher.group("content"));

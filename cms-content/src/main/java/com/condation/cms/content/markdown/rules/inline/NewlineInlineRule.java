@@ -25,6 +25,7 @@ package com.condation.cms.content.markdown.rules.inline;
 
 import com.condation.cms.content.markdown.InlineBlock;
 import com.condation.cms.content.markdown.InlineElementRule;
+import com.condation.cms.content.markdown.InlineElementTokenizer;
 import java.util.regex.Pattern;
 
 /**
@@ -36,7 +37,7 @@ public class NewlineInlineRule implements InlineElementRule {
 	private static final Pattern PATTERN = Pattern.compile(" {2,}+$", Pattern.MULTILINE);
 
 	@Override
-	public InlineBlock next(String md) {
+    public InlineBlock next(InlineElementTokenizer tokenizer, String md) {
 		var matcher = PATTERN.matcher(md);
 		if (matcher.find()) {
 			return new NewlineInlineBlock(matcher.start(), matcher.end());

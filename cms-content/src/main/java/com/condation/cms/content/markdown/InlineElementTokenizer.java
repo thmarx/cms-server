@@ -22,6 +22,7 @@ package com.condation.cms.content.markdown;
  * #L%
  */
 
+import com.condation.cms.content.markdown.rules.inline.TextInlineRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,11 @@ public class InlineElementTokenizer {
 
 	private final Options options;
 
-	protected List<InlineBlock> tokenize(final String original_md) throws IOException {
+	public List<InlineBlock> tokenize(final String original_md) throws IOException {
+		return doTokenize(this, original_md);
+	}
+
+	protected List<InlineBlock> doTokenize(final InlineElementTokenizer tokenizer, final String original_md) throws IOException {
 
 		var md = original_md.replaceAll("\r\n", "\n");
 		StringBuilder mdBuilder = new StringBuilder(md);
@@ -45,16 +50,20 @@ public class InlineElementTokenizer {
 
 		for (var blockRule : options.inlineElementRules) {
 			InlineBlock block = null;
-			while ((block = blockRule.next(mdBuilder.toString())) != null) {
+			while ((block = blockRule.next(tokenizer, mdBuilder.toString())) != null) {
 
 				if (block.start() != 0) {
 					var before = mdBuilder.substring(0, block.start());
-					blocks.addAll(tokenize(before));
+					blocks.addAll(doTokenize(tokenizer, before));
 				}
 
 				blocks.add(block);
 				mdBuilder.delete(0, block.end());
 			}
+		}
+
+		if (mdBuilder.length() > 0) {
+			blocks.add(new TextInlineRule.TextBlock(0, mdBuilder.length(), mdBuilder.toString()));
 		}
 
 		return blocks;
