@@ -83,12 +83,16 @@ const editAttributes = (event: Event) => {
 		type: 'edit',
 		payload: {
 			editor: "form",
-			element: "meta"
+			element: "meta",
+			form: toolbarDefinition.form ? toolbarDefinition.form : "attributes",
+			type: toolbarDefinition.type
 		}
 	}
 	if (toolbarDefinition.uri) {
 		command.payload.uri = toolbarDefinition.uri;
 	}
+	// legay old style to collect all meta elements for the form editor
+	/*
 	var elements = []
 	toolbar.parentNode.querySelectorAll("[data-cms-editor]").forEach(($elem : HTMLElement) => {
 		var toolbar = $elem.dataset.cmsToolbar ? JSON.parse($elem.dataset.cmsToolbar) : {};
@@ -103,6 +107,7 @@ const editAttributes = (event: Event) => {
 		}
 	})
 	command.payload.metaElements = elements
+	*/
 
 	frameMessenger.send(window.parent, command);
 }
