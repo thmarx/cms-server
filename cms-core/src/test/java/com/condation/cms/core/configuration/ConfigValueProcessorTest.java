@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import static com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironmentVariable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.AfterEach;
@@ -44,6 +45,30 @@ class ConfigValueProcessorTest {
         System.clearProperty("list.var");
         System.clearProperty("map.var");
         System.clearProperty("nested.var");
+        System.clearProperty("priority.var");
+    }
+
+    @Test
+    void testProcessStringWithEnvironmentVariable() throws Exception {
+        withEnvironmentVariable("TEST_ENV_VAR", "env_value")
+                .execute(() -> {
+                    EnvironmentVariables.resetForTesting();
+                    String input = "Value from env: ${env:TEST_ENV_VAR}";
+                    String expected = "Value from env: env_value";
+                    assertEquals(expected, ConfigValueProcessor.process(input));
+                });
+    }
+
+    @Test
+    void testSystemPropertyOverridesEnvironmentVariable() throws Exception {
+        System.setProperty("priority.var", "property_value");
+        withEnvironmentVariable("PRIORITY_VAR", "env_value")
+                .execute(() -> {
+                    EnvironmentVariables.resetForTesting();
+                    String input = "Value: ${env:priority.var}";
+                    String expected = "Value: property_value";
+                    assertEquals(expected, ConfigValueProcessor.process(input));
+                });
     }
 
     @Test

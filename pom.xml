@@ -557,6 +557,7 @@
 				<configuration>
 					<argLine>
 						--enable-preview
+						--add-opens java.base/java.util=ALL-UNNAMED
 						-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
 						-Xshare:off
 					</argLine>

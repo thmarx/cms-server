@@ -44,7 +44,8 @@ public class EnvironmentVariables {
     }
 
     public Object getVariable(String name) {
-        return MapUtil.getValue(variables, name.toLowerCase());
+        String lookupKey = name.toLowerCase().replace('_', '.');
+        return MapUtil.getValue(variables, lookupKey);
     }
 
     public String getString(String name) {
