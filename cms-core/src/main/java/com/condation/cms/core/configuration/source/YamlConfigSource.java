@@ -23,6 +23,7 @@ package com.condation.cms.core.configuration.source;
  */
 
 import com.condation.cms.api.utils.MapUtil;
+import com.condation.cms.core.configuration.ConfigValueProcessor;
 import com.condation.cms.core.configuration.ConfigSource;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +47,7 @@ public class YamlConfigSource implements ConfigSource {
 		if (Files.exists(yamlFile)) {
 			try (var configReader = Files.newBufferedReader(yamlFile, StandardCharsets.UTF_8)) {
 				result = (Map<String, Object>) new Yaml().load(configReader);
+				result = ConfigValueProcessor.process(result);
 			}
 		} else {
 			result = Collections.emptyMap();
@@ -87,6 +89,7 @@ public class YamlConfigSource implements ConfigSource {
 			
 			try (var configByteBuffer = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
 				result = (Map<String, Object>) new Yaml().load(configByteBuffer);
+				result = ConfigValueProcessor.process(result);
 			}
 			return true;
 		} catch (IOException ex) {

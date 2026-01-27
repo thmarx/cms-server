@@ -23,6 +23,7 @@ package com.condation.cms.core.configuration.source;
  */
 
 import com.condation.cms.api.utils.MapUtil;
+import com.condation.cms.core.configuration.ConfigValueProcessor;
 import com.condation.cms.core.configuration.ConfigSource;
 import com.condation.cms.core.configuration.GSONProvider;
 import com.google.gson.JsonObject;
@@ -71,8 +72,9 @@ public class TomlConfigSource implements ConfigSource {
 			
 			var json = JTOML.fromToml(JsonObject.class, document);
 			this.result = GSONProvider.GSON.fromJson(
-					GSONProvider.GSON.toJson(json), 
+					GSONProvider.GSON.toJson(json),
 					HashMap.class);
+			this.result = ConfigValueProcessor.process(result);
 			
 			if (Files.exists(tomlFile)) {
 				this.lastModified = Files.getLastModifiedTime(tomlFile).toMillis();
@@ -98,8 +100,9 @@ public class TomlConfigSource implements ConfigSource {
 			
 			var json = JTOML.fromToml(JsonObject.class, document);
 			this.result = GSONProvider.GSON.fromJson(
-					GSONProvider.GSON.toJson(json), 
+					GSONProvider.GSON.toJson(json),
 					HashMap.class);
+			this.result = ConfigValueProcessor.process(result);
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}

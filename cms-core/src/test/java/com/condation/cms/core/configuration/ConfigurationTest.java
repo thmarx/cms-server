@@ -35,6 +35,7 @@ import com.condation.cms.api.eventbus.events.ConfigurationReloadEvent;
 import com.condation.cms.core.configuration.properties.ExtendedServerProperties;
 import com.condation.cms.core.scheduler.SingleCronJobScheduler;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import lombok.Data;
@@ -43,6 +44,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -87,6 +89,29 @@ public class ConfigurationTest {
 	public void shutdown () throws SchedulerException {
 		scheduler.clear();
 		scheduler.shutdown();
+		EnvironmentVariables.resetForTesting();
+	}
+
+	@Test
+	public void test_env_variable_substitution(@TempDir Path tempDir) throws IOException {
+		// Set the environment variable (as a system property)
+		System.setProperty("test.substitution.var", "substituted_value");
+		EnvironmentVariables.resetForTesting();
+
+		// Prepare a test YAML file with an environment variable placeholder
+		Path configFile = tempDir.resolve("test.yaml");
+		Files.writeString(configFile, "value: ${env:test.substitution.var}");
+
+		// Build the configuration
+		SimpleConfiguration config = SimpleConfiguration.builder()
+				.addSource(YamlConfigSource.build(configFile))
+				.build();
+
+		// Assert that the value has been substituted
+		Assertions.assertThat(config.getString("value")).isEqualTo("substituted_value");
+
+		// Clean up the system property
+		System.clearProperty("test.substitution.var");
 	}
 
 	@Test

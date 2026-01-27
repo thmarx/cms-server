@@ -56,7 +56,8 @@ public class EnvUtil {
         if (key == null || key.trim().isEmpty()) {
             return;
         }
-        String[] parts = key.split("_");
+        String normalizedKey = key.replace('.', '_');
+        String[] parts = normalizedKey.split("_");
         if (parts.length == 0) {
             return;
         }
