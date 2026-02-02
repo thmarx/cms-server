@@ -69,7 +69,7 @@ test-server/modules/markedj-module
 test-server/cms.pid
 test-server/hosts/features/data/
 .DS_Store
-test-server/mail-server/fake-smtp-server-2.4.2.jar
+test-server/mail-server/fake-smtp-server-*.jar
 modules/api-module/src/test/resources/site/data
 cms-content/src/test/resources/site/data
 integration-tests/hosts/test/data
