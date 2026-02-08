@@ -38,25 +38,53 @@ export function updateStateButton() {
     getContent({
       uri: contentNode.result.uri
     }).then((getContentResponse) => {
+      /*
       var published = getContentResponse?.result?.meta?.published
       if (published) {
 
         if (isPagePublishedExpired(getContentResponse)) {
-          document.querySelector('#cms-btn-status').classList.remove('btn-warning');
-          document.querySelector('#cms-btn-status').classList.remove('btn-success');
-          document.querySelector('#cms-btn-status').classList.add('btn-info');
+          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-unpublished');
+          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published');
+          document.querySelector('#cms-btn-status').classList.add('cms-node-status-published-not-visible');
         } else {
-          document.querySelector('#cms-btn-status').classList.remove('btn-warning');
-          document.querySelector('#cms-btn-status').classList.remove('btn-info');
-          document.querySelector('#cms-btn-status').classList.add('btn-success');
+          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-unpublished');
+          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published-not-visible');
+          document.querySelector('#cms-btn-status').classList.add('cms-node-status-published');
         }
       } else {
-        document.querySelector('#cms-btn-status').classList.remove('btn-success');
-        document.querySelector('#cms-btn-status').classList.remove('btn-info');
-        document.querySelector('#cms-btn-status').classList.add('btn-warning');
+        document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published');
+        document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published-not-visible');
+        document.querySelector('#cms-btn-status').classList.add('cms-node-status-unpublished');
       }
+      */
+      updateNodeStatus(getContentResponse);
     })
   })
+}
+
+function updateNodeStatus(getContentResponse) {
+  const statusBtn = document.querySelector('#cms-btn-status');
+  if (!statusBtn) return;
+
+  // Alle cms-node-status-* Klassen entfernen
+  Array.from(statusBtn.classList).forEach(className => {
+    if (className.startsWith('cms-node-status-')) {
+      statusBtn.classList.remove(className);
+    }
+  });
+
+  var published = getContentResponse?.result?.meta?.published
+  // Status bestimmen (Provider-fähig)
+  let status;
+  if (!published) {
+    status = 'unpublished';
+  } else if (isPagePublishedExpired(getContentResponse)) {
+    status = 'published-not-visible';
+  } else {
+    status = 'published';
+  }
+
+  statusBtn.classList.add(`cms-node-status-${status}`);
 }
 
 export function isPagePublishedExpired(contentResponse) {
