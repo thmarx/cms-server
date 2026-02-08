@@ -11,6 +11,7 @@ declare global {
 			baseUrl: string,
 			contextPath: string,
       siteId: string,
+      previewUrl: string,
 		},
     EasyMDE : any,
     Cherry: any

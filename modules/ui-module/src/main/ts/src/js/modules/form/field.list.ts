@@ -195,7 +195,6 @@ const getData = (context: FormContext) => {
 			};
 		}
 	})
-	console.log("send: " + data)
 	return data
 }
 

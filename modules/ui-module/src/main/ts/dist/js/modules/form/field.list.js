@@ -160,7 +160,6 @@ const getData = (context) => {
             };
         }
     });
-    console.log("send: " + data);
     return data;
 };
 const init = (context) => {

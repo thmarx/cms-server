@@ -85,8 +85,6 @@ export async function runAction(params) {
                 point.style.display = "block";
                 focal.x = parseFloat(relX);
                 focal.y = parseFloat(relY);
-                // Ausgabe
-                console.log(`Focal Point: x: ${relX}, y: ${relY}`);
             });
         }
     });

@@ -3,3 +3,9 @@
 ```shell
 tsc
 ```
+
+## publish
+
+```shell
+npm publish
+```

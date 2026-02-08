@@ -20,8 +20,8 @@
  * #L%
  */
 
-import { getContentNode, setMeta, getContent } from '@cms/modules/rpc/rpc-content.js'
-import { getPreviewUrl } from '@cms/modules/preview.utils.js'
+import { getPreviewUrl } from '@cms/modules/preview.utils.js';
+import { getContent, getContentNode } from '@cms/modules/rpc/rpc-content.js';
 
 export function updateStateButton() {
   var previewUrl = getPreviewUrl();;
@@ -38,42 +38,32 @@ export function updateStateButton() {
     getContent({
       uri: contentNode.result.uri
     }).then((getContentResponse) => {
-      var published = getContentResponse?.result?.meta?.published
-      if (published) {
-
-        if (isPagePublishedExpired(getContentResponse)) {
-          document.querySelector('#cms-btn-status').classList.remove('btn-warning');
-          document.querySelector('#cms-btn-status').classList.remove('btn-success');
-          document.querySelector('#cms-btn-status').classList.add('btn-info');
-        } else {
-          document.querySelector('#cms-btn-status').classList.remove('btn-warning');
-          document.querySelector('#cms-btn-status').classList.remove('btn-info');
-          document.querySelector('#cms-btn-status').classList.add('btn-success');
-        }
-      } else {
-        document.querySelector('#cms-btn-status').classList.remove('btn-success');
-        document.querySelector('#cms-btn-status').classList.remove('btn-info');
-        document.querySelector('#cms-btn-status').classList.add('btn-warning');
-      }
+      updateNodeStatus(getContentResponse);
     })
   })
 }
 
-export function isPagePublishedExpired(contentResponse) {
-  const publishDateStr = contentResponse?.result?.meta?.publish_date;
-  const unpublishDateStr = contentResponse?.result?.meta?.unpublish_date;
+function updateNodeStatus(getContentResponse) {
+  const statusBtn = document.querySelector('#cms-btn-status');
+  if (!statusBtn) return;
 
-  const now = new Date();
+  // Alle cms-node-status-* Klassen entfernen
+  Array.from(statusBtn.classList).forEach(className => {
+    if (className.startsWith('cms-node-status-')) {
+      statusBtn.classList.remove(className);
+    }
+  });
 
-  const publishDate = publishDateStr ? new Date(publishDateStr) : null;
-  const unpublishDate = unpublishDateStr ? new Date(unpublishDateStr) : null;
+  var published = getContentResponse?.result?.status?.published
+  // Status bestimmen (Provider-fähig)
+  let status;
+  if (!published) {
+    status = 'unpublished';
+  } else if (!getContentResponse?.result?.status?.withinSchedule) {
+    status = 'published-not-visible';
+  } else {
+    status = 'published';
+  }
 
-  // page is published if:
-  // - publishDate empty or in the past
-  // - und unpublishDate empty or in the future
-  const isPublished =
-    (!publishDate || publishDate <= now) &&
-    (!unpublishDate || unpublishDate > now);
-
-  return !isPublished;
+  statusBtn.classList.add(`cms-node-status-${status}`);
 }
