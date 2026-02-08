@@ -200,7 +200,6 @@ const cmsImageSelection = window.Cherry.createMenuHook("Image", {
 					mediaFormats.forEach((format : any) => {
 						formatOptions[format.name] = format.name;
 					});
-					console.log("Media Formats", mediaFormats, formatOptions);
 					var selectedFormat = await alertSelect({
 						title: i18n.t("form.media.format.title", "Select Media Format"),
 						values: formatOptions

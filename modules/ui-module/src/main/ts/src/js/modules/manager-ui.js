@@ -20,8 +20,8 @@
  * #L%
  */
 
-import { getContentNode, setMeta, getContent } from '@cms/modules/rpc/rpc-content.js'
-import { getPreviewUrl } from '@cms/modules/preview.utils.js'
+import { getPreviewUrl } from '@cms/modules/preview.utils.js';
+import { getContent, getContentNode } from '@cms/modules/rpc/rpc-content.js';
 
 export function updateStateButton() {
   var previewUrl = getPreviewUrl();;
@@ -38,25 +38,6 @@ export function updateStateButton() {
     getContent({
       uri: contentNode.result.uri
     }).then((getContentResponse) => {
-      /*
-      var published = getContentResponse?.result?.meta?.published
-      if (published) {
-
-        if (isPagePublishedExpired(getContentResponse)) {
-          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-unpublished');
-          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published');
-          document.querySelector('#cms-btn-status').classList.add('cms-node-status-published-not-visible');
-        } else {
-          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-unpublished');
-          document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published-not-visible');
-          document.querySelector('#cms-btn-status').classList.add('cms-node-status-published');
-        }
-      } else {
-        document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published');
-        document.querySelector('#cms-btn-status').classList.remove('cms-node-status-published-not-visible');
-        document.querySelector('#cms-btn-status').classList.add('cms-node-status-unpublished');
-      }
-      */
       updateNodeStatus(getContentResponse);
     })
   })
@@ -73,35 +54,16 @@ function updateNodeStatus(getContentResponse) {
     }
   });
 
-  var published = getContentResponse?.result?.meta?.published
+  var published = getContentResponse?.result?.status?.published
   // Status bestimmen (Provider-fähig)
   let status;
   if (!published) {
     status = 'unpublished';
-  } else if (isPagePublishedExpired(getContentResponse)) {
+  } else if (!getContentResponse?.result?.status?.withinSchedule) {
     status = 'published-not-visible';
   } else {
     status = 'published';
   }
 
   statusBtn.classList.add(`cms-node-status-${status}`);
-}
-
-export function isPagePublishedExpired(contentResponse) {
-  const publishDateStr = contentResponse?.result?.meta?.publish_date;
-  const unpublishDateStr = contentResponse?.result?.meta?.unpublish_date;
-
-  const now = new Date();
-
-  const publishDate = publishDateStr ? new Date(publishDateStr) : null;
-  const unpublishDate = unpublishDateStr ? new Date(unpublishDateStr) : null;
-
-  // page is published if:
-  // - publishDate empty or in the past
-  // - und unpublishDate empty or in the future
-  const isPublished =
-    (!publishDate || publishDate <= now) &&
-    (!unpublishDate || unpublishDate > now);
-
-  return !isPublished;
 }

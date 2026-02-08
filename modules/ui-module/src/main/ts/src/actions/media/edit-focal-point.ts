@@ -96,8 +96,7 @@ export async function runAction(params) {
 
 				focal.x = parseFloat(relX);
 				focal.y = parseFloat(relY);
-				// Ausgabe
-				console.log(`Focal Point: x: ${relX}, y: ${relY}`);
+				
 			});
 		}
 	});

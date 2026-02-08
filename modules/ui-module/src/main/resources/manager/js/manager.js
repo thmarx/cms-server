@@ -40,8 +40,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }, 5 * 60 * 1000);
     const iframe = document.getElementById('contentPreview');
+    iframe.addEventListener("load", previewLoadedHandler);
     const urlParams = new URLSearchParams(window.location.search);
     const pageUrl = urlParams.get('page');
+    /*
+        page param is use for deeplinks when changing translation
+    */
     if (pageUrl) {
         loadPreview(pageUrl);
         // Clean the URL
@@ -50,29 +54,31 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     else {
         const preview = UIStateManager.getTabState("preview", null);
-        if (preview) {
-            if (preview.siteId === window.manager.siteId) {
-                loadPreview(preview.url);
-            }
+        if (preview && preview.siteId === window.manager.siteId) {
+            loadPreview(preview.url);
+        }
+        else {
+            loadPreview(window.manager.previewUrl);
         }
     }
-    iframe.addEventListener("load", () => {
-        EventBus.emit("preview:loaded", {});
-        try {
-            const currentUrl = iframe.contentWindow.location.href;
-            const url = new URL(currentUrl);
-            const preview_url = url.pathname + url.search;
-            const preview_update = {
-                url: preview_url,
-                siteId: window.manager.siteId
-            };
-            UIStateManager.setTabState("preview", preview_update);
-            updateStateButton();
-        }
-        catch (e) {
-            console.log(e);
-        }
-    });
     initMessageHandlers();
 });
+const previewLoadedHandler = () => {
+    EventBus.emit("preview:loaded", {});
+    try {
+        const iframe = document.getElementById('contentPreview');
+        const currentUrl = iframe.contentWindow.location.href;
+        const url = new URL(currentUrl);
+        const preview_url = url.pathname + url.search;
+        const preview_update = {
+            url: preview_url,
+            siteId: window.manager.siteId
+        };
+        UIStateManager.setTabState("preview", preview_update);
+        updateStateButton();
+    }
+    catch (e) {
+        console.log(e);
+    }
+};
 // DOMContentLoaded  end

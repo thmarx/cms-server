@@ -24,6 +24,7 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.db.NodeStatus;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
@@ -77,6 +78,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 				ContentFileParser parser = new ContentFileParser(contentFile);
 				result.put("content", parser.getContent());
 				result.put("meta", parser.getHeader());
+				result.put("status", NodeStatus.get(parser.getHeader()));
 			} catch (IOException ex) {
 				log.error("", ex);
 			}
