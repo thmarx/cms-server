@@ -21,7 +21,7 @@
  */
 
 import frameMessenger from '@cms/modules/frameMessenger.js';
-import { loadPreview } from '@cms/modules/preview.utils.js';
+import { activatePreviewOverlay, getPreviewFrame, loadPreview } from '@cms/modules/preview.utils.js';
 
 import { UIStateManager } from '@cms/modules/ui-state.js';
 
@@ -41,6 +41,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	//PreviewHistory.init("/");
 	//updateStateButton();
 
+	activatePreviewOverlay();
+
 	const intervalId = window.setInterval(() =>  {
 		var token = createCSRFToken({});
 		token.then((token) => {
@@ -48,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		})
 	}, 5 * 60 * 1000);
 
-	const iframe = document.getElementById('contentPreview');
+	const iframe = getPreviewFrame();
 	iframe.addEventListener("load", previewLoadedHandler)
 
 	const urlParams = new URLSearchParams(window.location.search);
@@ -76,9 +78,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 const previewLoadedHandler = () => {
-	EventBus.emit("preview:loaded", {});
 	try {
-		const iframe = document.getElementById('contentPreview');
+		const iframe = getPreviewFrame();
 
 		const currentUrl = iframe.contentWindow.location.href;
 		const url = new URL(currentUrl);
@@ -92,6 +93,7 @@ const previewLoadedHandler = () => {
 		UIStateManager.setTabState("preview", preview_update)
 
 		updateStateButton();
+		EventBus.emit("preview:loaded", {});
 	} catch (e) {
 		console.log(e)
 	}

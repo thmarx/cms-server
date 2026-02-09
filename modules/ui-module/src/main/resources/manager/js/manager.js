@@ -20,7 +20,7 @@
  * #L%
  */
 import frameMessenger from '@cms/modules/frameMessenger.js';
-import { loadPreview } from '@cms/modules/preview.utils.js';
+import { activatePreviewOverlay, getPreviewFrame, loadPreview } from '@cms/modules/preview.utils.js';
 import { UIStateManager } from '@cms/modules/ui-state.js';
 import { updateStateButton } from '@cms/modules/manager-ui.js';
 import { EventBus } from '@cms/modules/event-bus.js';
@@ -33,13 +33,14 @@ frameMessenger.on('load', (payload) => {
 document.addEventListener("DOMContentLoaded", function () {
     //PreviewHistory.init("/");
     //updateStateButton();
+    activatePreviewOverlay();
     const intervalId = window.setInterval(() => {
         var token = createCSRFToken({});
         token.then((token) => {
             setCSRFToken(token.result);
         });
     }, 5 * 60 * 1000);
-    const iframe = document.getElementById('contentPreview');
+    const iframe = getPreviewFrame();
     iframe.addEventListener("load", previewLoadedHandler);
     const urlParams = new URLSearchParams(window.location.search);
     const pageUrl = urlParams.get('page');
@@ -64,9 +65,8 @@ document.addEventListener("DOMContentLoaded", function () {
     initMessageHandlers();
 });
 const previewLoadedHandler = () => {
-    EventBus.emit("preview:loaded", {});
     try {
-        const iframe = document.getElementById('contentPreview');
+        const iframe = getPreviewFrame();
         const currentUrl = iframe.contentWindow.location.href;
         const url = new URL(currentUrl);
         const preview_url = url.pathname + url.search;
@@ -76,6 +76,7 @@ const previewLoadedHandler = () => {
         };
         UIStateManager.setTabState("preview", preview_update);
         updateStateButton();
+        EventBus.emit("preview:loaded", {});
     }
     catch (e) {
         console.log(e);
