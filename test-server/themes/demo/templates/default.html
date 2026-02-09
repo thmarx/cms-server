@@ -36,15 +36,32 @@
 			</div>
 			<hr />
 		</div>
-		<div class="container sections" 
-			{{ ext.ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
-			>
-			{% if sections.containsKey('asection') %}
-				{% for section in sections.get('asection') %}
-					{{ section.content() | raw }}
-				{% endfor %}
-			{% endif %}
+		{% if !empty(sections) %}
+			<div class="container sections" 
+				{{ ext.ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
+				>
+				{% if sections.containsKey('asection') %}
+					{% for section in sections.get('asection') %}
+						{{ section.content() | raw }}
+					{% endfor %}
+				{% endif %}
 
+			</div>
+		{% endif %}
+
+		<div>
+			<h3>Test Node references</h3>
+			<div>
+				{% assign globals = select_node("") %}
+				{% if globals != null %}
+					<h3>load secions from start page</h3>
+					{% if globals.sections.containsKey('asection') %}
+						{% for section in globals.sections.get('asection') %}
+							{{ section.content() | raw }}
+						{% endfor %}
+					{% endif %}
+				{% endif %}
+			</div>
 		</div>
 
 	</body>

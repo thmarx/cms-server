@@ -1,6 +1,6 @@
 ---
 title: 'New of: start.html'
-template: start.html
+template: default.html
 parent:
   text: testsdf
 count: 46

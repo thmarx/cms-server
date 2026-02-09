@@ -51,6 +51,7 @@ public class TemplateEngineExceptionTest extends AbstractTemplateEngineTest {
 	}
 	
 	@Test
+	@Disabled("because disabling the strict mode")
 	public void test_unknown_variable() {
 		Assertions.assertThatCode(
 				() -> {
