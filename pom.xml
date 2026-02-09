@@ -27,7 +27,7 @@
 		<module>cms-templates</module>
 		<module>cms-extensions</module>
 		<module>cms-auth</module>
-		<!--module>integration-tests</module-->
+		<module>integration-tests</module>
 		<module>cms-core</module>
 		<module>cms-test</module>
 	</modules>
