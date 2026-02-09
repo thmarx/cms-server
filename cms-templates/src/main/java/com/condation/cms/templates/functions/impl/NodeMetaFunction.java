@@ -39,26 +39,12 @@ import lombok.extern.slf4j.Slf4j;
  * @author thorstenmarx
  */
 @Slf4j
-public class NodeFunction extends AbstractNodeFunction {
+public class NodeMetaFunction extends AbstractNodeFunction {
 
-	public static final String NAME = "select_node";
+	public static final String NAME = "select_node_meta";
 
-	public NodeFunction(RequestContext requestContext) {
+	public NodeMetaFunction(RequestContext requestContext) {
 		super(requestContext);
-	}
-	
-	@Override
-	protected void extendMap(Map<String, Object> node, ReadOnlyFile contentFile) {
-		try {
-			var db = requestContext.get(InjectorFeature.class).injector().getInstance(DB.class);
-			var contentRenderer = requestContext.get(InjectorFeature.class).injector().getInstance(ContentRenderer.class);
-			List<ContentNode> sections = db.getContent().listSections(contentFile);
-			
-			Map<String, List<Section>> renderedSections = contentRenderer.renderSections(sections, requestContext);
-			node.put("sections", renderedSections);
-		} catch (IOException iOException) {
-			log.error("error loading sections", iOException);
-		}
 	}
 
 	@Override

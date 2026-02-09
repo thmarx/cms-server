@@ -61,7 +61,7 @@ public class CMSTemplateEngine {
 			builder
 					.cache(512)
 					.safe(false)
-					.strict(true)
+					.strict(false)
 					.silent(false)
 					.debug(false);
 		} else {
