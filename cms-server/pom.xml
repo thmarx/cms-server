@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>cms-server</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS Server</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>25</maven.compiler.source>

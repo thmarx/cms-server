@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>cms-system-modules</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS System Modules</name>
     
 	<dependencies>
 		<dependency>

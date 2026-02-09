@@ -10,6 +10,7 @@
 	</parent>
 	<artifactId>cms-content</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS Content</name>
     <build>
         <plugins>
             <plugin>

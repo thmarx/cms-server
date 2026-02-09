@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>cms-filesystem</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS FileSystem</name>
     
 	<dependencies>
 		<dependency>

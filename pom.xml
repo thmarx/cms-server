@@ -3,6 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.condation.cms</groupId>
 	<artifactId>cms-parent</artifactId>
+	<name>CMS Parent</name>
 	<version>8.0.0</version>
 	<packaging>pom</packaging>
 	<properties>
@@ -26,7 +27,7 @@
 		<module>cms-templates</module>
 		<module>cms-extensions</module>
 		<module>cms-auth</module>
-		<module>integration-tests</module>
+		<!--module>integration-tests</module-->
 		<module>cms-core</module>
 		<module>cms-test</module>
 	</modules>

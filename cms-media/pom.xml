@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>cms-media</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS Media</name>
     
 	<dependencies>
 		<dependency>
