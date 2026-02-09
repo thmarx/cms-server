@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>cms-auth</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS Auth</name>
     
 	<dependencies>
 		<dependency>

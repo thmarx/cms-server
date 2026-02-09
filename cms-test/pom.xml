@@ -8,6 +8,7 @@
     </parent>
     <artifactId>cms-test</artifactId>
     <packaging>jar</packaging>
+	<name>CMS Test Framework</name>
     <properties>
         <exec.mainClass>com.condation.cms.test.CmsTest</exec.mainClass>
     </properties>

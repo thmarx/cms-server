@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>example-module</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS Example Module</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<module.id>example-module</module.id>

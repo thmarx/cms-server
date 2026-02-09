@@ -9,6 +9,7 @@
 	<groupId>com.condation.cms.modules</groupId>
 	<artifactId>cms-modules</artifactId>
 	<packaging>pom</packaging>
+	<name>CMS Modules</name>
 	
 	<modules>
 		<module>example-module</module>

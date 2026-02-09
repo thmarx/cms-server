@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>api-module</artifactId>
 	<packaging>jar</packaging>
+	<name>CMS Api Module</name>
     
 	<dependencies>
 		<dependency>
