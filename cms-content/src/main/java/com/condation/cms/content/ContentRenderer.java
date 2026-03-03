@@ -50,7 +50,7 @@ public interface ContentRenderer {
 
 	Map<String, List<Section>> renderSections(final List<ContentNode> sectionNodes, final RequestContext context) throws IOException;
 
-	String renderTaxonomy(final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, final Map<String, Object> meta, final Page<ListNode> page) throws IOException;
+	String renderTaxonomy(final Optional<ReadOnlyFile> contentFileOpt, final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, final Map<String, Object> meta, final Page<ListNode> page, Map<String, List<Section>> sections) throws IOException;
 
 	String renderView(final ReadOnlyFile viewFile, final View view, final ContentNode contentNode, final RequestContext requestContext, final Page<ListNode> page) throws IOException;
 	

@@ -102,10 +102,16 @@ public class DefaultContentRenderer implements ContentRenderer {
 	}
 
 	@Override
-	public String renderTaxonomy(final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, final Map<String, Object> meta, final Page<ListNode> page) throws IOException {
-		var contentFile = db.getReadOnlyFileSystem().contentBase().resolve("index.md");
+	public String renderTaxonomy(
+			final Optional<ReadOnlyFile> contentFileOpt,
+			final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, 
+			final Map<String, Object> meta, final Page<ListNode> page, final Map<String, List<Section>> sections) throws IOException {
+		var contentFile = contentFileOpt.orElseGet(() -> db.getReadOnlyFileSystem().contentBase().resolve("index.md"));
+		var content = contentFileOpt.isPresent() ? 
+				contentParser.parse(contentFileOpt.get()).content()
+				: "";
 
-		return render(contentFile, context, Collections.emptyMap(), meta, "", (model) -> {
+		return render(contentFile, context, sections, meta, content, (model) -> {
 			model.values.put("taxonomy", taxonomy);
 			model.values.put("taxonomy_values", db.getTaxonomies().values(taxonomy));
 			if (taxonomyValue.isPresent()) {
