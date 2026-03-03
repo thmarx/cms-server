@@ -155,7 +155,7 @@ public class Queries {
 		} else if (o1 instanceof Long) {
 			return Long.compare((long) o1, (long) o2);
 		} else if (o1 instanceof String string) {
-			return string.compareTo((String) o2);
+			return string.compareToIgnoreCase((String) o2);
 		} else if (o1 instanceof Date date) {
 			return date.compareTo((Date) o2);
 		}
