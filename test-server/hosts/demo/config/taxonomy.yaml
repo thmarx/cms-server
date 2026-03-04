@@ -1,0 +1,11 @@
+## YAML Template.
+---
+taxonomies:
+  - title: Marken
+    slug: marken
+    field: taxonomy.brands
+    array: true
+  - title: Produkte
+    slug: produkte
+    field: taxonomy.products
+    array: true

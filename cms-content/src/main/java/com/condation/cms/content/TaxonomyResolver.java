@@ -23,17 +23,25 @@ package com.condation.cms.content;
  */
 
 import com.condation.cms.api.Constants;
+import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.content.TaxonomyResponse;
+import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
+import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.taxonomy.Taxonomy;
+import com.condation.cms.api.feature.features.ContentParserFeature;
 import com.condation.cms.api.feature.features.CurrentTaxonomyFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.mapper.ContentNodeMapper;
 import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.core.content.ContentResolvingStrategy;
 import com.google.inject.Inject;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +57,7 @@ public class TaxonomyResolver {
 	private final ContentRenderer contentRenderer;
 	private final DB db;
 	private final ContentNodeMapper contentNodeMapper;
-
+	
 	private Optional<Taxonomy> getTaxonomy(final RequestContext context) {
 		var uri = context.get(RequestFeature.class).uri();
 		if ("/".equals(uri)) {
@@ -109,7 +117,24 @@ public class TaxonomyResolver {
 			meta.put(Constants.MetaFields.TEMPLATE, template);
 
 			context.add(CurrentTaxonomyFeature.class, new CurrentTaxonomyFeature(taxonomy, value, meta, resultPage));
-			String content = contentRenderer.renderTaxonomy(taxonomy, value, context, meta, resultPage);
+			
+			Optional<ReadOnlyFile> contentFileOpt = ContentResolvingStrategy.resolve(context.get(RequestFeature.class).uri(), db);
+			
+			Map<String, List<Section>> sections = Collections.emptyMap();
+			if (contentFileOpt.isPresent()) {
+				var contentFile = contentFileOpt.get();
+				
+				var contentParser = context.get(ContentParserFeature.class).contentParser();
+				var content = contentParser.parse(contentFile);
+				
+				meta.putAll(content.meta());
+				
+				List<ContentNode> sectionList = db.getContent().listSections(contentFile);
+			
+				sections = contentRenderer.renderSections(sectionList, context);
+			}
+			
+			String content = contentRenderer.renderTaxonomy(contentFileOpt, taxonomy, value, context, meta, resultPage, sections);
 
 			return Optional.of(new TaxonomyResponse(content, taxonomy));
 		} catch (Exception ex) {

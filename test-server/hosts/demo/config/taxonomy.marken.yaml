@@ -1,0 +1,7 @@
+## YAML Template.
+---
+values:
+    - id: brand1
+      title: Brand_1
+    - id: brand2
+      title: Brand_2

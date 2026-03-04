@@ -1,0 +1,58 @@
+<!DOCTYPE html SYSTEM>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+		
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		
+		{% include "libs/fragments.html" %}
+		
+		
+	</head>
+
+	<body class="centered">
+
+		
+		<div id="content" 
+			{{ ext.ui.toolbar("main", "main", ["editContent", "editAttributes"]) | raw }}
+		>
+			<h1>{{ taxonomy.title }}</h1>
+			<div class="container">
+				{{ node.content | raw }}
+			</div>
+			<div>
+				<div class="container" {{ ext.ui.editMeta("text", "description") }}>
+					{{ node.meta.get('description') | raw}}
+				</div>
+				<div class="container" {{ ext.ui.editMeta("text", "parent.text") }}>
+					{{ node.meta.get('parent.text') | raw}}
+				</div>
+				<div class="container" {{ ext.ui.editMeta("number", "count", {'min': 10, 'max': 50, 'step': 1}) }}>
+					{{ node.meta.get('count') }}
+				</div>
+				<div>
+					{[ component color="red" message="its a component" ]}
+					{[ endcomponent ]}
+				</div>
+			</div>
+			<hr />
+		</div>
+
+		{% if !empty(node.sections) %}
+			<div class="container sections" 
+				{{ ext.ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
+				>
+				{% if node.sections.containsKey('asection') %}
+					{% for section in node.sections.get('asection') %}
+						{{ section.content() | raw }}
+					{% endfor %}
+				{% endif %}
+
+			</div>
+		{% endif %}
+		
+	</body>
+
+
+</html>
