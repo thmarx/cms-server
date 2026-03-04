@@ -209,4 +209,26 @@ public class PresistentFileSystemTest {
 		Assertions.assertThat(page.getItems().get(1).data().get("name")).isEqualTo("test1");
 		Assertions.assertThat(page.getItems().get(2).data().get("name")).isEqualTo("start");
 	}
+	
+	@Test
+	public void test_sorting_case_insensitive() throws IOException {
+
+		var page = fileSystem.query((node, i) -> node)
+			.orderby("sort_field").asc()
+			.whereExists("sort_field")
+			.page(1, 10);
+		
+		Assertions.assertThat(page.getItems()).hasSize(2);
+		Assertions.assertThat(page.getItems().get(0).data().get("name")).isEqualTo("test2");
+		Assertions.assertThat(page.getItems().get(1).data().get("name")).isEqualTo("test1");
+		
+		page = fileSystem.query((node, i) -> node)
+			.orderby("sort_field").desc()
+			.whereExists("sort_field")
+			.page(1, 10);
+		
+		Assertions.assertThat(page.getItems()).hasSize(2);
+		Assertions.assertThat(page.getItems().get(0).data().get("name")).isEqualTo("test1");
+		Assertions.assertThat(page.getItems().get(1).data().get("name")).isEqualTo("test2");
+	}
 }
