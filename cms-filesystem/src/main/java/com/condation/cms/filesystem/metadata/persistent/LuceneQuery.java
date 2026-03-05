@@ -129,9 +129,11 @@ public class LuceneQuery<T> extends ExtendableQuery<T> implements ContentQuery.S
 				.toList();
 		// mapping
 		var result = mapContentNodes(filteredTargetNodes);
+	
+		var totalItems = contentNodes.size();
 		
-		int totalPages = (int) Math.ceil((float) result.total / size);
-		return new Page<>(result.total, size, totalPages, (int) page, result.nodes);
+		int totalPages = (int) Math.ceil((float) totalItems / size);
+		return new Page<>(totalItems, size, totalPages, (int) page, result.nodes);
 	}
 
 	@Override
