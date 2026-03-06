@@ -21,6 +21,7 @@ package com.condation.cms.templates.tags.macro;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.condation.cms.api.Constants;
 import com.condation.cms.templates.DefaultTemplate;
 import com.condation.cms.templates.Tag;
 import com.condation.cms.templates.exceptions.TagException;
@@ -69,6 +70,9 @@ public class ImportTag extends AbstractTag implements Tag {
 			var template = (DefaultTemplate) context.templateEngine().getTemplate(templateString);
 			if (template != null) {
 				CustomScopeStack scopeStack = new CustomScopeStack();
+
+				copyNamespaces(scopeStack, context);
+
 				template.evaluate(scopeStack, new NullWriter(), context.dynamicConfiguration());
 
 				var namespace = new HashMap<String, MacroTag.MacroFunction>();
@@ -86,6 +90,58 @@ public class ImportTag extends AbstractTag implements Tag {
 			}
 		} catch (Exception e) {
 			throw new TagException("error importing template", node.getLine(), node.getColumn());
+		}
+	}
+
+	private void copyNamespaces(CustomScopeStack scopeStack, Renderer.Context context) {
+		
+		var varNames = List.of(
+				Constants.TemplateNamespaces.CMS,
+				Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE,
+				Constants.TemplateNamespaces.NODE,
+				Constants.TemplateNamespaces.SITE,
+				"requestContext",
+				"theme",
+				"messages",
+				"PREVIEW_MODE",
+				"MANAGER",
+				"DEV_MODE",
+				"ENV",
+				"USERNAME"
+		);
+		varNames.forEach(name -> {
+			var value = context.scopes().getVariable(name);
+			if (value.isPresent()) {
+				scopeStack.setVariable(name, value.get());
+			}
+		});
+		
+		if (context.scopes().getVariable(Constants.TemplateNamespaces.CMS).isPresent()) {
+			scopeStack.setVariable(
+					Constants.TemplateNamespaces.CMS,
+					context.scopes().getVariable(Constants.TemplateNamespaces.CMS).get()
+			);
+		}
+
+		if (context.scopes().getVariable(Constants.TemplateNamespaces.NODE).isPresent()) {
+			scopeStack.setVariable(
+					Constants.TemplateNamespaces.NODE,
+					context.scopes().getVariable(Constants.TemplateNamespaces.NODE).get()
+			);
+		}
+
+		if (context.scopes().getVariable(Constants.TemplateNamespaces.SITE).isPresent()) {
+			scopeStack.setVariable(
+					Constants.TemplateNamespaces.SITE,
+					context.scopes().getVariable(Constants.TemplateNamespaces.SITE).get()
+			);
+		}
+
+		if (context.scopes().getVariable(Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE).isPresent()) {
+			scopeStack.setVariable(
+					Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE,
+					context.scopes().getVariable(Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE).get()
+			);
 		}
 	}
 
