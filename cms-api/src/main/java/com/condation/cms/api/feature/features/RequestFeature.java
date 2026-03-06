@@ -40,6 +40,10 @@ public record RequestFeature(String context, String uri, Map<String, List<String
 	public RequestFeature(String uri, Map<String, List<String>> queryParameters) {
 		this(null, uri, queryParameters, null);
 	}
+
+	public boolean hasQueryParameter (String name) {
+		return queryParameters.containsKey(name);
+	}
 	
 	public String getQueryParameter(String name, final String defaultValue) {
 		if (!queryParameters.containsKey(name)) {
