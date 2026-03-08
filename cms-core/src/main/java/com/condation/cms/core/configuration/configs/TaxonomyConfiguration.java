@@ -23,6 +23,7 @@ package com.condation.cms.core.configuration.configs;
  */
 
 import com.condation.cms.api.db.taxonomy.Taxonomy;
+import com.condation.cms.api.db.taxonomy.TaxonomyStore;
 import com.condation.cms.api.db.taxonomy.Value;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.core.configuration.ConfigSource;
@@ -33,6 +34,7 @@ import com.condation.cms.core.configuration.reload.NoReload;
 import com.condation.cms.api.eventbus.events.ConfigurationReloadEvent;
 import com.condation.cms.core.configuration.source.TomlConfigSource;
 import com.condation.cms.core.configuration.source.YamlConfigSource;
+import com.condation.cms.core.db.taxonomy.FileTaxonomyStore;
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -57,6 +59,7 @@ public class TaxonomyConfiguration extends AbstractConfiguration implements ICon
 	private final EventBus eventBus;
 	private final String id;
 	private final Path hostBase;
+	private final TaxonomyStore taxonomyStore;
 
 	private ConcurrentMap<String, Taxonomy> taxonomies = new ConcurrentHashMap<>();
 	
@@ -66,6 +69,11 @@ public class TaxonomyConfiguration extends AbstractConfiguration implements ICon
 		this.eventBus = builder.eventBus;
 		this.id = builder.id;
 		this.hostBase = builder.hostBase;
+		if (builder.taxonomyStore != null) {
+			this.taxonomyStore = builder.taxonomyStore;
+		} else {
+			this.taxonomyStore = new FileTaxonomyStore(hostBase);
+		}
 		reloadStrategy.register(this);
 		
 		reload();
@@ -96,36 +104,12 @@ public class TaxonomyConfiguration extends AbstractConfiguration implements ICon
 			if (source.reload()) {
 				eventBus.publish(new ConfigurationReloadEvent(id));				
 			}
-			
-			var taxos = getList("taxonomies", Taxonomy.class);
-			taxos.forEach(taxo -> {
-				taxonomies.put(taxo.slug, taxo);
-				loadValues(taxo);
-			});
 		});
-	}
-	
-	private void loadValues(Taxonomy taxonomy) {
-		try {
-			var yamlFile = "config/taxonomy.%s.yaml".formatted(taxonomy.getSlug());
-			var tomlFile = "config/taxonomy.%s.toml".formatted(taxonomy.getSlug());
-			
-			var valueSrc = List.of(
-					YamlConfigSource.build(hostBase.resolve(yamlFile)),
-					TomlConfigSource.build(hostBase.resolve(tomlFile))
-			);
-			
-			var values = valueSrc.stream()
-					.filter(ConfigSource::exists)
-					.map(config -> config.getList("values"))
-					.flatMap(List::stream)
-					.map(item -> toJson(item))
-					.map(item -> fromJson(item))
-					.collect(Collectors.toMap(Value::getId, Function.identity()));
-			taxonomy.setValues(values);
-		} catch (IOException ex) {
-			log.error("", ex);
-		}
+
+		var taxos = taxonomyStore.all();
+		taxos.forEach(taxo -> {
+			taxonomies.put(taxo.slug, taxo);
+		});
 	}
 	private String toJson(Object item) throws JsonSyntaxException {
 		return GSONProvider.GSON.toJson(item);
@@ -141,6 +125,7 @@ public class TaxonomyConfiguration extends AbstractConfiguration implements ICon
 		private String id = UUID.randomUUID().toString();
 		private final EventBus eventBus;
 		private Path hostBase;
+		private TaxonomyStore taxonomyStore;
 		
 		public Builder (EventBus eventbus) {
 			this.eventBus = eventbus;
@@ -163,6 +148,11 @@ public class TaxonomyConfiguration extends AbstractConfiguration implements ICon
 		
 		public Builder reloadStrategy (ReloadStrategy reload) {
 			this.reloadStrategy = reload;
+			return this;
+		}
+
+		public Builder taxonomyStore (TaxonomyStore taxonomyStore) {
+			this.taxonomyStore = taxonomyStore;
 			return this;
 		}
 		

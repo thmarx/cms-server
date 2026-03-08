@@ -169,6 +169,7 @@ public class ConfigurationFactory {
 				.id("taxonomy")
 				.reloadStrategy(reloadStrategy)
 				.hostBase(hostBase)
+				.taxonomyStore(new com.condation.cms.core.db.taxonomy.FileTaxonomyStore(hostBase))
 				.addSource(YamlConfigSource.build(hostBase.resolve("config/taxonomy.yaml")))
 				.addSource(TomlConfigSource.build(hostBase.resolve("config/taxonomy.toml")))
 				.build();
