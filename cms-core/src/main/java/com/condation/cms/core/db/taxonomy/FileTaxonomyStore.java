@@ -28,12 +28,13 @@ import com.condation.cms.api.db.taxonomy.Value;
 import com.condation.cms.core.configuration.GSONProvider;
 import com.condation.cms.core.configuration.source.TomlConfigSource;
 import com.condation.cms.core.configuration.source.YamlConfigSource;
+import io.github.wasabithumb.jtoml.JToml;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ public class FileTaxonomyStore implements TaxonomyStore {
 
 	private final Path hostBase;
 	private final Yaml yaml;
+	private static final JToml JTOML = JToml.jToml();
 
 	public FileTaxonomyStore(Path hostBase) {
 		this.hostBase = hostBase;
@@ -141,7 +143,6 @@ public class FileTaxonomyStore implements TaxonomyStore {
 
 	@Override
 	public Optional<Taxonomy> forSlug(String slug) {
-		// Optimization: try to find it in the definition file first, then load values only for that one
 		try {
 			Path file = getTaxonomyDefinitionFile();
 			if (!Files.exists(file)) {
@@ -171,71 +172,161 @@ public class FileTaxonomyStore implements TaxonomyStore {
 
 	@Override
 	public synchronized void saveTaxonomy(Taxonomy taxonomy) throws IOException {
-		List<Taxonomy> all = all();
+		// To save definitions without values, we load definitions from the file directly
+		Path file = getTaxonomyDefinitionFile();
+		List<Taxonomy> allDefinitions = new ArrayList<>();
+		if (Files.exists(file)) {
+			List<Object> taxonomiesData;
+			if (file.toString().endsWith(".toml")) {
+				var source = TomlConfigSource.build(file);
+				taxonomiesData = source.getList("taxonomies");
+			} else {
+				var source = YamlConfigSource.build(file);
+				taxonomiesData = source.getList("taxonomies");
+			}
+			allDefinitions = taxonomiesData.stream()
+					.map(item -> GSONProvider.GSON.fromJson(GSONProvider.GSON.toJson(item), Taxonomy.class))
+					.collect(Collectors.toList());
+		}
+
 		boolean found = false;
-		for (int i = 0; i < all.size(); i++) {
-			if (all.get(i).getSlug().equals(taxonomy.getSlug())) {
-				all.set(i, taxonomy);
+		for (int i = 0; i < allDefinitions.size(); i++) {
+			if (allDefinitions.get(i).getSlug().equals(taxonomy.getSlug())) {
+				allDefinitions.set(i, taxonomy);
 				found = true;
 				break;
 			}
 		}
 		if (!found) {
-			all.add(taxonomy);
+			allDefinitions.add(taxonomy);
 		}
 
 		Map<String, Object> data = new HashMap<>();
-		data.put("taxonomies", all.stream().map(this::taxonomyToMap).collect(Collectors.toList()));
-
-		Path file = getTaxonomyDefinitionFile();
-		// If it's TOML, we might want to convert it to YAML if we are writing,
-		// but the requirement says "the implementation in the filesystem should remain as it is".
-		// However, we only have a YAML writer here.
-		// For now, if it was TOML, we write it back as YAML to the same filename? No, that's bad.
-		// Let's stick to YAML for writing as per common practice in this CMS when things are editable.
-		if (file.toString().endsWith(".toml")) {
-			file = hostBase.resolve("config/taxonomy.yaml");
-		}
+		data.put("taxonomies", allDefinitions.stream().map(this::toPlainMapWithoutValues).collect(Collectors.toList()));
 
 		saveAtomic(file, data);
 	}
 
-	private Map<String, Object> taxonomyToMap(Taxonomy t) {
-		Map<String, Object> m = new HashMap<>();
-		m.put("title", t.getTitle());
-		m.put("slug", t.getSlug());
-		m.put("field", t.getField());
-		m.put("array", t.isArray());
-		m.put("template", t.getTemplate());
-		m.put("template_single", t.getSingleTemplate());
+	private Map<String, Object> toPlainMapWithoutValues(Taxonomy t) {
+		Map<String, Object> m = toPlainMap(t);
+		m.remove("values");
 		return m;
 	}
 
-	private Map<String, Object> valueToMap(Value v) {
-		Map<String, Object> m = new HashMap<>();
-		m.put("id", v.getId());
-		m.put("title", v.getTitle());
-		return m;
+	private Map<String, Object> toPlainMap(Object o) {
+		var json = GSONProvider.GSON.toJsonTree(o);
+		return GSONProvider.GSON.fromJson(json, HashMap.class);
 	}
 
-	private void saveAtomic(Path file, Object data) throws IOException {
+	private Object unwrap(Object value) {
+		if (value instanceof Map m) {
+			Map<String, Object> unwrapped = new HashMap<>();
+			for (Object key : m.keySet()) {
+				unwrapped.put(key.toString(), unwrap(m.get(key)));
+			}
+			return unwrapped;
+		} else if (value instanceof List l) {
+			List<Object> unwrapped = new ArrayList<>();
+			for (Object item : l) {
+				unwrapped.add(unwrap(item));
+			}
+			return unwrapped;
+		} else {
+			return value;
+		}
+	}
+
+	private void saveAtomic(Path file, Map<String, Object> data) throws IOException {
 		Path tempFile = file.getParent().resolve(file.getFileName().toString() + ".tmp");
 		Files.createDirectories(file.getParent());
-		try (var writer = Files.newBufferedWriter(tempFile, StandardCharsets.UTF_8)) {
-			yaml.dump(data, writer);
+
+		Object unwrappedData = unwrap(data);
+		if (file.toString().endsWith(".toml")) {
+			try {
+				var table = JTOML.toToml(unwrappedData);
+				JTOML.write(tempFile, table);
+			} catch (Exception e) {
+				log.warn("JToml failed to write TOML, using fallback: " + e.getMessage());
+				Files.writeString(tempFile, toTomlString(unwrappedData), StandardCharsets.UTF_8);
+			}
+		} else {
+			try (var writer = Files.newBufferedWriter(tempFile, StandardCharsets.UTF_8)) {
+				yaml.dump(unwrappedData, writer);
+			}
 		}
 		Files.move(tempFile, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
 	}
 
+	private String toTomlString(Object data) {
+		StringBuilder sb = new StringBuilder();
+		if (data instanceof Map m) {
+			for (Object key : m.keySet()) {
+				Object val = m.get(key);
+				if (val instanceof List l) {
+					for (Object item : l) {
+						sb.append("[[").append(key).append("]]\n");
+						sb.append(toTomlProperties(item));
+						sb.append("\n");
+					}
+				} else {
+					sb.append(key).append(" = ").append(formatTomlValue(val)).append("\n");
+				}
+			}
+		}
+		return sb.toString();
+	}
+
+	private String toTomlProperties(Object data) {
+		StringBuilder sb = new StringBuilder();
+		if (data instanceof Map m) {
+			for (Object key : m.keySet()) {
+				sb.append(key).append(" = ").append(formatTomlValue(m.get(key))).append("\n");
+			}
+		}
+		return sb.toString();
+	}
+
+	private String formatTomlValue(Object val) {
+		if (val instanceof String s) {
+			return "\"" + s.replace("\"", "\\\"") + "\"";
+		}
+		if (val instanceof Boolean b) {
+			return b.toString();
+		}
+		if (val instanceof Number n) {
+			return n.toString();
+		}
+		if (val == null) {
+			return "\"\""; // TOML has no null, use empty string
+		}
+		return "\"" + val.toString().replace("\"", "\\\"") + "\"";
+	}
+
 	@Override
 	public synchronized void deleteTaxonomy(String slug) throws IOException {
-		List<Taxonomy> all = all();
-		all.removeIf(t -> t.getSlug().equals(slug));
+		Path file = getTaxonomyDefinitionFile();
+		if (!Files.exists(file)) {
+			return;
+		}
+
+		List<Object> taxonomiesData;
+		if (file.toString().endsWith(".toml")) {
+			var source = TomlConfigSource.build(file);
+			taxonomiesData = source.getList("taxonomies");
+		} else {
+			var source = YamlConfigSource.build(file);
+			taxonomiesData = source.getList("taxonomies");
+		}
+
+		List<Taxonomy> allDefinitions = taxonomiesData.stream()
+				.map(item -> GSONProvider.GSON.fromJson(GSONProvider.GSON.toJson(item), Taxonomy.class))
+				.collect(Collectors.toList());
+
+		allDefinitions.removeIf(t -> t.getSlug().equals(slug));
 
 		Map<String, Object> data = new HashMap<>();
-		data.put("taxonomies", all.stream().map(this::taxonomyToMap).collect(Collectors.toList()));
+		data.put("taxonomies", allDefinitions.stream().map(this::toPlainMapWithoutValues).collect(Collectors.toList()));
 
-		Path file = getTaxonomyDefinitionFile();
 		saveAtomic(file, data);
 
 		Path valuesFile = getTaxonomyValuesFile(slug);
@@ -250,12 +341,9 @@ public class FileTaxonomyStore implements TaxonomyStore {
 			taxo.getValues().put(value.getId(), value);
 
 			Map<String, Object> data = new HashMap<>();
-			data.put("values", taxo.getValues().values().stream().map(this::valueToMap).collect(Collectors.toList()));
+			data.put("values", taxo.getValues().values().stream().map(this::toPlainMap).collect(Collectors.toList()));
 
 			Path file = getTaxonomyValuesFile(taxonomySlug);
-			if (file.toString().endsWith(".toml")) {
-				file = hostBase.resolve("config/taxonomy.%s.yaml".formatted(taxonomySlug));
-			}
 			saveAtomic(file, data);
 		}
 	}
@@ -268,12 +356,9 @@ public class FileTaxonomyStore implements TaxonomyStore {
 			taxo.getValues().remove(valueId);
 
 			Map<String, Object> data = new HashMap<>();
-			data.put("values", taxo.getValues().values().stream().map(this::valueToMap).collect(Collectors.toList()));
+			data.put("values", taxo.getValues().values().stream().map(this::toPlainMap).collect(Collectors.toList()));
 
 			Path file = getTaxonomyValuesFile(taxonomySlug);
-			if (file.toString().endsWith(".toml")) {
-				file = hostBase.resolve("config/taxonomy.%s.yaml".formatted(taxonomySlug));
-			}
 			saveAtomic(file, data);
 		}
 	}

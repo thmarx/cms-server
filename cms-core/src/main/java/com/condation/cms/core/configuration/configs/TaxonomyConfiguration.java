@@ -101,8 +101,12 @@ public class TaxonomyConfiguration extends AbstractConfiguration implements ICon
 	public void reload () {
 		taxonomies.clear();
 		sources.forEach(source -> {
-			if (source.reload()) {
-				eventBus.publish(new ConfigurationReloadEvent(id));				
+			try {
+				if (source.reload()) {
+					eventBus.publish(new ConfigurationReloadEvent(id));
+				}
+			} catch (Exception ex) {
+				log.error("Error reloading source", ex);
 			}
 		});
 
