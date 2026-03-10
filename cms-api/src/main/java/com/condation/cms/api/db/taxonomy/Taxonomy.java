@@ -24,8 +24,10 @@ package com.condation.cms.api.db.taxonomy;
 
 
 import com.condation.cms.api.Constants;
+import com.google.gson.annotations.SerializedName;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -34,11 +36,13 @@ import lombok.NoArgsConstructor;
  * @author t.marx
  */
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class Taxonomy {
 	public String title;
 	public String slug;
 	public String template = Constants.Taxonomy.DEFAULT_TEMPLATE;
+	@SerializedName("template_single")
 	public String singleTemplate = Constants.Taxonomy.DEFAULT_SINGLE_TEMPLATE;
 	public String field;
 	public boolean array = false;
