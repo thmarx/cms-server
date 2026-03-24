@@ -22,7 +22,9 @@ package com.condation.cms.templates.functions.impl;
  * #L%
  */
 
-import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.templates.functions.TemplateFunction;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -30,12 +32,23 @@ import lombok.extern.slf4j.Slf4j;
  * @author thorstenmarx
  */
 @Slf4j
-public class NodeMetaFunction extends AbstractNodeFunction {
+public class UriParamFunction implements TemplateFunction {
 
-	public static final String NAME = "select_node_meta";
+	public static final String NAME = "uri_param";
 
-	public NodeMetaFunction(RequestContext requestContext) {
-		super(requestContext);
+	@Override
+	public Object invoke(Object... params) {
+		if (params == null || params.length == 0 || !(params[0] instanceof String)) {
+			return "";
+		}
+		
+		return URLEncoder.encode(String.valueOf(params[0]), StandardCharsets.UTF_8)
+                .replace("+", "%20")      // Leerzeichen als %20, nicht +
+                .replace("%21", "!")
+                .replace("%27", "'")
+                .replace("%28", "(")
+                .replace("%29", ")")
+                .replace("%7E", "~");
 	}
 
 	@Override
