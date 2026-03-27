@@ -22,6 +22,8 @@ package com.condation.cms.templates;
  * #L%
  */
 
+import com.condation.cms.templates.error.LenientErrorHandler;
+import com.condation.cms.templates.error.StrictErrorHandler;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +42,7 @@ public class TemplateConfigurationTest {
 		Assertions.assertThat(config.isJexlSilent()).isFalse();
 		Assertions.assertThat(config.isJexlStrict()).isFalse();
 		Assertions.assertThat(config.getMaxRenderDepth()).isEqualTo(100);
+		Assertions.assertThat(config.getErrorHandler()).isInstanceOf(StrictErrorHandler.class);
 	}
 
 	@Test
@@ -52,6 +55,7 @@ public class TemplateConfigurationTest {
 		Assertions.assertThat(config.isJexlSilent()).isTrue();
 		Assertions.assertThat(config.isJexlStrict()).isFalse();
 		Assertions.assertThat(config.getMaxRenderDepth()).isEqualTo(100);
+		Assertions.assertThat(config.getErrorHandler()).isInstanceOf(LenientErrorHandler.class);
 	}
 
 	@Test

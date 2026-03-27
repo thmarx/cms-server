@@ -27,6 +27,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.condation.cms.templates.error.ErrorHandler;
+import com.condation.cms.templates.error.LenientErrorHandler;
+import com.condation.cms.templates.error.StrictErrorHandler;
 import com.condation.cms.templates.filter.Filter;
 import com.condation.cms.templates.filter.FilterRegistry;
 
@@ -94,6 +97,14 @@ public class TemplateConfiguration {
 	@Setter
 	private boolean jexlSilent;
 
+	/**
+	 * Error handler for template errors.
+	 * Defaults to StrictErrorHandler in dev mode, LenientErrorHandler in production mode.
+	 */
+	@Getter
+	@Setter
+	private ErrorHandler errorHandler;
+
 	public TemplateConfiguration (final boolean devMode) {
 		this.devMode = devMode;
 
@@ -102,10 +113,12 @@ public class TemplateConfiguration {
 			this.expressionCacheSize = 512;
 			this.jexlSafeMode = false;
 			this.jexlSilent = false;
+			this.errorHandler = new StrictErrorHandler();
 		} else {
 			this.expressionCacheSize = 1024;
 			this.jexlSafeMode = true;
 			this.jexlSilent = true;
+			this.errorHandler = new LenientErrorHandler();
 		}
 	}
 	

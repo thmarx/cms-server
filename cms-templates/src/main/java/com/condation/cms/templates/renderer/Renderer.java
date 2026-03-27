@@ -139,10 +139,10 @@ public class Renderer {
 	}
 
 	private void handleUnknown(String type, String name, ASTNode node) {
-		if (this.configuration.isDevMode()) {
-			throw new RenderException("unknown " + type + ": " + name, node.getLine(), node.getColumn());
-		} else {
-			LOGGER.warn("unknown " + type + " '{}' at L{}C{}", name, node.getLine(), node.getColumn());
+		switch (type) {
+			case "tag" -> configuration.getErrorHandler().handleUnknownTag(name, node.getLine(), node.getColumn(), null);
+			case "component" -> configuration.getErrorHandler().handleUnknownComponent(name, node.getLine(), node.getColumn(), null);
+			default -> LOGGER.warn("unknown " + type + " '{}' at L{}C{}", name, node.getLine(), node.getColumn());
 		}
 	}
 
