@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 public class Renderer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Renderer.class);
-	private static final int MAX_DEPTH = 100;
 
 	private final TemplateConfiguration configuration;
 	private final CMSTemplateEngine templateEngine;
@@ -108,8 +107,8 @@ public class Renderer {
 	}
 
 	private void renderNode(ASTNode node, Context context, Writer writer, RenderConfiguration renderConfiguration, int depth) throws IOException {
-		if (depth > MAX_DEPTH) {
-			throw new RenderException("Maximum render depth exceeded", node.getLine(), node.getColumn());
+		if (depth > configuration.getMaxRenderDepth()) {
+			throw new RenderException("Maximum render depth exceeded: " + depth + " > " + configuration.getMaxRenderDepth(), node.getLine(), node.getColumn());
 		}
 
 		switch (node) {

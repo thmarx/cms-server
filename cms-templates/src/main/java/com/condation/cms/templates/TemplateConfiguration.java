@@ -34,6 +34,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * Configuration for the template engine including performance and behavior settings.
  *
  * @author t.marx
  */
@@ -42,19 +43,70 @@ public class TemplateConfiguration {
 	private final Map<String, Tag> registeredTags = new HashMap<>();
 	@Getter
 	private final FilterRegistry filterRegistry = new FilterRegistry();
-	
+
 	@Getter
 	@Setter
 	private TemplateLoader templateLoader;
-	
+
 	@Getter
 	private TemplateCache templateCache = null;
-	
+
 	@Getter
 	private boolean devMode = false;
-	
+
+	/**
+	 * Maximum depth for recursive template rendering to prevent stack overflow.
+	 * Default: 100
+	 */
+	@Getter
+	@Setter
+	private int maxRenderDepth = 100;
+
+	/**
+	 * Size of the JEXL expression cache.
+	 * Defaults to 512 in dev mode, 1024 in production mode.
+	 */
+	@Getter
+	@Setter
+	private int expressionCacheSize;
+
+	/**
+	 * JEXL safe mode - when true, prevents access to certain Java features.
+	 * Defaults to false in dev mode, true in production mode.
+	 */
+	@Getter
+	@Setter
+	private boolean jexlSafeMode;
+
+	/**
+	 * JEXL strict mode - when true, throws exceptions on undefined variables.
+	 * Default: false
+	 */
+	@Getter
+	@Setter
+	private boolean jexlStrict = false;
+
+	/**
+	 * JEXL silent mode - when true, suppresses exceptions during expression evaluation.
+	 * Defaults to false in dev mode, true in production mode.
+	 */
+	@Getter
+	@Setter
+	private boolean jexlSilent;
+
 	public TemplateConfiguration (final boolean devMode) {
 		this.devMode = devMode;
+
+		// Set defaults based on dev/prod mode
+		if (devMode) {
+			this.expressionCacheSize = 512;
+			this.jexlSafeMode = false;
+			this.jexlSilent = false;
+		} else {
+			this.expressionCacheSize = 1024;
+			this.jexlSafeMode = true;
+			this.jexlSilent = true;
+		}
 	}
 	
 	public boolean hasTags () {
