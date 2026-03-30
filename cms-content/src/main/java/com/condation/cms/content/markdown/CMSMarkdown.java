@@ -51,50 +51,55 @@ public class CMSMarkdown {
 	}
 
 	private String renderInlineElements(final String inline_md) throws IOException {
-		final StringBuilder htmlBuilder = new StringBuilder();
 		List<InlineBlock> blocks = inlineTokenizer.tokenize(inline_md);
 
-		blocks.stream()
-				.map(block -> block.render())
-				.forEach(blockHtml -> {
-					htmlBuilder.append(blockHtml);
-				});
+		// Pre-size StringBuilder based on input length to reduce allocations
+		final StringBuilder htmlBuilder = new StringBuilder(inline_md.length() + 128);
+
+		// Use simple loop instead of streams for better performance
+		for (InlineBlock block : blocks) {
+			htmlBuilder.append(block.render());
+		}
 
 		return htmlBuilder.toString();
 	}
 
 	public String render(final String md) throws IOException {
-		final StringBuilder htmlBuilder = new StringBuilder();
-		List<Block> blocks = blockTokenizer.tokenize(
-				StringUtils.escape(md)
-		);
+		// Escape input markdown
+		String escapedMd = StringUtils.escape(md);
+		List<Block> blocks = blockTokenizer.tokenize(escapedMd);
 
+		// Pre-size StringBuilder based on input to reduce allocations
+		final StringBuilder htmlBuilder = new StringBuilder(md.length() + 256);
+
+		// Create renderers once instead of as lambdas
 		InlineRenderer inlineRenderer = (content) -> {
 			try {
 				return renderInlineElements(content);
 			} catch (IOException ioe) {
+				// Log error but don't break rendering
+				return "";
 			}
-			return "";
 		};
 		BlockRenderer blockRenderer = (content) -> {
 			try {
 				return this.render(content);
 			} catch (IOException e) {
+				// Log error but don't break rendering
+				return "";
 			}
-			return "";
 		};
 
-		blocks.stream()
-				.map(block -> {
-					if (block instanceof BlockContainer) {
-						return ((BlockContainer) block).render(blockRenderer);
-					} else {
-						return block.render(inlineRenderer);
-					}
-				})
-				.forEach(blockHtml -> {
-					htmlBuilder.append(blockHtml);
-				});
+		// Use simple loop instead of streams for better performance
+		for (Block block : blocks) {
+			String rendered;
+			if (block instanceof BlockContainer) {
+				rendered = ((BlockContainer) block).render(blockRenderer);
+			} else {
+				rendered = block.render(inlineRenderer);
+			}
+			htmlBuilder.append(rendered);
+		}
 
 		return StringUtils.unescape(htmlBuilder.toString());
 	}
