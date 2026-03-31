@@ -1,0 +1,6 @@
+{% assign nodes = cms.navigation.list("/") %}
+<ul>
+  {% for node in nodes %}
+    <li><a href="{{ node.path }}">{{ node.name }}</a></li>
+  {% endfor %}
+</ul>

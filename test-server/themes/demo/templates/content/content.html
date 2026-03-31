@@ -14,9 +14,7 @@
 
 	<body class="centered">
 
-		{% include "libs/language_switcher.html" %}
-
-		{% include "libs/navigation.html" %}
+		{% include "content/navigation.html" %}
 
 		<div id="content" 
 			{{ ext.ui.toolbar("main", "main", ["editContent", "editAttributes"], {"form": "top"}) | raw }}
