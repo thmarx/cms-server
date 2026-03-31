@@ -1,4 +1,4 @@
-package com.condation.cms.templates.exceptions;
+package com.condation.cms.templates.parser.handler;
 
 /*-
  * #%L
@@ -22,22 +22,21 @@ package com.condation.cms.templates.exceptions;
  * #L%
  */
 
+import com.condation.cms.templates.lexer.Token;
+import com.condation.cms.templates.parser.ParserContext;
+
 /**
- * Exception thrown during template parsing with enhanced error reporting.
- *
- * @author t.marx
+ * Strategy interface for handling specific token types during parsing.
+ * Each token type gets its own handler implementation.
  */
-public class ParserException extends TemplateException {
+@FunctionalInterface
+public interface TokenHandler {
 
-	public ParserException(String message, int line, int column) {
-		super(message, line, column);
-	}
-
-	public ParserException(String message, int line, int column, String templateName) {
-		super(message, line, column, templateName);
-	}
-
-	public ParserException(String message, int line, int column, String templateName, String sourceSnippet) {
-		super(message, line, column, templateName, sourceSnippet);
-	}
+	/**
+	 * Handles a specific token and updates the parser context accordingly.
+	 *
+	 * @param token   the token to handle
+	 * @param context the current parser context
+	 */
+	void handle(Token token, ParserContext context);
 }

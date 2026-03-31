@@ -1,4 +1,4 @@
-package com.condation.cms.templates.exceptions;
+package com.condation.cms.templates.parser.handler;
 
 /*-
  * #%L
@@ -22,22 +22,21 @@ package com.condation.cms.templates.exceptions;
  * #L%
  */
 
+import com.condation.cms.templates.lexer.Token;
+import com.condation.cms.templates.parser.ParserContext;
+import com.condation.cms.templates.parser.TagNode;
+
 /**
- * Exception thrown during template parsing with enhanced error reporting.
- *
- * @author t.marx
+ * Handles TAG_START tokens by creating and pushing a TagNode.
  */
-public class ParserException extends TemplateException {
+public class TagStartTokenHandler implements TokenHandler {
 
-	public ParserException(String message, int line, int column) {
-		super(message, line, column);
-	}
-
-	public ParserException(String message, int line, int column, String templateName) {
-		super(message, line, column, templateName);
-	}
-
-	public ParserException(String message, int line, int column, String templateName, String sourceSnippet) {
-		super(message, line, column, templateName, sourceSnippet);
+	@Override
+	public void handle(Token token, ParserContext context) {
+		if (context.hasNodes()) {
+			TagNode tagNode = new TagNode(token.line, token.column);
+			context.addChildToCurrentNode(tagNode);
+			context.pushNode(tagNode);
+		}
 	}
 }

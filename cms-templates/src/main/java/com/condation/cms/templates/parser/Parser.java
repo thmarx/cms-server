@@ -10,12 +10,12 @@ package com.condation.cms.templates.parser;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,19 +23,20 @@ package com.condation.cms.templates.parser;
  */
 
 import com.condation.cms.templates.lexer.TokenStream;
-import com.condation.cms.templates.Tag;
 import com.condation.cms.templates.TemplateConfiguration;
 import com.condation.cms.templates.exceptions.ParserException;
-import com.condation.cms.templates.exceptions.UnknownTagException;
-import com.condation.cms.templates.utils.TemplateUtils;
+import com.condation.cms.templates.parser.handler.TokenHandler;
+import com.condation.cms.templates.parser.handler.TokenHandlerRegistry;
 import java.util.Stack;
 
 import com.condation.cms.templates.lexer.Token;
-import static com.condation.cms.templates.lexer.Token.Type.TAG_END;
-import static com.condation.cms.templates.lexer.Token.Type.TAG_START;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.jexl3.JexlEngine;
 
+/**
+ * Parser that converts a token stream into an Abstract Syntax Tree (AST).
+ * Uses the Strategy pattern with TokenHandlers for processing different token types.
+ */
 @RequiredArgsConstructor
 public class Parser {
 
@@ -43,200 +44,29 @@ public class Parser {
 
 	private final JexlEngine engine;
 
-	public ASTNode parse (final TokenStream tokenStream) {
+	private final TokenHandlerRegistry handlerRegistry = TokenHandlerRegistry.createDefault();
+
+	public ASTNode parse(final TokenStream tokenStream) {
 		return _parse(tokenStream, new ParserConfiguration(configuration));
 	}
-	
+
 	private ASTNode _parse(final TokenStream tokenStream, final ParserConfiguration parserConfiguration) {
 		ASTNode root = new ASTNode(0, 0);
 		Stack<ASTNode> nodeStack = new Stack<>();
 		nodeStack.push(root);
 
-		Token token = null;
+		ParserContext context = new ParserContext(nodeStack, parserConfiguration, engine);
+
+		Token token;
 		while ((token = tokenStream.peek()) != null) {
-			switch (token.type) {
-				case TEXT: {
-					if (!nodeStack.isEmpty()) {
-						nodeStack.peek().addChild(new TextNode(token.value, token.line, token.column));
-					}
-					break;
-				}
-				case COMMENT_VALUE: {
-					if (!nodeStack.isEmpty()) {
-						ASTNode node = nodeStack.peek();
-						if (node instanceof CommentNode commentNode) {
-							commentNode.setValue(token.value);
-						}
-					}
-					break;
-				}
-				case VARIABLE_START: {
-					if (!nodeStack.isEmpty()) {
-						VariableNode variableNode = new VariableNode(token.line, token.column);
-						nodeStack.peek().addChild(variableNode);
-						nodeStack.push(variableNode); // In den neuen Kontext für Variablen wechseln
-					}
-					break;
-				}
-				case COMMENT_START: {
-					if (!nodeStack.isEmpty()) {
-						CommentNode commentNode = new CommentNode(token.line, token.column);
-						nodeStack.peek().addChild(commentNode);
-						nodeStack.push(commentNode); // In den neuen Kontext für Variablen wechseln
-					}
-					break;
-				}
-				case TAG_START: {
-					if (!nodeStack.isEmpty()) {
-						TagNode tagNode = new TagNode(token.line, token.column);
+			TokenHandler handler = handlerRegistry.getHandler(token.type);
 
-						nodeStack.peek().addChild(tagNode);
-						nodeStack.push(tagNode); // In den neuen Kontext für Tags wechseln
-					}
-					break;
-				}
-				case TAG_END: {
-					if (!nodeStack.isEmpty() && nodeStack.peek() instanceof TagNode tempNode) {
-						if (parserConfiguration.hasTag(tempNode.getName())) {
-							Tag tag = parserConfiguration.getTag(tempNode.getName()).get();
-
-							if (tag.isClosingTag()) {
-								nodeStack.pop();
-
-								if (!nodeStack.isEmpty() && nodeStack.peek() instanceof TagNode) {
-									var temp = (TagNode) nodeStack.peek();
-									var ptag = parserConfiguration.getTag(temp.getName()).get();
-
-									if (ptag.getCloseTagName().isPresent()
-											&& ptag.getCloseTagName().get().equals(tag.getTagName())) {
-										nodeStack.pop();
-									} else {
-										throw new ParserException("invalid closing tag", token.line, token.column);
-									}
-								}
-							} else if (tag.getCloseTagName().isEmpty()) {
-								nodeStack.pop();
-							}
-
-						} else {
-							throw new ParserException("Undefined tag: " + tempNode.getName(), token.line, token.column);
-						}
-					} else {
-						throw new ParserException("Unexpected token: TAG_END", token.line, token.column);
-					}
-					break;
-				}
-				case COMPONENT_START: {
-					if (!nodeStack.isEmpty()) {
-						ComponentNode tagNode = new ComponentNode(token.line, token.column);
-
-						nodeStack.peek().addChild(tagNode);
-						nodeStack.push(tagNode); // In den neuen Kontext für Tags wechseln
-					}
-					break;
-				}
-				case COMPONENT_END: {
-					if (!nodeStack.isEmpty() && nodeStack.peek() instanceof ComponentNode tempNode) {
-						
-						var compName = tempNode.getName();
-						var isClosing = compName != null && compName.startsWith("end");
-						var startName = compName != null ? compName.replaceFirst("end", "") : "";
-						
-						if (isClosing) {
-							nodeStack.pop();
-							
-							if (!nodeStack.isEmpty() && nodeStack.peek() instanceof ComponentNode) {
-								var temp = (ComponentNode) nodeStack.peek();
-								
-								if (temp.getName().equals(startName)) {
-									nodeStack.pop();
-								} else {
-									throw new ParserException("invalid closing component", token.line, token.column);
-								}
-							}
-						}
-					} else {
-						throw new ParserException("Unexpected token: COMPONENT_END", token.line, token.column);
-					}
-					break;
-				}
-				case VARIABLE_END: {
-					if (!nodeStack.isEmpty()) {
-						nodeStack.pop(); // Aus dem aktuellen Tag-/Variable-Block heraustreten
-					} else {
-						throw new ParserException("Unexpected token: VARIABLE_END", token.line, token.column);
-					}
-					break;
-				}
-				case COMMENT_END: {
-					if (!nodeStack.isEmpty()) {
-						nodeStack.pop(); // Aus dem aktuellen Tag-/Variable-Block heraustreten
-					} else {
-						throw new ParserException("Unexpected token: COMMENT_END", token.line, token.column);
-					}
-					break;
-				}
-				case IDENTIFIER: {
-					if (!nodeStack.isEmpty()) {
-						ASTNode currentNode = nodeStack.peek();
-						if (currentNode instanceof TagNode tagNode1) {
-							var tagName = token.value != null ? token.value.trim() : token.value;
-							if (!parserConfiguration.hasTag(tagName)) {
-								throw new UnknownTagException("unkown tag (%s)".formatted(tagName), currentNode.getLine(), currentNode.getColumn());
-							}
-							tagNode1.setName(tagName);
-						} else if (currentNode instanceof VariableNode variableNode1) {
-							var identifier = token.value;
-							if (identifier != null && TemplateUtils.hasFilters(identifier)) {
-								var variable = TemplateUtils.extractVariableName(identifier);
-
-								variableNode1.setVariable(variable); // Variable setzen
-								variableNode1.setExpression(engine.createExpression(variable));
-
-								variableNode1.setFilters(TemplateUtils.extractFilters(identifier)
-										.stream()
-										.map(TemplateUtils::parseFilter)
-										.toList()
-								);
-							} else {
-								variableNode1.setVariable(token.value); // Variable setzen
-								if (token.value != null) {
-									variableNode1.setExpression(engine.createExpression(token.value));
-								}
-							}
-						} else if (currentNode instanceof ComponentNode compNode) {
-							compNode.setName(token.value);
-						}
-					}
-					break;
-				}
-				case EXPRESSION: {
-					if (!nodeStack.isEmpty()) {
-						ASTNode currentNode = nodeStack.peek();
-						if (currentNode instanceof TagNode tagNode) {
-							tagNode.setCondition(token.value);
-
-							if (parserConfiguration.getTag(tagNode.getName()).isEmpty()) {
-								throw new UnknownTagException("unkown tag (%s)".formatted(tagNode.getName()), currentNode.getLine(), currentNode.getColumn());
-							}
-
-							Tag tag = parserConfiguration.getTag(tagNode.getName()).get();
-							if (tag.parseExpressions() && token.value != null) {
-								tagNode.setExpression(engine.createExpression(token.value));
-							}
-						} else if (currentNode instanceof ComponentNode compNode) {
-							compNode.setParameters(token.value);
-						}
-					}
-					
-					break;
-				}
-				case END: {
-					break;
-				}
-				default:
-					throw new ParserException("Unexpected token: " + token.type, token.line, token.column);
+			if (handler != null) {
+				handler.handle(token, context);
+			} else {
+				throw new ParserException("Unexpected token: " + token.type, token.line, token.column);
 			}
+
 			tokenStream.next();
 		}
 

@@ -1,4 +1,4 @@
-package com.condation.cms.templates.exceptions;
+package com.condation.cms.templates.parser.handler;
 
 /*-
  * #%L
@@ -22,22 +22,19 @@ package com.condation.cms.templates.exceptions;
  * #L%
  */
 
+import com.condation.cms.templates.lexer.Token;
+import com.condation.cms.templates.parser.ParserContext;
+import com.condation.cms.templates.parser.TextNode;
+
 /**
- * Exception thrown during template parsing with enhanced error reporting.
- *
- * @author t.marx
+ * Handles TEXT tokens by creating TextNode instances.
  */
-public class ParserException extends TemplateException {
+public class TextTokenHandler implements TokenHandler {
 
-	public ParserException(String message, int line, int column) {
-		super(message, line, column);
-	}
-
-	public ParserException(String message, int line, int column, String templateName) {
-		super(message, line, column, templateName);
-	}
-
-	public ParserException(String message, int line, int column, String templateName, String sourceSnippet) {
-		super(message, line, column, templateName, sourceSnippet);
+	@Override
+	public void handle(Token token, ParserContext context) {
+		if (context.hasNodes()) {
+			context.addChildToCurrentNode(new TextNode(token.value, token.line, token.column));
+		}
 	}
 }

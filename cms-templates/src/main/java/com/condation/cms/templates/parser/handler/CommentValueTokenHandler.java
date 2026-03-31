@@ -1,4 +1,4 @@
-package com.condation.cms.templates.exceptions;
+package com.condation.cms.templates.parser.handler;
 
 /*-
  * #%L
@@ -22,22 +22,23 @@ package com.condation.cms.templates.exceptions;
  * #L%
  */
 
+import com.condation.cms.templates.lexer.Token;
+import com.condation.cms.templates.parser.ASTNode;
+import com.condation.cms.templates.parser.CommentNode;
+import com.condation.cms.templates.parser.ParserContext;
+
 /**
- * Exception thrown during template parsing with enhanced error reporting.
- *
- * @author t.marx
+ * Handles COMMENT_VALUE tokens by setting the value on the current CommentNode.
  */
-public class ParserException extends TemplateException {
+public class CommentValueTokenHandler implements TokenHandler {
 
-	public ParserException(String message, int line, int column) {
-		super(message, line, column);
-	}
-
-	public ParserException(String message, int line, int column, String templateName) {
-		super(message, line, column, templateName);
-	}
-
-	public ParserException(String message, int line, int column, String templateName, String sourceSnippet) {
-		super(message, line, column, templateName, sourceSnippet);
+	@Override
+	public void handle(Token token, ParserContext context) {
+		if (context.hasNodes()) {
+			ASTNode node = context.currentNode();
+			if (node instanceof CommentNode commentNode) {
+				commentNode.setValue(token.value);
+			}
+		}
 	}
 }

@@ -1,4 +1,4 @@
-package com.condation.cms.templates.exceptions;
+package com.condation.cms.templates.parser.handler;
 
 /*-
  * #%L
@@ -22,22 +22,16 @@ package com.condation.cms.templates.exceptions;
  * #L%
  */
 
+import com.condation.cms.templates.lexer.Token;
+import com.condation.cms.templates.parser.ParserContext;
+
 /**
- * Exception thrown during template parsing with enhanced error reporting.
- *
- * @author t.marx
+ * Handles END tokens (no-op, marks end of token stream).
  */
-public class ParserException extends TemplateException {
+public class EndTokenHandler implements TokenHandler {
 
-	public ParserException(String message, int line, int column) {
-		super(message, line, column);
-	}
-
-	public ParserException(String message, int line, int column, String templateName) {
-		super(message, line, column, templateName);
-	}
-
-	public ParserException(String message, int line, int column, String templateName, String sourceSnippet) {
-		super(message, line, column, templateName, sourceSnippet);
+	@Override
+	public void handle(Token token, ParserContext context) {
+		// No operation needed for END token
 	}
 }

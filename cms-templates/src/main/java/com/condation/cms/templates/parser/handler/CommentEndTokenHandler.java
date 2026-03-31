@@ -1,4 +1,4 @@
-package com.condation.cms.templates.exceptions;
+package com.condation.cms.templates.parser.handler;
 
 /*-
  * #%L
@@ -22,22 +22,21 @@ package com.condation.cms.templates.exceptions;
  * #L%
  */
 
+import com.condation.cms.templates.exceptions.ParserException;
+import com.condation.cms.templates.lexer.Token;
+import com.condation.cms.templates.parser.ParserContext;
+
 /**
- * Exception thrown during template parsing with enhanced error reporting.
- *
- * @author t.marx
+ * Handles COMMENT_END tokens by popping the current node from the stack.
  */
-public class ParserException extends TemplateException {
+public class CommentEndTokenHandler implements TokenHandler {
 
-	public ParserException(String message, int line, int column) {
-		super(message, line, column);
-	}
-
-	public ParserException(String message, int line, int column, String templateName) {
-		super(message, line, column, templateName);
-	}
-
-	public ParserException(String message, int line, int column, String templateName, String sourceSnippet) {
-		super(message, line, column, templateName, sourceSnippet);
+	@Override
+	public void handle(Token token, ParserContext context) {
+		if (context.hasNodes()) {
+			context.popNode();
+		} else {
+			throw new ParserException("Unexpected token: COMMENT_END", token.line, token.column);
+		}
 	}
 }
