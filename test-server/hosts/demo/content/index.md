@@ -40,7 +40,7 @@ That's a demo page with some extra features to show the manager application!
 
 Hello world!
 
-Here some content!
+Here some content! test
 
 Hello: [[cms:username]][[/cms:username]]
 Theme: [[theme_name]][[/theme_name]]
