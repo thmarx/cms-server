@@ -1,4 +1,4 @@
-env = "dev"
+env = "prod"
 
 [server]
 port = 2020

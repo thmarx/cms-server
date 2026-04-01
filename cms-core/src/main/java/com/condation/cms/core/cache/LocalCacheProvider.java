@@ -26,6 +26,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.condation.cms.api.cache.CacheManager;
 import com.condation.cms.api.cache.CacheProvider;
 import com.condation.cms.api.cache.ICache;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -69,5 +70,10 @@ public class LocalCacheProvider implements CacheProvider {
 						loader)
 		);
 	}
+
+    @Override
+    public <K, V> Optional<ICache<K, V>> getCache(String name) {
+        return Optional.ofNullable(caches.get(name));
+    }
 
 }

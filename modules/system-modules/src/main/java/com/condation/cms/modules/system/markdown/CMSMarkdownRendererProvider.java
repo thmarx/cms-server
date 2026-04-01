@@ -1,5 +1,6 @@
 package com.condation.cms.modules.system.markdown;
 
+import com.condation.cms.api.Constants;
 import java.time.Duration;
 
 import com.condation.cms.api.cache.CacheManager;
@@ -60,7 +61,7 @@ public class CMSMarkdownRendererProvider extends MarkdownRendererProviderExtensi
 
 					if (isProd) {
 						var cacheManager = getContext().get(CacheManagerFeature.class).cacheManager();
-						ICache<String, String> cache = cacheManager.get("markdown-renderer",
+						ICache<String, String> cache = cacheManager.get(Constants.CacheNames.MARKDOWN,
 								new CacheManager.CacheConfig(100L, Duration.ofMinutes(1)));
 						CMSMarkdownRendererProvider.activeRenderer = new CachedCMSMarkdownRenderer(cache);
 					} else {

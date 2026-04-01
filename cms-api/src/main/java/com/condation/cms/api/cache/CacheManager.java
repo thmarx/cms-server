@@ -24,6 +24,7 @@ package com.condation.cms.api.cache;
 
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +36,10 @@ import lombok.RequiredArgsConstructor;
 public class CacheManager {
 	private final CacheProvider cacheProvider;
 	
+    public <K, V> Optional<ICache<K, V>> get (String name) {
+		return cacheProvider.getCache(name);
+	}
+    
 	public <K, V> ICache<K, V> get (String name, CacheConfig config) {
 		return cacheProvider.getCache(name, config);
 	}
