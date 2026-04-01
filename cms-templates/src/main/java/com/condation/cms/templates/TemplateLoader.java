@@ -29,4 +29,6 @@ package com.condation.cms.templates;
 public interface TemplateLoader {
 
 	String load (String template);
+	
+	boolean exists (String template);
 }

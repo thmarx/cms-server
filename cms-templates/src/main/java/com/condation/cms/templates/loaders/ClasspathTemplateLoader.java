@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Lädt Templates aus dem Klassenpfad. z. B. für Ressourcen im Ordner /templates
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  *
  * @author t.marx
  */
+@Slf4j
 public class ClasspathTemplateLoader implements TemplateLoader {
 
 	private final String basePath;
@@ -59,5 +61,11 @@ public class ClasspathTemplateLoader implements TemplateLoader {
 		} catch (IOException ex) {
 			throw new TemplateNotFoundException("Error loading template from classpath: " + ex.getMessage());
 		}
+	}
+
+	@Override
+	public boolean exists(String template) {
+		var resourcePath = basePath + template;
+		return getClass().getClassLoader().getResource(resourcePath) != null;
 	}
 }

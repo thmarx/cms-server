@@ -177,10 +177,10 @@ public class JettyServer implements AutoCloseable {
 		HttpConnectionFactory http11 = new HttpConnectionFactory(httpConfig);
 		HTTP2CServerConnectionFactory h2c = new HTTP2CServerConnectionFactory(httpConfig);
 
-		//QueuedThreadPool threadPool = new QueuedThreadPool(properties.performance().request_workers());
-		QueuedThreadPool threadPool = new QueuedThreadPool();
+		QueuedThreadPool threadPool = new QueuedThreadPool(properties.performance().request_workers());
+		//QueuedThreadPool threadPool = new QueuedThreadPool();
 		threadPool.setName("cms-request-worker");
-		threadPool.setVirtualThreadsExecutor(Executors.newVirtualThreadPerTaskExecutor());
+		//threadPool.setVirtualThreadsExecutor(Executors.newVirtualThreadPerTaskExecutor());
 
 		server = new Server(threadPool);
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));

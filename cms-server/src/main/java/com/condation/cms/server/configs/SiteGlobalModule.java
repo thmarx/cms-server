@@ -67,7 +67,6 @@ public class SiteGlobalModule implements com.google.inject.Module {
 	@Named("global")
 	public Context context(Engine engine) throws IOException {
 		return Context.newBuilder()
-				.allowAllAccess(true)
 				.allowHostClassLookup(className -> true)
 				.allowHostAccess(HostAccess.ALL)
 				.allowValueSharing(true)

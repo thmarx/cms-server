@@ -22,15 +22,11 @@ package com.condation.cms.templates.loaders;
  * #L%
  */
 
-import com.condation.cms.api.cache.ICache;
 import com.condation.cms.templates.TemplateLoader;
 import com.condation.cms.templates.exceptions.TemplateNotFoundException;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 
 /**
  *
@@ -64,5 +60,11 @@ public class FileTemplateLoader implements TemplateLoader {
 		} catch (IOException e) {
 			throw new TemplateNotFoundException("Failed to load template: " + template, e);
 		}
+	}
+
+	@Override
+	public boolean exists(String template) {
+		var templateFile = basePath.resolve(template);
+		return Files.exists(templateFile);
 	}
 }
