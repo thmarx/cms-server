@@ -21,11 +21,13 @@ package com.condation.cms.modules.ui.extensionpoints;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.annotations.Action;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.eventbus.events.InvalidateMediaCache;
 import com.condation.cms.api.eventbus.events.InvalidateTemplateCacheEvent;
 import com.condation.cms.api.extensions.HookSystemRegisterExtensionPoint;
+import com.condation.cms.api.feature.features.CacheManagerFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.hooks.ActionContext;
 import com.condation.modules.api.annotation.Extension;
@@ -37,18 +39,21 @@ import com.condation.modules.api.annotation.Extension;
 @Extension(HookSystemRegisterExtensionPoint.class)
 public class SiteHookExtension extends HookSystemRegisterExtensionPoint {
 
-	@Action(value = "ui/manager/tools/media/cache/clear")
-	public void clear_media_cache(ActionContext<?> context) {
-		getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateMediaCache(null));
-	}
+    @Action(value = "ui/manager/tools/media/cache/clear")
+    public void clear_media_cache(ActionContext<?> context) {
+        getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateMediaCache(null));
+    }
 
-	@Action(value = "ui/manager/tools/template/cache/clear")
-	public void clear_template_cache(ActionContext<?> context) {
-		getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateTemplateCacheEvent());
-	}
-	
-	@Action(value = "ui/manager/tools/content/cache/clear")
-	public void clear_content_cache(ActionContext<?> context) {
-		getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
-	}
+    @Action(value = "ui/manager/tools/template/cache/clear")
+    public void clear_template_cache(ActionContext<?> context) {
+        getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateTemplateCacheEvent());
+    }
+
+    @Action(value = "ui/manager/tools/content/cache/clear")
+    public void clear_content_cache(ActionContext<?> context) {
+        getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
+        getContext().get(CacheManagerFeature.class).cacheManager()
+                .get(Constants.CacheNames.MARKDOWN)
+                .ifPresent((cache) -> cache.invalidate());
+    }
 }

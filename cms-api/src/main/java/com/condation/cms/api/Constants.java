@@ -133,6 +133,14 @@ public abstract class Constants {
 		public static final String DEFAULT_TEMPLATE = "taxonomy.html";
 		public static final String DEFAULT_SINGLE_TEMPLATE = "taxonomy.single.html";
 	}
+    
+    public static class CacheNames {
+		public static final String MARKDOWN = "markdown";
+		public static final String TEMPLATE = "template";
+        public static final String CONTENT = "content";
+        public static final String MEDIA = "media";
+        public static final String RESPONSE = "response";
+	}
 	
 	public static final String REQUEST_CONTEXT_ATTRIBUTE_NAME = "_requestContext";
 }

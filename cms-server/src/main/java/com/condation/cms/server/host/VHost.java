@@ -1,5 +1,6 @@
 package com.condation.cms.server.host;
 
+import com.condation.cms.api.Constants;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -193,8 +194,16 @@ public class VHost {
 
 		injector.getInstance(EventBus.class).register(InvalidateContentCacheEvent.class, (EventListener<InvalidateContentCacheEvent>) (InvalidateContentCacheEvent event) -> {
 			log.debug("invalidate content cache");
-			injector.getInstance(ContentParser.class).clearCache();
-		});
+            if (event.uri() != null) {
+                injector.getInstance(ContentParser.class).clearCache(event.uri());
+                var cacheKey = new CacheHandler.CachedKey(event.uri());
+                injector.getInstance(CacheManager.class).get(Constants.CacheNames.RESPONSE).ifPresent(cache -> cache.invalidate(cacheKey));
+            } else {
+                injector.getInstance(ContentParser.class).clearCache();
+                injector.getInstance(CacheManager.class).get(Constants.CacheNames.RESPONSE).ifPresent(cache -> cache.invalidate());
+            }
+            injector.getInstance(CacheManager.class).get(Constants.CacheNames.MARKDOWN).ifPresent(cache -> cache.invalidate());
+        });
 		injector.getInstance(EventBus.class).register(InvalidateTemplateCacheEvent.class, (EventListener<InvalidateTemplateCacheEvent>) (InvalidateTemplateCacheEvent event) -> {
 			log.debug("invalidate template cache");
 			injector.getInstance(TemplateEngine.class).invalidateCache();

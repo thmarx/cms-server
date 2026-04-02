@@ -23,6 +23,7 @@ package com.condation.cms.api.cache;
  */
 
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -31,6 +32,8 @@ import java.util.function.Function;
  */
 public interface CacheProvider {
 	
+    <K, V> Optional<ICache<K, V>> getCache (String name);
+    
 	<K, V> ICache<K, V> getCache (String name, CacheManager.CacheConfig config);
 	
 	<K, V> ICache<K, V> getCache (String name, CacheManager.CacheConfig config, Function<K, V> loader);

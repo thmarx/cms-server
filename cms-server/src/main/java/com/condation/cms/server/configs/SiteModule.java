@@ -105,7 +105,7 @@ public class SiteModule extends AbstractModule {
 	protected void configure() {
 		bind(Configuration.class).toInstance(configuration);
 		bind(EventBus.class).to(MessagingEventBus.class).in(Singleton.class);
-		bind(ContentParser.class).to(DefaultContentParser.class).in(Singleton.class);
+		//bind(ContentParser.class).to(DefaultContentParser.class).in(Singleton.class);
 		bind(TaxonomyFunction.class).in(Singleton.class);
 		bind(TaxonomyResolver.class).in(Singleton.class);
 	}
@@ -122,6 +122,20 @@ public class SiteModule extends AbstractModule {
 		return new ContentNodeMapper(db, contentParser);
 	}
 	
+    @Provides
+	@Singleton
+	public ContentParser contentParser (Configuration configuration, CacheManager cacheManager) {
+		boolean IS_DEV = configuration.get(ServerConfiguration.class).serverProperties().dev();
+		if (IS_DEV) {
+			return new DefaultContentParser();
+		} else {
+			return new DefaultContentParser(
+                    cacheManager.get(
+                            Constants.CacheNames.CONTENT, 
+                            new CacheManager.CacheConfig(100L, Duration.ofMinutes(1))));
+		}
+	}
+    
 	@Provides
 	@Singleton
 	public TagParser tagParser (Configuration configuration) {

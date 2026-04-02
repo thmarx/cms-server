@@ -1,0 +1,2 @@
+## start params
+-DCMS_HOME=../test-server -Xlog:gc*:file=logs/gc.log:time,uptime,level,tags -XX:+UseZGC  -Xms4G -Xmx4G -XX:+DisableExplicitGC -XX:MetaspaceSize=256M -Xlog:safepoint=debug:file=safepoint.log:uptime,level,tags -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlining -Xlog:jit+inlining=debug:file=inlining.log

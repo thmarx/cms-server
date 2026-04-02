@@ -63,27 +63,59 @@ public class CharacterStream {
 	}
 
 	protected String readUntil(BiPredicate<String, Integer> predicate) {
-		StringBuilder result = new StringBuilder();
+		int start = position;
 		while (position < source.length() && predicate.test(source, position)) {
-			result.append(source.charAt(position));
 			advance();
 		}
-		return result.toString();
+		return source.substring(start, position);
 	}
 	
 	protected String readUntil(String delimiter) {
-		return readUntil((source, position) -> !source.startsWith(delimiter, position));
+		int index = source.indexOf(delimiter, position);
+		if (index == -1) {
+			String result = source.substring(position);
+			updateLineColumn(position, source.length());
+			position = source.length();
+			return result;
+		} else {
+			String result = source.substring(position, index);
+			updateLineColumn(position, index);
+			position = index;
+			return result;
+		}
 	}
 	
 	protected String readUntil(String[] delimiters) {
-		return readUntil((source, position) -> {
-			for (String delimiter : delimiters) {
-				if (source.startsWith(delimiter, position)) {
-					return false;
-				}
+		int earliestIndex = -1;
+		for (String delimiter : delimiters) {
+			int index = source.indexOf(delimiter, position);
+			if (index != -1 && (earliestIndex == -1 || index < earliestIndex)) {
+				earliestIndex = index;
 			}
-			return true;
-		});
+		}
+
+		if (earliestIndex == -1) {
+			String result = source.substring(position);
+			updateLineColumn(position, source.length());
+			position = source.length();
+			return result;
+		} else {
+			String result = source.substring(position, earliestIndex);
+			updateLineColumn(position, earliestIndex);
+			position = earliestIndex;
+			return result;
+		}
+	}
+
+	private void updateLineColumn(int start, int end) {
+		for (int i = start; i < end; i++) {
+			if (source.charAt(i) == '\n') {
+				line++;
+				column = 1;
+			} else {
+				column++;
+			}
+		}
 	}
 
 	protected void skipWhitespace() {

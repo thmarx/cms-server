@@ -21,6 +21,7 @@ package com.condation.cms.content;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.condation.cms.api.cache.ICache;
 import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.google.common.base.Strings;
@@ -37,20 +38,45 @@ import org.yaml.snakeyaml.Yaml;
 @Slf4j
 public class DefaultContentParser implements ContentParser {
 
+    private final ICache<String, Content> contentCache;
+    
 	public DefaultContentParser() {
+        this(null);
 	}
+    public DefaultContentParser (ICache<String, Content> cache) {
+        this.contentCache = cache;
+    }
 
 	@Override
 	public void clearCache() {
-
+        if (contentCache != null) {
+            contentCache.invalidate();
+        }
+	}
+    @Override
+	public void clearCache(String uri) {
+        if (contentCache != null) {
+            contentCache.invalidate(uri);
+        }
 	}
 
 	@Override
 	public Content parse(final ReadOnlyFile contentFile) throws IOException {
+        
+        if (contentCache != null && contentCache.contains(contentFile.relativePath())) {
+            contentCache.get(contentFile.relativePath());
+        }
+        
 		ContentRecord readContent = readContent(contentFile);
 
-		return new Content(readContent.content(), _parseMeta(readContent));
-	}
+		var content = new Content(readContent.content(), _parseMeta(readContent));
+	
+        if (contentCache != null) {
+            contentCache.put(contentFile.uri(), content);
+        }
+        
+        return content;
+    }
 
 	private Map<String, Object> _parseMeta(ContentRecord content) {
 		if (Strings.isNullOrEmpty(content.meta().trim())) {

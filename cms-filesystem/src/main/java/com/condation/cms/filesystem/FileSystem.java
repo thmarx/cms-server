@@ -278,6 +278,8 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 			Map<String, Object> fileMeta = contentParser.apply(file);
 
 			var uri = PathUtil.toRelativeFile(file, contentBase);
+            
+            eventBus.publish(new InvalidateContentCacheEvent(PathUtil.toURL(file, contentBase)));
 
 			var lastModified = LocalDate.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
 
