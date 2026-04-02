@@ -14,7 +14,7 @@
 
 	<body class="centered">
 
-		{% include "content/navigation.html" %}
+		{% include "libs/navigation.html" %}
 
 		<div id="content" 
 			{{ ext.ui.toolbar("main", "main", ["editContent", "editAttributes"], {"form": "top"}) | raw }}
@@ -82,6 +82,8 @@
 				{% endif %}
 			</div>
 		</div>
+
+		{% include "libs/footer.html" %}
 
 	</body>
 

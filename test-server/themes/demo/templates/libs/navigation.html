@@ -1,5 +1,5 @@
-{% assign nodes = cms.navigation.list("/") %}
-<ul>
+{% assign nodes = cms.navigation.list(node.properties["url"]) %}
+<ul style="list-style-type: none;">
   {% for node in nodes %}
     <li><a href="{{ node.path }}">{{ node.name }}</a></li>
   {% endfor %}
