@@ -55,28 +55,19 @@ public class CMSTemplateEngine {
 	}
 	
 	private JexlEngine createJexlEngine() {
-        JexlBuilder builder = new JexlBuilder();
+		JexlBuilder builder = new JexlBuilder();
 
-		if (configuration.isDevMode()) {
-			builder
-					.cache(512)
-					.safe(false)
-					.strict(false)
-					.silent(false)
-					.debug(false);
-		} else {
-			builder
-					.cache(1024)
-					.safe(true)
-					.strict(false)
-					.silent(true)
-					.debug(false);
-		}
+		builder
+				.cache(configuration.getExpressionCacheSize())
+				.safe(configuration.isJexlSafeMode())
+				.strict(configuration.isJexlStrict())
+				.silent(configuration.isJexlSilent())
+				.debug(false)
+				.strategy(new RecordResolverStrategy())
+				.permissions(CMSPermissions.PERMISSIONS);
 
-		builder.strategy(new RecordResolverStrategy());
-		
-        return builder.permissions(CMSPermissions.PERMISSIONS).create();
-    }
+		return builder.create();
+	}
 	
 	
 	public void invalidateTemplateCache () {

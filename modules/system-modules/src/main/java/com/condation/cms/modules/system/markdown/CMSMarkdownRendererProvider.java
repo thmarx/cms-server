@@ -1,5 +1,11 @@
 package com.condation.cms.modules.system.markdown;
 
+import com.condation.cms.api.Constants;
+import java.time.Duration;
+
+import com.condation.cms.api.cache.CacheManager;
+import com.condation.cms.api.cache.ICache;
+
 /*-
  * #%L
  * cms-system-modules
@@ -21,10 +27,12 @@ package com.condation.cms.modules.system.markdown;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.condation.cms.api.extensions.MarkdownRendererProviderExtensionPoint;
+import com.condation.cms.api.feature.features.CacheManagerFeature;
+import com.condation.cms.api.feature.features.ServerPropertiesFeature;
 import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.content.markdown.module.CMSMarkdownRenderer;
+import com.condation.cms.content.markdown.module.CachedCMSMarkdownRenderer;
 import com.condation.modules.api.annotation.Extension;
 
 /**
@@ -34,16 +42,39 @@ import com.condation.modules.api.annotation.Extension;
 @Extension(MarkdownRendererProviderExtensionPoint.class)
 public class CMSMarkdownRendererProvider extends MarkdownRendererProviderExtensionPoint {
 
-	private final CMSMarkdownRenderer markdownRenderer = new CMSMarkdownRenderer();
-	
+	private static volatile MarkdownRenderer activeRenderer;
+
 	@Override
 	public String getName() {
 		return "system";
 	}
 
 	@Override
-	public MarkdownRenderer getRenderer() {
-		return markdownRenderer;
+	public void init() {
+		if (activeRenderer == null) {
+			synchronized (CMSMarkdownRendererProvider.class) {
+				if (activeRenderer == null) {
+					boolean isProd = getContext().get(ServerPropertiesFeature.class)
+							.serverProperties()
+							.env()
+							.equalsIgnoreCase("prod");
+
+					if (isProd) {
+						var cacheManager = getContext().get(CacheManagerFeature.class).cacheManager();
+						ICache<String, String> cache = cacheManager.get(Constants.CacheNames.MARKDOWN,
+								new CacheManager.CacheConfig(100L, Duration.ofMinutes(1)));
+						CMSMarkdownRendererProvider.activeRenderer = new CachedCMSMarkdownRenderer(cache);
+					} else {
+						CMSMarkdownRendererProvider.activeRenderer = new CMSMarkdownRenderer();
+					}
+				}
+			}
+		}
 	}
-	
+
+	@Override
+	public MarkdownRenderer getRenderer() {
+		return activeRenderer;
+	}
+
 }

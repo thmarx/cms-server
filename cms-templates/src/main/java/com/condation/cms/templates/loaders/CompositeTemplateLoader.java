@@ -40,6 +40,9 @@ public class CompositeTemplateLoader implements TemplateLoader {
 	public String load(String template) {
 		for (var templateLoader : templateLoaders) {
 			try {
+				if (!templateLoader.exists(template)) {
+					continue;
+				}
 				String content = templateLoader.load(template);
 				
 				return content;
@@ -48,6 +51,16 @@ public class CompositeTemplateLoader implements TemplateLoader {
 			}
 		}
 		throw new TemplateNotFoundException("template %s not found".formatted(template));
+	}
+
+	@Override
+	public boolean exists(String template) {
+		for (var templateLoader : templateLoaders) {
+			if (templateLoader.exists(template)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

@@ -47,7 +47,6 @@ public class GlobalExtensionsTest {
 	@BeforeAll
 	public static void initEngine() throws IOException {
 		context = Context.newBuilder()
-				.allowAllAccess(true)
 				.allowHostClassLookup(className -> true)
 				.allowHostAccess(HostAccess.ALL)
 				.allowValueSharing(true)

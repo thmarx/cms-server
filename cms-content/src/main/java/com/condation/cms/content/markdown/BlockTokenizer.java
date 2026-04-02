@@ -10,12 +10,12 @@ package com.condation.cms.content.markdown;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -28,6 +28,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 /**
+ * Block-level markdown tokenizer with recursion depth limit.
+ * Optimized to prevent stack overflow on pathological inputs.
  *
  * @author t.marx
  */
@@ -35,8 +37,20 @@ import lombok.RequiredArgsConstructor;
 public class BlockTokenizer {
 
 	private final Options options;
+	private static final int MAX_RECURSION_DEPTH = 100;
 
 	protected List<Block> tokenize(final String original_md) throws IOException {
+		return tokenizeWithDepth(original_md, 0);
+	}
+
+	/**
+	 * Tokenizes markdown with recursion depth tracking.
+	 * Throws exception if depth exceeds limit to prevent stack overflow.
+	 */
+	private List<Block> tokenizeWithDepth(final String original_md, int depth) throws IOException {
+		if (depth > MAX_RECURSION_DEPTH) {
+			throw new IOException("Maximum recursion depth exceeded in markdown parsing");
+		}
 
 		var md = original_md.replaceAll("\r\n", "\n");
 		StringBuilder mdBuilder = new StringBuilder(md);
@@ -49,7 +63,7 @@ public class BlockTokenizer {
 
 				if (block.start() != 0) {
 					var before = mdBuilder.substring(0, block.start());
-					blocks.addAll(tokenize(before));
+					blocks.addAll(tokenizeWithDepth(before, depth + 1));
 				}
 
 				blocks.add(block);

@@ -25,39 +25,64 @@ package com.condation.cms.templates.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A pipeline for applying multiple filters in sequence.
+ * Filter instances are cached at pipeline construction time for optimal performance.
+ */
 public class FilterPipeline {
-    private final List<PipelineStep> steps = new ArrayList<>();
-    private final FilterRegistry registry;
+	private final List<PipelineStep> steps = new ArrayList<>();
+	private final FilterRegistry registry;
 
-    public FilterPipeline(FilterRegistry registry) {
-        this.registry = registry;
-    }
+	public FilterPipeline(FilterRegistry registry) {
+		this.registry = registry;
+	}
 
-    public FilterPipeline addStep(String filterName, Object... params) {
-        if (!registry.exists(filterName)) {
-            throw new IllegalArgumentException("Filter not found: " + filterName);
-        }
-        steps.add(new PipelineStep(filterName, params));
+	/**
+	 * Adds a filter step to the pipeline.
+	 * The filter instance is cached immediately for better performance during execution.
+	 *
+	 * @param filterName the name of the filter
+	 * @param params     the parameters to pass to the filter
+	 * @return this pipeline for fluent chaining
+	 */
+	public FilterPipeline addStep(String filterName, Object... params) {
+		if (!registry.exists(filterName)) {
+			throw new IllegalArgumentException("Filter not found: " + filterName);
+		}
 
-        return this;
-    }
+		// Cache the filter instance at construction time
+		Filter filter = registry.get(filterName);
+		steps.add(new PipelineStep(filter, params));
 
-    public Object execute(Object input) {
-        Object result = input;
-        for (PipelineStep step : steps) {
-            Filter filter = registry.get(step.filterName);
-            result = filter.apply(result, step.params);
-        }
-        return result;
-    }
+		return this;
+	}
 
-    private static class PipelineStep {
-        private final String filterName;
-        private final Object[] params;
+	/**
+	 * Executes all filters in the pipeline sequentially.
+	 * Filter instances are already cached, so no registry lookups occur during execution.
+	 *
+	 * @param input the input value
+	 * @return the result after applying all filters
+	 */
+	public Object execute(Object input) {
+		Object result = input;
+		for (PipelineStep step : steps) {
+			result = step.filter.apply(result, step.params);
+		}
+		return result;
+	}
 
-        public PipelineStep(String filterName, Object... params) {
-            this.filterName = filterName;
-            this.params = params;
-        }
-    }
+	/**
+	 * Represents a single step in the filter pipeline.
+	 * Caches the filter instance to avoid registry lookups during execution.
+	 */
+	private static class PipelineStep {
+		private final Filter filter;
+		private final Object[] params;
+
+		public PipelineStep(Filter filter, Object... params) {
+			this.filter = filter;
+			this.params = params;
+		}
+	}
 }

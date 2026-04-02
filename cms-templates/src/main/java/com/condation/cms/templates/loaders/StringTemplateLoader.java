@@ -44,6 +44,11 @@ public class StringTemplateLoader implements TemplateLoader {
 	public String load(String template) {
 		return templates.get(template);
 	}
+
+	@Override
+	public boolean exists(String template) {
+		return templates.containsKey(template);
+	}
 	
 	
 }

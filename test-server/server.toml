@@ -1,18 +1,21 @@
-env = "dev"
+# environment: dev and prod
+env = "prod"
 
+# server settings
 [server]
-port = 2020
-ip = "127.0.0.1"
+port = 2020			  # server port
+ip = "127.0.0.1"	  # ip bind to
 
-
+# inter process communication
 [ipc]
-port = 6868
-password = "test_pwd"
+port = 6868			  # ipc port
+password = "test_pwd" # ipc password
 
+# application performance management
 [apm]
-enabled = false
-max_requests = 100
-thread_limit = 10
+enabled = false		  # enable
+max_requests = 100	  # max requests per remote IP
+thread_limit = 10	  # thread limit per remote IP
 
 [performance]
 pool_enabled = false
@@ -26,5 +29,6 @@ test = ["eins", "zwei"]
 [map]
 test = {"key1"="value2", "key2"="value2"}
 
+# ui manager properties
 [ui]
-secret = "${env:CMS_UI_SECRET}"
+secret = "${env:CMS_UI_SECRET}"	  # secret for JWT

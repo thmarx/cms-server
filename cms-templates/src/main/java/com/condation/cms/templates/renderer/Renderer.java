@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 public class Renderer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Renderer.class);
-	private static final int MAX_DEPTH = 100;
 
 	private final TemplateConfiguration configuration;
 	private final CMSTemplateEngine templateEngine;
@@ -98,18 +97,16 @@ public class Renderer {
 		if (renderContext.context().containsKey("_extends")) {
 			ExtendsTag.Extends ext = (ExtendsTag.Extends) renderContext.context().get("_extends");
 			DefaultTemplate parentTemplate = (DefaultTemplate) templateEngine.getTemplate(ext.parentTemplate());
-			StringWriter parentWriter = new StringWriter();
 			renderContext.context().put("_parent", Boolean.TRUE);
-			renderFunction.render(parentTemplate.getRootNode(), renderContext, parentWriter);
-			writer.write(parentWriter.toString());
+			renderFunction.render(parentTemplate.getRootNode(), renderContext, writer);
 		} else {
 			writer.write(contentWriter.toString());
 		}
 	}
 
 	private void renderNode(ASTNode node, Context context, Writer writer, RenderConfiguration renderConfiguration, int depth) throws IOException {
-		if (depth > MAX_DEPTH) {
-			throw new RenderException("Maximum render depth exceeded", node.getLine(), node.getColumn());
+		if (depth > configuration.getMaxRenderDepth()) {
+			throw new RenderException("Maximum render depth exceeded: " + depth + " > " + configuration.getMaxRenderDepth(), node.getLine(), node.getColumn());
 		}
 
 		switch (node) {
@@ -140,10 +137,10 @@ public class Renderer {
 	}
 
 	private void handleUnknown(String type, String name, ASTNode node) {
-		if (this.configuration.isDevMode()) {
-			throw new RenderException("unknown " + type + ": " + name, node.getLine(), node.getColumn());
-		} else {
-			LOGGER.warn("unknown " + type + " '{}' at L{}C{}", name, node.getLine(), node.getColumn());
+		switch (type) {
+			case "tag" -> configuration.getErrorHandler().handleUnknownTag(name, node.getLine(), node.getColumn(), null);
+			case "component" -> configuration.getErrorHandler().handleUnknownComponent(name, node.getLine(), node.getColumn(), null);
+			default -> LOGGER.warn("unknown " + type + " '{}' at L{}C{}", name, node.getLine(), node.getColumn());
 		}
 	}
 

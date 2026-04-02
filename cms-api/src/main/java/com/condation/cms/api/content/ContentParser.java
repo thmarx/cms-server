@@ -34,6 +34,8 @@ import java.util.Map;
 public interface ContentParser {
 	
 	void clearCache();
+    
+    void clearCache(String uri);
 	
 	Content parse(final ReadOnlyFile contentFile) throws IOException;
 	

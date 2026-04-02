@@ -159,7 +159,7 @@ public class ExtensionManager {
 				.option("js.ecmascript-version", "2025")
 				.option("js.console", "false")
 				.option("js.allow-eval", "false")
-				.allowAllAccess(true) // TODO: reduce later
+				//.allowAllAccess(true) // TODO: reduce later
 				.allowHostClassLookup(name -> true)
 				.allowHostAccess(HostAccess.ALL)
 				.allowValueSharing(true)
