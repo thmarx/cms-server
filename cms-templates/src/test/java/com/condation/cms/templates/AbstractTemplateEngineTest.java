@@ -22,6 +22,7 @@ package com.condation.cms.templates;
  * #L%
  */
 
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.cache.CacheManager;
 import com.condation.cms.api.cache.CacheProvider;
 import com.condation.cms.core.cache.LocalCacheProvider;
@@ -50,7 +51,7 @@ public abstract class AbstractTemplateEngineTest {
 	public void setup () {
 		SUT = TemplateEngineFactory
 				.newInstance(getLoader(), true)
-				.cache(cacheProvider.getCache("templates", new CacheManager.CacheConfig(100l, Duration.ofSeconds(60))))
+				.cache(cacheProvider.getCache(Constants.CacheNames.TEMPLATE, new CacheManager.CacheConfig(100l, Duration.ofSeconds(60))))
 				.defaultFilters()
 				.defaultTags()
 				.devMode(isDevMode())

@@ -21,6 +21,7 @@ package com.condation.cms.server.handler.cache;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.cache.CacheManager;
 import com.condation.cms.api.cache.ICache;
 import com.google.common.base.Strings;
@@ -46,114 +47,114 @@ import org.eclipse.jetty.util.Callback;
  */
 public class CacheHandler extends Handler.Wrapper {
 
-	private final List<String> cachedContentTypes = new ArrayList<>();
+    private final List<String> cachedContentTypes = new ArrayList<>();
 
-	private final List<HttpHeader> cachedHeaders = new ArrayList<>();
+    private final List<HttpHeader> cachedHeaders = new ArrayList<>();
 
-	private final ICache<CachedKey, CachedResponse> responseCache;
+    private final ICache<CachedKey, CachedResponse> responseCache;
 
-	public CacheHandler(final Handler wrapped, final CacheManager cacheManager) {
-		super(wrapped);
-		this.responseCache = cacheManager.get(
-				"responseCache",
-				new CacheManager.CacheConfig(100l, Duration.ofMinutes(1)));
-		cachedContentTypes.add("text/html");
-		cachedContentTypes.add("text/plain");
-		cachedContentTypes.add("text/css");
-		cachedContentTypes.add("text/javascript");
-		cachedContentTypes.add("application/javascript");
-		cachedContentTypes.add("application/json");
+    public CacheHandler(final Handler wrapped, final CacheManager cacheManager) {
+        super(wrapped);
+        this.responseCache = cacheManager.get(
+                Constants.CacheNames.RESPONSE,
+                new CacheManager.CacheConfig(100l, Duration.ofMinutes(1)));
+        cachedContentTypes.add("text/html");
+        cachedContentTypes.add("text/plain");
+        cachedContentTypes.add("text/css");
+        cachedContentTypes.add("text/javascript");
+        cachedContentTypes.add("application/javascript");
+        cachedContentTypes.add("application/json");
 
-		cachedHeaders.add(HttpHeader.CONTENT_TYPE);
-		cachedHeaders.add(HttpHeader.LOCATION);
-	}
+        cachedHeaders.add(HttpHeader.CONTENT_TYPE);
+        cachedHeaders.add(HttpHeader.LOCATION);
+    }
 
-	private boolean matchesContentType(String contentType) {
-		return cachedContentTypes.stream().anyMatch(ct -> contentType.contains(ct));
-	}
+    private boolean matchesContentType(String contentType) {
+        return cachedContentTypes.stream().anyMatch(ct -> contentType.contains(ct));
+    }
 
-	@Override
-	public boolean handle(Request request, Response response, Callback callback) throws Exception {
+    @Override
+    public boolean handle(Request request, Response response, Callback callback) throws Exception {
 
-		if (!request.getMethod().equalsIgnoreCase("GET")) {
-			return super.handle(request, response, callback);
-		}
+        if (!request.getMethod().equalsIgnoreCase("GET")) {
+            return super.handle(request, response, callback);
+        }
 
-		CachedKey key = new CachedKey(request.getHttpURI().getPathQuery());
+        CachedKey key = new CachedKey(request.getHttpURI().getPathQuery());
 
-		CachedResponse cached = responseCache.get(key);
-		if (cached != null) {
+        CachedResponse cached = responseCache.get(key);
+        if (cached != null) {
 
-			cached.headers.forEach((name, value) -> {
-				response.getHeaders().add(
-						name,
-						value);
-			});
-			Content.Sink.write(response, true, cached.body, callback);
+            cached.headers.forEach((name, value) -> {
+                response.getHeaders().add(
+                        name,
+                        value);
+            });
+            Content.Sink.write(response, true, cached.body, callback);
 
-			return true;
-		}
+            return true;
+        }
 
-		final CacheResponseWrapper cacheResponse = new CacheResponseWrapper(request, response);
-		return super.handle(request, cacheResponse, new Callback.Nested(callback) {
-			@Override
-			public void succeeded() {
-				String contentType = cacheResponse.getHeaders().get(HttpHeader.CONTENT_TYPE);
-				if (response.getStatus() == 200
-						&& !Strings.isNullOrEmpty(contentType) && matchesContentType(contentType)) {
+        final CacheResponseWrapper cacheResponse = new CacheResponseWrapper(request, response);
+        return super.handle(request, cacheResponse, new Callback.Nested(callback) {
+            @Override
+            public void succeeded() {
+                String contentType = cacheResponse.getHeaders().get(HttpHeader.CONTENT_TYPE);
+                if (response.getStatus() == 200
+                        && !Strings.isNullOrEmpty(contentType) && matchesContentType(contentType)) {
 
-					var body = cacheResponse.getContent();
+                    var body = cacheResponse.getContent();
 
-					CachedResponse cachedResponse = new CachedResponse(body, getHeaders(cacheResponse));
-					responseCache.put(key, cachedResponse);
+                    CachedResponse cachedResponse = new CachedResponse(body, getHeaders(cacheResponse));
+                    responseCache.put(key, cachedResponse);
 
-					Content.Sink.write(response, true, body, callback);
-				} else {
-					super.succeeded();
-				}
-			}
-		});
-	}
+                    Content.Sink.write(response, true, body, callback);
+                } else {
+                    super.succeeded();
+                }
+            }
+        });
+    }
 
-	private Map<String, String> getHeaders(Response response) {
-		Map<String, String> headers = new HashMap<>();
-		cachedHeaders.forEach(header -> {
-			if (response.getHeaders().contains(header)) {
-				headers.put(header.asString(), response.getHeaders().get(header));
-			}
-		});
-		return headers;
-	}
+    private Map<String, String> getHeaders(Response response) {
+        Map<String, String> headers = new HashMap<>();
+        cachedHeaders.forEach(header -> {
+            if (response.getHeaders().contains(header)) {
+                headers.put(header.asString(), response.getHeaders().get(header));
+            }
+        });
+        return headers;
+    }
 
-	private record CachedKey(String path) implements Serializable {
+    public record CachedKey(String path) implements Serializable {
 
-	}
+    }
 
-	private record CachedResponse(String body, Map<String, String> headers) implements Serializable {
+    private record CachedResponse(String body, Map<String, String> headers) implements Serializable {
 
-	}
+    }
 
-	private class CacheResponseWrapper extends Response.Wrapper {
+    private class CacheResponseWrapper extends Response.Wrapper {
 
-		final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        final ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
-		public CacheResponseWrapper(Request request, Response wrapped) {
-			super(request, wrapped);
-		}
+        public CacheResponseWrapper(Request request, Response wrapped) {
+            super(request, wrapped);
+        }
 
-		public String getContent() {
-			return bout.toString(StandardCharsets.UTF_8);
-		}
+        public String getContent() {
+            return bout.toString(StandardCharsets.UTF_8);
+        }
 
-		@Override
-		public void write(boolean last, ByteBuffer byteBuffer, Callback callback) {
-			byte[] bytes = new byte[byteBuffer.remaining()];
-			byteBuffer.get(bytes);
-			bout.write(bytes, 0, bytes.length);
-			
-			ByteBuffer copy = ByteBuffer.wrap(bytes);
-			super.write(last, copy, callback);
-		}
+        @Override
+        public void write(boolean last, ByteBuffer byteBuffer, Callback callback) {
+            byte[] bytes = new byte[byteBuffer.remaining()];
+            byteBuffer.get(bytes);
+            bout.write(bytes, 0, bytes.length);
 
-	}
+            ByteBuffer copy = ByteBuffer.wrap(bytes);
+            super.write(last, copy, callback);
+        }
+
+    }
 }

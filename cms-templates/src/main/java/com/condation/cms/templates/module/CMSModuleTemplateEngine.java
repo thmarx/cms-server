@@ -21,6 +21,7 @@ package com.condation.cms.templates.module;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.cache.CacheManager;
 import com.condation.cms.api.cache.ICache;
 import com.condation.cms.api.db.DB;
@@ -98,7 +99,7 @@ public class CMSModuleTemplateEngine implements TemplateEngine {
 		CompositeTemplateLoader templateLoader = new CompositeTemplateLoader(loaders);
 
 		templateEngine = TemplateEngineFactory.newInstance(templateLoader, devMode)
-				.cache(cacheManager.get("templates", new CacheManager.CacheConfig(100l, Duration.ofMinutes(1))))
+				.cache(cacheManager.get(Constants.CacheNames.TEMPLATE, new CacheManager.CacheConfig(100l, Duration.ofMinutes(1))))
 				.defaultFilters()
 				.defaultTags()
 				.devMode(devMode)

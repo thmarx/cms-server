@@ -97,10 +97,8 @@ public class Renderer {
 		if (renderContext.context().containsKey("_extends")) {
 			ExtendsTag.Extends ext = (ExtendsTag.Extends) renderContext.context().get("_extends");
 			DefaultTemplate parentTemplate = (DefaultTemplate) templateEngine.getTemplate(ext.parentTemplate());
-			StringWriter parentWriter = new StringWriter();
 			renderContext.context().put("_parent", Boolean.TRUE);
-			renderFunction.render(parentTemplate.getRootNode(), renderContext, parentWriter);
-			writer.write(parentWriter.toString());
+			renderFunction.render(parentTemplate.getRootNode(), renderContext, writer);
 		} else {
 			writer.write(contentWriter.toString());
 		}
