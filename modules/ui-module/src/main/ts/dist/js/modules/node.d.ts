@@ -1,9 +1,3 @@
-/**
- * Retrieves a nested value from an object using a dot-notated path like "meta.title"
- * @param {object} sourceObj - The object to retrieve the value from
- * @param {string} path - Dot-notated string path, e.g., "meta.title"
- * @returns {*} - The value found at the given path, or undefined if not found
- */
 export function getValueByPath(sourceObj: object, path: string): any;
 /**
  * Builds a values object from an array of form fields
