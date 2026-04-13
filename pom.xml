@@ -42,8 +42,8 @@
 
 	<licenses>
 		<license>
-			<name>GPL v3</name>
-			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+			<name>AGPL v3</name>
+			<url>https://www.gnu.org/licenses/agpl-3.0.html</url>
 		</license>
 	</licenses>
 	<scm>
@@ -436,7 +436,7 @@
 				<artifactId>license-maven-plugin</artifactId>
 				<configuration>
 					<verbose>false</verbose>
-					<licenseName>gpl_v3</licenseName>
+					<licenseName>agpl_v3</licenseName>
 				</configuration>
 				<executions>
 					<execution>
@@ -446,10 +446,11 @@
 						</goals>
 						<phase>process-sources</phase>
 						<configuration>
-							<licenseName>gpl_v3</licenseName>
+							<licenseName>agpl_v3</licenseName>
 							<roots>
 								<root>src/main/java</root>
 								<root>src/main/resources</root>
+								<root>src/main/ts/src</root>
 								<root>src/test/java</root>
 								<root>src/test/resources</root>
 							</roots>
