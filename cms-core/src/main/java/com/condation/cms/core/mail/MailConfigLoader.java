@@ -37,7 +37,7 @@ public class MailConfigLoader {
 	public static MailConfig load(Path configPath, EnvironmentVariables env) {
 		try {
 			try (var configByteBuffer = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
-				Map<?, ?> rawConfig = new Yaml().loadAs(configByteBuffer.readAllAsString(), Map.class);
+				Map<?, ?> rawConfig = new Yaml().loadAs(configByteBuffer, Map.class);
 				return MailConfig.fromMap(rawConfig, env);
 			}
 		} catch (IOException ex) {

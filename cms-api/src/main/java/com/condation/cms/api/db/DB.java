@@ -23,6 +23,7 @@ package com.condation.cms.api.db;
 
 import com.condation.cms.api.db.cms.ReadyOnlyFileSystem;
 import com.condation.cms.api.db.taxonomy.Taxonomies;
+import com.condation.cms.api.db.taxonomy.TaxonomyStore;
 
 
 /**
@@ -38,4 +39,6 @@ public interface DB extends AutoCloseable{
 	public Content getContent();
 	
 	public Taxonomies getTaxonomies();
+
+	public TaxonomyStore getTaxonomyStore();
 }
