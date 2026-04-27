@@ -21,6 +21,7 @@ package com.condation.cms.templates;
  * #L%
  */
 
+import com.condation.cms.templates.exceptions.TagException;
 import com.condation.cms.templates.functions.JexlTemplateFunction;
 import com.condation.cms.templates.functions.impl.DateFunction;
 import com.condation.cms.templates.functions.impl.NodeFunction;
@@ -35,14 +36,18 @@ import java.io.Writer;
 import java.util.Map;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author thmar
  */
+@Slf4j
 @RequiredArgsConstructor
 public class DefaultTemplate implements Template {
 
+	private final String templateName;
+	
 	@Getter
 	private final ASTNode rootNode;
 	
@@ -65,11 +70,19 @@ public class DefaultTemplate implements Template {
 			renderer.render(rootNode, scopes, writer, dynamicConfiguration);
 			writer.flush();
 			return writer.toString();
-		} 
+		} catch (TagException te) {
+			log.debug("error rendering template: {}", templateName);
+			throw te;
+		}
 	}
 	
 	public void evaluate (ScopeStack scopes, Writer writer, DynamicConfiguration dynamicConfiguration) throws IOException {
-		renderer.render(rootNode, scopes, writer, dynamicConfiguration);
+		try {
+			renderer.render(rootNode, scopes, writer, dynamicConfiguration);
+		} catch (TagException te) {
+			log.debug("error rendering template: {}", templateName);
+			throw te;
+		}
 	}
 
 	private ScopeStack createScope (Map<String, Object> context, DynamicConfiguration dynamicConfiguration) {

@@ -56,12 +56,17 @@ public class IncludeTag extends AbstractTag implements Tag {
 				writer.write(childWriter.toString());
 			}
 		} catch (Exception e) {
-			throw new TagException("error including template", node.getLine(), node.getColumn());
+			log.error("erro including template {}",getTemplateName(node),  e);
+			throw new TagException("error including template: %s".formatted(getTemplateName(node)), node.getLine(), node.getColumn());
 		}
 	}
 	
+	private String getTemplateName (TagNode node) {
+		return node.getCondition().trim();
+	}
+	
 	private String getTemplate (TagNode node, Renderer.Context context) {
-		var template = node.getCondition().trim();
+		var template = getTemplateName(node);
 		
 		var scope = context.createEngineContext();
 		final JexlExpression expression = context.engine().createExpression(template);
