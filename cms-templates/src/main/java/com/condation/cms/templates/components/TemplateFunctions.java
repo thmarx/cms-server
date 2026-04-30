@@ -20,7 +20,6 @@ package com.condation.cms.templates.components;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import com.condation.cms.api.annotations.TemplateComponent;
 import com.condation.cms.api.annotations.TemplateFunction;
 import com.condation.cms.api.model.Parameter;
 import com.condation.cms.api.request.RequestContext;
