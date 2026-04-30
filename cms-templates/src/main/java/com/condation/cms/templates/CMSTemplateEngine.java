@@ -76,7 +76,7 @@ public class CMSTemplateEngine {
 	public Template getTemplateFromString (String templateContent) {
 		var tokenStream = lexer.tokenize(templateContent);
 		var rootNode = parser.parse(tokenStream);
-		return new DefaultTemplate(rootNode, renderer);
+		return new DefaultTemplate("", rootNode, renderer);
 	}
 	
 	private boolean useCache () {
@@ -96,7 +96,7 @@ public class CMSTemplateEngine {
 		}
 		var tokenStream = lexer.tokenize(templateString);
 		var rootNode = parser.parse(tokenStream);
-		var temp = new DefaultTemplate(rootNode, renderer);
+		var temp = new DefaultTemplate(template, rootNode, renderer);
 		
 		if (useCache()) {
 			templateCache.put(template, temp);

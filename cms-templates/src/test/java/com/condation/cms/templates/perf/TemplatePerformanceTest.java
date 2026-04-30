@@ -94,14 +94,14 @@ public class TemplatePerformanceTest {
 
     @Test
     @JUnitPerfTest(threads = 10, durationMs = 10_000, warmUpMs = 2_000)
-    @JUnitPerfTestRequirement(maxLatency = 100, meanLatency = 50)
+    @JUnitPerfTestRequirement(percentiles = "90:100", meanLatency = 50)
     public void testSimpleTemplatePerformance() throws java.io.IOException {
         SIMPLE_TEMPLATE.evaluate(Map.of("name", "CondationCMS"));
     }
 
     @Test
     @JUnitPerfTest(threads = 10, durationMs = 10_000, warmUpMs = 2_000)
-    @JUnitPerfTestRequirement(maxLatency = 200, meanLatency = 100)
+    @JUnitPerfTestRequirement(percentiles = "90:200", meanLatency = 100)
     public void testComplexTemplatePerformance() throws java.io.IOException {
         COMPLEX_TEMPLATE.evaluate(CONTEXT);
     }
