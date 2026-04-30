@@ -14,8 +14,6 @@
 
 	<body class="centered">
 
-		{% include "libs/language_switcher.html" %}
-
 		{% include "libs/navigation.html" %}
 
 		<div id="content" 
@@ -85,7 +83,7 @@
 			</div>
 		</div>
 
-		{{ hooks({'hook': 'theme/template/footer'}) | raw }}
+		{% include "libs/footer.html" %}
 
 	</body>
 

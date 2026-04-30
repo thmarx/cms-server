@@ -21,7 +21,8 @@ package com.condation.cms.content;
  * #L%
  */
 
-import com.condation.cms.api.Constants;import com.condation.cms.api.SiteProperties;
+import com.condation.cms.api.Constants;
+import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;

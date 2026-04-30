@@ -1,7 +1,7 @@
 <title>{{node.meta.title}}</title>
 <link
   rel="canonical"
-  href="{{ node.properties["url"] }}"
+  href='{{ node.properties["url"] }}'
 />
 <link rel="shortcut icon" href="/favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,6 +11,8 @@
   href="{{ cms.links.createUrl('/theme/assets/style.css') }}"
   defer
 />
+
+<link href="{{ cms.links.createUrl('/theme/assets/highlightjs/panda-syntax-dark.min.css') }}" rel="stylesheet" defer />
 
 {% if PREVIEW_MODE %}
   <script  src="{{ cms.links.createUrl('/manager/js/manager-inject.js') }}" type="module"></script>

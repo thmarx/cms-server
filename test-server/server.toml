@@ -1,5 +1,5 @@
 # environment: dev and prod
-env = "prod"
+env = "dev"
 
 # server settings
 [server]

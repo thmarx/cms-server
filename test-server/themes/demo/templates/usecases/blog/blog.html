@@ -1,0 +1,23 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Blog</title>
+</head>
+
+<body>
+    <h1>Example Blog</h1>
+    <p>Welcome to our example blog! Here you'll find a collection of articles on various topics. Stay tuned for updates!</p>
+    <div>
+        {% assign pageNumber = requestContext.getQueryParameter('page', '1') %}
+		{% assign page = cms.nodeList.from("/usecases/blog/*").sort("publish_date").reverse(true).page(pageNumber).size(3).list() %}
+		{% for entry in page.items %}
+		<article class="">
+			<h2>{{ entry.name }}</h2>
+            <p>{{ entry.content }}</p>
+            <a href="{{ entry.path}}">Read more</a>
+        </article>
+		{% endfor %}
+    </div>
+</html>

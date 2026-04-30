@@ -75,5 +75,10 @@
 			<version>3.1.5.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.noconnor</groupId>
+			<artifactId>junitperf-junit5</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
