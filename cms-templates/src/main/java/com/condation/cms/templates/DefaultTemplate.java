@@ -24,6 +24,7 @@ package com.condation.cms.templates;
 import com.condation.cms.templates.exceptions.TagException;
 import com.condation.cms.templates.functions.JexlTemplateFunction;
 import com.condation.cms.templates.functions.impl.DateFunction;
+import com.condation.cms.templates.functions.impl.MessageFunction;
 import com.condation.cms.templates.functions.impl.NodeFunction;
 import com.condation.cms.templates.functions.impl.NodeMetaFunction;
 import com.condation.cms.templates.functions.impl.UriParamFunction;
@@ -91,6 +92,7 @@ public class DefaultTemplate implements Template {
 		scope.setVariable(NodeFunction.NAME, new JexlTemplateFunction(new NodeFunction(dynamicConfiguration.requestContext())));
 		scope.setVariable(NodeMetaFunction.NAME, new JexlTemplateFunction(new NodeMetaFunction(dynamicConfiguration.requestContext())));
 		scope.setVariable(UriParamFunction.NAME, new JexlTemplateFunction(new UriParamFunction()));
+        scope.setVariable(MessageFunction.NAME, new JexlTemplateFunction(new MessageFunction(dynamicConfiguration.requestContext())));
 		
 		dynamicConfiguration.templateFunctions().forEach(tf -> {
 			scope.setVariable(tf.name(), new JexlTemplateFunction(tf));
