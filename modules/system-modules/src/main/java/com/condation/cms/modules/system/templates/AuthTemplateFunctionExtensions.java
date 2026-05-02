@@ -42,7 +42,7 @@ public class AuthTemplateFunctionExtensions extends RegisterTemplateFunctionExte
 		return List.of(this);
 	}
 
-	@TemplateFunction("username")
+	@TemplateFunction(value = "username", namespace = "cms")
 	public Object userName() {
 		return (String) getFeatureValueOrDefault(
 				getRequestContext(),

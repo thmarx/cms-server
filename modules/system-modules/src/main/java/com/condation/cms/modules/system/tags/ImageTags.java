@@ -21,6 +21,7 @@ package	com.condation.cms.modules.system.tags;
  * #L%
  */
 
+import com.condation.cms.api.annotations.Tag;
 import com.condation.cms.api.extensions.RegisterTagsExtensionPoint;
 import com.condation.cms.api.feature.features.SiteMediaServiceFeature;
 import com.condation.cms.api.model.Parameter;
@@ -36,15 +37,9 @@ import org.apache.commons.text.StringEscapeUtils;
  */
 @Extension(RegisterTagsExtensionPoint.class)
 public class ImageTags extends RegisterTagsExtensionPoint {
-
-	@Override
-	public Map<String, Function<Parameter, String>> tags() {
-		return Map.of(
-				"cms:image", this::getImage
-		);
-	}
 	
-	private String getImage (Parameter param) {
+    @Tag(value = "image", namespace = "cms")
+	public String getImage (Parameter param) {
 		var imageFile = (String)param.getOrDefault("image", "");
 		var format = (String)param.get("format");
 		var alt = param.getOrDefault("alt", "");

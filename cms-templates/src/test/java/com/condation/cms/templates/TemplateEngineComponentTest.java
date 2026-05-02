@@ -60,6 +60,10 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
 		public String tag3 (Parameter parameter) {
 			return "<div>%s</div>".formatted(parameter.get("_content"));
 		}
+        @TemplateComponent(value = "tag3", namespace = "ns")
+		public String custom_namespace (Parameter parameter) {
+			return "<div>%s</div>".formatted(parameter.get("_content"));
+		}
 	}
 
 	@Override
@@ -75,9 +79,14 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
                    {[ endtag2 ]}
                    """)
 				.add("tag3", """
-                   {[ tag3 ]}
+                   {[ ext:tag3 ]}
 						This is the content!
-                   {[ endtag3 ]}
+                   {[ endext:tag3 ]}
+                   """)
+                .add("ns:tag3", """
+                   {[ ns:tag3 ]}
+						Tag3 with namespace
+                   {[ endns:tag3 ]}
                    """)
 				.add("parser_exception", """
                           {[ tag3 ]}
@@ -119,6 +128,16 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
 		Assertions
 				.assertThat(simpleTemplate.evaluate(Map.of(), dynamicConfiguration))
 				.isEqualToIgnoringWhitespace("<div>This is the content!</div>");
+	}
+    
+    	@Test
+        public void test_tag3_namespace() throws IOException {
+		Template simpleTemplate = SUT.getTemplate("ns:tag3");
+		Assertions.assertThat(simpleTemplate).isNotNull();
+
+		Assertions
+				.assertThat(simpleTemplate.evaluate(Map.of(), dynamicConfiguration))
+				.isEqualToIgnoringWhitespace("<div>Tag3 with namespace</div>");
 	}
 
 	@Test

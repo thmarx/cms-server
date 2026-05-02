@@ -21,12 +21,14 @@ package	com.condation.cms.modules.system.tags;
  * #L%
  */
 
+import com.condation.cms.api.annotations.Tag;
 import com.condation.cms.api.extensions.RegisterTagsExtensionPoint;
 import com.condation.cms.api.feature.Feature;
 import com.condation.cms.api.feature.features.AuthFeature;
 import com.condation.cms.api.model.Parameter;
 import com.condation.cms.api.module.SiteRequestContext;
 import com.condation.modules.api.annotation.Extension;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -37,13 +39,16 @@ import java.util.function.Function;
 @Extension(RegisterTagsExtensionPoint.class)
 public class AuthTags extends RegisterTagsExtensionPoint {
 
-	@Override
-	public Map<String, Function<Parameter, String>> tags() {
-		return Map.of(
-				"username", this::getUserName,
-				"cms:username", this::getUserName
-		);
-	}
+    @Override
+    public List<Object> tagDefinitions() {
+        return List.of(this);
+    }
+    
+    @Tag(value = "username", namespace = "cms")
+    public String username (Parameter params) {
+        return getUserName(params);
+    }
+    
 	
 	private String getUserName (Parameter param) {
 		return (String)getFeatureValueOrDefault(

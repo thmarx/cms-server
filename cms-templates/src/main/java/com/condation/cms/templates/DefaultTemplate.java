@@ -34,6 +34,7 @@ import com.condation.cms.templates.renderer.ScopeStack;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -95,7 +96,12 @@ public class DefaultTemplate implements Template {
         scope.setVariable(MessageFunction.NAME, new JexlTemplateFunction(new MessageFunction(dynamicConfiguration.requestContext())));
 		
 		dynamicConfiguration.templateFunctions().forEach(tf -> {
-			scope.setVariable(tf.name(), new JexlTemplateFunction(tf));
+            var namespaceOPT = scope.getVariable(tf.namespace());
+            if (namespaceOPT.isEmpty()) {
+                scope.setVariable(tf.namespace(), new HashMap<>());
+            }
+            var namespace = ((Map<String, Object>) scope.getVariable(tf.namespace()).get());
+			namespace.put(tf.name(), new JexlTemplateFunction(tf));
 		});
 		
 		return scope;
