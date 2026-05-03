@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author thorstenmarx
  */
-@Extension(RegisterTemplateFunctionExtensionPoint.class)
+@Extension(value = RegisterTemplateFunctionExtensionPoint.class, cached = Extension.Caching.TRUE)
 public class HooksTemplateFunctionExtensions extends RegisterTemplateFunctionExtensionPoint {
 
 	@Override
