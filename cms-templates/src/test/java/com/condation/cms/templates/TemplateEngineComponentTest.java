@@ -102,8 +102,7 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
                           {[ endtag4 ]}
                           """)
 				.add("alternate", """
-                          {[ ns:alternate ]}
-                          	This is the content!
+                          {[ ns:alternate name="CondationCMS" ]}
                           {[ /ns:alternate ]}
                           """);
 	}
@@ -164,7 +163,7 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
 	@Test
 	public void test_render_alternate() throws IOException {
 		var template = SUT.getTemplate("alternate");
-		Assertions.assertThatThrownBy(() -> template.evaluate(Map.of(), dynamicConfiguration))
-				.isInstanceOf(RenderException.class);
+		Assertions.assertThat(template.evaluate(Map.of(), dynamicConfiguration))
+				.isEqualToIgnoringWhitespace("Hello CondationCMS!");
 	}
 }
