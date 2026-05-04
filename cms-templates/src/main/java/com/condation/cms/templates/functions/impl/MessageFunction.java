@@ -21,19 +21,11 @@ package com.condation.cms.templates.functions.impl;
  * #L%
  */
 
-import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.DB;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.messages.MessageSource;
 import com.condation.cms.api.request.RequestContext;
-import com.condation.cms.content.ContentRenderer;
 import com.condation.cms.content.RenderContext;
-import com.condation.cms.content.Section;
 import com.condation.cms.templates.functions.TemplateFunction;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 /**
