@@ -50,6 +50,9 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
 						},
 						"tag2", (param) -> {
 							return "Hello " + param.get("name") + "!";
+						},
+						"ns:alternate", (param) -> {
+							return "Hello " + param.get("name") + "!";
 						}));
 		components.register(new MyComponents());
 		dynamicConfiguration = new DynamicConfiguration(components, null);
@@ -97,6 +100,11 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
                           {[ tag4 ]}
                           	This is the content!
                           {[ endtag4 ]}
+                          """)
+				.add("alternate", """
+                          {[ ns:alternate ]}
+                          	This is the content!
+                          {[ /ns:alternate ]}
                           """);
 	}
 
@@ -149,6 +157,13 @@ public class TemplateEngineComponentTest extends AbstractTemplateEngineTest {
 	@Test
 	public void test_render_exception() throws IOException {
 		var template = SUT.getTemplate("render_exception");
+		Assertions.assertThatThrownBy(() -> template.evaluate(Map.of(), dynamicConfiguration))
+				.isInstanceOf(RenderException.class);
+	}
+	
+	@Test
+	public void test_render_alternate() throws IOException {
+		var template = SUT.getTemplate("alternate");
 		Assertions.assertThatThrownBy(() -> template.evaluate(Map.of(), dynamicConfiguration))
 				.isInstanceOf(RenderException.class);
 	}

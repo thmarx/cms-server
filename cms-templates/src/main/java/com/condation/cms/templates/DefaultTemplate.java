@@ -20,7 +20,7 @@ package com.condation.cms.templates;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
+import com.condation.cms.api.Constants;
 import com.condation.cms.templates.exceptions.TagException;
 import com.condation.cms.templates.functions.JexlTemplateFunction;
 import com.condation.cms.templates.functions.impl.DateFunction;
@@ -49,25 +49,25 @@ import lombok.extern.slf4j.Slf4j;
 public class DefaultTemplate implements Template {
 
 	private final String templateName;
-	
+
 	@Getter
 	private final ASTNode rootNode;
-	
+
 	private final Renderer renderer;
-	
+
 	@Override
 	public void evaluate(Map<String, Object> context, Writer writer, DynamicConfiguration dynamicConfiguration) throws IOException {
 		ScopeStack scopes = createScope(context, dynamicConfiguration);
-		
+
 		evaluate(scopes, writer, dynamicConfiguration);
-		
+
 		writer.flush();
 	}
 
 	@Override
 	public String evaluate(Map<String, Object> context, DynamicConfiguration dynamicConfiguration) throws IOException {
 		ScopeStack scopes = createScope(context, dynamicConfiguration);
-		
+
 		try (var writer = new StringWriter()) {
 			renderer.render(rootNode, scopes, writer, dynamicConfiguration);
 			writer.flush();
@@ -77,8 +77,8 @@ public class DefaultTemplate implements Template {
 			throw te;
 		}
 	}
-	
-	public void evaluate (ScopeStack scopes, Writer writer, DynamicConfiguration dynamicConfiguration) throws IOException {
+
+	public void evaluate(ScopeStack scopes, Writer writer, DynamicConfiguration dynamicConfiguration) throws IOException {
 		try {
 			renderer.render(rootNode, scopes, writer, dynamicConfiguration);
 		} catch (TagException te) {
@@ -87,24 +87,30 @@ public class DefaultTemplate implements Template {
 		}
 	}
 
-	private ScopeStack createScope (Map<String, Object> context, DynamicConfiguration dynamicConfiguration) {
+	private ScopeStack createScope(Map<String, Object> context, DynamicConfiguration dynamicConfiguration) {
 		var scope = new ScopeStack(context);
 		scope.setVariable(DateFunction.NAME, new JexlTemplateFunction(new DateFunction()));
 		scope.setVariable(NodeFunction.NAME, new JexlTemplateFunction(new NodeFunction(dynamicConfiguration.requestContext())));
 		scope.setVariable(NodeMetaFunction.NAME, new JexlTemplateFunction(new NodeMetaFunction(dynamicConfiguration.requestContext())));
 		scope.setVariable(UriParamFunction.NAME, new JexlTemplateFunction(new UriParamFunction()));
-        scope.setVariable(MessageFunction.NAME, new JexlTemplateFunction(new MessageFunction(dynamicConfiguration.requestContext())));
+		//scope.setVariable(MessageFunction.NAME, new JexlTemplateFunction(new MessageFunction(dynamicConfiguration.requestContext())));
+
+		getOrCreateNamespace(scope, Constants.TemplateNamespaces.CMS)
+				.put(MessageFunction.NAME, new JexlTemplateFunction(new MessageFunction(dynamicConfiguration.requestContext())));
 		
 		dynamicConfiguration.templateFunctions().forEach(tf -> {
-            var namespaceOPT = scope.getVariable(tf.namespace());
-            if (namespaceOPT.isEmpty()) {
-                scope.setVariable(tf.namespace(), new HashMap<>());
-            }
-            var namespace = ((Map<String, Object>) scope.getVariable(tf.namespace()).get());
-			namespace.put(tf.name(), new JexlTemplateFunction(tf));
+			getOrCreateNamespace(scope, tf.namespace()).put(tf.name(), new JexlTemplateFunction(tf));
 		});
-		
+
 		return scope;
 	}
-	
+
+	private Map<String, Object> getOrCreateNamespace(ScopeStack scope, String namespace) {
+		var namespaceOPT = scope.getVariable(namespace);
+		if (namespaceOPT.isEmpty()) {
+			scope.setVariable(namespace, new HashMap<>());
+		}
+		return ((Map<String, Object>) scope.getVariable(namespace).get());
+	}
+
 }
