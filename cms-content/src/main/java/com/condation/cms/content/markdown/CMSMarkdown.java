@@ -20,16 +20,18 @@ package com.condation.cms.content.markdown;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
+import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.content.markdown.rules.block.ParagraphBlockRule;
 import com.condation.cms.content.markdown.rules.inline.TextInlineRule;
 import com.condation.cms.content.markdown.utils.StringUtils;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
- * CMS Markdown renderer with optional parallel block rendering.
- * For documents with 10+ blocks, parallel rendering provides 2-4x speedup on multi-core CPUs.
+ * CMS Markdown renderer with optional parallel block rendering. For documents
+ * with 10+ blocks, parallel rendering provides 2-4x speedup on multi-core CPUs.
  *
  * @author t.marx
  */
@@ -46,7 +48,8 @@ public class CMSMarkdown {
 	private final int parallelThreshold;
 
 	/**
-	 * Creates a markdown renderer with default settings (parallel rendering enabled for 10+ blocks).
+	 * Creates a markdown renderer with default settings (parallel rendering
+	 * enabled for 10+ blocks).
 	 */
 	public CMSMarkdown(Options options) {
 		this(options, true, 10);
@@ -55,9 +58,10 @@ public class CMSMarkdown {
 	/**
 	 * Creates a markdown renderer with custom parallel rendering configuration.
 	 *
-	 * @param options           markdown rendering options
+	 * @param options markdown rendering options
 	 * @param parallelRendering enable parallel block rendering
-	 * @param parallelThreshold minimum number of blocks to trigger parallel rendering
+	 * @param parallelThreshold minimum number of blocks to trigger parallel
+	 * rendering
 	 */
 	public CMSMarkdown(Options options, boolean parallelRendering, int parallelThreshold) {
 		this.blockTokenizer = new BlockTokenizer(options);
@@ -113,13 +117,32 @@ public class CMSMarkdown {
 		// Use parallel rendering for large documents (10+ blocks)
 		// For small documents, sequential is faster due to parallel overhead
 		if (parallelRendering && blocks.size() >= parallelThreshold) {
+			// Capture ScopedValue on the calling thread BEFORE entering the parallel stream.
+			// ForkJoinPool worker threads do not inherit ScopedValue bindings, so we must
+			// capture the context here and explicitly re-bind it inside each worker lambda.
+			final var capturedContext = RequestContextScope.REQUEST_CONTEXT.isBound()
+					? RequestContextScope.REQUEST_CONTEXT.get()
+					: null;
+
 			// Parallel rendering: 2-4x faster on multi-core CPUs
 			List<String> renderedBlocks = blocks.parallelStream()
 					.map(block -> {
-						if (block instanceof BlockContainer) {
-							return ((BlockContainer) block).render(blockRenderer);
-						} else {
-							return block.render(inlineRenderer);
+						final Supplier<String> renderBlockSupplier = () -> {
+							if (block instanceof BlockContainer blockContainer) {
+								return blockContainer.render(blockRenderer);
+							} else {
+								return block.render(inlineRenderer);
+							}
+						};
+						try {
+							if (capturedContext != null) {
+								return ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, capturedContext)
+										.call(renderBlockSupplier::get);
+							} else {
+								return renderBlockSupplier.get();
+							}
+						} catch (Exception e) {
+							throw new RuntimeException("error rendering blocks", e);
 						}
 					})
 					.toList();
@@ -132,8 +155,8 @@ public class CMSMarkdown {
 			// Sequential rendering for small documents
 			for (Block block : blocks) {
 				String rendered;
-				if (block instanceof BlockContainer) {
-					rendered = ((BlockContainer) block).render(blockRenderer);
+				if (block instanceof BlockContainer blockContainer) {
+					rendered = blockContainer.render(blockRenderer);
 				} else {
 					rendered = block.render(inlineRenderer);
 				}
