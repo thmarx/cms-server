@@ -28,8 +28,6 @@ import com.condation.cms.api.eventbus.Event;
  *
  * @author t.marx
  */
-public record InvalidateContentCacheEvent (String uri) implements Event {
-    public InvalidateContentCacheEvent () {
-        this(null);
-    }
+public record InvalidateContentCacheEvent () implements Event {
+    
 }

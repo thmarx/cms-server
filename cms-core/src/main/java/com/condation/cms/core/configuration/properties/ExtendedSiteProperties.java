@@ -132,11 +132,6 @@ public class ExtendedSiteProperties implements SiteProperties {
 	}
 
 	@Override
-	public boolean cacheContent() {
-		return configuration.getBoolean("cache.content", Constants.DEFAULT_CONTENT_CACHE_ENABLED);
-	}
-
-	@Override
 	public boolean spaEnabled() {
 		return configuration.getBoolean("spa.enabled", false);
 	}

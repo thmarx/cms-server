@@ -278,7 +278,7 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
 			var uri = PathUtil.toRelativeFile(file, contentBase);
             
-            eventBus.publish(new InvalidateContentCacheEvent(PathUtil.toURL(file, contentBase)));
+            eventBus.publish(new InvalidateContentCacheEvent());
 
 			var lastModified = LocalDate.ofInstant(Files.getLastModifiedTime(file).toInstant(), ZoneId.systemDefault());
 

@@ -61,7 +61,7 @@ public class CMSMarkdownRendererProvider extends MarkdownRendererProviderExtensi
 					if (isProd) {
 						var cacheManager = getContext().get(CacheManagerFeature.class).cacheManager();
 						ICache<String, String> cache = cacheManager.get(Constants.CacheNames.MARKDOWN,
-								new CacheManager.CacheConfig(100L, Duration.ofMinutes(1)));
+								new CacheManager.CacheConfig(1000L, Duration.ofMinutes(15)));
 						CMSMarkdownRendererProvider.activeRenderer = new CachedCMSMarkdownRenderer(cache);
 					} else {
 						CMSMarkdownRendererProvider.activeRenderer = new CMSMarkdownRenderer();
