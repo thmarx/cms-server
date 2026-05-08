@@ -97,8 +97,12 @@ public class CMSModuleTemplateEngine implements TemplateEngine {
 
 		CompositeTemplateLoader templateLoader = new CompositeTemplateLoader(loaders);
 
+		var templateCacheConfig = devMode 
+				? new CacheManager.CacheConfig(100l, Duration.ofMinutes(1))
+				: new CacheManager.CacheConfig(1000l, Duration.ofMinutes(15));
+		
 		templateEngine = TemplateEngineFactory.newInstance(templateLoader, devMode)
-				.cache(cacheManager.get(Constants.CacheNames.TEMPLATE, new CacheManager.CacheConfig(100l, Duration.ofMinutes(1))))
+				.cache(cacheManager.get(Constants.CacheNames.TEMPLATE, templateCacheConfig))
 				.defaultFilters()
 				.defaultTags()
 				.devMode(devMode)

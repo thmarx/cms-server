@@ -29,9 +29,9 @@ import com.condation.cms.api.PerformanceProperties;
  */
 public class ExtendedPerformanceProperties implements PerformanceProperties {
 
-	private boolean pool_enabled = false;
-	private int pool_size = 10;
-	private int pool_expire = 10;
+	private boolean pool_enabled = true;
+	private int pool_size = 50;
+	private int pool_expire = 300;
 	private int request_workers = 200;
 	
 	@Override

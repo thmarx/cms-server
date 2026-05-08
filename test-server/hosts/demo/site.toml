@@ -20,14 +20,6 @@ Hello <username>,
 your login code: <code>
 '''
 
-[backup]
-enabled = true
-cron = "0 0 2 * * ?"
-target = "/Users/thorstenmarx/entwicklung/backups"
-
-[cache]
-content = true
-
 # modules to load for this site
 [modules]
 active = ["example-module"]         # list of active modules for this site

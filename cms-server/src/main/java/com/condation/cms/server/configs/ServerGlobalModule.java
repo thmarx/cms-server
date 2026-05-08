@@ -118,6 +118,7 @@ public class ServerGlobalModule implements com.google.inject.Module {
 	}
 
 	@Provides
+	@Singleton
 	public Engine engine() throws IOException {
 		return Engine.newBuilder("js")
 				.option("engine.WarnInterpreterOnly", "false")

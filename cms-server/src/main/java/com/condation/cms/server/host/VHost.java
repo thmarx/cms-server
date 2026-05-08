@@ -73,7 +73,6 @@ import com.condation.cms.server.filter.PooledRequestContextFilter;
 import com.condation.cms.server.filter.RequestLoggingFilter;
 import com.condation.cms.server.filter.PreviewFilter;
 import com.condation.cms.server.handler.auth.JettyAuthenticationHandler;
-import com.condation.cms.server.handler.cache.CacheHandler;
 import com.condation.cms.server.handler.content.JettyContentHandler;
 import com.condation.cms.server.handler.content.JettyTaxonomyHandler;
 import com.condation.cms.server.handler.content.JettyViewHandler;
@@ -193,14 +192,8 @@ public class VHost {
 
 		injector.getInstance(EventBus.class).register(InvalidateContentCacheEvent.class, (EventListener<InvalidateContentCacheEvent>) (InvalidateContentCacheEvent event) -> {
 			log.debug("invalidate content cache");
-            if (event.uri() != null) {
-                injector.getInstance(ContentParser.class).clearCache(event.uri());
-                var cacheKey = new CacheHandler.CachedKey(event.uri());
-                injector.getInstance(CacheManager.class).get(Constants.CacheNames.RESPONSE).ifPresent(cache -> cache.invalidate(cacheKey));
-            } else {
-                injector.getInstance(ContentParser.class).clearCache();
-                injector.getInstance(CacheManager.class).get(Constants.CacheNames.RESPONSE).ifPresent(cache -> cache.invalidate());
-            }
+            injector.getInstance(ContentParser.class).clearCache();
+            injector.getInstance(CacheManager.class).get(Constants.CacheNames.RESPONSE).ifPresent(cache -> cache.invalidate());
             injector.getInstance(CacheManager.class).get(Constants.CacheNames.MARKDOWN).ifPresent(cache -> cache.invalidate());
         });
 		injector.getInstance(EventBus.class).register(InvalidateTemplateCacheEvent.class, (EventListener<InvalidateTemplateCacheEvent>) (InvalidateTemplateCacheEvent event) -> {
@@ -233,11 +226,8 @@ public class VHost {
 	public Handler buildHttpHandler() {
 
 		Handler contentHandler = null;
-		if (injector.getInstance(Configuration.class).get(SiteConfiguration.class).siteProperties().cacheContent()) {
-			contentHandler = new CacheHandler(injector.getInstance(JettyContentHandler.class), injector.getInstance(CacheManager.class));
-		} else {
-			contentHandler = injector.getInstance(JettyContentHandler.class);
-		}
+		
+		contentHandler = injector.getInstance(JettyContentHandler.class);
 
 		var taxonomyHandler = injector.getInstance(JettyTaxonomyHandler.class);
 		var viewHandler = injector.getInstance(JettyViewHandler.class);

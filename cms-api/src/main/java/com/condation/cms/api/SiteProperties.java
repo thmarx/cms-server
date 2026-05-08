@@ -59,8 +59,6 @@ public interface SiteProperties {
 	
 	public String cacheEngine();
 	
-	public boolean cacheContent();
-	
 	public String templateEngine();
 
 	public List<String> activeModules();

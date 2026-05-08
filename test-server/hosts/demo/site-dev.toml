@@ -5,7 +5,3 @@ hostname = [ "localhost5" ]           # hostnames for this site, used for reques
 [api]
 enabled = true
 whitelist = ["meta.*", "title"]
-
-# cache configuration for this site
-[cache]
-content = false                        # enable content caching for this site
