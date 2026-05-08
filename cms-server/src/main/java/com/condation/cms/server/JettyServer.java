@@ -111,7 +111,7 @@ public class JettyServer implements AutoCloseable {
 				try {
 					var host = new VHost(site.id(), site.basePath(), ServerUtil.getPath(Constants.Folders.MODULES), globalInjector);
 					log.debug("warmup host {}", site.id());
-					host.warmup();
+					host.startUpWarmup();
 					log.debug("init host {}", site.id());
 					host.init();
 					vhosts.add(host);

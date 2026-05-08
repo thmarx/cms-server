@@ -78,6 +78,7 @@ public abstract class Constants {
 		public static final String MODULES = "modules/";
 		public static final String HOSTS = "hosts/";
 		public static final String THEMES = "themes/";
+        public static final String PUBLIC = "public/";
 	}
 	
 	public static class NodeType {

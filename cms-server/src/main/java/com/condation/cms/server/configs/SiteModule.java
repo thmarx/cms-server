@@ -36,7 +36,6 @@ import com.condation.cms.api.cache.CacheManager;
 import com.condation.cms.api.cache.ICache;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.ServerConfiguration;
-import com.condation.cms.api.configuration.configs.SiteConfiguration;
 import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.content.RenderContentFunction;
 import com.condation.cms.api.db.DB;
@@ -53,7 +52,6 @@ import com.condation.cms.api.scheduler.CronJobContext;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.theme.Theme;
 import com.condation.cms.auth.services.AuthService;
-import com.condation.cms.auth.services.UserService;
 import com.condation.cms.content.ContentRenderer;
 import com.condation.cms.content.ContentResolver;
 import com.condation.cms.content.DefaultContentParser;
@@ -87,6 +85,7 @@ import com.google.inject.name.Named;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.condation.cms.server.annotations.Eager;
 
 /**
  *
@@ -211,6 +210,13 @@ public class SiteModule extends AbstractModule {
 		return db.getFileSystem().resolve(Constants.Folders.ASSETS);
 	}
 
+    @Provides
+	@Singleton
+	@Named("public")
+	public Path publicPath(DB db) {
+		return db.getFileSystem().resolve(Constants.Folders.PUBLIC);
+	}
+    
 	@Provides
 	@Singleton
 	@Named("templates")
@@ -241,7 +247,8 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public DB fileDb(SiteProperties site, DefaultContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
+	@Eager
+    public DB fileDb(SiteProperties site, DefaultContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
 		var db = new FileDB(hostBase, eventBus, (file) -> {
 			try {
 				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));

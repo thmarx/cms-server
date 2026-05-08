@@ -129,7 +129,15 @@ public class DefaultTheme implements Theme {
 		}
 		return themePath.resolve(Constants.Folders.ASSETS);
 	}
-
+    
+    @Override
+	public Path publicPath() {
+		if (themePath == null) {
+			return null;
+		}
+		return themePath.resolve(Constants.Folders.PUBLIC);
+	}
+    
 	@Override
 	public Path templatesPath() {
 		if (themePath == null) {
