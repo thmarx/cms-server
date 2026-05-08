@@ -112,11 +112,6 @@ public class TestSiteProperties implements SiteProperties {
 	}
 
 	@Override
-	public boolean cacheContent() {
-		return (boolean) values.getOrDefault("content.cache", false);
-	}
-
-	@Override
 	public String templateEngine() {
 		return (String)values.get("template.engine");
 	}
