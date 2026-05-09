@@ -16,31 +16,16 @@ It enables dynamic content creation and management through a modular architectur
 
 Detailed information on how to use and extend CondationCMS can be found in the official [documentation](https://condation.com/documentation).
 
-## CondationCMS – Module & Extension Exception (Developer FAQ)
+## Licensing
 
-In short:
+CondationCMS is licensed under the GNU Affero General Public License v3.0 (AGPLv3).
 
-You may develop modules and extensions for CondationCMS under any license, including proprietary or commercial licenses.
+Modules, plugins, themes, and extensions that use only the public and documented extension APIs may be distributed under any license, including proprietary or commercial licenses.
 
-The only requirement: your module or extension must interact exclusively through the official Module/Extension API.
+See the following files for details:
 
-You cannot copy or modify CondationCMS core code if you want your module/extension to remain proprietary.
-
-Modules and extensions must be installable and removable without altering core files.
-
-Any modifications to the core itself remain under the GPL.
-
-Examples:
-
-A module adding new functionality → can be closed-source or commercial.
-
-An extension visualizing CMS data → can be sold commercially.
-
-Modifying core classes (CoreEngine, ManagerUI) → GPL applies, even if a module is built alongside.
-
-Developer shortcut:
-
-“Anything that runs through the API can use your license. Anything touching the core stays GPL.”
+- "LICENSE" (./LICENSE)
+- "LICENSE-EXCEPTION.md" (./LICENSE-EXCEPTION.md)
 
 ## Changelog
 
