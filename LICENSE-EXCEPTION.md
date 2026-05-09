@@ -1,30 +1,70 @@
-# Plugin and Module Exception to the GNU Affero General Public License v3
+# Additional Permission under AGPLv3 Section 7
 
-As a special exception to the terms and conditions of the GNU Affero General Public License version 3 (AGPLv3), the copyright holders of this software grant you additional permissions as described in this exception.
+Copyright (c) CondationCMS Contributors
 
-## Definitions
-"Core" means the licensed program and all files, classes, interfaces, and components that are distributed as part of the official software package.
+CondationCMS is licensed under the GNU Affero General Public License version 3 (AGPLv3).
 
-"Public API" means all interfaces, functions, classes, hooks, events, extension points, and other integration mechanisms that are explicitly documented and designated as public by the copyright holders.
+This file defines an additional permission under Section 7 of the AGPLv3.
 
-"Extension Point" means any hook, event, listener, service interface, plugin interface, or similar mechanism that the Core explicitly provides for the purpose of extending its functionality.
+---
 
-"Module" means any software component — including but not limited to plugins, add-ons, themes, extensions, or integrations — that interacts with the Core exclusively through the Public API or by implementing one or more Extension Points.
+## Module and Extension Exception
 
-## Grant of Additional Permissions
-You may distribute a Module under the terms of any license of your choice, provided that the Module:
+Modules, plugins, themes, templates, and extensions that interact exclusively with CondationCMS through its public and documented extension APIs are considered **independent works** and are not subject to the copyleft requirements of the AGPLv3.
 
-interacts with the Core solely through the Public API or by implementing Extension Points,
+Such modules, plugins, themes, templates, and extensions may therefore be distributed under any license, including proprietary or commercial licenses.
 
-does not modify, patch, replace, or override any Core files, classes, or internal interfaces,
+This exception applies only if the extension:
 
-does not use any internal, undocumented, or non-public interfaces of the Core, except where such interfaces are explicitly designated as public in the official documentation,
+- Uses only the public and documented extension APIs intended for third-party development.
+- Remains fully separable from the CondationCMS core system.
+- Can be installed, updated, or removed without modifying CondationCMS core source files.
 
-does not contain any code derived from the Core beyond what is necessary to implement the Public API or an Extension Point.
+---
 
-## Limitations
-This exception applies only to Modules as defined above. Any software component that modifies the Core or contains code derived from Core files remains subject to the full terms of the AGPLv3.
+## Definition of Public Extension APIs
 
-This exception does not grant permission to distribute a modified version of the Core itself under any license other than the AGPLv3.
+For the purpose of this exception, “public and documented extension APIs” includes only officially documented extension points intended for third-party development, such as:
 
-If you are uncertain whether your component qualifies as a Module under this exception, you should treat it as subject to the AGPLv3.
+- Hooks
+- Events
+- Services
+- Template APIs
+- Plugin APIs
+- Module APIs
+- Extension interfaces
+- Other documented extension points
+
+Internal classes, internal services, private APIs, and undocumented implementation details are explicitly excluded.
+
+---
+
+## Core Modifications and Derivative Works
+
+This exception does **not** apply to any of the following:
+
+- Modifications to CondationCMS core source code
+- Patching or altering core functionality
+- Copying or reusing substantial portions of core source code
+- Subclassing or replacing internal core classes not intended as public APIs
+- Creating derivative works based on internal implementation details
+
+Any such modifications remain fully subject to the AGPLv3.
+
+---
+
+## Installation Boundary
+
+Extensions covered by this exception must:
+
+- Be installable and runnable without changes to the CondationCMS core codebase
+- Not require modification of core files for integration
+- Interact with the system only through documented extension mechanisms
+
+---
+
+## No Additional Restrictions
+
+This exception does not limit or modify any rights granted under the AGPLv3 itself. All other parts of CondationCMS remain licensed under the AGPLv3.
+
+For the full license text, see the `LICENSE` file in this repository.
