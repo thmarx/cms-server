@@ -66,7 +66,7 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 			var contentFile = contentBase.resolve(uri).resolve(name);
 
 			log.debug("deleting file {}", contentFile.uri());
-			var sections = db.getContent().listSections(contentFile);
+			var sections = db.getContent().listSlotItems(contentFile);
 			Files.deleteIfExists(db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(uri).resolve(name));
 			sections.forEach(node -> {
 				try {

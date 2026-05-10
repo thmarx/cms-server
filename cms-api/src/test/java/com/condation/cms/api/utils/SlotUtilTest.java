@@ -29,7 +29,7 @@ import org.junit.jupiter.params.provider.CsvSource;
  *
  * @author thorstenmarx
  */
-public class SectionUtilTest {
+public class SlotUtilTest {
 
 	@ParameterizedTest
 	@CsvSource({
@@ -37,7 +37,7 @@ public class SectionUtilTest {
 		"index.asection.1.md, asection",
 		"index.asection.blabla.md, asection"
 	})
-	public void test_getSectionName(String filename, String sectionname) {
-		Assertions.assertThat(SectionUtil.getSectionName(filename)).isEqualTo(sectionname);
+	public void test_getSlotName(String filename, String slotItemName) {
+		Assertions.assertThat(SlotUtil.getSlotItemName(filename)).isEqualTo(slotItemName);
 	}
 }

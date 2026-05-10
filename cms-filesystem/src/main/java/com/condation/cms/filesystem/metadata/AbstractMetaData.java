@@ -81,7 +81,7 @@ public abstract class AbstractMetaData implements MetaData {
 			return true;
 		}
 		
-		if (node == null || node.isSection()) {
+		if (node == null || node.isSlotItem()) {
 			return false;
 		}
 		

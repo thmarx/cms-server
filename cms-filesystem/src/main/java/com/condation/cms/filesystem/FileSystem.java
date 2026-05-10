@@ -215,28 +215,28 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 
 	}
 
-	public List<ContentNode> listSections(final Path contentFile) {
+	public List<ContentNode> listSlotItems(final Path contentFile) {
 		String folder = PathUtil.toRelativePath(contentFile, contentBase);
 		String filename = contentFile.getFileName().toString();
 		filename = filename.substring(0, filename.length() - 3);
 
-		return listSections(filename, folder);
+		return FileSystem.this.listSlotItems(filename, folder);
 	}
 
-	public List<ContentNode> listSections(final String filename, String folder) {
+	public List<ContentNode> listSlotItems(final String filename, String folder) {
 		List<ContentNode> nodes = new ArrayList<>();
 
-		final Pattern isSectionOf = Constants.SECTION_OF_PATTERN.apply(filename);
-		final Pattern isNamedSectionOf = Constants.SECTION_NAMED_OF_PATTERN.apply(filename);
+		final Pattern isSlotItemOf = Constants.SLOT_ITEM_OF_PATTERN.apply(filename);
+		final Pattern isNamedSlotItemOf = Constants.SLOT_ITEM_NAMED_OF_PATTERN.apply(filename);
 
 		if ("".equals(folder)) {
 			metaData.getTree().values()
 					.stream()
 					.filter(node -> !node.isHidden())
 					.filter(node -> node.isVisible())
-					.filter(node -> node.isSection())
+					.filter(node -> node.isSlotItem())
 					.filter(node -> {
-						return isSectionOf.matcher(node.name()).matches() || isNamedSectionOf.matcher(node.name()).matches();
+						return isSlotItemOf.matcher(node.name()).matches() || isNamedSlotItemOf.matcher(node.name()).matches();
 					})
 					.forEach((node) -> {
 						nodes.add(node);
@@ -248,9 +248,9 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 						.stream()
 						.filter(node -> !node.isHidden())
 						.filter(node -> node.isVisible())
-						.filter(node -> node.isSection())
+						.filter(node -> node.isSlotItem())
 						.filter(node
-								-> isSectionOf.matcher(node.name()).matches() || isNamedSectionOf.matcher(node.name()).matches()
+								-> isSlotItemOf.matcher(node.name()).matches() || isNamedSlotItemOf.matcher(node.name()).matches()
 						)
 						.forEach((node) -> {
 							nodes.add(node);

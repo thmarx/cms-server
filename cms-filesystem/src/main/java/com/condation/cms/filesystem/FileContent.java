@@ -54,12 +54,12 @@ public class FileContent implements Content {
 	}
 	
 	@Override
-	public List<ContentNode> listSections(ReadOnlyFile contentFile) {
+	public List<ContentNode> listSlotItems(ReadOnlyFile contentFile) {
 		String folder = PathUtil.toRelativePath(contentFile, cmsFileSystem.contentBase());
 		String filename = contentFile.getFileName();
 		filename = filename.substring(0, filename.length() - 3);
 		
-		return fileSystem.listSections(filename, folder);
+		return fileSystem.listSlotItems(filename, folder);
 	}
 
 	@Override

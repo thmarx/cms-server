@@ -1,8 +1,8 @@
-package com.condation.cms.content;
+package com.condation.cms.api.utils;
 
 /*-
  * #%L
- * CMS Content
+ * CMS Api
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -21,22 +21,32 @@ package com.condation.cms.content;
  * #L%
  */
 
-
 import com.condation.cms.api.Constants;
-import java.util.Map;
-
 
 /**
  *
  * @author t.marx
  */
-public record Section(String name, int index, String content, Map<String, Object> data, String uri) {
+public class SlotUtil {
 
-	public Section(String name, int index, String content, Map<String, Object> data) {
-		this(name, index, content, data, null);
+	public static boolean isNamedSlotItem(final String name) {
+		return Constants.SLOT_ITEM_NAMED_PATTERN.matcher(name).matches();
 	}
-	
-	public Section(String name, String content, Map<String, Object> data) {
-		this(name, Constants.DEFAULT_SECTION_LAYOUT_ORDER, content, data, null);
+
+	public static String getSlotItemName(final String name) {
+		if (isNamedSlotItem(name)) {
+			var matcher = Constants.SLOT_ITEM_NAMED_PATTERN.matcher(name);
+			matcher.matches();
+			return matcher.group("slot");
+		} else {
+			var matcher = Constants.SLOT_ITEM_PATTERN.matcher(name);
+			matcher.matches();
+			return matcher.group("slot");
+		}
+	}
+
+	public static boolean isSlotItem(final String name) {
+		return Constants.SLOT_ITEM_PATTERN.matcher(name).matches()
+				|| Constants.SLOT_ITEM_NAMED_PATTERN.matcher(name).matches();
 	}
 }

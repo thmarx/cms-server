@@ -35,7 +35,7 @@ public class ContentTypes {
 
 	public Set<PageTemplate> pageTemplates = new HashSet();
 
-	public Set<SectionTemplate> sectionTemplates = new HashSet<>();
+	public Set<SlotItemTemplate> sectionTemplates = new HashSet<>();
 	
 	public Set<ListItemType> listItemTypes = new HashSet<>();
 
@@ -56,19 +56,19 @@ public class ContentTypes {
 	}
 
 	public void registerSectionTemplate(Map<String, Object> sectionTempate) {
-		sectionTemplates.add(new SectionTemplate(sectionTempate));
+		sectionTemplates.add(new SlotItemTemplate(sectionTempate));
 	}
 	
 	public Set<PageTemplate> getPageTemplates () {
 		return new HashSet<>(pageTemplates);
 	}
 	
-	public Set<SectionTemplate> getSectionTemplates (String section) {
+	public Set<SlotItemTemplate> getSectionTemplates (String section) {
 		return sectionTemplates.stream()
 				.filter(template -> template.section().equals(section))
 				.collect(Collectors.toSet());
 	}
-	public Set<SectionTemplate> getSectionTemplates () {
+	public Set<SlotItemTemplate> getSectionTemplates () {
 		return new HashSet<>(sectionTemplates);
 	}
 
@@ -87,9 +87,9 @@ public class ContentTypes {
 		}
 	}
 
-	public static record SectionTemplate(String name, String template, Map<String, Object> data) {
+	public static record SlotItemTemplate(String name, String template, Map<String, Object> data) {
 
-		public SectionTemplate (Map<String, Object> data) {
+		public SlotItemTemplate (Map<String, Object> data) {
 			this(
 					(String) data.getOrDefault("name", "<no name>"),
 					(String) data.getOrDefault("template", "<no template>"),
@@ -97,7 +97,7 @@ public class ContentTypes {
 		}
 
 		public String section() {
-			return (String) data.getOrDefault("section", "<no section>");
+			return (String) data.getOrDefault("slot", "<no section>");
 		}
 	}
 	

@@ -36,7 +36,7 @@ public interface Content {
 	
 	boolean isVisible (ContentNode node);
 	
-	List<ContentNode>  listSections(final ReadOnlyFile contentFile);
+	List<ContentNode>  listSlotItems(final ReadOnlyFile contentFile);
 	
 	List<ContentNode> listContent(final ReadOnlyFile base, final String start);
 	
