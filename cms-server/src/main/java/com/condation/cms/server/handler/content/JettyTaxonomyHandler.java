@@ -26,7 +26,6 @@ import com.condation.cms.api.Constants;
 import com.condation.cms.api.content.TaxonomyResponse;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.content.TaxonomyResolver;
-import com.condation.cms.server.filter.CreateRequestContextFilter;
 import com.google.inject.Inject;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

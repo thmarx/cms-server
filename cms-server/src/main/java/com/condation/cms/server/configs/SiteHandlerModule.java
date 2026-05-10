@@ -42,6 +42,7 @@ import com.condation.cms.media.SiteMediaManager;
 import com.condation.cms.server.FileFolderPathResource;
 import com.condation.cms.server.filter.InitRequestContextFilter;
 import com.condation.cms.server.filter.PreviewFilter;
+import com.condation.cms.server.handler.StaticFileHandler;
 import com.condation.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.condation.cms.server.handler.content.JettyContentHandler;
 import com.condation.cms.server.handler.content.JettyTaxonomyHandler;
@@ -56,6 +57,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 
@@ -103,15 +105,15 @@ public class SiteHandlerModule extends AbstractModule {
 	
 	@Provides
 	@Singleton
-	@Named("site")
+	@Named("site.media")
 	public JettyMediaHandler mediaHandler(SiteMediaManager mediaManager) throws IOException {
 		return new JettyMediaHandler(mediaManager);
 	}
 
 	@Provides
 	@Singleton
-	@Named("site")
-	public ResourceHandler resourceHander (@Named("assets") Path assetBase, ServerProperties serverProperties) throws IOException {
+	@Named("site.assets")
+	public ResourceHandler assetsHandler (@Named("assets") Path assetBase, ServerProperties serverProperties) throws IOException {
 		ResourceHandler assetsHandler = new ResourceHandler();
 		assetsHandler.setDirAllowed(false);
 		assetsHandler.setBaseResource(new FileFolderPathResource(assetBase));
@@ -122,5 +124,12 @@ public class SiteHandlerModule extends AbstractModule {
 		}
 		
 		return assetsHandler;
+	}
+    
+    @Provides
+	@Singleton
+	@Named("site.public")
+	public StaticFileHandler publicHandler (@Named("public") Path publicBase, ServerProperties serverProperties) throws IOException {
+		return new StaticFileHandler(List.of(publicBase));
 	}
 }

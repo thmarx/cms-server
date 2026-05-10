@@ -206,6 +206,11 @@ $hooks.registerFilter("manager/contentTypes/register", (context) => {
 						type: "markdown",
 						name: "about1",
 						title: "About1"
+					},
+					{
+						type: "markdown",
+						name: "about2",
+						title: "About2"
 					}
 				]
 			}

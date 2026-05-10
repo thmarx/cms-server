@@ -29,11 +29,15 @@ import com.condation.cms.api.theme.Theme;
 import com.condation.cms.media.ThemeMediaManager;
 import com.condation.cms.server.handler.media.JettyMediaHandler;
 import com.condation.cms.server.FileFolderPathResource;
+import com.condation.cms.server.handler.StaticFileHandler;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.handler.ResourceHandler;
@@ -46,42 +50,56 @@ import org.eclipse.jetty.util.resource.ResourceFactory;
 @RequiredArgsConstructor
 public class ThemeModule extends AbstractModule {
 
-	@Provides
-	@Singleton
-	public ThemeMediaManager themeMediaManager(Theme theme, Configuration configuration, DB db, EventBus eventBus) throws IOException {
-		var mediaManager = new ThemeMediaManager(db.getFileSystem().resolve("temp"), theme, configuration);
-		eventBus.register(ConfigurationReloadEvent.class, mediaManager);
-		return mediaManager;
-	}
+    @Provides
+    @Singleton
+    public ThemeMediaManager themeMediaManager(Theme theme, Configuration configuration, DB db, EventBus eventBus) throws IOException {
+        var mediaManager = new ThemeMediaManager(db.getFileSystem().resolve("temp"), theme, configuration);
+        eventBus.register(ConfigurationReloadEvent.class, mediaManager);
+        return mediaManager;
+    }
 
-	@Provides
-	@Singleton
-	@Named("theme")
-	public JettyMediaHandler themeMediaHandler(ThemeMediaManager mediaManager) throws IOException {
-		return new JettyMediaHandler(mediaManager);
-	}
+    @Provides
+    @Singleton
+    @Named("theme.media")
+    public JettyMediaHandler themeMediaHandler(ThemeMediaManager mediaManager) throws IOException {
+        return new JettyMediaHandler(mediaManager);
+    }
 
-	@Provides
-	@Singleton
-	@Named("theme")
-	public ResourceHandler resourceHandler(Theme theme, ServerProperties serverProperties) {
-		ResourceHandler assetsHandler = new ResourceHandler();
-		assetsHandler.setDirAllowed(false);
+    @Provides
+    @Singleton
+    @Named("theme.assets")
+    public ResourceHandler themeAssetsHandler(Theme theme, ServerProperties serverProperties) {
+        ResourceHandler assetsHandler = new ResourceHandler();
+        assetsHandler.setDirAllowed(false);
 
-		if (theme.getParentTheme() != null) {
-			assetsHandler.setBaseResource(ResourceFactory.combine(
-					new FileFolderPathResource(theme.assetsPath()),
-					new FileFolderPathResource(theme.getParentTheme().assetsPath())
-			));
-		} else {
-			assetsHandler.setBaseResource(new FileFolderPathResource(theme.assetsPath()));
-		}
+        if (theme.getParentTheme() != null) {
+            assetsHandler.setBaseResource(ResourceFactory.combine(
+                    new FileFolderPathResource(theme.assetsPath()),
+                    new FileFolderPathResource(theme.getParentTheme().assetsPath())
+            ));
+        } else {
+            assetsHandler.setBaseResource(new FileFolderPathResource(theme.assetsPath()));
+        }
 
-		if (serverProperties.dev()) {
-			assetsHandler.setCacheControl("no-cache");
-		} else {
-			assetsHandler.setCacheControl("max-age=" + TimeUnit.HOURS.toSeconds(24));
-		}
-		return assetsHandler;
-	}
+        if (serverProperties.dev()) {
+            assetsHandler.setCacheControl("no-cache");
+        } else {
+            assetsHandler.setCacheControl("max-age=" + TimeUnit.HOURS.toSeconds(24));
+        }
+        return assetsHandler;
+    }
+
+    @Provides
+    @Singleton
+    @Named("theme.public")
+    public StaticFileHandler themePublicHandler(Theme theme, ServerProperties serverProperties) {
+        List<Path> paths = new ArrayList<>();
+        paths.add(theme.publicPath());
+        
+        if (theme.getParentTheme() != null) {
+            paths.add(theme.getParentTheme().publicPath());
+        }
+
+        return new StaticFileHandler(paths);
+    }
 }

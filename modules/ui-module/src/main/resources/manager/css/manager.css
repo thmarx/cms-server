@@ -8,45 +8,16 @@
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-/*
-html,
-body {
-  height: 100%;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-#content {
-  flex: 1 1 auto;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-#previewWrapper {
-  flex: 1;
-  position: relative;
-}
-
-iframe#contentPreview {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-*/
 
 i[data-cms-section-handle] {
 	cursor: pointer;
@@ -73,6 +44,9 @@ tr[data-cms-file-directory] {
 	display: none;
 }
 
+/* =========================================================
+   IMAGE HOVER
+========================================================= */
 
 .cms-image-hover-wrapper {
 	position: relative;
@@ -80,7 +54,6 @@ tr[data-cms-file-directory] {
 
 .cms-small-image {
 	width: 50px;
-	/* oder dein Wunschwert */
 	height: auto;
 	cursor: pointer;
 }
@@ -106,6 +79,22 @@ tr[data-cms-file-directory] {
 	height: auto;
 }
 
+/* =========================================================
+   FORM
+========================================================= */
+
+.cms-form-field[data-cms-form-field-type="markdown"] {
+	margin-bottom: 2rem;
+}
+
+/* WICHTIG:
+   flex-grow-1 auf mehreren Cherry Editoren kann Layoutprobleme erzeugen.
+   Falls möglich:
+   class="mb-3 cms-form-field"
+   statt
+   class="mb-3 cms-form-field flex-grow-1"
+*/
+
 .cms-form .cms-drop-zone {
 	border: 2px dashed #6c757d;
 	border-radius: 0.5rem;
@@ -129,16 +118,93 @@ tr[data-cms-file-directory] {
 	object-fit: cover;
 	border-radius: 0.25rem;
 }
+
 .cms-form .cms-drop-zone.drag-over {
 	border: 2px dashed #007bff;
-	background-color: rgba(0,123,255,0.1);
+	background-color: rgba(0, 123, 255, 0.1);
 }
 
 .cms-toolbar-button:hover {
 	cursor: pointer;
 }
 
-/* focal poit editor */
+/* =========================================================
+   CHERRY MARKDOWN EDITOR FIXES
+========================================================= */
+
+/*
+ * Fix für mehrere Cherry Editoren untereinander.
+ * Verhindert Überlagerungen und falsche Höhenberechnung.
+ */
+
+.cherry-editor-container {
+	position: relative;
+	height: auto !important;
+	min-height: 300px;
+	overflow: visible;
+	display: flex;
+	flex-direction: column;
+}
+
+/*
+ * Cherry selbst als Flex Container
+ */
+.cherry-editor-container .cherry {
+	display: flex;
+	flex-direction: column;
+	min-height: 300px;
+	height: auto !important;
+}
+
+/*
+ * Editorbereich soll sauber wachsen
+ */
+.cherry-editor-container .cherry-editor {
+	flex: 1 1 auto;
+	height: auto !important;
+	min-height: 250px;
+}
+
+/*
+ * WICHTIG:
+ * height:100% entfernt
+ */
+.cherry-editor-container .cherry-markdown,
+.cherry-editor-container .cm-editor {
+	height: auto !important;
+	min-height: 250px;
+	overflow: auto;
+}
+
+/*
+ * CodeMirror Scrollbereich
+ */
+.cherry-editor-container .cm-scroller {
+	min-height: 250px;
+}
+
+/*
+ * Floating Elemente dürfen nicht abgeschnitten werden
+ */
+.cherry-editor-container .cherry-dropdown,
+.cherry-editor-container .cherry-bubble,
+.cherry-editor-container .cherry-floatmenu {
+	z-index: 2000;
+}
+
+/*
+ * Toolbar stabil halten
+ */
+.cherry-editor-container .cherry-toolbar {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+}
+
+/* =========================================================
+   FOCAL POINT EDITOR
+========================================================= */
+
 .cms-focal-wrapper {
 	position: relative;
 	display: inline-block;
@@ -160,10 +226,11 @@ tr[data-cms-file-directory] {
 	transform: translate(-50%, -50%);
 	pointer-events: none;
 }
-/* end focal point editor */
 
-/* sidebar */
-/* Resizable Offcanvas Sidebar */
+/* =========================================================
+   SIDEBAR / OFFCANVAS
+========================================================= */
+
 .offcanvas-end.resizable {
 	min-width: 250px;
 	max-width: 90vw;
@@ -172,11 +239,26 @@ tr[data-cms-file-directory] {
 	right: 0;
 	top: 0;
 	bottom: 0;
-	overflow: auto;
+
+	/* WICHTIG */
+	overflow-x: hidden;
+	overflow-y: auto;
+
 	transition: box-shadow 0.2s ease;
+	scroll-behavior: smooth;
 }
 
-/* Resize Handle - standardmäßig unsichtbar */
+/*
+ * Bootstrap Offcanvas Body
+ * verhindert abgeschnittene Cherry Elemente
+ */
+.offcanvas-body {
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+/* Resize Handle */
+
 .cms-resize-handle {
 	position: absolute;
 	left: -5px;
@@ -190,36 +272,34 @@ tr[data-cms-file-directory] {
 	opacity: 0;
 }
 
-/* Handle wird sichtbar beim Hover über Sidebar */
 .offcanvas-end.resizable:hover .cms-resize-handle {
 	opacity: 1;
 }
 
-/* Handle Hover State */
 .cms-resize-handle:hover {
-	background: linear-gradient(to right,
+	background: linear-gradient(
+		to right,
 		transparent,
 		rgba(13, 110, 253, 0.1) 30%,
 		rgba(13, 110, 253, 0.15) 50%,
 		rgba(13, 110, 253, 0.1) 70%,
 		transparent
-		);
+	);
 }
 
-/* Handle Active State - bleibt sichtbar während Resize */
 .cms-resize-handle:active,
 .offcanvas-end.resizable.is-resizing .cms-resize-handle {
 	opacity: 1;
-	background: linear-gradient(to right,
+	background: linear-gradient(
+		to right,
 		transparent,
 		rgba(13, 110, 253, 0.2) 30%,
 		rgba(13, 110, 253, 0.25) 50%,
 		rgba(13, 110, 253, 0.2) 70%,
 		transparent
-		);
+	);
 }
 
-/* Visual indicator in the middle of the handle */
 .cms-resize-handle::after {
 	content: '';
 	position: absolute;
@@ -233,23 +313,17 @@ tr[data-cms-file-directory] {
 	transition: opacity 0.2s ease;
 }
 
-/* Body während Resize */
 body.resizing-sidebar {
 	user-select: none !important;
 	cursor: col-resize !important;
 }
 
-/* Offcanvas während Resize - verhindert Transition-Ruckeln */
 .offcanvas-end.resizable.is-resizing {
 	transition: none;
 }
 
-/* Smooth scrolling */
-.offcanvas-end.resizable {
-	scroll-behavior: smooth;
-}
+/* Scrollbar */
 
-/* Optional: Schönere Scrollbar */
 .offcanvas-end.resizable::-webkit-scrollbar {
 	width: 8px;
 }
@@ -267,7 +341,10 @@ body.resizing-sidebar {
 	background: var(--bs-dark, #343a40);
 }
 
-/* Responsive Anpassungen */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
 @media (max-width: 768px) {
 	.offcanvas-end.resizable {
 		min-width: 100vw !important;
@@ -278,89 +355,76 @@ body.resizing-sidebar {
 		display: none;
 	}
 }
-/* end sidebar */
 
-/* Fix für Modal über Offcanvas */
-/* Stelle sicher dass Modal Inputs fokussierbar sind */
-/* Modal über Offcanvas - pointer-events fix */
-.modal.show {
-	pointer-events: auto !important;
-}
+/* =========================================================
+   MODAL FIXES
+========================================================= */
 
-.modal-dialog {
-	pointer-events: auto !important;
-}
-
-.modal-content {
-	pointer-events: auto !important;
-}
-
-.modal-body {
-	pointer-events: auto !important;
-}
-
+.modal.show,
+.modal-dialog,
+.modal-content,
+.modal-body,
 .modal-body input,
 .modal-body textarea,
 .modal-body select {
 	pointer-events: auto !important;
 }
 
-/* Backdrop darf nicht blockieren */
 .modal-backdrop.show {
 	pointer-events: none !important;
 }
 
-.cherry-editor-container .cherry-markdown,
-.cherry-editor-container .cm-editor {
-    height: 100%;
-    overflow: auto;
+/* =========================================================
+   NODE STATUS BUTTONS
+========================================================= */
+
+.cms-node-status-published {
+	--bs-btn-color: #fff;
+	--bs-btn-bg: #5cb85c;
+	--bs-btn-border-color: #5cb85c;
+	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-bg: #4e9c4e;
+	--bs-btn-hover-border-color: #4a934a;
+	--bs-btn-focus-shadow-rgb: 116, 195, 116;
+	--bs-btn-active-color: #fff;
+	--bs-btn-active-bg: #4a934a;
+	--bs-btn-active-border-color: #458a45;
+	--bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+	--bs-btn-disabled-color: #fff;
+	--bs-btn-disabled-bg: #5cb85c;
+	--bs-btn-disabled-border-color: #5cb85c;
 }
 
-.cms-node-status-published{
-	--bs-btn-color:#fff;
-	--bs-btn-bg:#5cb85c;
-	--bs-btn-border-color:#5cb85c;
-	--bs-btn-hover-color:#fff;
-	--bs-btn-hover-bg:#4e9c4e;
-	--bs-btn-hover-border-color:#4a934a;
-	--bs-btn-focus-shadow-rgb:116,195,116;
-	--bs-btn-active-color:#fff;
-	--bs-btn-active-bg:#4a934a;
-	--bs-btn-active-border-color:#458a45;
-	--bs-btn-active-shadow:inset 0 3px 5px rgba(0, 0, 0, 0.125);
-	--bs-btn-disabled-color:#fff;
-	--bs-btn-disabled-bg:#5cb85c;
-	--bs-btn-disabled-border-color:#5cb85c
+.cms-node-status-published-not-visible {
+	--bs-btn-color: #fff;
+	--bs-btn-bg: #5bc0de;
+	--bs-btn-border-color: #5bc0de;
+	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-bg: #4da3bd;
+	--bs-btn-hover-border-color: #499ab2;
+	--bs-btn-focus-shadow-rgb: 116, 201, 227;
+	--bs-btn-active-color: #fff;
+	--bs-btn-active-bg: #499ab2;
+	--bs-btn-active-border-color: #4490a7;
+	--bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+	--bs-btn-disabled-color: #fff;
+	--bs-btn-disabled-bg: #5bc0de;
+	--bs-btn-disabled-border-color: #5bc0de;
 }
-.cms-node-status-published-not-visible{
-	--bs-btn-color:#fff;
-	--bs-btn-bg:#5bc0de;
-	--bs-btn-border-color:#5bc0de;
-	--bs-btn-hover-color:#fff;
-	--bs-btn-hover-bg:#4da3bd;
-	--bs-btn-hover-border-color:#499ab2;
-	--bs-btn-focus-shadow-rgb:116,201,227;
-	--bs-btn-active-color:#fff;
-	--bs-btn-active-bg:#499ab2;
-	--bs-btn-active-border-color:#4490a7;
-	--bs-btn-active-shadow:inset 0 3px 5px rgba(0, 0, 0, 0.125);
-	--bs-btn-disabled-color:#fff;
-	--bs-btn-disabled-bg:#5bc0de;
-	--bs-btn-disabled-border-color:#5bc0de
-}
-.cms-node-status-unpublished{
-	--bs-btn-color:#fff;
-	--bs-btn-bg:#ffc107;
-	--bs-btn-border-color:#ffc107;
-	--bs-btn-hover-color:#fff;
-	--bs-btn-hover-bg:#d9a406;
-	--bs-btn-hover-border-color:#cc9a06;
-	--bs-btn-focus-shadow-rgb:255,202,44;
-	--bs-btn-active-color:#fff;
-	--bs-btn-active-bg:#cc9a06;
-	--bs-btn-active-border-color:#bf9105;
-	--bs-btn-active-shadow:inset 0 3px 5px rgba(0, 0, 0, 0.125);
-	--bs-btn-disabled-color:#fff;
-	--bs-btn-disabled-bg:#ffc107;
-	--bs-btn-disabled-border-color:#ffc107
+
+.cms-node-status-unpublished {
+	--bs-btn-color: #fff;
+	--bs-btn-bg: #ffc107;
+	--bs-btn-border-color: #ffc107;
+	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-bg: #d9a406;
+	--bs-btn-hover-border-color: #cc9a06;
+	--bs-btn-focus-shadow-rgb: 255, 202, 44;
+	--bs-btn-active-color: #fff;
+	--bs-btn-active-bg: #cc9a06;
+	--bs-btn-active-border-color: #bf9105;
+	--bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+	--bs-btn-disabled-color: #fff;
+	--bs-btn-disabled-bg: #ffc107;
+	--bs-btn-disabled-border-color: #ffc107;
 }

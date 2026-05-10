@@ -1,8 +1,8 @@
-package com.condation.cms.api.theme;
+package com.condation.cms.server.annotations;
 
 /*-
  * #%L
- * CMS Api
+ * CMS Server
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -21,41 +21,15 @@ package com.condation.cms.api.theme;
  * #L%
  */
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import com.condation.cms.api.ThemeProperties;
-import com.condation.cms.api.messages.MessageSource;
-import java.nio.file.Path;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import com.google.inject.BindingAnnotation;
 
-/**
- *
- * @author thmar
- */
-
-public interface Theme {
-	
-	MessageSource getMessages ();
-	
-	String getName();
-	
-	Path templatesPath ();
-	
-	Path extensionsPath ();
-	
-	Path assetsPath ();
-    
-    Path publicPath ();
-	
-	ThemeProperties properties();
-	
-	Theme getParentTheme ();
-	
-	Path resolveExtension (String path);
-	Path resolveAsset (String path);
-	Path resolveTemplate (String path);
-	
-	/**
-	 * empty theme is used for sites without configured theme
-	 * @return 
-	 */
-	boolean empty();
-}
+@Target({ FIELD, PARAMETER, METHOD })
+@Retention(RUNTIME)
+public @interface Eager {}

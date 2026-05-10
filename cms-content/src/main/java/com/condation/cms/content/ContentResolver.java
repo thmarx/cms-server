@@ -54,32 +54,6 @@ public class ContentResolver {
 	
 	private final DB db;
 	
-	public Optional<ContentResponse> getStaticContent (String uri) {
-		if (uri.endsWith(".md")) {
-			return Optional.empty();
-		}
-		if (uri.startsWith("/")) {
-			uri = uri.substring(1);
-		}
-		var contentBase = db.getReadOnlyFileSystem().contentBase();
-		ReadOnlyFile staticFile = contentBase.resolve(uri);
-		if (staticFile.isDirectory()) {
-			return Optional.empty();
-		}
-		try {
-			if (staticFile.exists()) {
-				return Optional.ofNullable(new DefaultContentResponse(
-						staticFile.getContent(), 
-						staticFile.getContentType(), 
-						null
-				));
-			}
-		} catch (IOException ex) {
-			log.error("", ex);
-		}
-		return Optional.empty();
-	}
-	
 	public Optional<ContentResponse> getContent (final RequestContext context) {
 		return getContent(context, true);
 	}

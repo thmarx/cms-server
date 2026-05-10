@@ -33,9 +33,6 @@ import com.condation.cms.api.utils.RequestUtil;
 import com.condation.cms.content.ContentResolver;
 import com.condation.cms.request.RequestContextFactory;
 import com.google.inject.Inject;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,71 +49,69 @@ import org.eclipse.jetty.util.Callback;
  * @author t.marx
  */
 @RequiredArgsConstructor(onConstructor = @__({
-	@Inject}))
+    @Inject}))
 @Slf4j
 public class JettyContentHandler extends Handler.Abstract {
 
-	private final ContentResolver contentResolver;
-	private final RequestContextFactory requestContextFactory;
+    private final ContentResolver contentResolver;
+    private final RequestContextFactory requestContextFactory;
 
-	@Override
-	public boolean handle(Request request, Response response, Callback callback) throws Exception {
+    @Override
+    public boolean handle(Request request, Response response, Callback callback) throws Exception {
 //		var uri = request.getHttpURI().getPath();
-		var uri = RequestUtil.getContentPath(request);
-		var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
-		var requestContext = (RequestContext) request.getAttribute(Constants.REQUEST_CONTEXT_ATTRIBUTE_NAME);
+        var uri = RequestUtil.getContentPath(request);
+        var queryParameters = HTTPUtil.queryParameters(request.getHttpURI().getQuery());
+        var requestContext = (RequestContext) request.getAttribute(Constants.REQUEST_CONTEXT_ATTRIBUTE_NAME);
 
-		// handle enabled spa mode
-		var spaEnabled = requestContext.get(ConfigurationFeature.class).configuration().get(SiteConfiguration.class).siteProperties().spaEnabled();
-		var notFoundContent = "/.technical/404";
-		if (spaEnabled) {
-			uri = "";
-			notFoundContent = "/";
-		}
+        // handle enabled spa mode
+        var spaEnabled = requestContext.get(ConfigurationFeature.class).configuration().get(SiteConfiguration.class).siteProperties().spaEnabled();
+        var notFoundContent = "/.technical/404";
+        if (spaEnabled) {
+            uri = "";
+            notFoundContent = "/";
+        }
 
-		try {
-			Optional<ContentResponse> content = contentResolver.getContent(requestContext);
-			response.setStatus(200);
+        try {
+            Optional<ContentResponse> content = contentResolver.getContent(requestContext);
+            response.setStatus(200);
 
-			if (!content.isPresent()) {
+            if (content.isEmpty()) {
+                log.debug("content not found {}", uri);
+                try (var errorContext = requestContextFactory.create(request.getContext().getContextPath(),
+                        notFoundContent,
+                        queryParameters, Optional.of(request))) {
+                    content = contentResolver.getErrorContent(errorContext);
+                    response.setStatus(404);
+                }
+            }
 
-				// try to resolve static files
-				content = contentResolver.getStaticContent(uri);
-				if (content.isEmpty()) {
-					log.debug("content not found {}", uri);
-					try (var errorContext = requestContextFactory.create(request.getContext().getContextPath(),
-							notFoundContent,
-							queryParameters, Optional.of(request))) {
-						content = contentResolver.getErrorContent(errorContext);
-						response.setStatus(404);
-					}
-				}
+            var contentResponse = content.get();
+            switch (contentResponse) {
+                case RedirectContentResponse redirectContent -> {
+                    response.getHeaders().add(HttpHeader.LOCATION, redirectContent.location());
+                    response.setStatus(redirectContent.status());
+                    callback.succeeded();
+                }
+                case DefaultContentResponse defaultContent -> {
+                    response.getHeaders().add(HttpHeader.CONTENT_TYPE, "%s; charset=utf-8".formatted(defaultContent.contentType()));
+                    Content.Sink.write(response, true, defaultContent.content(), callback);
+                }
+                default -> {
+                    response.setStatus(404);
+                    callback.succeeded();
+                }
+            }
 
-			}
+        } catch (Exception e) {
+            log.error("error handling content", e);
+            response.setStatus(500);
+            response.getHeaders().add(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
 
-			var contentResponse = content.get();
-			if (contentResponse instanceof RedirectContentResponse redirectContent) {
-				response.getHeaders().add(HttpHeader.LOCATION, redirectContent.location());
-				response.setStatus(redirectContent.status());
-				callback.succeeded();
-			} else if (contentResponse instanceof DefaultContentResponse defaultContent) {
-				response.getHeaders().add(HttpHeader.CONTENT_TYPE, "%s; charset=utf-8".formatted(defaultContent.contentType()));
-				Content.Sink.write(response, true, defaultContent.content(), callback);
-			} else {
-				response.setStatus(404);
-				callback.succeeded();
-			}
-
-		} catch (Exception e) {
-			log.error("error handling content", e);
-			response.setStatus(500);
-			response.getHeaders().add(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
-
-			if (ServerContext.IS_DEV) {
-				var stacktrace = ExceptionUtils.getStackTrace(e);
-				Content.Sink.write(response, true, "<pre>%s</pre>".formatted(stacktrace), callback);
-			}
-		}
-		return true;
-	}
+            if (ServerContext.IS_DEV) {
+                var stacktrace = ExceptionUtils.getStackTrace(e);
+                Content.Sink.write(response, true, "<pre>%s</pre>".formatted(stacktrace), callback);
+            }
+        }
+        return true;
+    }
 }
