@@ -2,7 +2,10 @@
   "name": "condation-cms-ui",
   "author": "CondationCMS",
   "version": "0.2.0",
-  "dependencies": {
-    "typescript": "next"
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }

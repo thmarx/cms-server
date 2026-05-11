@@ -1,3 +1,23 @@
+/*-
+ * #%L
+ * UI Module
+ * %%
+ * Copyright (C) 2023 - 2026 CondationCMS
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 import { openModal } from '@cms/modules/modal.js';
 import { showToast } from '@cms/modules/toast.js';
 import { addSection, getContentNode } from '@cms/modules/rpc/rpc-content.js';
@@ -22,7 +42,7 @@ export async function runAction(params) {
 		</select>
 		`);
     var sectionsResponse = await getSectionTemplates({
-        section: params.sectionName
+        slot: params.slot
     });
     openModal({
         title: i18n.t("addsection.titles.modal", 'Add section'),
@@ -31,9 +51,9 @@ export async function runAction(params) {
         }),
         fullscreen: false,
         onCancel: (event) => { },
-        validate: () => validate(contentNode, params.sectionName),
+        validate: () => validate(contentNode, params.slot),
         onOk: async (event) => {
-            var result = await createSection(contentNode.result.uri, params.sectionName);
+            var result = await createSection(contentNode.result.uri, params.slot);
             if (result) {
                 showToast({
                     title: i18n.t("manager.actions.addsection.titles.alert", "Create section"),
@@ -58,7 +78,7 @@ export async function runAction(params) {
 const getSectionItemName = () => {
     return document.getElementById("cms-section-name").value;
 };
-const validate = (contentNode, targetSectionName) => {
+const validate = (contentNode, targetSlot) => {
     const template = document.getElementById("cms-section-template-selection").value;
     if (template === "000") {
         showToast({
@@ -81,14 +101,14 @@ const validate = (contentNode, targetSectionName) => {
     }
     return true;
 };
-function isUriInSection(data, sectionKey, targetUri) {
+function isUriInSection(data, slotItemKey, targetUri) {
     if (!data ||
         !data.result ||
-        !data.result.sections ||
-        typeof data.result.sections !== 'object') {
+        !data.result.slots ||
+        typeof data.result.slots !== 'object') {
         return false;
     }
-    const sectionArray = data.result.sections[sectionKey];
+    const sectionArray = data.result.slots[slotItemKey];
     if (!Array.isArray(sectionArray)) {
         return false;
     }
@@ -102,7 +122,7 @@ const createSection = async (parentUri, parentSectionName) => {
     await addSection({
         parentUri: parentUri,
         sectionItemName: getSectionItemName(),
-        parentSectionName: parentSectionName,
+        slot: parentSectionName,
         template: template
     });
     return true;

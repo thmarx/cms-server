@@ -2,19 +2,17 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": "src/",
     "module": "esnext",
     "target": "es2020",
-    "moduleResolution": "node",
     "allowJs": true,
     "checkJs": false,
     "lib": ["dom", "es2020"],
     "sourceMap": false,
     "declaration": true,
     "paths": {
-      "@cms/modules/*": ["js/modules/*"],
-      "@cms/libs/*": ["js/libs/*"],
-      "@cms/js/*": ["js/*"],
+      "@cms/modules/*": ["./src/js/modules/*"],
+      "@cms/libs/*": ["./src/js/libs/*"],
+      "@cms/js/*": ["./src/js/*"],
     }
   },
   "include": [

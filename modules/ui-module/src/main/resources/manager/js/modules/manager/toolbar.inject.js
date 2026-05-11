@@ -8,12 +8,12 @@
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -24,9 +24,9 @@ const addSection = (event) => {
     var toolbar = event.target.closest('[data-cms-toolbar]');
     var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar);
     var command = {
-        type: 'add-section',
+        type: 'add-slotItem',
         payload: {
-            sectionName: toolbarDefinition.sectionName,
+            slot: toolbarDefinition.slot,
         }
     };
     frameMessenger.send(window.parent, command);
@@ -35,7 +35,7 @@ const deleteSection = (event) => {
     var toolbar = event.target.closest('[data-cms-toolbar]');
     var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar);
     var command = {
-        type: 'delete-section',
+        type: 'delete-slotItem',
         payload: {
             sectionUri: toolbarDefinition.uri
         }
@@ -61,7 +61,7 @@ const orderSections = (event) => {
     var command = {
         type: 'edit-sections',
         payload: {
-            sectionName: toolbarDefinition.sectionName
+            slot: toolbarDefinition.slot
         }
     };
     frameMessenger.send(window.parent, command);
@@ -120,7 +120,7 @@ export const initToolbar = (container) => {
     if (!toolbarDefinition.actions) {
         return;
     }
-    if (toolbarDefinition.type === "sections") {
+    if (toolbarDefinition.type === "slot") {
         container.classList.add("cms-ui-editable-sections");
     }
     else {
@@ -128,7 +128,7 @@ export const initToolbar = (container) => {
     }
     const toolbar = document.createElement('div');
     toolbar.className = 'cms-ui-toolbar';
-    if (toolbarDefinition.type === "sections") {
+    if (toolbarDefinition.type === "slot") {
         toolbar.classList.add("cms-ui-toolbar-tl");
     }
     else {
@@ -160,7 +160,7 @@ export const initToolbar = (container) => {
             button.addEventListener('click', editAttributes);
             toolbar.appendChild(button);
         }
-        else if (action === "orderSections") {
+        else if (action === "orderSlotItems") {
             const button = document.createElement('button');
             button.setAttribute('data-cms-action', 'editSections');
             button.innerHTML = SECTION_SORT_ICON;
@@ -168,7 +168,7 @@ export const initToolbar = (container) => {
             button.addEventListener('click', orderSections);
             toolbar.appendChild(button);
         }
-        else if (action === "addSection") {
+        else if (action === "addSlotItem") {
             const button = document.createElement('button');
             button.setAttribute('data-cms-action', 'addSection');
             button.innerHTML = SECTION_ADD_ICON;
@@ -176,7 +176,7 @@ export const initToolbar = (container) => {
             button.addEventListener('click', addSection);
             toolbar.appendChild(button);
         }
-        else if (action === "deleteSection") {
+        else if (action === "deleteSlotItem") {
             const button = document.createElement('button');
             button.setAttribute('data-cms-action', 'deleteSection');
             button.innerHTML = SECTION_DELETE_ICON;
@@ -185,7 +185,7 @@ export const initToolbar = (container) => {
             toolbar.appendChild(button);
         }
     });
-    if (toolbarDefinition.type === "section") {
+    if (toolbarDefinition.type === "slotItem") {
         const button = document.createElement('button');
         button.setAttribute('data-cms-action', 'publish');
         button.setAttribute('data-cms-section-uri', toolbarDefinition.uri);

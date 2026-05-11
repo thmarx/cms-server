@@ -26,9 +26,9 @@ const addSection = (event : Event) => {
 	var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar)
 
 	var command : any = {
-		type: 'add-section',
+		type: 'add-slotItem',
 		payload: {
-			sectionName: toolbarDefinition.sectionName,
+			slot: toolbarDefinition.slot,
 		}
 	}
 	frameMessenger.send(window.parent, command);
@@ -39,7 +39,7 @@ const deleteSection = (event: Event) => {
 	var toolbarDefinition = JSON.parse(toolbar.dataset.cmsToolbar)
 
 	var command = {
-		type: 'delete-section',
+		type: 'delete-slotItem',
 		payload: {
 			sectionUri: toolbarDefinition.uri
 		}
@@ -70,7 +70,7 @@ const orderSections = (event : Event) => {
 	var command = {
 		type: 'edit-sections',
 		payload: {
-			sectionName: toolbarDefinition.sectionName
+			slot: toolbarDefinition.slot
 		}
 	}
 	frameMessenger.send(window.parent, command);
@@ -139,7 +139,7 @@ export const initToolbar = (container: HTMLElement) => {
 	if (!toolbarDefinition.actions) {
 		return
 	}
-	if (toolbarDefinition.type === "sections") {
+	if (toolbarDefinition.type === "slot") {
 		container.classList.add("cms-ui-editable-sections");
 	} else {
 		container.classList.add("cms-ui-editable");
@@ -148,7 +148,7 @@ export const initToolbar = (container: HTMLElement) => {
 	const toolbar = document.createElement('div');
 	toolbar.className = 'cms-ui-toolbar';
 
-	if (toolbarDefinition.type === "sections") {
+	if (toolbarDefinition.type === "slot") {
 		toolbar.classList.add("cms-ui-toolbar-tl");
 	} else {
 		toolbar.classList.add("cms-ui-toolbar-tr");
@@ -181,7 +181,7 @@ export const initToolbar = (container: HTMLElement) => {
 			button.addEventListener('click', editAttributes);
 
 			toolbar.appendChild(button);
-		} else if (action === "orderSections") {
+		} else if (action === "orderSlotItems") {
 			const button = document.createElement('button');
 			button.setAttribute('data-cms-action', 'editSections');
 			button.innerHTML = SECTION_SORT_ICON;
@@ -189,7 +189,7 @@ export const initToolbar = (container: HTMLElement) => {
 			button.addEventListener('click', orderSections);
 
 			toolbar.appendChild(button);
-		} else if (action === "addSection") {
+		} else if (action === "addSlotItem") {
 			const button = document.createElement('button');
 			button.setAttribute('data-cms-action', 'addSection');
 			button.innerHTML = SECTION_ADD_ICON;
@@ -197,7 +197,7 @@ export const initToolbar = (container: HTMLElement) => {
 			button.addEventListener('click', addSection);
 
 			toolbar.appendChild(button);
-		} else if (action === "deleteSection") {
+		} else if (action === "deleteSlotItem") {
 			const button = document.createElement('button');
 			button.setAttribute('data-cms-action', 'deleteSection');
 			button.innerHTML = SECTION_DELETE_ICON;
@@ -208,7 +208,7 @@ export const initToolbar = (container: HTMLElement) => {
 		}
 	})
 
-	if (toolbarDefinition.type === "section") {
+	if (toolbarDefinition.type === "slotItem") {
 		const button = document.createElement('button');
 		button.setAttribute('data-cms-action', 'publish');
 		button.setAttribute('data-cms-section-uri', toolbarDefinition.uri);

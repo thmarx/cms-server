@@ -46,7 +46,7 @@ export async function runAction(params) {
 
 	var templates = null
 	
-	if (params.type === "section") {
+	if (params.type === "slotItem") {
 		templates = (await getSectionTemplates()).result
 	} else {
 		templates = (await getPageTemplates()).result

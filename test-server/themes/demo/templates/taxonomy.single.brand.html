@@ -41,7 +41,7 @@
 
 		{% if !empty(node.sections) %}
 			<div class="container sections" 
-				{{ ext.ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
+				{{ ext.ui.toolbar("asection", "slot", ["addSlotItem", "orderSlotItems"], { "sectionName": "asection"}) | raw }}
 				>
 				{% if node.sections.containsKey('asection') %}
 					{% for section in node.sections.get('asection') %}

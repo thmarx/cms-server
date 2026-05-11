@@ -63,7 +63,7 @@ const setMetaBatch = async (options : any) => {
 
 const addSection = async (options : any) => {
 	var data = {
-		method: "content.section.add",
+		method: "content.slotItem.add",
 		parameters: options
 	}
 	return await executeRemoteCall(data);
@@ -71,7 +71,7 @@ const addSection = async (options : any) => {
 
 const deleteSection = async (options : any) => {
 	var data = {
-		method: "content.section.delete",
+		method: "content.slotItem.delete",
 		parameters: options
 	}
 	return await executeRemoteCall(data);

@@ -1,3 +1,23 @@
+/*-
+ * #%L
+ * UI Module
+ * %%
+ * Copyright (C) 2023 - 2026 CondationCMS
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 import { openModal } from '@cms/modules/modal.js';
 import { showToast } from '@cms/modules/toast.js';
 import { getPreviewUrl, reloadPreview } from '@cms/modules/preview.utils.js';
@@ -11,7 +31,7 @@ export async function runAction(params) {
     });
     var template = Handlebars.compile(`
 			<ul class="list-group cms-sortable">
-				{{#each sections}}
+				{{#each slotItems}}
     				<li class="list-group-item" data-cms-section-uri="{{uri}}" data-cms-section-index="{{index}}"><i class="bi bi-grip-vertical" data-cms-section-handle=''></i> 
 					{{#if data.title}}
           				{{data.title}}
@@ -22,21 +42,21 @@ export async function runAction(params) {
   				{{/each}}
 			</ul>
 		`);
-    var sections = [];
-    if (contentNode.result.sections[params.sectionName]) {
-        var sections = contentNode.result.sections[params.sectionName];
+    var slotItems = [];
+    if (contentNode.result.slots[params.slot]) {
+        var slotItems = contentNode.result.slots[params.slot];
     }
-    sections = sections.sort((a, b) => a.index - b.index);
+    slotItems = slotItems.sort((a, b) => a.index - b.index);
     openModal({
-        title: 'Edit Sections',
-        body: template({ sections: sections }),
+        title: 'Edit SlotItems',
+        body: template({ slotItems: slotItems }),
         fullscreen: false,
         onCancel: (event) => { },
         onOk: async (event) => {
             await saveSections();
             showToast({
-                title: 'Sections saved',
-                message: 'Sections successfuly saved.',
+                title: 'SlotItems saved',
+                message: 'SlotItems successfuly saved.',
                 type: 'success', // optional: info | success | warning | error
                 timeout: 3000
             });

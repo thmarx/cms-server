@@ -194,8 +194,8 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		return result;
 	}
 
-	@RemoteMethod(name = "content.section.delete", permissions = {Permissions.CONTENT_EDIT})
-	public Object deleteSection(Map<String, Object> parameters) {
+	@RemoteMethod(name = "content.slotItem.delete", permissions = {Permissions.CONTENT_EDIT})
+	public Object deleteSlotItem(Map<String, Object> parameters) {
 		final DB db = getContext().get(DBFeature.class).db();
 		var uri = (String) parameters.get("uri");
 		final Path contentBase = db.getFileSystem().resolve(Constants.Folders.CONTENT);
@@ -221,21 +221,21 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		return result;
 	}
 	
-	@RemoteMethod(name = "content.section.add", permissions = {Permissions.CONTENT_EDIT})
-	public Object addSection(Map<String, Object> parameters) {
+	@RemoteMethod(name = "content.slotItem.add", permissions = {Permissions.CONTENT_EDIT})
+	public Object addSlotItem(Map<String, Object> parameters) {
 		final DB db = getContext().get(DBFeature.class).db();
 		var contentBase = db.getReadOnlyFileSystem().resolve(Constants.Folders.CONTENT);
 
 		var content = (String) parameters.getOrDefault("content", "");
 		var parentUri = (String) parameters.get("parentUri");
-		var parentSectionName = (String) parameters.get("parentSectionName");
+		var slot = (String) parameters.get("slot");
 		var sectionItemName = (String) parameters.get("sectionItemName");
 		var template = (String) parameters.get("template");
 
 		var title = sectionItemName;
 		sectionItemName = UIPathUtil.slugify(sectionItemName);
 		
-		var uri = UIFileNameUtil.createSectionFileName(parentUri, parentSectionName, sectionItemName);
+		var uri = UIFileNameUtil.createSectionFileName(parentUri, slot, sectionItemName);
 		
 		var contentFile = contentBase.resolve(uri);
 		
@@ -315,7 +315,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 					sectionMap.computeIfAbsent(name, k -> new ArrayList<>())
 						.add(new SlotItem(slotItem.name(), index, "", slotItem.data(), uri));
 				});
-				result.put("sections", sectionMap);
+				result.put("slots", sectionMap);
 			}
 
 			return result;

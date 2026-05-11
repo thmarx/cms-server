@@ -46,7 +46,7 @@ export async function runAction(params) {
 		`);
 
 		var sectionsResponse = await getSectionTemplates({
-			section: params.sectionName
+			slot: params.slot
 		});
 
 	openModal({
@@ -57,9 +57,9 @@ export async function runAction(params) {
 		}),
 		fullscreen: false,
 		onCancel: (event) => {},
-		validate: () => validate(contentNode, params.sectionName),
+		validate: () => validate(contentNode, params.slot),
 		onOk: async (event) => {
-			var result = await createSection(contentNode.result.uri, params.sectionName);
+			var result = await createSection(contentNode.result.uri, params.slot);
 			if (result) {
 				showToast({
 					title: i18n.t("manager.actions.addsection.titles.alert", "Create section"),
@@ -86,7 +86,7 @@ const getSectionItemName = () => {
 	return document.getElementById("cms-section-name").value
 }
 
-const validate = (contentNode, targetSectionName) => {
+const validate = (contentNode, targetSlot) => {
 	const template = document.getElementById("cms-section-template-selection").value
 	if (template === "000") {
 		showToast({
@@ -113,17 +113,17 @@ const validate = (contentNode, targetSectionName) => {
 }
 
 
-function isUriInSection(data, sectionKey, targetUri) {
+function isUriInSection(data, slotItemKey, targetUri) {
 	if (
 		!data ||
 		!data.result ||
-		!data.result.sections ||
-		typeof data.result.sections !== 'object'
+		!data.result.slots ||
+		typeof data.result.slots !== 'object'
 	) {
 		return false;
 	}
 
-	const sectionArray = data.result.sections[sectionKey];
+	const sectionArray = data.result.slots[slotItemKey];
 
 	if (!Array.isArray(sectionArray)) {
 		return false;
@@ -141,7 +141,7 @@ const createSection = async (parentUri, parentSectionName) => {
 	await addSection({
 		parentUri: parentUri,
 		sectionItemName: getSectionItemName(),
-		parentSectionName: parentSectionName,
+		slot: parentSectionName,
 		template: template
 	})
 	return true

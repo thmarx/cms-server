@@ -1,3 +1,23 @@
+/*-
+ * #%L
+ * UI Module
+ * %%
+ * Copyright (C) 2023 - 2026 CondationCMS
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 import frameMessenger from '@cms/modules/frameMessenger.js';
 import { initContentMediaToolbar, initMediaToolbar, initMediaUploadOverlay } from '@cms/modules/manager/media.inject.js';
 import { EDIT_ATTRIBUTES_ICON, EDIT_PAGE_ICON, SECTION_ADD_ICON, SECTION_DELETE_ICON, SECTION_PUBLISHED_ICON, SECTION_SORT_ICON, SECTION_UNPUBLISHED_ICON } from '@cms/modules/manager/toolbar-icons';
@@ -31,7 +51,7 @@ export function initIframe() {
         }
     });
     frameMessenger.on('getContentNodeResponse', async (payload) => {
-        for (const [sectionName, items] of Object.entries(payload.contentNode.sections)) {
+        for (const [slotName, items] of Object.entries(payload.contentNode.slots)) {
             for (const item of items) {
                 const sectionContainer = document.querySelector(`[data-cms-section-uri="${item.uri}"]`);
                 if (!sectionContainer) {
