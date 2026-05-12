@@ -24,7 +24,7 @@ import { addSection, getContentNode } from '@cms/modules/rpc/rpc-content.js';
 import { getPreviewUrl, reloadPreview } from '@cms/modules/preview.utils.js';
 import Handlebars from 'https://cdn.jsdelivr.net/npm/handlebars@4.7.8/+esm';
 import { i18n } from '@cms/modules/localization.js';
-import { getSectionTemplates } from '@cms/modules/rpc/rpc-manager.js';
+import { getSlotItemTemplates } from '@cms/modules/rpc/rpc-manager.js';
 export async function runAction(params) {
     const contentNode = await getContentNode({
         url: getPreviewUrl()
@@ -41,7 +41,7 @@ export async function runAction(params) {
 			{{/each}}
 		</select>
 		`);
-    var sectionsResponse = await getSectionTemplates({
+    var sectionsResponse = await getSlotItemTemplates({
         slot: params.slot
     });
     openModal({

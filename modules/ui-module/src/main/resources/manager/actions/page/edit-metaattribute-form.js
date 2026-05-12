@@ -25,7 +25,7 @@ import { buildValuesFromFields, getValueByPath } from '@cms/modules/node.js';
 import { getContentNode, getContent, setMeta } from '@cms/modules/rpc/rpc-content.js';
 import { i18n } from '@cms/modules/localization.js';
 import { openSidebar } from '@cms/modules/sidebar.js';
-import { getPageTemplates, getSectionTemplates } from '@cms/modules/rpc/rpc-manager';
+import { getPageTemplates, getSlotItemTemplates } from '@cms/modules/rpc/rpc-manager';
 // hook.js
 export async function runAction(params) {
     var uri = null;
@@ -43,7 +43,7 @@ export async function runAction(params) {
     });
     var templates = null;
     if (params.type === "slotItem") {
-        templates = (await getSectionTemplates()).result;
+        templates = (await getSlotItemTemplates()).result;
     }
     else {
         templates = (await getPageTemplates()).result;

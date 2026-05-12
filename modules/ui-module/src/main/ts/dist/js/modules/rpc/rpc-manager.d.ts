@@ -1,4 +1,4 @@
-declare const getSectionTemplates: (options: any) => Promise<any>;
+declare const getSlotItemTemplates: (options: any) => Promise<any>;
 declare const getPageTemplates: (options: any) => Promise<any>;
 declare const getListItemTypes: (options: any) => Promise<any>;
 declare const getMediaForm: (options: any) => Promise<any>;
@@ -21,4 +21,4 @@ export interface MediaFormatsResponse {
 }
 declare const getMediaFormats: (options: any) => Promise<MediaFormatsResponse>;
 declare const getTagNames: (options: any) => Promise<any>;
-export { getSectionTemplates, getPageTemplates, getMediaForm, getTagNames, getMediaFormats, getListItemTypes, createCSRFToken };
+export { getSlotItemTemplates, getPageTemplates, getMediaForm, getTagNames, getMediaFormats, getListItemTypes, createCSRFToken };
