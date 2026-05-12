@@ -55,8 +55,8 @@ public class ContentTypes {
 		pageTemplates.add(new PageTemplate(pageTemplate));
 	}
 
-	public void registerSlotItemTemplate(Map<String, Object> sectionTempate) {
-		slotItemTemplates.add(new SlotItemTemplate(sectionTempate));
+	public void registerSlotItemTemplate(Map<String, Object> slotItemTemplate) {
+		slotItemTemplates.add(new SlotItemTemplate(slotItemTemplate));
 	}
 	
 	public Set<PageTemplate> getPageTemplates () {
@@ -97,7 +97,7 @@ public class ContentTypes {
 		}
 
 		public String slot() {
-			return (String) data.getOrDefault("slot", "<no section>");
+			return (String) data.getOrDefault("slot", "<no slot>");
 		}
 	}
 	

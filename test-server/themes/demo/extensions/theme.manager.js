@@ -170,7 +170,7 @@ $hooks.registerFilter("manager/contentTypes/register", (context) => {
 		template: "default.html"
 	});
 	contentTypes.registerSlotItemTemplate({
-		section: "asection",
+		slot: "asection",
 		name: "SlotItemTemplate",
 		template: "section.html",
 		forms: {
