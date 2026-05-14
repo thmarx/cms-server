@@ -34,10 +34,10 @@ export async function runAction(params) {
 
 	var template = Handlebars.compile(`
 		<div class="mb-3">
-  			<label for="cms-section-name" class="form-label">Name for the SlotItem</label>
-  			<input type="text" class="form-control" id="cms-section-name" placeholder="Name of the SlotItem">
+  			<label for="cms-section-name" class="form-label">Name for the item</label>
+  			<input type="text" class="form-control" id="cms-section-name" placeholder="Name of the Item">
 		</div>
-		<select id="cms-section-template-selection" class="form-select" aria-label="Select SlotItem template">
+		<select id="cms-section-template-selection" class="form-select" aria-label="Select Item template">
 			<option value="000" selected>Select template</option>
 			{{#each templates}}
 				<option value="{{template}}">{{name}}</option>
@@ -50,7 +50,7 @@ export async function runAction(params) {
 		});
 
 	openModal({
-		title: i18n.t("addsection.titles.modal", 'Add SlotItem'),
+		title: i18n.t("addsection.titles.modal", 'Add item'),
 		body: template({ 
 			templates: sectionsResponse.result,
 			
@@ -62,8 +62,8 @@ export async function runAction(params) {
 			var result = await createSection(contentNode.result.uri, params.slot);
 			if (result) {
 				showToast({
-					title: i18n.t("manager.actions.addsection.titles.alert", "Create SlotItem"),
-					message: i18n.t("manager.actions.addsection.alerts.success.message", "SlotItem successfuly created."),
+					title: i18n.t("manager.actions.addsection.titles.alert", "Create Item"),
+					message: i18n.t("manager.actions.addsection.alerts.success.message", "Item successfuly created."),
 					type: 'success', // optional: info | success | warning | error
 					timeout: 3000
 				});
@@ -71,8 +71,8 @@ export async function runAction(params) {
 				reloadPreview()
 			} else {
 				showToast({
-					title: i18n.t("manager.actions.addsection.titles.alert", 'Create SlotItem'),
-					message: i18n.t("manager.actions.addsection.alerts.error.message", "SlotItem not created."),
+					title: i18n.t("manager.actions.addsection.titles.alert", 'Create Item'),
+					message: i18n.t("manager.actions.addsection.alerts.error.message", "Item not created."),
 					type: 'warning', // optional: info | success | warning | error
 					timeout: 3000
 				});
@@ -82,7 +82,7 @@ export async function runAction(params) {
 	});
 }
 
-const getSectionItemName = () => {
+const getSlotItemName = () => {
 	return document.getElementById("cms-section-name").value
 }
 
@@ -90,7 +90,7 @@ const validate = (contentNode, targetSlot) => {
 	const template = document.getElementById("cms-section-template-selection").value
 	if (template === "000") {
 		showToast({
-			title: i18n.t("manager.actions.addsection.titles.alert", 'Create SlotItem'),
+			title: i18n.t("manager.actions.addsection.titles.alert", 'Create Item'),
 			message: i18n.t("manager.actions.addsection.alerts.notemplate.message", "No template selected."),
 			type: 'error', // optional: info | success | warning | error
 			timeout: 3000
@@ -98,11 +98,11 @@ const validate = (contentNode, targetSlot) => {
 		return false
 	}
 
-	const sectionItemName = getSectionItemName()
-	if (sectionItemName === "" || sectionItemName === null) {
+	const slotItemName = getSlotItemName()
+	if (slotItemName === "" || slotItemName === null) {
 		showToast({
-			title: i18n.t("manager.actions.addsection.titles.alert", 'Create SlotItem'),
-			message: i18n.t("manager.actions.addsection.alerts.noname.message", "No SlotItem name provided."),
+			title: i18n.t("manager.actions.addsection.titles.alert", 'Create Item'),
+			message: i18n.t("manager.actions.addsection.alerts.noname.message", "No Item name provided."),
 			type: 'error',
 			timeout: 3000
 		});
@@ -140,7 +140,7 @@ const createSection = async (parentUri, parentSectionName) => {
 	}
 	await addSection({
 		parentUri: parentUri,
-		sectionItemName: getSectionItemName(),
+		slotItemName: getSlotItemName(),
 		slot: parentSectionName,
 		template: template
 	})

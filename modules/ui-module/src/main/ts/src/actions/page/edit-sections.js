@@ -52,15 +52,15 @@ export async function runAction(params) {
 
 
 	openModal({
-		title: 'Edit SlotItems',
+		title: 'Edit items',
 		body: template({ slotItems: slotItems }),
 		fullscreen: false,
 		onCancel: (event) => {},
 		onOk: async (event) => {
 			await saveSections();
 			showToast({
-				title: 'SlotItems saved',
-				message: 'SlotItems successfuly saved.',
+				title: 'Items saved',
+				message: 'Items successfuly saved.',
 				type: 'success', // optional: info | success | warning | error
 				timeout: 3000
 			});

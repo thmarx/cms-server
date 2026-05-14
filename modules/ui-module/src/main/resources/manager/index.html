@@ -120,6 +120,25 @@
 								<i class="bi bi-arrow-clockwise"></i>
 							</a>
 						</li>
+                        {% assign contentTypeMenu = actionFactory.createContentTypeMenu() %}
+                        {% if contentTypeMenu.entries().size() > 0 %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle dropdown-nocaret" href="#" role="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                    title="Create new content">
+                                    <i class="bi bi-plus-circle"></i>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    {% for entry in contentTypeMenu.entries() %}
+                                        <li>
+                                            <a class="dropdown-item cms-ct-create" href="#"
+                                               data-cms-action-definition='{{ entry.getActionDefinition() }}'
+                                               >Create {{ entry.name }}</a>
+                                        </li>
+                                    {% /for %}
+                                </ul>
+                            </li>
+                        {% /if %}
 						<li class="nav-item">
 							<a class="nav-link cms-toolbar-button" title="New page"
 								data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/create-page') }}","parameters":{},"type":"script"}'>
@@ -135,23 +154,6 @@
 						{% for entry in actionFactory.createMenu().entries() %}
 							{{ menuEntry(entry) | raw }}
 						{% endfor %}
-						<!--
-						<li class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle dropdown-nocaret" href="#" role="button"
-								data-bs-toggle="dropdown" aria-expanded="false"
-								title="Create new contentw">
-								<i class="bi bi-plus-circle"></i>
-							</a>
-							<ul class="dropdown-menu">
-								<li>
-									<a class="dropdown-item cms-ct-create" href="#">Create Page</a>
-								</li>
-								<li>
-									<a class="dropdown-item cms-ct-create" href="#">Create Blogpost</a>
-								</li>
-							</ul>
-						</li>
-						-->
 					</ul>
 					<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 						<li class="nav-item dropdown">

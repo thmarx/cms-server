@@ -85,6 +85,13 @@ public class ContentTypes {
 			var forms = (Map<String, Object>)data.getOrDefault("forms", Collections.emptyMap());
 			return (Map<String, Object>)forms.getOrDefault(name, Collections.emptyMap());
 		}
+        
+        public String getContentFolder () {
+            return (String) data.getOrDefault("contentFolder", "");
+        }
+        public boolean addCreateButton () {
+            return (boolean) data.getOrDefault("createButton", true);
+        }
 	}
 
 	public static record SlotItemTemplate(String name, String template, Map<String, Object> data) {

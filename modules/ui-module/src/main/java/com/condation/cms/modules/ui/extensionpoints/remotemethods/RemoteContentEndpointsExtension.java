@@ -229,13 +229,13 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		var content = (String) parameters.getOrDefault("content", "");
 		var parentUri = (String) parameters.get("parentUri");
 		var slot = (String) parameters.get("slot");
-		var sectionItemName = (String) parameters.get("sectionItemName");
+		var sectionItemName = (String) parameters.get("slotItemName");
 		var template = (String) parameters.get("template");
 
 		var title = sectionItemName;
 		sectionItemName = UIPathUtil.slugify(sectionItemName);
 		
-		var uri = UIFileNameUtil.createSectionFileName(parentUri, slot, sectionItemName);
+		var uri = UIFileNameUtil.createSlotItemFileName(parentUri, slot, sectionItemName);
 		
 		var contentFile = contentBase.resolve(uri);
 		

@@ -29,7 +29,7 @@ import java.util.Arrays;
  */
 public class UIFileNameUtil {
 
-   public static String createSectionFileName(String parentUri, String section, String sectionItem) {
+   public static String createSlotItemFileName(String parentUri, String slot, String slotItem) {
         // Pfadteile per "/" splitten
         String[] parts = parentUri.split("/");
 
@@ -49,7 +49,7 @@ public class UIFileNameUtil {
         }
 
         // Neuen Dateinamen erstellen
-        String newFileName = baseName + "." + section + "." + sectionItem + extension;
+        String newFileName = baseName + "." + slot + "." + slotItem + extension;
 
         // Pfad wieder zusammenbauen
         if (parts.length > 1) {

@@ -283,18 +283,12 @@ public class VHost {
         log.debug("create assets handler for site");
         ResourceHandler assetsHandler = injector.getInstance(Key.get(ResourceHandler.class, Names.named("site.assets")));
 
-        ResourceHandler faviconHandler = new ResourceHandler();
-        faviconHandler.setDirAllowed(false);
-        var assetBase = this.injector.getInstance(Key.get(Path.class, Names.named("assets")));
-        faviconHandler.setBaseResource(new FileFolderPathResource(assetBase.resolve("favicon.ico")));
-
         PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
         pathMappingsHandler.addMapping(
                 PathSpec.from("/"),
                 defaultHandlerSequence
         );
         pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
-        pathMappingsHandler.addMapping(PathSpec.from("/favicon.ico"), faviconHandler);
 
         var assetsMediaManager = this.injector.getInstance(SiteMediaManager.class);
         injector.getInstance(EventBus.class).register(ConfigurationReloadEvent.class, assetsMediaManager);
