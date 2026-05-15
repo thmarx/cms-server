@@ -78,7 +78,7 @@ public class ActionFactory {
             return MenuEntry.builder()
                     .id(pt.name())
                     .name(pt.name())
-                    .action(new UIScriptAction(HTTPUtil.prependContext("/manager/actions/page/create-content", siteProperties),
+                    .action(new UIScriptAction(HTTPUtil.prependContext("/manager/actions/page/create-node", siteProperties),
                             Map.of(
                                     "name", pt.name(),
                                     "folder", pt.getContentFolder(),

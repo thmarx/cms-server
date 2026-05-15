@@ -63,7 +63,7 @@ const openFileBrowser = async (optionsParam) => {
             }
         },
         onShow: async () => {
-            initFileBrowser();
+            initFileBrowser(state.options.uri);
         }
     });
 };
