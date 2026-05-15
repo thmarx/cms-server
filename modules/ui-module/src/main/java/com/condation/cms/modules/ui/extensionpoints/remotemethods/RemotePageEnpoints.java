@@ -23,6 +23,9 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.eventbus.events.ContentChangedEvent;
+import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
+import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.FileUtils;
 import com.condation.modules.api.annotation.Extension;
@@ -33,6 +36,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import com.condation.cms.api.ui.annotations.RemoteMethod;
 import com.condation.cms.api.ui.rpc.RPCException;
+import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.modules.ui.utils.UIPathUtil;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
 import com.google.common.base.Strings;
@@ -134,8 +138,14 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 			}
 			Files.createDirectories(newFile.getParent());
 			Files.createFile(newFile);
+			var newURI = PathUtil.toRelativeFile(newFile, contentBase);
+			getContext().get(EventBusFeature.class).eventBus()
+					.syncPublish(new ReIndexContentMetaDataEvent(newURI));
 
 			YamlHeaderUpdater.saveMarkdownFileWithHeader(newFile, meta, "");
+			
+			String url = PathUtil.toURL(newFile, contentBase);
+			result.put("uri", url);
 		} catch (Exception e) {
 			log.error("", e);
 			throw new RPCException(0, e.getMessage());

@@ -55,9 +55,9 @@
 				{% assign globals = select_node("") %}
 				{% if globals != null %}
 					<h3>load secions from start page</h3>
-					{% if globals.sections.containsKey('asection') %}
-						{% for section in globals.sections.get('asection') %}
-							{{ section.content() | raw }}
+					{% if globals.slots.containsKey('asection') %}
+						{% for item in globals.slots.get('asection') %}
+							{{ item.content() | raw }}
 						{% endfor %}
 					{% endif %}
 				{% endif %}

@@ -18,12 +18,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import { openFileBrowser } from '@cms/modules/filebrowser.js';
+import { i18n } from '@cms/modules/localization';
+import { openCreateContentBrowser } from '@cms/modules/filebrowser.create.js';
+import { loadPreview } from '@cms/modules/preview.utils';
+import { patchPathWithContext } from '@cms/js/manager-globals';
 // hook.js
 export async function runAction(params) {
-    openFileBrowser({
+    openCreateContentBrowser({
         type: "content",
         template: params.template,
-        uri: params.folder
+        contentType: params.contentType,
+        uri: params.folder,
+        title: i18n.t("filebrowser.createContent.title", "Create Node"),
+        onCreate: (newContent) => {
+            console.log("Created new content:", newContent);
+            loadPreview(patchPathWithContext(newContent.uri)); // Reload the preview to reflect the new content
+        }
     });
 }

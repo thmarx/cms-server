@@ -82,7 +82,8 @@ public class ActionFactory {
                             Map.of(
                                     "name", pt.name(),
                                     "folder", pt.getContentFolder(),
-                                    "template", pt.template()
+                                    "template", pt.template(),
+									"contentType", pt.name()
                             )
                     ))
                     .children(new ArrayList<>())

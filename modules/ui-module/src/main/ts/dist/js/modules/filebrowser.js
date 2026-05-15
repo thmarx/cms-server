@@ -34,6 +34,7 @@ const defaultOptions = {
     uri: "",
     onSelect: null,
     fullscreen: true,
+    title: i18n.t("filebrowser.title", "Filesystem"),
     filter: (file) => {
         return true; // Default filter allows all files
     }
@@ -51,7 +52,7 @@ const openFileBrowser = async (optionsParam) => {
         ...optionsParam
     };
     state.modal = openModal({
-        title: i18n.t("filebrowser.title", "Filesystem"),
+        title: state.options.title,
         body: '<div id="cms-file-browser"></div>',
         fullscreen: state.options.fullscreen,
         onOk: async (event) => {

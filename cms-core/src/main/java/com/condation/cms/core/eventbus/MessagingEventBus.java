@@ -25,6 +25,7 @@ import com.condation.cms.api.eventbus.Event;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.eventbus.EventListener;
 import com.condation.cms.api.messaging.Messaging;
+import com.condation.cms.api.messaging.Topic;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,6 +57,6 @@ public class MessagingEventBus implements EventBus {
 
 	@Override
 	public <T extends Event> void syncPublish(T event) {
-		publish(event);
+		messaging.topic(event.getClass().getName()).publish(event, Topic.Mode.SYNC);
 	}
 }

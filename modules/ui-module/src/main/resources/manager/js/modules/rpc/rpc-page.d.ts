@@ -18,11 +18,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-export interface PageCreateOptions {
+export interface CreatePageOptions {
     uri: string;
     name: string;
     contentType: string;
 }
-declare const createPage: (options: PageCreateOptions) => Promise<any>;
+export interface CreatePageResponse {
+    result: {
+        uri?: string;
+        error?: string;
+    };
+}
+declare const createPage: (options: CreatePageOptions) => Promise<CreatePageResponse>;
 declare const deletePage: (options: any) => Promise<any>;
 export { createPage, deletePage };

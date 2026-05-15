@@ -29,6 +29,7 @@ Handlebars.registerHelper('ifNotEquals', function (arg1, arg2, options) {
     return (arg1 !== arg2) ? options.fn(this) : options.inverse(this);
 });
 Handlebars.registerPartial('fileBrowserContentActions', `
+	{{#if pageTemplates}}
 	<div class="dropdown">
 		<button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
 			Create Content
@@ -39,6 +40,7 @@ Handlebars.registerPartial('fileBrowserContentActions', `
 			{{/each}}
 		</ul>
 	</div>
+	{{/if}}
 `);
 const template = Handlebars.compile(`
 	<div>

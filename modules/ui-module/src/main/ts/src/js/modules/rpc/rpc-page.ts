@@ -21,12 +21,18 @@
 
 import { executeRemoteCall } from '@cms/modules/rpc/rpc.js'
 
-export interface PageCreateOptions {
+export interface CreatePageOptions {
 	uri: string; // The URI of the folder where the page should be created
 	name: string; // The name of the page to be created
 	contentType: string; // Optional content type for the page
 }
-const createPage = async (options: PageCreateOptions) => {
+export interface CreatePageResponse {
+	result : {
+		uri? : string; // The URI of the created page, if successful
+		error?: string; // Error message, if any
+	}
+}
+const createPage = async (options: CreatePageOptions) : Promise<CreatePageResponse> => {
 	var data = {
 		method: "page.create",
 		parameters: options
