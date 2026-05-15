@@ -115,11 +115,13 @@ const initBrowser = async (uri) => {
 	const contentFiles = await listFiles(options);
 	const files = contentFiles.result.files;
 
+	const directories = files.filter(f => f.directory);
+
 	const browserElement = document.getElementById("cms-create-content-browser");
 	if (!browserElement) return;
 
 	browserElement.innerHTML = filebrowserTemplate({
-		files: files,
+		files: directories,
 		filenameHeader: i18n.t("filebrowser.filename", "Filename"),
 		actionHeader: i18n.t("filebrowser.action", "Action"),
 		actions: [{
