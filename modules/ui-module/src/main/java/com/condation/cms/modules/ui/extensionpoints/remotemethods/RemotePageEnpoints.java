@@ -43,6 +43,7 @@ import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -52,6 +53,64 @@ import java.util.Date;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 
+    @RemoteMethod(name = "pages.filter", permissions = {Permissions.CONTENT_EDIT})
+    public Object filterPages (Map<String, Object> parameters) throws RPCException {
+        
+        final DB db = getDB(parameters);
+        
+        var query = db.getContent().query((node, length) -> node);
+        
+        if (parameters.containsKey("contentType") && parameters.get("contentType") != null) {
+            query.contentType(parameters.get("contentType").toString());
+        }
+        
+        if (parameters.containsKey("query") && parameters.get("query") != null) {
+            query.expression(parameters.get("query").toString());
+        }
+        
+        if (parameters.containsKey("excerpt") && parameters.get("excerpt") != null) {
+            try {
+                long excerpt = Long.parseLong(parameters.get("excerpt").toString());
+                query.excerpt(excerpt);
+            } catch (NumberFormatException e) {
+                log.error("Error parsing excerpt", e);
+            }
+        }
+        
+        if (parameters.get("where") instanceof List whereClauses) {
+            for (Object clauseObj : whereClauses) {
+                if (clauseObj instanceof Map clause) {
+                    String field = (String) clause.get("field");
+                    Object value = clause.get("value");
+                    String operator = (String) clause.getOrDefault("operator", "=");
+                    query.where(field, operator, value);
+                }
+            }
+        }
+        
+        if (parameters.containsKey("orderby") && parameters.get("orderby") != null) {
+            String field = parameters.get("orderby").toString();
+            String direction = (String) parameters.getOrDefault("order", "asc");
+            if ("desc".equalsIgnoreCase(direction)) {
+                query.orderby(field).desc();
+            } else {
+                query.orderby(field).asc();
+            }
+        }
+        
+        if (parameters.containsKey("page") && parameters.containsKey("size")) {
+            try {
+                long page = Long.parseLong(parameters.get("page").toString());
+                long size = Long.parseLong(parameters.get("size").toString());
+                return query.page(page, size);
+            } catch (NumberFormatException e) {
+                log.error("Error parsing page or size", e);
+            }
+        }
+        
+        return query.get();
+    }
+    
 	@RemoteMethod(name = "page.delete", permissions = {Permissions.CONTENT_EDIT})
 	public Object deletePage(Map<String, Object> parameters) throws RPCException {
 		final DB db = getDB(parameters);
