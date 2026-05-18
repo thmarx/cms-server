@@ -27,6 +27,7 @@ import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.filesystem.MetaData;
 import com.condation.cms.filesystem.metadata.AbstractMetaData;
+import com.condation.cms.filesystem.metadata.PageMetaData;
 import com.condation.cms.filesystem.metadata.memory.QueryUtil;
 import com.condation.cms.filesystem.metadata.query.ExcerptMapperFunction;
 import com.condation.cms.filesystem.metadata.query.ExtendableQuery;
@@ -164,7 +165,7 @@ public class LuceneQuery<T> extends ExtendableQuery<T> implements ContentQuery.S
 					.filter(Optional::isPresent)
 					.map(Optional::get)
 					.filter(node -> !node.isDirectory())
-					.filter(AbstractMetaData::isVisible)
+					.filter(PageMetaData::isVisible)
 					.toList();
 
 			if (!extensionOperations.isEmpty()) {

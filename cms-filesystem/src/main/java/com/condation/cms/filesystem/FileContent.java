@@ -25,13 +25,13 @@ import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
-import com.condation.cms.api.db.cms.ReadyOnlyFileSystem;
 import com.condation.cms.api.utils.PathUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import lombok.RequiredArgsConstructor;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 
 /**
  *
@@ -41,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class FileContent implements Content {
 
 	private final FileSystem fileSystem;
-	private final ReadyOnlyFileSystem cmsFileSystem;
+	private final ReadOnlyFileSystem cmsFileSystem;
 	
 	@Override
 	public boolean isVisible(String uri) {

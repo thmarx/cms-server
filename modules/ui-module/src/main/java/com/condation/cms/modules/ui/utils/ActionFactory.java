@@ -23,6 +23,7 @@ package com.condation.cms.modules.ui.utils;
 import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.annotations.Action;
 import com.condation.cms.api.hooks.HookSystem;
+import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.ui.action.UIHookAction;
 import com.condation.cms.api.ui.action.UIAction;
 import com.condation.cms.api.ui.action.UIScriptAction;
@@ -52,6 +53,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class ActionFactory {
 
+	private final SiteModuleContext context;
     private final SiteProperties siteProperties;
     private final HookSystem hookSystem;
     private final ModuleManager moduleManager;
@@ -200,7 +202,8 @@ public class ActionFactory {
                 menuAction = new UIHookAction(menuAnn.hookAction().value(), Map.of());
             } // 3. @ScriptAction in @MenuEntry
             else if (!menuAnn.scriptAction().module().isEmpty()) {
-                menuAction = new UIScriptAction(menuAnn.scriptAction().module(), menuAnn.scriptAction().function(), Map.of());
+				var moduleWithContext = HTTPUtil.modifyUrl(menuAnn.scriptAction().module(), context);
+                menuAction = new UIScriptAction(moduleWithContext, menuAnn.scriptAction().function(), Map.of());
             }
 
             var entry = MenuEntry.builder()

@@ -35,6 +35,7 @@ import com.condation.cms.api.exceptions.AccessNotAllowedException;
 import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.core.utils.MdcScope;
 import com.condation.cms.filesystem.metadata.AbstractMetaData;
+import com.condation.cms.filesystem.metadata.PageMetaData;
 import com.condation.cms.filesystem.metadata.memory.MemoryMetaData;
 import com.condation.cms.filesystem.metadata.persistent.PersistentMetaData;
 import java.io.IOException;
@@ -96,7 +97,7 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 			return false;
 		}
 		var n = node.get();
-		return AbstractMetaData.isVisible(n);
+		return PageMetaData.isVisible(n);
 	}
 
 	@Override

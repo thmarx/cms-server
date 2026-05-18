@@ -21,8 +21,8 @@ package com.condation.cms.api.db;
  * #L%
  */
 
-import com.condation.cms.api.db.cms.ReadyOnlyFileSystem;
 import com.condation.cms.api.db.taxonomy.Taxonomies;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 
 
 /**
@@ -33,7 +33,7 @@ public interface DB extends AutoCloseable{
 	
 	public DBFileSystem getFileSystem();
 	
-	public ReadyOnlyFileSystem getReadOnlyFileSystem();
+	public ReadOnlyFileSystem getReadOnlyFileSystem();
 	
 	public Content getContent();
 	

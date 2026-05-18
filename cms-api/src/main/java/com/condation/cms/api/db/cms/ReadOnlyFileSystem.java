@@ -1,6 +1,8 @@
+package com.condation.cms.api.db.cms;
+
 /*-
  * #%L
- * UI Module
+ * CMS Api
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -8,36 +10,44 @@
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import { executeRemoteCall } from '@cms/modules/rpc/rpc.js';
-const createPage = async (options) => {
-    var data = {
-        method: "page.create",
-        parameters: options
-    };
-    return await executeRemoteCall(data);
-};
-const filterPages = async (options) => {
-    var data = {
-        method: "pages.filter",
-        parameters: options
-    };
-    return await executeRemoteCall(data);
-};
-const deletePage = async (options) => {
-    var data = {
-        method: "page.delete",
-        parameters: options
-    };
-    return await executeRemoteCall(data);
-};
-export { createPage, deletePage, filterPages };
+
+
+/**
+ * The CMSFileSystem is a read only access abstraction to the underlying filesystem
+ *
+ * @author t.marx
+ */
+public interface ReadOnlyFileSystem {
+
+	/**
+	 * Resolves a file if it is a child of the host base directory
+	 * 
+	 * @param path
+	 * @return 
+	 */
+	ReadOnlyFile resolve (String path);
+	
+	/**
+	 * creates a base directory for content.
+	 * 
+	 * @return 
+	 */
+	ReadOnlyFile contentBase ();
+	
+	/**
+	 * creates a base directory for assets
+	 * 
+	 * @return 
+	 */
+	ReadOnlyFile assetBase ();
+}

@@ -25,7 +25,6 @@ import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
-import com.condation.cms.api.db.cms.ReadyOnlyFileSystem;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.FileUtils;
 import com.condation.cms.api.utils.SlotUtil;
@@ -42,6 +41,7 @@ import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.modules.ui.utils.UIPathUtil;
 import java.nio.file.Path;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 
 /**
  *
@@ -51,7 +51,7 @@ import java.nio.file.Path;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
-	private static ReadOnlyFile getBase(ReadyOnlyFileSystem fileSystem, String type) {
+	private static ReadOnlyFile getBase(ReadOnlyFileSystem fileSystem, String type) {
 		return switch (type) {
 			case "content" ->
 				fileSystem.contentBase();

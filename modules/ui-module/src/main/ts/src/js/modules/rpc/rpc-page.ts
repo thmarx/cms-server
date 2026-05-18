@@ -27,8 +27,8 @@ export interface CreatePageOptions {
 	contentType: string; // Optional content type for the page
 }
 export interface CreatePageResponse {
-	result : {
-		uri? : string; // The URI of the created page, if successful
+	result: {
+		uri?: string; // The URI of the created page, if successful
 		error?: string; // Error message, if any
 	}
 }
@@ -40,6 +40,38 @@ const createPage = async (options: CreatePageOptions) : Promise<CreatePageRespon
 	return await executeRemoteCall(data);
 };
 
+export interface FilterPagesOptions {
+	where?: Field[]; // Optional list of fields to return
+	offset?: number; // Für Paginierung: Start-Offset
+	limit?: number; // Für Paginierung: Maximale Anzahl an Ergebnissen
+}
+export interface Field {
+	field: string;
+	operator: string;
+	value: any;
+}
+export interface ItemDto { // Renamed from previous PageDto
+	uri: string;
+	meta?: any;
+}
+export interface PageDto { // New interface for paginated response
+	totalItems: number;
+	pageSize: number;
+	totalPages: number;
+	page: number;
+	items: ItemDto[];
+}
+export interface FilterPagesResponse {
+	result: PageDto; // Now returns the paginated PageDto
+}
+const filterPages = async (options: FilterPagesOptions) : Promise<FilterPagesResponse> => {
+	var data = {
+		method: "pages.filter",
+		parameters: options
+	}
+	return await executeRemoteCall(data);
+}
+
 const deletePage = async (options: any) => {
 	var data = {
 		method: "page.delete",
@@ -48,4 +80,4 @@ const deletePage = async (options: any) => {
 	return await executeRemoteCall(data);
 };
 
-export { createPage, deletePage };
+export { createPage, deletePage, filterPages };

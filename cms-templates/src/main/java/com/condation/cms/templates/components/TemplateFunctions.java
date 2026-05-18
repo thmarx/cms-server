@@ -95,7 +95,7 @@ public class TemplateFunctions {
 
 		for (var entry : annotations) {
 			String name = entry.annotation().value();
-            String namespace = entry.annotation().value();
+            String namespace = entry.annotation().namespace();
               
 			functionMap.put(namespace, name, param -> {
 				try {

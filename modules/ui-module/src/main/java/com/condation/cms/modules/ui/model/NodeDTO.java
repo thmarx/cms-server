@@ -1,3 +1,5 @@
+package com.condation.cms.modules.ui.model;
+
 /*-
  * #%L
  * UI Module
@@ -18,24 +20,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-export namespace MODULE_LOCALIZATIONS {
-    let en: {};
-    let de: {
-        "alerts.select.title": string;
-        "alerts.select.placeholder": string;
-        "alerts.error.title": string;
-        "alerts.error.message": string;
-        "alerts.confirm.title": string;
-        "alerts.confirm.message": string;
-        "alerts.confirm.button.ok": string;
-        "alerts.confirm.button.cancel": string;
-        "alerts.prompt.title": string;
-        "alerts.prompt.lable": string;
-        "alerts.prompt.placeholder": string;
-        "page.unpublished.title": string;
-        "page.unpublished.noPages": string;
-        "page.unpublished.editLink": string;
-        "pagination.previous": string;
-        "pagination.next": string;
-    };
+
+import java.util.Map;
+
+/**
+ *
+ * @author thorstenmarx
+ */
+public record NodeDTO (String uri, Map<String, Object> meta) {
 }

@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class WrappedReadOnlyFileSystem implements ReadyOnlyFileSystem {
+public class WrappedReadOnlyFileSystem implements ReadOnlyFileSystem {
 	
 	private final DBFileSystem dbFileSytem;
 

@@ -23,6 +23,7 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.db.Page;
 import com.condation.cms.api.eventbus.events.ContentChangedEvent;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.condation.cms.api.feature.features.EventBusFeature;
@@ -36,9 +37,11 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import com.condation.cms.api.ui.annotations.RemoteMethod;
 import com.condation.cms.api.ui.rpc.RPCException;
+import com.condation.cms.api.utils.HTTPUtil;
 import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.modules.ui.utils.UIPathUtil;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
+import com.condation.cms.modules.ui.model.NodeDTO;
 import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -98,17 +101,22 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
             }
         }
         
-        if (parameters.containsKey("page") && parameters.containsKey("size")) {
-            try {
-                long page = Long.parseLong(parameters.get("page").toString());
-                long size = Long.parseLong(parameters.get("size").toString());
-                return query.page(page, size);
-            } catch (NumberFormatException e) {
-                log.error("Error parsing page or size", e);
-            }
-        }
-        
-        return query.get();
+		int page = (int) parameters.getOrDefault("page", 1);
+		int size = (int) parameters.getOrDefault("size", 5);
+		
+        var pageList = query.page(page, size);
+		
+		var contentBase = db.getReadOnlyFileSystem().contentBase();
+		return new Page<>(pageList.getTotalItems(), pageList.getPageSize(), pageList.getTotalPages(), pageList.getPage(), 
+				pageList.getItems().stream().map(node -> {
+					var temp_path = contentBase.resolve(node.uri());
+					var url = PathUtil.toURL(temp_path, contentBase);
+					
+					url = HTTPUtil.modifyUrl(url, context);
+					
+					return new NodeDTO(url, node.data());
+				}).toList()
+		);
     }
     
 	@RemoteMethod(name = "page.delete", permissions = {Permissions.CONTENT_EDIT})

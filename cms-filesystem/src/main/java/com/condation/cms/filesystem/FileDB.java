@@ -27,7 +27,6 @@ import com.condation.cms.api.configuration.configs.SiteConfiguration;
 import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
-import com.condation.cms.api.db.cms.ReadyOnlyFileSystem;
 import com.condation.cms.api.db.cms.WrappedReadOnlyFileSystem;
 import com.condation.cms.api.db.taxonomy.Taxonomies;
 import com.condation.cms.api.eventbus.EventBus;
@@ -37,6 +36,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 
 /**
  *
@@ -52,7 +52,7 @@ public class FileDB implements DB {
 	
 	private FileSystem fileSystem;
 	private FileContent content;
-	private ReadyOnlyFileSystem readOnlyFileSystem;
+	private ReadOnlyFileSystem readOnlyFileSystem;
 	
 	private FileTaxonomies taxonomies;
 	
@@ -73,7 +73,7 @@ public class FileDB implements DB {
 	}
 
 	@Override
-	public ReadyOnlyFileSystem getReadOnlyFileSystem() {
+	public ReadOnlyFileSystem getReadOnlyFileSystem() {
 		return readOnlyFileSystem;
 	}
 

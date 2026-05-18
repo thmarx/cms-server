@@ -21,14 +21,17 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  * #L%
  */
 
+import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
+import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.ui.rpc.RPCException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +45,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import org.mockito.Mockito;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
+import com.condation.cms.api.feature.features.SitePropertiesFeature;
 
 @ExtendWith(MockitoExtension.class)
 public class RemotePageEnpointsTest {
@@ -64,12 +70,27 @@ public class RemotePageEnpointsTest {
     @Mock
     private ContentQuery.Sort sort;
 
+	@Mock
+	private ReadOnlyFileSystem readOnlyFileSystem;
+	
+	@Mock
+	private ReadOnlyFile contentBase;
+	
+	@Mock
+	private ReadOnlyFile contentFile;
+	
+	@Mock
+	private SiteProperties siteProperties;
+	
     private RemotePageEnpoints pageEndpoints;
 
     @BeforeEach
     public void setUp() {
         pageEndpoints = new RemotePageEnpoints();
         pageEndpoints.setContext(moduleContext);
+		
+		when(db.getReadOnlyFileSystem()).thenReturn(readOnlyFileSystem);
+		when(readOnlyFileSystem.contentBase()).thenReturn(contentBase);
     }
 
     @Test
@@ -80,9 +101,13 @@ public class RemotePageEnpointsTest {
         when(content.query(any())).thenReturn(query);
         
         List<ContentNode> expectedNodes = List.of(mock(ContentNode.class));
-        when(query.get()).thenReturn(expectedNodes);
+        when(query.page(Mockito.anyLong(), Mockito.anyLong())).thenReturn(new Page(0, 0, 0, 0, expectedNodes));
         when(query.orderby(anyString())).thenReturn(sort);
         when(sort.desc()).thenReturn(query);
+		
+		when(contentBase.resolve(Mockito.any())).thenReturn(contentFile);
+		when(contentBase.relativize(contentFile)).thenReturn(contentFile);
+		when(moduleContext.get(SitePropertiesFeature.class)).thenReturn(new SitePropertiesFeature(siteProperties));
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("contentType", "page");
@@ -104,9 +129,8 @@ public class RemotePageEnpointsTest {
         Object result = pageEndpoints.filterPages(parameters);
 
         // Assert
-        assertThat(result).isInstanceOf(List.class);
-        assertThat((List<?>) result).hasSize(1);
-        assertThat((List<?>) result).isEqualTo(expectedNodes);
+        assertThat(result).isInstanceOf(Page.class);
+        assertThat(((Page<?>)result).getItems() ).hasSize(1);
 
         verify(query).contentType("page");
         verify(query).expression("title:test");
@@ -127,8 +151,8 @@ public class RemotePageEnpointsTest {
         when(query.page(1L, 10L)).thenReturn(expectedPage);
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("page", "1");
-        parameters.put("size", "10");
+        parameters.put("page", 1);
+        parameters.put("size", 10);
 
         // Act
         Object result = pageEndpoints.filterPages(parameters);
@@ -137,26 +161,5 @@ public class RemotePageEnpointsTest {
         assertThat(result).isInstanceOf(Page.class);
         assertThat(result).isEqualTo(expectedPage);
         verify(query).page(1L, 10L);
-    }
-
-    @Test
-    public void testFilterPages_InvalidNumberFormats() throws RPCException {
-        // Arrange
-        when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-        when(db.getContent()).thenReturn(content);
-        when(content.query(any())).thenReturn(query);
-        when(query.get()).thenReturn(new ArrayList<>());
-
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("page", "invalid");
-        parameters.put("size", "10");
-        parameters.put("excerpt", "not-a-number");
-
-        // Act
-        Object result = pageEndpoints.filterPages(parameters);
-
-        // Assert
-        assertThat(result).isInstanceOf(List.class);
-        verify(query).get(); // Should fallback to get() because page parsing fails
     }
 }

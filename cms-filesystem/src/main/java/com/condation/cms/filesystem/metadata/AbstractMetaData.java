@@ -72,26 +72,6 @@ public abstract class AbstractMetaData implements MetaData {
 		return new ConcurrentHashMap<>(tree);
 	}
 	
-	public static boolean isVisible (ContentNode node) {
-	
-		if (RequestContextScope.REQUEST_CONTEXT.isBound()
-				&& RequestContextScope.REQUEST_CONTEXT.get().has(IsPreviewFeature.class)
-				&& RequestContextScope.REQUEST_CONTEXT.get().get(IsPreviewFeature.class).mode().equals(com.condation.cms.api.feature.features.IsPreviewFeature.Mode.MANAGER)
-				) {
-			return true;
-		}
-		
-		if (node == null || node.isSlotItem()) {
-			return false;
-		}
-		
-		if (node.isParentPathHidden()) {
-			return false;
-		}
-		
-		return node.isVisible() && !node.isHidden();
-	}
-	
 	@Override
 	public Optional<ContentNode> byUri(String uri) {
 		if (!nodes.containsKey(uri)) {
@@ -154,7 +134,7 @@ public abstract class AbstractMetaData implements MetaData {
 					.filter(node -> !node.isHidden())
 					.map(this::mapToIndex)
 					.filter(node -> node != null)
-					.filter(AbstractMetaData::isVisible)
+					.filter(PageMetaData::isVisible)
 					.toList();
 
 		} else {
@@ -165,7 +145,7 @@ public abstract class AbstractMetaData implements MetaData {
 						.filter(node -> !node.isHidden())
 						.map(this::mapToIndex)
 						.filter(node -> node != null)
-						.filter(AbstractMetaData::isVisible)
+						.filter(PageMetaData::isVisible)
 						.toList();
 			}
 		}

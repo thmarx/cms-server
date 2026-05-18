@@ -1,8 +1,6 @@
-package com.condation.cms.api.db.cms;
-
 /*-
  * #%L
- * CMS Api
+ * UI Module
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -20,34 +18,8 @@ package com.condation.cms.api.db.cms;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-
-/**
- * The CMSFileSystem is a read only access abstraction to the underlying filesystem
- *
- * @author t.marx
- */
-public interface ReadyOnlyFileSystem {
-
-	/**
-	 * Resolves a file if it is a child of the host base directory
-	 * 
-	 * @param path
-	 * @return 
-	 */
-	ReadOnlyFile resolve (String path);
-	
-	/**
-	 * creates a base directory for content.
-	 * 
-	 * @return 
-	 */
-	ReadOnlyFile contentBase ();
-	
-	/**
-	 * creates a base directory for assets
-	 * 
-	 * @return 
-	 */
-	ReadOnlyFile assetBase ();
+interface ListUnpublishedPagesOptions {
+    page?: number;
 }
+export declare const runAction: (options?: ListUnpublishedPagesOptions) => Promise<void>;
+export {};
