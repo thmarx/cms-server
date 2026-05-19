@@ -99,7 +99,7 @@ public class TemplateFunctions {
               
 			functionMap.put(namespace, name, param -> {
 				try {
-					return entry.invoke(null);
+					return entry.invoke((Object[]) null);
 				} catch (Exception e) {
 					throw new RuntimeException("Error calling component: " + name, e);
 				}
