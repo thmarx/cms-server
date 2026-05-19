@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.condation.cms.api.utils.MapUtil;
+import com.google.common.base.Strings;
 
 import lombok.RequiredArgsConstructor;
 
@@ -53,6 +54,16 @@ public class MapAccess implements Map<String, Object> {
         return MapUtil.getValue(wrapped, (String)key) != null;    
     }
 
+	public boolean empty(Object key) {
+        var value = MapUtil.getValue(wrapped, (String)key);
+		
+		if (value instanceof String stringValue) {
+			return Strings.isNullOrEmpty(stringValue);
+		}
+		
+		return value == null;
+    }
+	
     @Override
     public boolean containsValue(Object value) {
         throw new UnsupportedOperationException("Unimplemented method 'containsValue'");

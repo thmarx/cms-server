@@ -32,6 +32,7 @@ import com.condation.cms.core.serivce.impl.SitePropertiesService;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  *
@@ -65,8 +66,12 @@ public class NodeTranslations {
 				locale = siteProperties.locale().getCountry().toLowerCase();
 			}
 			
+			if (locale == null) {
+				return null;
+			}
+			
 			return new TranslationDto(mapping.language(), locale, mapping.language().equals(siteProperties.language()), url);
-		}).toList();
+		}).filter(Objects::nonNull).toList();
 	}
 	
 	public static record TranslationDto (String lang, String locale, boolean current, String url) {

@@ -57,7 +57,7 @@
 		</div>
 
 		<div>
-			{% if node.meta.containsKey('media_url') %}
+			{% if !node.meta.empty('media_url') %}
 				{% assign media = cms.mediaService.get(node.meta.media_url) %}
 				<img src="/media/{{ media.uri }}?format=cropped" alt="{{ media.meta.alt }}" 
 					{{ ext.ui.mediaToolbar(["select", "meta", "focalPoint"], {"uri": node.uri, "element": "media_url" }) | raw }} />
