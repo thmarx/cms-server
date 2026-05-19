@@ -42,6 +42,7 @@ import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.modules.ui.utils.UIPathUtil;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
 import com.condation.cms.modules.ui.model.NodeDTO;
+import com.condation.cms.modules.ui.utils.NumberUtils;
 import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -101,8 +102,8 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
             }
         }
         
-		int page = (int) parameters.getOrDefault("page", 1);
-		int size = (int) parameters.getOrDefault("size", 5);
+		long page = NumberUtils.toLong(parameters.getOrDefault("page", 1l));
+		long size = NumberUtils.toLong(parameters.getOrDefault("size", 5l));
 		
         var pageList = query.page(page, size);
 		

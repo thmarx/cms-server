@@ -20,7 +20,7 @@
  */
 import { openModal } from '@cms/modules/modal.js'
 import { i18n } from '@cms/modules/localization.js';
-import { filterPages, FilterPagesOptions, ItemDto } from '@cms/modules/rpc/rpc-page'
+import { filterPages, FilterPagesOptions, FilterPagesResponse, ItemDto } from '@cms/modules/rpc/rpc-page'
 import { loadPreview } from '@cms/modules/preview.utils';
 // hook.js
 
@@ -77,54 +77,64 @@ const renderPageListHtml = (pages: ItemDto[], currentPage: number, totalPages: n
     `;
 };
 
+const state: any = {
+    modal: null
+};
+
+const updateDialog = async (pageNumber: number) => {
+
+    const filterOptions: FilterPagesOptions = {
+        where: [
+            {
+                field: "published",
+                operator: "=",
+                value: false
+            }
+        ],
+        page: pageNumber,
+        size: ITEMS_PER_PAGE
+    };
+
+    const response = await filterPages(filterOptions);
+
+    var pageData = response.result;
+    const modalBodyHtml = renderPageListHtml(pageData.items, pageData.page, pageData.totalPages);
+
+    var modalElement = document.getElementById('cms-unpublished-pages-modal-body');
+    if (modalElement) {
+        modalElement.innerHTML = modalBodyHtml;
+
+        modalElement.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const newPage = parseInt((e.target as HTMLElement).dataset.page || '1');
+                if (newPage >= 1 && newPage <= pageData.totalPages) {
+                    updateDialog(newPage);
+                }
+            });
+        });
+        modalElement.querySelectorAll('a[data-cms-page-uri]').forEach((link) => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                state.modal.hide();
+                loadPreview((link as HTMLElement).dataset.cmsPageUri || '');
+            })
+        });
+
+    }
+}
+
 export const runAction = async (options: ListUnpublishedPagesOptions = {}) => {
     let currentPage = options.page || 1;
 
-    const fetchAndShowPages = async (pageNumber: number) => {
-        const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
-        const limit = ITEMS_PER_PAGE;
-
-        const filterOptions: FilterPagesOptions = {
-            where: [
-                {
-                    field: "published",
-                    operator: "=",
-                    value: false
-                }
-            ]
-        };
-
-        const response = await filterPages(filterOptions);
-        const pageData = response.result;
-
-        const modalBodyHtml = renderPageListHtml(pageData.items, pageData.page, pageData.totalPages);
-
-        var modalInstance = openModal({
-            title: i18n.t('page.unpublished.title', 'Unpublished Pages'),
-            body: modalBodyHtml,
-            fullscreen: false,
-            onCancel: () => { /* Optional: handle cancel */ },
-            onOk: () => { /* Optional: handle OK */ },
-            onShow: (modalElement : any) => {
-                modalElement.querySelectorAll('.page-link').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const newPage = parseInt((e.target as HTMLElement).dataset.page || '1');
-                        if (newPage >= 1 && newPage <= pageData.totalPages) {
-                            fetchAndShowPages(newPage); 
-                        }
-                    });
-                });
-                modalElement.querySelectorAll('a[data-cms-page-uri]').forEach((link : HTMLElement) => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        modalInstance.hide();
-                        loadPreview(link.dataset.cmsPageUri || '');
-                    })
-                });
-            }
-        });
-    };
-
-    await fetchAndShowPages(currentPage);
+    state.modal = openModal({
+        title: i18n.t('page.unpublished.title', 'Unpublished Pages'),
+        body: "<div id='cms-unpublished-pages-modal-body'></div>",
+        fullscreen: false,
+        onCancel: () => { /* Optional: handle cancel */ },
+        onOk: () => { /* Optional: handle OK */ },
+        onShow: (modalElement: any) => {
+            updateDialog(currentPage);
+        }
+    });
 };

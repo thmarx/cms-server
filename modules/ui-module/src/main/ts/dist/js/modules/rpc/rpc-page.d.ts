@@ -12,8 +12,8 @@ export interface CreatePageResponse {
 declare const createPage: (options: CreatePageOptions) => Promise<CreatePageResponse>;
 export interface FilterPagesOptions {
     where?: Field[];
-    offset?: number;
-    limit?: number;
+    page?: number;
+    size?: number;
 }
 export interface Field {
     field: string;

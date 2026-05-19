@@ -42,8 +42,8 @@ const createPage = async (options: CreatePageOptions) : Promise<CreatePageRespon
 
 export interface FilterPagesOptions {
 	where?: Field[]; // Optional list of fields to return
-	offset?: number; // Für Paginierung: Start-Offset
-	limit?: number; // Für Paginierung: Maximale Anzahl an Ergebnissen
+	page?: number; // Für Paginierung: Start-Offset
+	size?: number; // Für Paginierung: Maximale Anzahl an Ergebnissen
 }
 export interface Field {
 	field: string;
