@@ -165,6 +165,7 @@ public class LuceneQuery<T> extends ExtendableQuery<T> implements ContentQuery.S
 					.filter(Optional::isPresent)
 					.map(Optional::get)
 					.filter(node -> !node.isDirectory())
+					.filter(PageMetaData::isPage)
 					.filter(PageMetaData::isVisible)
 					.toList();
 

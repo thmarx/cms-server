@@ -40,7 +40,7 @@ public final class NodeHelper {
 	}
 
 	public static Map<String, String> getLinks(ContentNode node, Request request) {
-		if (!PageMetaData.isVisible(node)) {
+		if (!PageMetaData.isVisible(node) || !PageMetaData.isPage(node)) {
 			return Collections.emptyMap();
 		}
 		return getLinks(node.uri(), request);

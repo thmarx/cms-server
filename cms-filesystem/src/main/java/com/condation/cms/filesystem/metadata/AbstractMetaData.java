@@ -134,6 +134,7 @@ public abstract class AbstractMetaData implements MetaData {
 					.filter(node -> !node.isHidden())
 					.map(this::mapToIndex)
 					.filter(node -> node != null)
+					.filter(PageMetaData::isPage)
 					.filter(PageMetaData::isVisible)
 					.toList();
 
@@ -145,6 +146,7 @@ public abstract class AbstractMetaData implements MetaData {
 						.filter(node -> !node.isHidden())
 						.map(this::mapToIndex)
 						.filter(node -> node != null)
+						.filter(PageMetaData::isPage)
 						.filter(PageMetaData::isVisible)
 						.toList();
 			}

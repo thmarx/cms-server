@@ -30,9 +30,14 @@ import com.condation.cms.api.request.RequestContextScope;
  * @author thorstenmarx
  */
 public abstract class PageMetaData {
+	
+	public static boolean isPage (ContentNode node) {
+		return !node.isSlotItem();
+	}
+	
 	public static boolean isVisible (ContentNode node) {
 	
-		if (node == null || node.isSlotItem()) {
+		if (node == null || !isPage(node)) {
 			return false;
 		}
 		

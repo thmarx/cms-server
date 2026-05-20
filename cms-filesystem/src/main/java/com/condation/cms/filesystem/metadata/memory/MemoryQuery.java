@@ -145,6 +145,7 @@ public class MemoryQuery<T> extends ExtendableQuery<T> {
 		return context.getNodes()
 				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
 				.filter(node -> !node.isDirectory())
+				.filter(PageMetaData::isPage)
 				.filter(PageMetaData::isVisible)
 				.map(context.getNodeMapper())
 				.toList();
@@ -173,6 +174,7 @@ public class MemoryQuery<T> extends ExtendableQuery<T> {
 		var filteredNodes = context.getNodes()
 				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
 				.filter(node -> !node.isDirectory())
+				.filter(PageMetaData::isPage)
 				.filter(PageMetaData::isVisible)
 				.toList();
 
