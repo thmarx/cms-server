@@ -25,6 +25,8 @@ import com.condation.cms.api.cache.ICache;
 import com.condation.cms.templates.filter.impl.DateFilter;
 import com.condation.cms.templates.filter.impl.DefaultFilter;
 import com.condation.cms.templates.filter.impl.MarkdownFilter;
+import com.condation.cms.templates.filter.impl.MinusFilter;
+import com.condation.cms.templates.filter.impl.PlusFilter;
 import com.condation.cms.templates.filter.impl.RawFilter;
 import com.condation.cms.templates.filter.impl.UpperFilter;
 import com.condation.cms.templates.tags.ElseIfTag;
@@ -94,6 +96,8 @@ public class TemplateEngineFactory {
 
 	public TemplateEngineFactory defaultFilters() {
 		configuration
+				.registerFilter(MinusFilter.NAME, new MinusFilter())
+				.registerFilter(PlusFilter.NAME, new PlusFilter())
 				.registerFilter(DateFilter.NAME, new DateFilter())
 				.registerFilter(UpperFilter.NAME, new UpperFilter())
 				.registerFilter(RawFilter.NAME, new RawFilter())
