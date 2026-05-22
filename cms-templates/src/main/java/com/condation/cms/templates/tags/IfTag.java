@@ -55,6 +55,18 @@ public class IfTag extends AbstractTag implements Tag {
 		return true;
 	}
 
+	private boolean isTruthy(Object value) {
+    if (value == null) {
+        return false;
+    }
+
+    if (value instanceof Boolean b) {
+        return b;
+    }
+
+    return true;
+}
+	
 	@Override
 	public void render(TagNode node, Renderer.Context context, Writer writer) {
 		List<Condition> conditions = buildConditions(node);
@@ -66,7 +78,7 @@ public class IfTag extends AbstractTag implements Tag {
 				if (!condition.name.equals("else")) {
 					//Object value = condition.expression().evaluate(scopeContext);
 					Object value = evaluateExpression(node, condition.expression, context, scopeContext);
-					if (value instanceof Boolean boolValue && boolValue == true) {
+					if (isTruthy(value)) {
 						for (var child : condition.currentChildren) {
 							context.renderer().render(child, context, writer);
 						}
