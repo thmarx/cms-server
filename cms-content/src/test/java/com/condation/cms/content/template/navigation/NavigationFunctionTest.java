@@ -28,7 +28,7 @@ import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.cms.NIOReadOnlyFile;
-import com.condation.cms.api.db.cms.ReadyOnlyFileSystem;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 import com.condation.cms.api.feature.features.ContentNodeMapperFeature;
 import com.condation.cms.api.feature.features.ContentParserFeature;
 import com.condation.cms.api.feature.features.HookSystemFeature;
@@ -74,7 +74,7 @@ public class NavigationFunctionTest {
 	@Mock
 	ContentNodeMapper contentNodeMapper;
 	@Mock
-	ReadyOnlyFileSystem cmsFileSystem;
+	ReadOnlyFileSystem cmsFileSystem;
 	
 	NavigationFunction sut;
 	

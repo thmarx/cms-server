@@ -28,7 +28,6 @@ import com.condation.cms.api.ui.action.UIHookAction;
 import com.condation.cms.api.ui.action.UIScriptAction;
 import com.condation.cms.api.ui.elements.Menu;
 import com.condation.cms.api.ui.elements.MenuEntry;
-import com.condation.modules.api.annotation.Extension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

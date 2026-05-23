@@ -1,7 +1,7 @@
 ## build 
 
 ```shell
-tsc
+npm run build
 ```
 
 ## publish

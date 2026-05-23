@@ -32,6 +32,11 @@ export const MODULE_LOCALIZATIONS = {
 		"alerts.confirm.button.cancel": "Abbrechen",
 		"alerts.prompt.title": "Wert eingeben.",
 		"alerts.prompt.lable": "Wert",
-		"alerts.prompt.placeholder": "Geben sie ihren Wert ein"
+		"alerts.prompt.placeholder": "Geben sie ihren Wert ein",
+		"page.unpublished.title": "Unveröffentlichte Seiten",
+		"page.unpublished.noPages": "Keine unveröffentlichten Seiten gefunden.",
+		"page.unpublished.editLink": "Bearbeiten",
+		"pagination.previous": "Zurück",
+		"pagination.next": "Weiter"
 	}
 } 

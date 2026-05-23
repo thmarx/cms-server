@@ -1,3 +1,23 @@
+/*-
+ * #%L
+ * UI Module
+ * %%
+ * Copyright (C) 2023 - 2026 CondationCMS
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 import { executeScriptAction } from '@cms/js/manager-globals.js';
 import frameMessenger from '@cms/modules/frameMessenger.js';
 import { getPreviewFrame, getPreviewUrl } from '@cms/modules/preview.utils.js';
@@ -102,7 +122,7 @@ const initMessageHandlers = () => {
             "module": window.manager.baseUrl + "/actions/page/edit-sections",
             "function": "runAction",
             "parameters": {
-                "sectionName": payload.sectionName
+                "slot": payload.slot
             }
         };
         if (payload.uri) {
@@ -110,17 +130,17 @@ const initMessageHandlers = () => {
         }
         executeScriptAction(cmd);
     });
-    frameMessenger.on('add-section', (payload) => {
+    frameMessenger.on('add-slotItem', (payload) => {
         var cmd = {
             "module": window.manager.baseUrl + "/actions/page/add-section",
             "function": "runAction",
             "parameters": {
-                "sectionName": payload.sectionName
+                "slot": payload.slot
             }
         };
         executeScriptAction(cmd);
     });
-    frameMessenger.on('delete-section', (payload) => {
+    frameMessenger.on('delete-slotItem', (payload) => {
         var cmd = {
             "module": window.manager.baseUrl + "/actions/page/delete-section",
             "function": "runAction",

@@ -20,10 +20,12 @@ package com.condation.cms.modules.ui.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.cache.CacheManager;
 import com.condation.cms.api.hooks.FilterContext;
 import com.condation.cms.api.hooks.HookSystem;
+import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.ui.action.UIScriptAction;
 import com.condation.cms.api.ui.elements.Menu;
 import com.condation.cms.api.ui.elements.MenuEntry;
@@ -48,12 +50,17 @@ public class TemplateEngineTest {
 
 	@Mock
 	private ModuleManager moduleManager;
-	
-	@Test
+	@Mock
+    private SiteProperties siteProperties;
+	@Mock
+	private SiteModuleContext context;
+    
+    @Test
 	public void testSomeMethod() {
 		CacheManager cacheManager = new CacheManager(new LocalCacheProvider());
 		TemplateEngine templateEngine = new TemplateEngine(cacheManager);
-
+        
+        
 		var hookSystem = new HookSystem();
 		hookSystem.registerFilter("module/ui/menu", (FilterContext<Menu> context)
 				-> {
@@ -78,7 +85,7 @@ public class TemplateEngineTest {
 		);
 
 		Assertions.assertThatCode(() -> {
-			templateEngine.render("test.html", Map.of("actionFactory", new ActionFactory(hookSystem, moduleManager, new User("test", "asdasdfasdf", new String[]{"manager"}))));
+			templateEngine.render("test.html", Map.of("actionFactory", new ActionFactory(context, siteProperties, hookSystem, moduleManager, new User("test", "asdasdfasdf", new String[]{"manager"}))));
 		}).doesNotThrowAnyException();
 	}
 

@@ -1,3 +1,23 @@
+/*-
+ * #%L
+ * UI Module
+ * %%
+ * Copyright (C) 2023 - 2026 CondationCMS
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 import { listFiles, deleteFile, deleteFolder, } from '@cms/modules/rpc/rpc-files.js';
 import { deletePage } from '@cms/modules/rpc/rpc-page.js';
 import { openModal } from '@cms/modules/modal.js';
@@ -14,6 +34,7 @@ const defaultOptions = {
     uri: "",
     onSelect: null,
     fullscreen: true,
+    title: i18n.t("filebrowser.title", "Filesystem"),
     filter: (file) => {
         return true; // Default filter allows all files
     }
@@ -31,7 +52,7 @@ const openFileBrowser = async (optionsParam) => {
         ...optionsParam
     };
     state.modal = openModal({
-        title: i18n.t("filebrowser.title", "Filesystem"),
+        title: state.options.title,
         body: '<div id="cms-file-browser"></div>',
         fullscreen: state.options.fullscreen,
         onOk: async (event) => {
@@ -43,7 +64,7 @@ const openFileBrowser = async (optionsParam) => {
             }
         },
         onShow: async () => {
-            initFileBrowser();
+            initFileBrowser(state.options.uri);
         }
     });
 };

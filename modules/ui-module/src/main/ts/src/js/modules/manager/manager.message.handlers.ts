@@ -122,7 +122,7 @@ const initMessageHandlers = () => {
             "module": window.manager.baseUrl + "/actions/page/edit-sections",
             "function": "runAction",
             "parameters": {
-                "sectionName": payload.sectionName
+                "slot": payload.slot
             }
         }
         if (payload.uri) {
@@ -131,18 +131,18 @@ const initMessageHandlers = () => {
         executeScriptAction(cmd)
     });
 
-    frameMessenger.on('add-section', (payload: any) => {
+    frameMessenger.on('add-slotItem', (payload: any) => {
         var cmd : any = {
             "module": window.manager.baseUrl + "/actions/page/add-section",
             "function": "runAction",
             "parameters": {
-                "sectionName": payload.sectionName
+                "slot": payload.slot
             }
         }
         executeScriptAction(cmd)
     });
 
-    frameMessenger.on('delete-section', (payload : any) => {
+    frameMessenger.on('delete-slotItem', (payload : any) => {
         var cmd :any = {
             "module": window.manager.baseUrl + "/actions/page/delete-section",
             "function": "runAction",

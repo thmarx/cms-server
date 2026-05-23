@@ -1,7 +1,11 @@
 export function localizeUi(): Promise<void>;
 export namespace i18n {
     let _locale: any;
-    let _cache: any;    function init(): Promise<void>;
+    let _cache: null;
+    /**
+     * Loads and merges remote localizations with defaults.
+     */
+    function init(): Promise<void>;
     /**
      * Get current locale.
      */

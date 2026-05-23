@@ -25,10 +25,9 @@ import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
-import com.condation.cms.api.db.cms.ReadyOnlyFileSystem;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.FileUtils;
-import com.condation.cms.api.utils.SectionUtil;
+import com.condation.cms.api.utils.SlotUtil;
 import com.condation.modules.api.annotation.Extension;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,6 +41,7 @@ import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.modules.ui.utils.UIPathUtil;
 import java.nio.file.Path;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 
 /**
  *
@@ -51,7 +51,7 @@ import java.nio.file.Path;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
-	private static ReadOnlyFile getBase(ReadyOnlyFileSystem fileSystem, String type) {
+	private static ReadOnlyFile getBase(ReadOnlyFileSystem fileSystem, String type) {
 		return switch (type) {
 			case "content" ->
 				fileSystem.contentBase();
@@ -100,7 +100,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 					files.add(new Directory("..", parent.uri()));
 				}
 				contentFile.children().stream()
-						.filter(child -> !SectionUtil.isSection(child.getFileName()))
+						.filter(child -> !SlotUtil.isSlotItem(child.getFileName()))
 						.map(this::map)
 						.forEach(files::add);
 			} catch (IOException ex) {
@@ -144,7 +144,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			} else if ("assets".equals(type)) {
 				Files.deleteIfExists(writableBase.resolve(uri).resolve(name));
 			} else {
-				var sections = db.getContent().listSections(contentFile);
+				var sections = db.getContent().listSlotItems(contentFile);
 				Files.deleteIfExists(writableBase.resolve(uri).resolve(name));
 				sections.forEach(node -> {
 					try {
@@ -202,7 +202,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
 			if (!"assets".equals(type) && !Files.isDirectory(targetPath)) {
 				var contentFile = contentBase.resolve(uri).resolve(name);
-				var sections = db.getContent().listSections(contentFile);
+				var sections = db.getContent().listSlotItems(contentFile);
 
 				for (var node : sections) {
 					var sourceSectionPath = writableBase.resolve(node.uri());

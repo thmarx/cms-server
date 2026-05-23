@@ -35,7 +35,7 @@ public class ContentTypes {
 
 	public Set<PageTemplate> pageTemplates = new HashSet();
 
-	public Set<SectionTemplate> sectionTemplates = new HashSet<>();
+	public Set<SlotItemTemplate> slotItemTemplates = new HashSet<>();
 	
 	public Set<ListItemType> listItemTypes = new HashSet<>();
 
@@ -55,21 +55,21 @@ public class ContentTypes {
 		pageTemplates.add(new PageTemplate(pageTemplate));
 	}
 
-	public void registerSectionTemplate(Map<String, Object> sectionTempate) {
-		sectionTemplates.add(new SectionTemplate(sectionTempate));
+	public void registerSlotItemTemplate(Map<String, Object> slotItemTemplate) {
+		slotItemTemplates.add(new SlotItemTemplate(slotItemTemplate));
 	}
 	
 	public Set<PageTemplate> getPageTemplates () {
 		return new HashSet<>(pageTemplates);
 	}
 	
-	public Set<SectionTemplate> getSectionTemplates (String section) {
-		return sectionTemplates.stream()
-				.filter(template -> template.section().equals(section))
+	public Set<SlotItemTemplate> getSlotItemTemplates (String slot) {
+		return slotItemTemplates.stream()
+				.filter(template -> template.slot().equals(slot))
 				.collect(Collectors.toSet());
 	}
-	public Set<SectionTemplate> getSectionTemplates () {
-		return new HashSet<>(sectionTemplates);
+	public Set<SlotItemTemplate> getSlotItemTemplates () {
+		return new HashSet<>(slotItemTemplates);
 	}
 
 	public static record PageTemplate(String name, String template, Map<String, Object> data) {
@@ -85,19 +85,26 @@ public class ContentTypes {
 			var forms = (Map<String, Object>)data.getOrDefault("forms", Collections.emptyMap());
 			return (Map<String, Object>)forms.getOrDefault(name, Collections.emptyMap());
 		}
+        
+        public String getContentFolder () {
+            return (String) data.getOrDefault("contentFolder", "");
+        }
+        public boolean addCreateButton () {
+            return (boolean) data.getOrDefault("createButton", true);
+        }
 	}
 
-	public static record SectionTemplate(String name, String template, Map<String, Object> data) {
+	public static record SlotItemTemplate(String name, String template, Map<String, Object> data) {
 
-		public SectionTemplate (Map<String, Object> data) {
+		public SlotItemTemplate (Map<String, Object> data) {
 			this(
 					(String) data.getOrDefault("name", "<no name>"),
 					(String) data.getOrDefault("template", "<no template>"),
 					data);
 		}
 
-		public String section() {
-			return (String) data.getOrDefault("section", "<no section>");
+		public String slot() {
+			return (String) data.getOrDefault("slot", "<no slot>");
 		}
 	}
 	

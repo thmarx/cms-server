@@ -45,7 +45,7 @@ import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.utils.PathUtil;
-import com.condation.cms.api.utils.SectionUtil;
+import com.condation.cms.api.utils.SlotUtil;
 import com.condation.cms.content.pipeline.ContentPipelineFactory;
 import com.condation.cms.content.views.model.View;
 import com.condation.cms.api.content.MapAccess;
@@ -93,10 +93,10 @@ public class DefaultContentRenderer implements ContentRenderer {
 	}
 
 	@Override
-	public String render(final ReadOnlyFile contentFile, final RequestContext context, final Map<String, List<Section>> sections) throws IOException {
+	public String render(final ReadOnlyFile contentFile, final RequestContext context, final Map<String, List<SlotItem>> slotItems) throws IOException {
 		var content = contentParser.parse(contentFile);
 
-		return render(contentFile, context, sections, content.meta(), content.content(), (model) -> {
+		return render(contentFile, context, slotItems, content.meta(), content.content(), (model) -> {
 		});
 	}
 
@@ -104,13 +104,13 @@ public class DefaultContentRenderer implements ContentRenderer {
 	public String renderTaxonomy(
 			final Optional<ReadOnlyFile> contentFileOpt,
 			final Taxonomy taxonomy, Optional<String> taxonomyValue, final RequestContext context, 
-			final Map<String, Object> meta, final Page<ListNode> page, final Map<String, List<Section>> sections) throws IOException {
+			final Map<String, Object> meta, final Page<ListNode> page, final Map<String, List<SlotItem>> slotItems) throws IOException {
 		var contentFile = contentFileOpt.orElseGet(() -> db.getReadOnlyFileSystem().contentBase().resolve("index.md"));
 		var content = contentFileOpt.isPresent() ? 
 				contentParser.parse(contentFileOpt.get()).content()
 				: "";
 
-		return render(contentFile, context, sections, meta, content, (model) -> {
+		return render(contentFile, context, slotItems, meta, content, (model) -> {
 			model.values.put("taxonomy", taxonomy);
 			model.values.put("taxonomy_values", db.getTaxonomies().values(taxonomy));
 			if (taxonomyValue.isPresent()) {
@@ -137,7 +137,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 
 	@Override
 	public String render(final ReadOnlyFile contentFile, final RequestContext context,
-			final Map<String, List<Section>> sections,
+			final Map<String, List<SlotItem>> slotItems,
 			final Map<String, Object> meta, final String rawContent, final Consumer<TemplateEngine.Model> modelExtending
 	) throws IOException {
 		var uri = PathUtil.toRelativeFile(contentFile, db.getReadOnlyFileSystem().contentBase());
@@ -154,7 +154,9 @@ public class DefaultContentRenderer implements ContentRenderer {
 		Namespace namespace = new Namespace();
 
 		namespace.add(Constants.TemplateNamespaces.NODE, "meta", new MapAccess(meta));
-		namespace.add(Constants.TemplateNamespaces.NODE, "sections", sections);
+        // sections will be removed
+		namespace.add(Constants.TemplateNamespaces.NODE, "sections", slotItems);
+        namespace.add(Constants.TemplateNamespaces.NODE, "slots", slotItems);
 		namespace.add(Constants.TemplateNamespaces.NODE, "uri", uri);
 		namespace.add(Constants.TemplateNamespaces.NODE, "translation", new NodeTranslations(contentNode.orElse(null), siteProperties));
 		
@@ -277,36 +279,36 @@ public class DefaultContentRenderer implements ContentRenderer {
 	}
 
 	@Override
-	public Map<String, List<Section>> renderSections(final List<ContentNode> sectionNodes, final RequestContext context) throws IOException {
+	public Map<String, List<SlotItem>> renderSlotItems(final List<ContentNode> slotItemNodes, final RequestContext context) throws IOException {
 
-		if (sectionNodes.isEmpty()) {
+		if (slotItemNodes.isEmpty()) {
 			return Collections.emptyMap();
 		}
 
-		Map<String, List<Section>> sections = new HashMap<>();
+		Map<String, List<SlotItem>> slotItems = new HashMap<>();
 
 		final ReadOnlyFile contentBase = db.getReadOnlyFileSystem().contentBase();
-		sectionNodes.forEach(node -> {
+		slotItemNodes.forEach(node -> {
 			try {
-				var sectionPath = contentBase.resolve(node.uri());
-				var content = render(sectionPath, context);
-				var name = SectionUtil.getSectionName(node.name());
-				var index = node.getMetaValue(Constants.MetaFields.LAYOUT_ORDER, Constants.DEFAULT_SECTION_LAYOUT_ORDER);
+				var slotItemPath = contentBase.resolve(node.uri());
+				var content = render(slotItemPath, context);
+				var name = SlotUtil.getSlotItemName(node.name());
+				var index = node.getMetaValue(Constants.MetaFields.LAYOUT_ORDER, Constants.DEFAULT_SLOT_ITEM_LAYOUT_ORDER);
 
-				if (!sections.containsKey(name)) {
-					sections.put(name, new ArrayList<>());
+				if (!slotItems.containsKey(name)) {
+					slotItems.put(name, new ArrayList<>());
 				}
 
-				sections.get(name).add(new Section(name, index, content, node.data()));
+				slotItems.get(name).add(new SlotItem(name, index, content, node.data()));
 			} catch (Exception ex) {
-				log.error("error render section", ex);
+				log.error("error render slotItems", ex);
 			}
 
 		});
 
-		sections.values().forEach(list -> list.sort((s1, s2) -> Integer.compare(s1.index(), s2.index())));
+		slotItems.values().forEach(list -> list.sort((s1, s2) -> Integer.compare(s1.index(), s2.index())));
 
-		return sections;
+		return slotItems;
 	}
 
 }

@@ -23,11 +23,11 @@ package com.condation.cms.modules.ui.extensionpoints;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.extensions.AbstractExtensionPoint;
 import com.condation.cms.api.feature.features.InjectorFeature;
-import com.condation.cms.api.site.Site;
 import com.condation.cms.api.site.SiteService;
 import com.condation.cms.api.ui.action.UIScriptAction;
 import com.condation.cms.api.ui.annotations.HookAction;
 import com.condation.cms.api.ui.annotations.MenuEntry;
+import com.condation.cms.api.ui.annotations.ScriptAction;
 import com.condation.cms.api.ui.annotations.ShortCut;
 import com.condation.cms.api.ui.elements.Menu;
 import com.condation.cms.api.ui.extensions.UIActionsExtensionPoint;
@@ -139,5 +139,23 @@ public class SiteMenuExtension extends AbstractExtensionPoint implements UIActio
 					.position(counter.getAndIncrement())
 					.build();
 		}).toList());
+	}
+	
+		@MenuEntry(
+			parent = "toolMenu",
+			id = "list_unpublished_pages",
+			name = "Unpublished pages",
+			permissions = {Permissions.CONTENT_EDIT},
+			position = 4,
+			scriptAction = @ScriptAction(module = "/manager/actions/page/list-unpublished-pages")
+	)
+	@ShortCut(
+			id = "list_unpublished_pages",
+			title = "Unpublished pages",
+			permissions = {Permissions.CACHE_INVALIDATE},
+			section = "tools",
+			scriptAction = @ScriptAction(module = "/manager/actions/page/list-unpublished-pages")
+	)
+	public void list_unpublished_pages() {
 	}
 }

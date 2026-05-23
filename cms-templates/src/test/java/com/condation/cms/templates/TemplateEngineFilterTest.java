@@ -39,9 +39,10 @@ public class TemplateEngineFilterTest extends AbstractTemplateEngineTest {
 		return new StringTemplateLoader()
 				.add("var_default", "{{ content | default('the default text') }}")
 				.add("simple", "{{ meta['date'] | date }}")
+				.add("minus", "{{ meta['year'] | minus(1) }}")
+				.add("plus", "{{ meta['year'] | plus(1) }}")
 				.add("month_year", "{{ meta['date'] | date('MM/yyyy')}}")
-				.add("format_issue", "{{ meta['date'] | date('MMM d, yyyy')}}")
-				;
+				.add("format_issue", "{{ meta['date'] | date('MMM d, yyyy')}}");
 
 	}
 
@@ -80,7 +81,7 @@ public class TemplateEngineFilterTest extends AbstractTemplateEngineTest {
 
 		Assertions.assertThat(result).isEqualTo(format.format(date));
 	}
-	
+
 	@Test
 	public void test_default_filter() throws IOException {
 
@@ -91,21 +92,21 @@ public class TemplateEngineFilterTest extends AbstractTemplateEngineTest {
 				Map.of("content", "&lt;p&gt;&lt;/p&gt;")
 		);
 
-		Assertions.assertThat(result).isEqualTo("the default text");		
-		
+		Assertions.assertThat(result).isEqualTo("the default text");
+
 		result = simpleTemplate.evaluate(
 				Map.of("content", "<p></p>")
 		);
 
 		Assertions.assertThat(result).isEqualTo("the default text");
-		
+
 		result = simpleTemplate.evaluate(
 				Map.of("content", "")
 		);
 
 		Assertions.assertThat(result).isEqualTo("the default text");
 	}
-	
+
 	@Test
 	public void issue_format() throws IOException {
 
@@ -122,5 +123,35 @@ public class TemplateEngineFilterTest extends AbstractTemplateEngineTest {
 		var result = simpleTemplate.evaluate(context);
 
 		Assertions.assertThat(result).isEqualTo(format.format(date));
+	}
+
+	@Test
+	public void test_minus() throws IOException {
+
+		Template simpleTemplate = SUT.getTemplate("minus");
+		Assertions.assertThat(simpleTemplate).isNotNull();
+
+		Map<String, Object> context = Map.of("meta", Map.of(
+				"year", 2026
+		));
+
+		var result = simpleTemplate.evaluate(context);
+
+		Assertions.assertThat(result).isEqualTo("2025");
+	}
+
+	@Test
+	public void issue_plus() throws IOException {
+
+		Template simpleTemplate = SUT.getTemplate("plus");
+		Assertions.assertThat(simpleTemplate).isNotNull();
+
+		Map<String, Object> context = Map.of("meta", Map.of(
+				"year", 2026
+		));
+
+		var result = simpleTemplate.evaluate(context);
+
+		Assertions.assertThat(result).isEqualTo("2027");
 	}
 }

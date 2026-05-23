@@ -24,7 +24,7 @@ import { addSection, getContentNode } from '@cms/modules/rpc/rpc-content.js'
 import { getPreviewUrl, reloadPreview } from '@cms/modules/preview.utils.js'
 import Handlebars from 'https://cdn.jsdelivr.net/npm/handlebars@4.7.8/+esm'
 import { i18n } from '@cms/modules/localization.js'
-import { getSectionTemplates } from '@cms/modules/rpc/rpc-manager.js';
+import { getSlotItemTemplates } from '@cms/modules/rpc/rpc-manager.js';
 
 export async function runAction(params) {
 
@@ -34,10 +34,10 @@ export async function runAction(params) {
 
 	var template = Handlebars.compile(`
 		<div class="mb-3">
-  			<label for="cms-section-name" class="form-label">Name for the section</label>
-  			<input type="text" class="form-control" id="cms-section-name" placeholder="Name of the section">
+  			<label for="cms-section-name" class="form-label">Name for the item</label>
+  			<input type="text" class="form-control" id="cms-section-name" placeholder="Name of the Item">
 		</div>
-		<select id="cms-section-template-selection" class="form-select" aria-label="Select section template">
+		<select id="cms-section-template-selection" class="form-select" aria-label="Select Item template">
 			<option value="000" selected>Select template</option>
 			{{#each templates}}
 				<option value="{{template}}">{{name}}</option>
@@ -45,25 +45,25 @@ export async function runAction(params) {
 		</select>
 		`);
 
-		var sectionsResponse = await getSectionTemplates({
-			section: params.sectionName
+		var sectionsResponse = await getSlotItemTemplates({
+			slot: params.slot
 		});
 
 	openModal({
-		title: i18n.t("addsection.titles.modal", 'Add section'),
+		title: i18n.t("addsection.titles.modal", 'Add item'),
 		body: template({ 
 			templates: sectionsResponse.result,
 			
 		}),
 		fullscreen: false,
 		onCancel: (event) => {},
-		validate: () => validate(contentNode, params.sectionName),
+		validate: () => validate(contentNode, params.slot),
 		onOk: async (event) => {
-			var result = await createSection(contentNode.result.uri, params.sectionName);
+			var result = await createSection(contentNode.result.uri, params.slot);
 			if (result) {
 				showToast({
-					title: i18n.t("manager.actions.addsection.titles.alert", "Create section"),
-					message: i18n.t("manager.actions.addsection.alerts.success.message", "Section successfuly created."),
+					title: i18n.t("manager.actions.addsection.titles.alert", "Create Item"),
+					message: i18n.t("manager.actions.addsection.alerts.success.message", "Item successfuly created."),
 					type: 'success', // optional: info | success | warning | error
 					timeout: 3000
 				});
@@ -71,8 +71,8 @@ export async function runAction(params) {
 				reloadPreview()
 			} else {
 				showToast({
-					title: i18n.t("manager.actions.addsection.titles.alert", 'Create section'),
-					message: i18n.t("manager.actions.addsection.alerts.error.message", "Section not created."),
+					title: i18n.t("manager.actions.addsection.titles.alert", 'Create Item'),
+					message: i18n.t("manager.actions.addsection.alerts.error.message", "Item not created."),
 					type: 'warning', // optional: info | success | warning | error
 					timeout: 3000
 				});
@@ -82,15 +82,15 @@ export async function runAction(params) {
 	});
 }
 
-const getSectionItemName = () => {
+const getSlotItemName = () => {
 	return document.getElementById("cms-section-name").value
 }
 
-const validate = (contentNode, targetSectionName) => {
+const validate = (contentNode, targetSlot) => {
 	const template = document.getElementById("cms-section-template-selection").value
 	if (template === "000") {
 		showToast({
-			title: i18n.t("manager.actions.addsection.titles.alert", 'Create section'),
+			title: i18n.t("manager.actions.addsection.titles.alert", 'Create Item'),
 			message: i18n.t("manager.actions.addsection.alerts.notemplate.message", "No template selected."),
 			type: 'error', // optional: info | success | warning | error
 			timeout: 3000
@@ -98,11 +98,11 @@ const validate = (contentNode, targetSectionName) => {
 		return false
 	}
 
-	const sectionItemName = getSectionItemName()
-	if (sectionItemName === "" || sectionItemName === null) {
+	const slotItemName = getSlotItemName()
+	if (slotItemName === "" || slotItemName === null) {
 		showToast({
-			title: i18n.t("manager.actions.addsection.titles.alert", 'Create section'),
-			message: i18n.t("manager.actions.addsection.alerts.noname.message", "No section name provided."),
+			title: i18n.t("manager.actions.addsection.titles.alert", 'Create Item'),
+			message: i18n.t("manager.actions.addsection.alerts.noname.message", "No Item name provided."),
 			type: 'error',
 			timeout: 3000
 		});
@@ -113,17 +113,17 @@ const validate = (contentNode, targetSectionName) => {
 }
 
 
-function isUriInSection(data, sectionKey, targetUri) {
+function isUriInSection(data, slotItemKey, targetUri) {
 	if (
 		!data ||
 		!data.result ||
-		!data.result.sections ||
-		typeof data.result.sections !== 'object'
+		!data.result.slots ||
+		typeof data.result.slots !== 'object'
 	) {
 		return false;
 	}
 
-	const sectionArray = data.result.sections[sectionKey];
+	const sectionArray = data.result.slots[slotItemKey];
 
 	if (!Array.isArray(sectionArray)) {
 		return false;
@@ -140,8 +140,8 @@ const createSection = async (parentUri, parentSectionName) => {
 	}
 	await addSection({
 		parentUri: parentUri,
-		sectionItemName: getSectionItemName(),
-		parentSectionName: parentSectionName,
+		slotItemName: getSlotItemName(),
+		slot: parentSectionName,
 		template: template
 	})
 	return true

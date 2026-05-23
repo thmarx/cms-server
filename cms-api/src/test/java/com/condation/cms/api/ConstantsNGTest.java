@@ -36,53 +36,53 @@ public class ConstantsNGTest {
 	
 
 	@Test
-	public void test_section_pattern() {
-		Assertions.assertThat(Constants.SECTION_PATTERN.matcher("index.md").matches()).isFalse();
-		Assertions.assertThat(Constants.SECTION_PATTERN.matcher(".section.md").matches()).isFalse();
+	public void test_slot_pattern() {
+		Assertions.assertThat(Constants.SLOT_ITEM_PATTERN.matcher("index.md").matches()).isFalse();
+		Assertions.assertThat(Constants.SLOT_ITEM_PATTERN.matcher(".section.md").matches()).isFalse();
 		
-		Matcher matcher = Constants.SECTION_PATTERN.matcher("page.section.md");
+		Matcher matcher = Constants.SLOT_ITEM_PATTERN.matcher("page.section.md");
 		Assertions.assertThat(matcher.matches()).isTrue();
 		Assertions.assertThat(matcher.group(1)).isEqualTo("section");
-		Assertions.assertThat(matcher.group("section")).isEqualTo("section");
+		Assertions.assertThat(matcher.group("slot")).isEqualTo("section");
 		
-		matcher = Constants.SECTION_PATTERN.matcher("index.card.md");
+		matcher = Constants.SLOT_ITEM_PATTERN.matcher("index.card.md");
 		Assertions.assertThat(matcher.matches()).isTrue();
 		Assertions.assertThat(matcher.group(1)).isEqualTo("card");
-		Assertions.assertThat(matcher.group("section")).isEqualTo("card");
+		Assertions.assertThat(matcher.group("slot")).isEqualTo("card");
 	}
 	
 	
 	@Test
 	public void test_named_sections_pattern() {
-		Assertions.assertThat(Constants.SECTION_NAMED_PATTERN.matcher("index.md").matches()).isFalse();
-		Assertions.assertThat(Constants.SECTION_NAMED_PATTERN.matcher(".section.md").matches()).isFalse();
+		Assertions.assertThat(Constants.SLOT_ITEM_NAMED_PATTERN.matcher("index.md").matches()).isFalse();
+		Assertions.assertThat(Constants.SLOT_ITEM_NAMED_PATTERN.matcher(".section.md").matches()).isFalse();
 		
-		Matcher matcher = Constants.SECTION_NAMED_PATTERN.matcher("page.section.md");
+		Matcher matcher = Constants.SLOT_ITEM_NAMED_PATTERN.matcher("page.section.md");
 		Assertions.assertThat(matcher.matches()).isFalse();
 		
-		matcher = Constants.SECTION_NAMED_PATTERN.matcher("page.section..md");
+		matcher = Constants.SLOT_ITEM_NAMED_PATTERN.matcher("page.section..md");
 		Assertions.assertThat(matcher.matches()).isFalse();
 		
-		matcher = Constants.SECTION_NAMED_PATTERN.matcher("index.card.1.md");
+		matcher = Constants.SLOT_ITEM_NAMED_PATTERN.matcher("index.card.1.md");
 		Assertions.assertThat(matcher.matches()).isTrue();
-		Assertions.assertThat(matcher.group("section")).isEqualTo("card");
+		Assertions.assertThat(matcher.group("slot")).isEqualTo("card");
 		Assertions.assertThat(matcher.group("id")).isEqualTo("1");
 		
-		matcher = Constants.SECTION_NAMED_PATTERN.matcher("index.card.10.md");
+		matcher = Constants.SLOT_ITEM_NAMED_PATTERN.matcher("index.card.10.md");
 		Assertions.assertThat(matcher.matches()).isTrue();
-		Assertions.assertThat(matcher.group("section")).isEqualTo("card");
+		Assertions.assertThat(matcher.group("slot")).isEqualTo("card");
 		Assertions.assertThat(matcher.group("id")).isEqualTo("10");
 	}
 	
 	@Test
 	public void test_named_section_of() {
 		
-		var pattern = Constants.SECTION_NAMED_OF_PATTERN.apply("page");
+		var pattern = Constants.SLOT_ITEM_NAMED_OF_PATTERN.apply("page");
 		
 		var matcher = pattern.matcher("page.left.10.md");
 		Assertions.assertThat(matcher.matches()).isTrue();
 		
-		pattern = Constants.SECTION_NAMED_OF_PATTERN.apply("other");
+		pattern = Constants.SLOT_ITEM_NAMED_OF_PATTERN.apply("other");
 		
 		matcher = pattern.matcher("page.left.10.md");
 		Assertions.assertThat(matcher.matches()).isFalse();

@@ -23,6 +23,10 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.db.Page;
+import com.condation.cms.api.eventbus.events.ContentChangedEvent;
+import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
+import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.FileUtils;
 import com.condation.modules.api.annotation.Extension;
@@ -33,12 +37,17 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import com.condation.cms.api.ui.annotations.RemoteMethod;
 import com.condation.cms.api.ui.rpc.RPCException;
+import com.condation.cms.api.utils.HTTPUtil;
+import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.modules.ui.utils.UIPathUtil;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
+import com.condation.cms.modules.ui.model.NodeDTO;
+import com.condation.cms.modules.ui.utils.NumberUtils;
 import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -48,6 +57,69 @@ import java.util.Date;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 
+    @RemoteMethod(name = "pages.filter", permissions = {Permissions.CONTENT_EDIT})
+    public Object filterPages (Map<String, Object> parameters) throws RPCException {
+        
+        final DB db = getDB(parameters);
+        
+        var query = db.getContent().query((node, length) -> node);
+        
+        if (parameters.containsKey("contentType") && parameters.get("contentType") != null) {
+            query.contentType(parameters.get("contentType").toString());
+        }
+        
+        if (parameters.containsKey("query") && parameters.get("query") != null) {
+            query.expression(parameters.get("query").toString());
+        }
+        
+        if (parameters.containsKey("excerpt") && parameters.get("excerpt") != null) {
+            try {
+                long excerpt = Long.parseLong(parameters.get("excerpt").toString());
+                query.excerpt(excerpt);
+            } catch (NumberFormatException e) {
+                log.error("Error parsing excerpt", e);
+            }
+        }
+        
+        if (parameters.get("where") instanceof List whereClauses) {
+            for (Object clauseObj : whereClauses) {
+                if (clauseObj instanceof Map clause) {
+                    String field = (String) clause.get("field");
+                    Object value = clause.get("value");
+                    String operator = (String) clause.getOrDefault("operator", "=");
+                    query.where(field, operator, value);
+                }
+            }
+        }
+        
+        if (parameters.containsKey("orderby") && parameters.get("orderby") != null) {
+            String field = parameters.get("orderby").toString();
+            String direction = (String) parameters.getOrDefault("order", "asc");
+            if ("desc".equalsIgnoreCase(direction)) {
+                query.orderby(field).desc();
+            } else {
+                query.orderby(field).asc();
+            }
+        }
+        
+		long page = NumberUtils.toLong(parameters.getOrDefault("page", 1l));
+		long size = NumberUtils.toLong(parameters.getOrDefault("size", 5l));
+		
+        var pageList = query.page(page, size);
+		
+		var contentBase = db.getReadOnlyFileSystem().contentBase();
+		return new Page<>(pageList.getTotalItems(), pageList.getPageSize(), pageList.getTotalPages(), pageList.getPage(), 
+				pageList.getItems().stream().map(node -> {
+					var temp_path = contentBase.resolve(node.uri());
+					var url = PathUtil.toURL(temp_path, contentBase);
+					
+					url = HTTPUtil.modifyUrl(url, context);
+					
+					return new NodeDTO(url, node.data());
+				}).toList()
+		);
+    }
+    
 	@RemoteMethod(name = "page.delete", permissions = {Permissions.CONTENT_EDIT})
 	public Object deletePage(Map<String, Object> parameters) throws RPCException {
 		final DB db = getDB(parameters);
@@ -66,7 +138,7 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 			var contentFile = contentBase.resolve(uri).resolve(name);
 
 			log.debug("deleting file {}", contentFile.uri());
-			var sections = db.getContent().listSections(contentFile);
+			var sections = db.getContent().listSlotItems(contentFile);
 			Files.deleteIfExists(db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(uri).resolve(name));
 			sections.forEach(node -> {
 				try {
@@ -134,8 +206,14 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 			}
 			Files.createDirectories(newFile.getParent());
 			Files.createFile(newFile);
+			var newURI = PathUtil.toRelativeFile(newFile, contentBase);
+			getContext().get(EventBusFeature.class).eventBus()
+					.syncPublish(new ReIndexContentMetaDataEvent(newURI));
 
 			YamlHeaderUpdater.saveMarkdownFileWithHeader(newFile, meta, "");
+			
+			String url = PathUtil.toURL(newFile, contentBase);
+			result.put("uri", url);
 		} catch (Exception e) {
 			log.error("", e);
 			throw new RPCException(0, e.getMessage());

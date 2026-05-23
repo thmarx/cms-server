@@ -48,7 +48,7 @@
 				</div>
 				<div>
 					<h4>template function test</h4>
-					{{ ext.fn_message({'message': "Hello", 'color': "red"}) | raw }}
+					{{ ext.fn_message({'message': "Hello ConditionCMS", 'color': "red"}) | raw }}
 					<br/>
 					user: {{ cms.username() }} 
 				</div>
@@ -57,7 +57,7 @@
 		</div>
 
 		<div>
-			{% if node.meta.containsKey('media_url') %}
+			{% if !node.meta.empty('media_url') %}
 				{% assign media = cms.mediaService.get(node.meta.media_url) %}
 				<img src="/media/{{ media.uri }}?format=cropped" alt="{{ media.meta.alt }}" 
 					{{ ext.ui.mediaToolbar(["select", "meta", "focalPoint"], {"uri": node.uri, "element": "media_url" }) | raw }} />
@@ -65,11 +65,11 @@
 		</div>
 
 		<div class="container sections" 
-			{{ ext.ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
+			{{ ext.ui.toolbar("asection", "slot", ["addSlotItem", "orderSlotItems"], { "slot": "asection"}) | raw }}
 			>
-			{% if node.sections.containsKey('asection') %}
-				{% for section in node.sections.get('asection') %}
-					{{ section.content() | raw }}
+			{% if node.slots.containsKey('asection') %}
+				{% for item in node.slots.get('asection') %}
+					{{ item.content() | raw }}
 				{% endfor %}
 			{% endif %}
 

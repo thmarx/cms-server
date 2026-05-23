@@ -20,7 +20,6 @@ package com.condation.cms.modules.ui.http;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.configuration.configs.ServerConfiguration;
 import com.condation.cms.api.configuration.configs.SiteConfiguration;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
@@ -64,8 +63,8 @@ public class ResourceHandler extends JettyHandler {
 
 		var hookSystem = requestContext.get(HookSystemFeature.class).hookSystem();
 		var moduleManager = context.get(ModuleManagerFeature.class).moduleManager();
-
-		var actionFactory = new ActionFactory(hookSystem, moduleManager, getUser(request, context, requestContext).get());
+       	var siteProperties = context.get(ConfigurationFeature.class).configuration().get(SiteConfiguration.class).siteProperties();
+		var actionFactory = new ActionFactory(context, siteProperties, hookSystem, moduleManager, getUser(request, context, requestContext).get());
 
 		var resource = request.getHttpURI().getPath().replaceFirst(
 				managerURL("/manager/", requestContext), "");
@@ -77,7 +76,6 @@ public class ResourceHandler extends JettyHandler {
 		if (resource.endsWith(".html")) {
 			try {
 				var secret = context.get(ConfigurationFeature.class).configuration().get(ServerConfiguration.class).serverProperties().secret();
-				final SiteProperties siteProperties = context.get(ConfigurationFeature.class).configuration().get(SiteConfiguration.class).siteProperties();
 				String content = UILifecycleExtension.getInstance(context).getTemplateEngine().render(resource,
 						Map.of(
 								"actionFactory", actionFactory,

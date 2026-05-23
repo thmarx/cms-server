@@ -36,13 +36,13 @@
 			</div>
 			<hr />
 		</div>
-		{% if !empty(sections) %}
+		{% if !empty(node.slots) %}
 			<div class="container sections" 
-				{{ ext.ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
+				{{ ext.ui.toolbar("asection", "slot", ["addSlotItem", "orderSlotItems"], { "slot": "asection"}) | raw }}
 				>
-				{% if sections.containsKey('asection') %}
-					{% for section in sections.get('asection') %}
-						{{ section.content() | raw }}
+				{% if node.slots.containsKey('asection') %}
+					{% for item in node.slots.get('asection') %}
+						{{ item.content() | raw }}
 					{% endfor %}
 				{% endif %}
 
@@ -55,9 +55,9 @@
 				{% assign globals = select_node("") %}
 				{% if globals != null %}
 					<h3>load secions from start page</h3>
-					{% if globals.sections.containsKey('asection') %}
-						{% for section in globals.sections.get('asection') %}
-							{{ section.content() | raw }}
+					{% if globals.slots.containsKey('asection') %}
+						{% for item in globals.slots.get('asection') %}
+							{{ item.content() | raw }}
 						{% endfor %}
 					{% endif %}
 				{% endif %}

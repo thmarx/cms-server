@@ -29,7 +29,7 @@ const listFiles = async (options : any) => {
 	return await executeRemoteCall(data);
 };
 
-const deleteFile = async (options, any) => {
+const deleteFile = async (options : any) => {
 	var data = {
 		method: "files.delete",
 		parameters: options

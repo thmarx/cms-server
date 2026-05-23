@@ -27,7 +27,7 @@ import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.content.ContentRenderer;
-import com.condation.cms.content.Section;
+import com.condation.cms.content.SlotItem;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +51,10 @@ public class NodeFunction extends AbstractNodeFunction {
 		try {
 			var db = requestContext.get(InjectorFeature.class).injector().getInstance(DB.class);
 			var contentRenderer = requestContext.get(InjectorFeature.class).injector().getInstance(ContentRenderer.class);
-			List<ContentNode> sections = db.getContent().listSections(contentFile);
+			List<ContentNode> slotItemList = db.getContent().listSlotItems(contentFile);
 			
-			Map<String, List<Section>> renderedSections = contentRenderer.renderSections(sections, requestContext);
-			node.put("sections", renderedSections);
+			Map<String, List<SlotItem>> slotItems = contentRenderer.renderSlotItems(slotItemList, requestContext);
+			node.put("slots", slotItems);
 		} catch (IOException iOException) {
 			log.error("error loading sections", iOException);
 		}

@@ -76,3 +76,4 @@ integration-tests/hosts/test/data
 /modules/example-module/src/main/ts/node_modules/
 /modules/example-module/src/main/ts/pnpm-lock.yaml
 *.jfr
+/modules/ui-module/src/main/ts/node_modules

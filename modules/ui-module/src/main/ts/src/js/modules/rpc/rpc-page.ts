@@ -21,18 +21,56 @@
 
 import { executeRemoteCall } from '@cms/modules/rpc/rpc.js'
 
-export interface PageCreateOptions {
+export interface CreatePageOptions {
 	uri: string; // The URI of the folder where the page should be created
 	name: string; // The name of the page to be created
 	contentType: string; // Optional content type for the page
 }
-const createPage = async (options: PageCreateOptions) => {
+export interface CreatePageResponse {
+	result: {
+		uri?: string; // The URI of the created page, if successful
+		error?: string; // Error message, if any
+	}
+}
+const createPage = async (options: CreatePageOptions) : Promise<CreatePageResponse> => {
 	var data = {
 		method: "page.create",
 		parameters: options
 	}
 	return await executeRemoteCall(data);
 };
+
+export interface FilterPagesOptions {
+	where?: Field[]; // Optional list of fields to return
+	page?: number; // Für Paginierung: Start-Offset
+	size?: number; // Für Paginierung: Maximale Anzahl an Ergebnissen
+}
+export interface Field {
+	field: string;
+	operator: string;
+	value: any;
+}
+export interface ItemDto { // Renamed from previous PageDto
+	uri: string;
+	meta?: any;
+}
+export interface PageDto { // New interface for paginated response
+	totalItems: number;
+	pageSize: number;
+	totalPages: number;
+	page: number;
+	items: ItemDto[];
+}
+export interface FilterPagesResponse {
+	result: PageDto; // Now returns the paginated PageDto
+}
+const filterPages = async (options: FilterPagesOptions) : Promise<FilterPagesResponse> => {
+	var data = {
+		method: "pages.filter",
+		parameters: options
+	}
+	return await executeRemoteCall(data);
+}
 
 const deletePage = async (options: any) => {
 	var data = {
@@ -42,4 +80,4 @@ const deletePage = async (options: any) => {
 	return await executeRemoteCall(data);
 };
 
-export { createPage, deletePage };
+export { createPage, deletePage, filterPages };

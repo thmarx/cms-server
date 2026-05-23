@@ -27,6 +27,7 @@ import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.utils.NodeUtil;
 import com.condation.cms.filesystem.metadata.AbstractMetaData;
+import com.condation.cms.filesystem.metadata.PageMetaData;
 import static com.condation.cms.filesystem.metadata.memory.QueryUtil.filtered;
 import static com.condation.cms.filesystem.metadata.memory.QueryUtil.sorted;
 import com.condation.cms.filesystem.metadata.query.ExcerptMapperFunction;
@@ -144,7 +145,8 @@ public class MemoryQuery<T> extends ExtendableQuery<T> {
 		return context.getNodes()
 				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
 				.filter(node -> !node.isDirectory())
-				.filter(AbstractMetaData::isVisible)
+				.filter(PageMetaData::isPage)
+				.filter(PageMetaData::isVisible)
 				.map(context.getNodeMapper())
 				.toList();
 	}
@@ -172,7 +174,8 @@ public class MemoryQuery<T> extends ExtendableQuery<T> {
 		var filteredNodes = context.getNodes()
 				.filter(NodeUtil.contentTypeFiler(context.getContentType()))
 				.filter(node -> !node.isDirectory())
-				.filter(AbstractMetaData::isVisible)
+				.filter(PageMetaData::isPage)
+				.filter(PageMetaData::isVisible)
 				.toList();
 
 		var totalItems = filteredNodes.size();

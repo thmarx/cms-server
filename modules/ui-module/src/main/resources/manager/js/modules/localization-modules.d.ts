@@ -32,5 +32,10 @@ export namespace MODULE_LOCALIZATIONS {
         "alerts.prompt.title": string;
         "alerts.prompt.lable": string;
         "alerts.prompt.placeholder": string;
+        "page.unpublished.title": string;
+        "page.unpublished.noPages": string;
+        "page.unpublished.editLink": string;
+        "pagination.previous": string;
+        "pagination.next": string;
     };
 }

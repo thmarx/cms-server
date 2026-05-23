@@ -33,8 +33,6 @@ import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.PathUtil;
-import com.condation.cms.api.utils.SectionUtil;
-import com.condation.cms.content.Section;
 import com.condation.cms.core.content.io.ContentFileParser;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
 import com.condation.modules.api.annotation.Extension;
@@ -46,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import com.condation.cms.api.ui.annotations.RemoteMethod;
+import com.condation.cms.api.utils.SlotUtil;
+import com.condation.cms.content.SlotItem;
 import com.condation.cms.modules.ui.utils.FormHelper;
 import com.condation.cms.modules.ui.utils.MetaConverter;
 import com.condation.cms.modules.ui.utils.UIFileNameUtil;
@@ -194,8 +194,8 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		return result;
 	}
 
-	@RemoteMethod(name = "content.section.delete", permissions = {Permissions.CONTENT_EDIT})
-	public Object deleteSection(Map<String, Object> parameters) {
+	@RemoteMethod(name = "content.slotItem.delete", permissions = {Permissions.CONTENT_EDIT})
+	public Object deleteSlotItem(Map<String, Object> parameters) {
 		final DB db = getContext().get(DBFeature.class).db();
 		var uri = (String) parameters.get("uri");
 		final Path contentBase = db.getFileSystem().resolve(Constants.Folders.CONTENT);
@@ -221,21 +221,21 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		return result;
 	}
 	
-	@RemoteMethod(name = "content.section.add", permissions = {Permissions.CONTENT_EDIT})
-	public Object addSection(Map<String, Object> parameters) {
+	@RemoteMethod(name = "content.slotItem.add", permissions = {Permissions.CONTENT_EDIT})
+	public Object addSlotItem(Map<String, Object> parameters) {
 		final DB db = getContext().get(DBFeature.class).db();
 		var contentBase = db.getReadOnlyFileSystem().resolve(Constants.Folders.CONTENT);
 
 		var content = (String) parameters.getOrDefault("content", "");
 		var parentUri = (String) parameters.get("parentUri");
-		var parentSectionName = (String) parameters.get("parentSectionName");
-		var sectionItemName = (String) parameters.get("sectionItemName");
+		var slot = (String) parameters.get("slot");
+		var sectionItemName = (String) parameters.get("slotItemName");
 		var template = (String) parameters.get("template");
 
 		var title = sectionItemName;
 		sectionItemName = UIPathUtil.slugify(sectionItemName);
 		
-		var uri = UIFileNameUtil.createSectionFileName(parentUri, parentSectionName, sectionItemName);
+		var uri = UIFileNameUtil.createSlotItemFileName(parentUri, slot, sectionItemName);
 		
 		var contentFile = contentBase.resolve(uri);
 		
@@ -305,17 +305,17 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 			if (contentFile != null) {
 				result.put("uri", PathUtil.toRelativeFile(contentFile, contentBase));
 				
-				var sections = db.getContent().listSections(contentFile);
-				Map<String, List<Section>> sectionMap = new HashMap<>();
-				sections.forEach(section -> {
-					String uri = section.uri();
-					String name = SectionUtil.getSectionName(section.name());
-					var index = section.getMetaValue(Constants.MetaFields.LAYOUT_ORDER, Constants.DEFAULT_SECTION_LAYOUT_ORDER);
+				var slotItems = db.getContent().listSlotItems(contentFile);
+				Map<String, List<SlotItem>> sectionMap = new HashMap<>();
+				slotItems.forEach(slotItem -> {
+					String uri = slotItem.uri();
+					String name = SlotUtil.getSlotItemName(slotItem.name());
+					var index = slotItem.getMetaValue(Constants.MetaFields.LAYOUT_ORDER, Constants.DEFAULT_SLOT_ITEM_LAYOUT_ORDER);
 					
 					sectionMap.computeIfAbsent(name, k -> new ArrayList<>())
-						.add(new Section(section.name(), index, "", section.data(), uri));
+						.add(new SlotItem(slotItem.name(), index, "", slotItem.data(), uri));
 				});
-				result.put("sections", sectionMap);
+				result.put("slots", sectionMap);
 			}
 
 			return result;

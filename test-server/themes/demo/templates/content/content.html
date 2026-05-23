@@ -45,7 +45,7 @@
 					<h4>template function test</h4>
 					{{ ext.n_message({'message': "Hello", 'color': "red"}) | raw }}
 					<br/>
-					user: {{ username() }} 
+					user: {{ cms.username() }} 
 				</div>
 			</div>
 			<hr />
@@ -60,11 +60,11 @@
 		</div>
 
 		<div class="container sections" 
-			{{ ext.ui.toolbar("asection", "sections", ["addSection", "orderSections"], { "sectionName": "asection"}) | raw }}
+			{{ ext.ui.toolbar("asection", "slot", ["addSlotItem", "orderSlotItems"], { "sectionName": "asection"}) | raw }}
 			>
-			{% if node.sections.containsKey('asection') %}
-				{% for section in node.sections.get('asection') %}
-					{{ section.content() | raw }}
+			{% if node.slots.containsKey('asection') %}
+				{% for item in node.slots.get('asection') %}
+					{{ item.content() | raw }}
 				{% endfor %}
 			{% endif %}
 
