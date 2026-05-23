@@ -43,6 +43,7 @@ import com.condation.modules.api.ModuleManager;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +104,8 @@ public class JettyServer implements AutoCloseable {
 	}
 
 	public void startup() throws IOException {
+        
+        globalInjector.getInstance(MeterRegistry.class);
 
 		var properties = globalInjector.getInstance(ServerProperties.class);
 
