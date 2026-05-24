@@ -20,24 +20,20 @@ package com.condation.cms.templates.tags;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 import com.condation.cms.templates.Tag;
 import com.condation.cms.templates.exceptions.RenderException;
 import com.condation.cms.templates.exceptions.TagException;
 import com.condation.cms.templates.parser.TagNode;
 import com.condation.cms.templates.renderer.Renderer;
+
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- *
- * @author t.marx
- */
 public class ForTag implements Tag {
 
 	@Override
@@ -47,71 +43,134 @@ public class ForTag implements Tag {
 
 	@Override
 	public Set<String> getCloseTagNames() {
-		return Set.of(
-                "endfor",
-                "/for"
-        );
+		return Set.of("endfor", "/for");
 	}
 
 	@Override
 	public void render(TagNode node, Renderer.Context context, Writer writer) {
-		var forCondition = parseForLoop(node);
 
-		var colExp = context.engine().createExpression(forCondition.collection);
-		
-		var collection = colExp.evaluate(context.createEngineContext());
-		
-		if (collection == null || !(collection instanceof Collection)) {
-			throw new TagException("variable '%s' not found".formatted(forCondition.collection), node.getLine(), node.getColumn());
-		}
+		ForDefinition def = parseForLoop(node);
 
-		var index = 0;
-		for (var item : (Collection) collection) {
-			var loop = new Loop(index++);
-			context.scopes().pushScope(
-					Map.of(
-							"loop", loop,
-							forCondition.variable, item
-					)
-			);
+		Object value = context.engine()
+				.createExpression(def.collection())
+				.evaluate(context.createEngineContext());
+
+		Iterable<?> iterable = resolveIterable(value, node);
+
+		int index = 0;
+
+		for (Object item : iterable) {
+
+			Map<String, Object> loopScope = new HashMap<>();
+			loopScope.put("loop", new Loop(index++));
+
+			applyIterationVariables(loopScope, def, item);
+
+			context.scopes().pushScope(loopScope);
+
 			try {
 				for (var child : node.getChildren()) {
 					context.renderer().render(child, context, writer);
 				}
-			} catch (IOException ioe) {
-				throw new RenderException(ioe.getMessage(), node.getLine(), node.getColumn());
+			} catch (IOException e) {
+				throw new RenderException(e.getMessage(), node.getLine(), node.getColumn());
 			} finally {
 				context.scopes().popScope();
 			}
 		}
 	}
 
-	private ForDefinition parseForLoop(TagNode node) {
-		var loopDefinition = node.getCondition();
-		// Überprüfen, ob der String das richtige Format hat
-		if (!loopDefinition.contains(" in ")) {
-			throw new IllegalArgumentException("Ungültige Schleifendefinition: " + loopDefinition);
+	/**
+	 * Converts supported structures into iterable form
+	 */
+	private Iterable<?> resolveIterable(Object value, TagNode node) {
+
+		if (value == null) {
+			throw new TagException("Iterable is null", node.getLine(), node.getColumn());
 		}
 
-		// Extrahiere die Variable und die Collection
-		String[] parts = loopDefinition.split(" in ");
-		if (parts.length != 2) {
-			throw new IllegalArgumentException("Ungültige Schleifendefinition: " + loopDefinition);
+		if (value instanceof Iterable<?> iterable) {
+			return iterable;
 		}
 
-		String variable = parts[0].trim();
-		String collectionName = parts[1].trim();
+		if (value instanceof Map<?, ?> map) {
+			return map.entrySet();
+		}
 
-		return new ForDefinition(collectionName, variable);
+		throw new TagException(
+				"Unsupported iterable type: " + value.getClass().getName(),
+				node.getLine(),
+				node.getColumn()
+		);
 	}
 
-	private static record ForDefinition(String collection, String variable) {
+	/**
+	 * Handles variable binding inside loop scope
+	 */
+	private void applyIterationVariables(Map<String, Object> scope, ForDefinition def, Object item) {
 
+		// Map iteration: "key, value in map"
+		if (item instanceof Map.Entry<?, ?> entry && def.isMapEntry()) {
+
+			scope.put(def.variable1(), entry.getKey());
+			scope.put(def.variable2(), entry.getValue());
+
+		} else {
+			scope.put(def.variable1(), item);
+		}
+	}
+
+	/**
+	 * Parses:
+	 * - "item in list"
+	 * - "key, value in map"
+	 */
+	private ForDefinition parseForLoop(TagNode node) {
+
+		String expr = node.getCondition();
+
+		if (!expr.contains(" in ")) {
+			throw new TagException("Invalid for-loop syntax: " + expr, node.getLine(), node.getColumn());
+		}
+
+		String[] parts = expr.split(" in ");
+
+		if (parts.length != 2) {
+			throw new TagException("Invalid for-loop syntax: " + expr, node.getLine(), node.getColumn());
+		}
+
+		String varPart = parts[0].trim();
+		String collection = parts[1].trim();
+
+		if (varPart.contains(",")) {
+			String[] vars = varPart.split(",");
+			if (vars.length != 2) {
+				throw new TagException("Invalid map iteration syntax: " + expr, node.getLine(), node.getColumn());
+			}
+
+			return new ForDefinition(
+					collection,
+					vars[0].trim(),
+					vars[1].trim()
+			);
+		}
+
+		return new ForDefinition(collection, varPart.trim(), null);
 	}
 
 	@RequiredArgsConstructor
 	public static class Loop {
 		@Getter
 		public final int index;
+	}
+
+	private static record ForDefinition(
+			String collection,
+			String variable1,
+			String variable2
+	) {
+		boolean isMapEntry() {
+			return variable2 != null;
+		}
 	}
 }
