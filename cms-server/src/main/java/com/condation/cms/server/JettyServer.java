@@ -105,6 +105,7 @@ public class JettyServer implements AutoCloseable {
 
 	public void startup() throws IOException {
         
+        // init metrics
         globalInjector.getInstance(MeterRegistry.class);
 
 		var properties = globalInjector.getInstance(ServerProperties.class);
