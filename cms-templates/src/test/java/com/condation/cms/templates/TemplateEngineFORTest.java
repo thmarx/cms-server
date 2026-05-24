@@ -120,11 +120,12 @@ public class TemplateEngineFORTest extends AbstractTemplateEngineTest {
 
         Template template = SUT.getTemplate("map");
 
+        var data = new LinkedHashMap<>();
+        data.put("a", 1);
+        data.put("b", 2);
+        
         Map<String, Object> context = Map.of(
-                "data", new LinkedHashMap<>(Map.of(
-                        "a", 1,
-                        "b", 2
-                ))
+                "data", data
         );
 
         Assertions.assertThat(template.evaluate(context))
@@ -141,11 +142,12 @@ public class TemplateEngineFORTest extends AbstractTemplateEngineTest {
 
         Template template = SUT.getTemplate("map_entry_loop");
 
+        var data = new LinkedHashMap<>();
+        data.put("a", 1);
+        data.put("b", 2);
+        
         Map<String, Object> context = Map.of(
-                "data", new LinkedHashMap<>(Map.of(
-                        "a", 1,
-                        "b", 2
-                ))
+                "data", data
         );
 
         Assertions.assertThat(template.evaluate(context))
