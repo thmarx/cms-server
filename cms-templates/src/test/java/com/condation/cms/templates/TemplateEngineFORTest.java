@@ -20,7 +20,6 @@ package com.condation.cms.templates;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 import com.condation.cms.templates.loaders.StringTemplateLoader;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -69,7 +68,30 @@ public class TemplateEngineFORTest extends AbstractTemplateEngineTest {
                    {% for item in list %}
                        <li>{{ item }}</li>
                    {% endfor %}
-                   """);
+                   """)
+                // RANGE ASCENDING
+                .add("range", """
+                    {% for i in 1..5 %}
+                        <li>{{ i }}</li>
+                    {% endfor %}
+                    """)
+                // RANGE DESCENDING
+                .add("range_desc", """
+                    {% for i in 5..1 %}
+                        <li>{{ i }}</li>
+                    {% endfor %}
+                    """)
+                // RANGE WITH EXPRESSION
+                .add("range_expression", """
+                    {% for i in (1..page.totalPages) %}
+                        <li>{{ i }}</li>
+                    {% endfor %}
+                    """)
+                .add("range_index", """
+                    {% for i in 3..5 %}
+                        <li>{{ loop.getIndex() }}={{ i }}</li>
+                    {% endfor %}
+                    """);
     }
 
     @Test
@@ -123,7 +145,7 @@ public class TemplateEngineFORTest extends AbstractTemplateEngineTest {
         var data = new LinkedHashMap<>();
         data.put("a", 1);
         data.put("b", 2);
-        
+
         Map<String, Object> context = Map.of(
                 "data", data
         );
@@ -145,7 +167,7 @@ public class TemplateEngineFORTest extends AbstractTemplateEngineTest {
         var data = new LinkedHashMap<>();
         data.put("a", 1);
         data.put("b", 2);
-        
+
         Map<String, Object> context = Map.of(
                 "data", data
         );
@@ -182,5 +204,87 @@ public class TemplateEngineFORTest extends AbstractTemplateEngineTest {
 
         Assertions.assertThat(template.evaluate(context))
                 .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range() throws IOException {
+
+        var expected = """
+             <li>1</li>
+             <li>2</li>
+             <li>3</li>
+             <li>4</li>
+             <li>5</li>
+             """;
+
+        Template template = SUT.getTemplate("range");
+
+        Assertions.assertThat(template.evaluate(Map.of()))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range_descending() throws IOException {
+
+        var expected = """
+             <li>5</li>
+             <li>4</li>
+             <li>3</li>
+             <li>2</li>
+             <li>1</li>
+             """;
+
+        Template template = SUT.getTemplate("range_desc");
+
+        Assertions.assertThat(template.evaluate(Map.of()))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range_expression() throws IOException {
+
+        var expected = """
+             <li>1</li>
+             <li>2</li>
+             <li>3</li>
+             <li>4</li>
+             """;
+
+        Template template = SUT.getTemplate("range_expression");
+
+        Map<String, Object> context = Map.of(
+                "page", new Page(4)
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range_with_index() throws IOException {
+
+        var expected = """
+             <li>0=3</li>
+             <li>1=4</li>
+             <li>2=5</li>
+             """;
+
+        Template template = SUT.getTemplate("range_index");
+
+        Assertions.assertThat(template.evaluate(Map.of()))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    public static class Page {
+
+        private final int totalPages;
+
+        public Page(int totalPages) {
+            this.totalPages = totalPages;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
     }
 }
