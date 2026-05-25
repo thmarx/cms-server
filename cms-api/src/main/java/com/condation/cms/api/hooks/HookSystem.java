@@ -56,21 +56,59 @@ public class HookSystem {
 
 	public void register(Object sourceObject) {
 		// Action-Methoden registrieren
-		List<AnnotationsUtil.CMSAnnotation<Action, Void>> actionMethods
-				= AnnotationsUtil.process(sourceObject, Action.class, List.of(ActionContext.class), Void.class);
+		List<AnnotationsUtil.CMSAnnotation<Action, Object>> actionMethods
+				= AnnotationsUtil.process(sourceObject, Action.class);
 
-		for (AnnotationsUtil.CMSAnnotation<Action, Void> ann : actionMethods) {
+		for (AnnotationsUtil.CMSAnnotation<Action, Object> ann : actionMethods) {
 			Action annotation = ann.annotation();
-			registerAction(annotation.value(), context -> ann.invoke(context), annotation.priority());
+			if (ann.method().getParameterCount() == 1 && ann.method().getParameterTypes()[0].equals(ActionContext.class)) {
+				registerAction(annotation.value(), context -> {
+					ann.invoke(context);
+					return null;
+				}, annotation.priority());
+			} else {
+				registerAction(annotation.value(), context -> {
+					java.lang.reflect.Parameter[] parameters = ann.method().getParameters();
+					Object[] args = new Object[parameters.length];
+					for (int i = 0; i < parameters.length; i++) {
+						if (parameters[i].getType().equals(ActionContext.class)) {
+							args[i] = context;
+						} else {
+							args[i] = context.arguments().get(parameters[i].getName());
+						}
+					}
+					return ann.invoke(args);
+				}, annotation.priority());
+			}
 		}
 
 		// Filter-Methoden registrieren
 		List<AnnotationsUtil.CMSAnnotation<Filter, Object>> filterMethods
-				= AnnotationsUtil.process(sourceObject, Filter.class, List.of(FilterContext.class), Object.class);
+				= AnnotationsUtil.process(sourceObject, Filter.class);
 
 		for (AnnotationsUtil.CMSAnnotation<Filter, Object> ann : filterMethods) {
 			Filter annotation = ann.annotation();
-			registerFilter(annotation.value(), context -> ann.invoke(context), annotation.priority());
+			if (ann.method().getParameterCount() == 1 && ann.method().getParameterTypes()[0].equals(FilterContext.class)) {
+				registerFilter(annotation.value(), context -> ann.invoke(context), annotation.priority());
+			} else {
+				registerFilter(annotation.value(), context -> {
+					java.lang.reflect.Parameter[] parameters = ann.method().getParameters();
+					Object[] args = new Object[parameters.length];
+					if (parameters.length > 0) {
+						args[0] = context.value();
+						for (int i = 1; i < parameters.length; i++) {
+							if (parameters[i].getType().equals(FilterContext.class)) {
+								args[i] = context;
+							} else {
+								// We don't have a map of arguments for filters in the current FilterContext
+								// So we just pass null for other parameters for now, or maybe we can extend FilterContext later
+								args[i] = null;
+							}
+						}
+					}
+					return ann.invoke(args);
+				}, annotation.priority());
+			}
 		}
 	}
 

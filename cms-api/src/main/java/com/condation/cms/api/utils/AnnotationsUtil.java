@@ -48,7 +48,7 @@ public class AnnotationsUtil {
 		Objects.requireNonNull(annotationClass);
 		Objects.requireNonNull(parameters);
 
-		List<CMSAnnotation<A, R>> result = new ArrayList();
+		List<CMSAnnotation<A, R>> result = new ArrayList<>();
 		Class<?> clazz = target.getClass();
 		for (Method method : clazz.getMethods()) {
 			if (!method.isAnnotationPresent(annotationClass)) {
@@ -60,9 +60,39 @@ public class AnnotationsUtil {
 
 			A annotation = method.getAnnotation(annotationClass);
 
-			result.add(new CMSAnnotation<>(annotation, (params) -> {
+			result.add(new CMSAnnotation<>(annotation, method, (params) -> {
 				try {
 					return (R) method.invoke(target, params);
+				} catch (IllegalAccessException | InvocationTargetException ex) {
+					log.error("", ex);
+					throw new AnnotationExecutionException(ex.getMessage());
+				}
+			}));
+		}
+
+		return result;
+	}
+
+	public static <A extends Annotation> List<CMSAnnotation<A, Object>> process(Object target, Class<A> annotationClass) {
+		Objects.requireNonNull(target);
+		Objects.requireNonNull(annotationClass);
+
+		List<CMSAnnotation<A, Object>> result = new ArrayList<>();
+		Class<?> clazz = target.getClass();
+		for (Method method : clazz.getMethods()) {
+			if (!method.isAnnotationPresent(annotationClass)) {
+				continue;
+			}
+
+			if (!Modifier.isPublic(method.getModifiers())) {
+				continue;
+			}
+
+			A annotation = method.getAnnotation(annotationClass);
+
+			result.add(new CMSAnnotation<>(annotation, method, (params) -> {
+				try {
+					return method.invoke(target, params);
 				} catch (IllegalAccessException | InvocationTargetException ex) {
 					log.error("", ex);
 					throw new AnnotationExecutionException(ex.getMessage());
@@ -105,7 +135,7 @@ public class AnnotationsUtil {
 		return true;
 	}
 
-	public record CMSAnnotation<A extends Annotation, R>(A annotation, Function<Object[], R> function) {
+	public record CMSAnnotation<A extends Annotation, R>(A annotation, Method method, Function<Object[], R> function) {
 
 		public R invoke(Object... parameters) {
 			return function.apply(parameters);
