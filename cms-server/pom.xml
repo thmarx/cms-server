@@ -44,6 +44,10 @@
         </dependency>
         <dependency>
             <groupId>com.condation.cms</groupId>
+            <artifactId>cms-hooksystem</artifactId>
+        </dependency>
+		<dependency>
+            <groupId>com.condation.cms</groupId>
             <artifactId>cms-auth</artifactId>
         </dependency>
 		

@@ -33,7 +33,8 @@ import com.condation.cms.core.cache.LocalCacheProvider;
 import com.condation.cms.core.scheduler.SingleCronJobScheduler;
 import com.condation.cms.core.scheduler.SiteCronJobScheduler;
 import com.condation.cms.extensions.GlobalExtensions;
-import com.condation.cms.extensions.hooks.GlobalHooks;
+import com.condation.cms.hooksystem.CMSHookSystem;
+import com.condation.cms.hooksystem.extensions.GlobalHooks;
 import com.condation.modules.api.ModuleManager;
 import com.google.inject.Binder;
 import com.google.inject.Injector;
@@ -75,7 +76,7 @@ public class SiteGlobalModule implements com.google.inject.Module {
 	@Singleton
 	@Named("global")
 	public HookSystem hookSystem () {
-		return new HookSystem();
+		return new CMSHookSystem();
 	}
 	
 	@Provides

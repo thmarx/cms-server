@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -22,10 +22,12 @@ package com.condation.cms.extensions.hooks;
  */
 
 
-import com.condation.cms.api.hooks.HookSystem;
-import com.condation.cms.api.hooks.Hooks;
-import com.condation.cms.api.scheduler.CronJobScheduler;
+import com.condation.cms.api.Constants;
+import com.condation.cms.api.model.Parameter;
+import com.google.common.base.Strings;
 import java.util.Map;
+import java.util.function.Function;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -33,15 +35,18 @@ import lombok.RequiredArgsConstructor;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class GlobalHooks {
-	private final HookSystem globalHookSystem;
-	
-	private final CronJobScheduler scheduler;
-	
-	public void registerCronJob () {
-		globalHookSystem.doAction(Hooks.SCHEDULER_REGISTER.hook(), Map.of("scheduler", scheduler));
+public class TagsWrapper {
+
+	@Getter
+	private final Map<String, Function<Parameter, String>> tags;
+
+	public void put(final String namespace, final String tag, final Function<Parameter, String> function) {
+        var ns = !Strings.isNullOrEmpty(namespace) ? namespace : "ext";
+        var key = "%s:%s".formatted(ns, tag);
+		tags.put(key, function);
 	}
-	public void removeCronJob () {
-		globalHookSystem.doAction(Hooks.SCHEDULER_REMOVE.hook(), Map.of("scheduler", scheduler));
-	}
+    
+    public void put (final String tag, final Function<Parameter, String> function) {
+        put(Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE, tag, function);
+    }
 }

@@ -30,7 +30,7 @@ import com.condation.cms.api.model.Parameter;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.theme.Theme;
-import com.condation.cms.extensions.hooks.TemplateHooks;
+import com.condation.cms.hooksystem.extensions.TemplateHooks;
 import com.condation.cms.templates.CMSTemplateEngine;
 import com.condation.cms.templates.DynamicConfiguration;
 import com.condation.cms.templates.TemplateEngineFactory;

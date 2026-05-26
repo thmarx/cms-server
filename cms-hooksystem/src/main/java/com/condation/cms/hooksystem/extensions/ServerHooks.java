@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -38,18 +38,32 @@ import lombok.RequiredArgsConstructor;
 @Experimental
 @RequiredArgsConstructor
 @FeatureScope(FeatureScope.Scope.REQUEST)
-public class DBHooks implements Feature {
+public class ServerHooks implements Feature {
 	
 	private final RequestContext requestContext;
 	
 	
-	public QueryOperationsWrapper getQueryOperations () {
-		var wrapper = new QueryOperationsWrapper();
+	public HttpHandlerWrapper getHttpExtensions () {
+		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.doAction(Hooks.DB_QUERY_OPERATIONS.hook(), Map.of("operations", wrapper));
+				.doAction(Hooks.HTTP_EXTENSION.hook(), Map.of("httpExtensions", httpExtensions));
 		
-		return wrapper;
+		return httpExtensions;
 	}
 	
-	
+	public HttpHandlerWrapper getHttpRoutes () {
+		var httpExtensions = new HttpHandlerWrapper();
+		requestContext.get(HookSystemFeature.class).hookSystem()
+				.doAction(Hooks.HTTP_ROUTE.hook(), Map.of("httpRoutes", httpExtensions));
+		
+		return httpExtensions;
+	}
+
+	public HttpHandlerWrapper getAPIRoutes () {
+		var httpExtensions = new HttpHandlerWrapper();
+		requestContext.get(HookSystemFeature.class).hookSystem()
+				.doAction(Hooks.API_ROUTE.hook(), Map.of("apiRoutes", httpExtensions));
+		
+		return httpExtensions;
+	}
 }

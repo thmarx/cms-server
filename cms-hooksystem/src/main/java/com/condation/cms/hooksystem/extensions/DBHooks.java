@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -27,10 +27,8 @@ import com.condation.cms.api.annotations.FeatureScope;
 import com.condation.cms.api.feature.Feature;
 import com.condation.cms.api.feature.features.HookSystemFeature;
 import com.condation.cms.api.hooks.Hooks;
-import com.condation.cms.api.model.Parameter;
 import com.condation.cms.api.request.RequestContext;
 import java.util.Map;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -40,32 +38,18 @@ import lombok.RequiredArgsConstructor;
 @Experimental
 @RequiredArgsConstructor
 @FeatureScope(FeatureScope.Scope.REQUEST)
-public class TemplateHooks implements Feature {
+public class DBHooks implements Feature {
 	
 	private final RequestContext requestContext;
 	
 	
-	public TemplateSupplierWrapper getTemplateSupplier () {
-		var templateSupplier = new TemplateSupplierWrapper();
+	public QueryOperationsWrapper getQueryOperations () {
+		var wrapper = new QueryOperationsWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.doAction(Hooks.TEMPLATE_SUPPLIER.hook(), Map.of("suppliers", templateSupplier));
+				.doAction(Hooks.DB_QUERY_OPERATIONS.hook(), Map.of("operations", wrapper));
 		
-		return templateSupplier;
+		return wrapper;
 	}
 	
-	public TemplateFunctionWrapper getTemplateFunctions () {
-		var templateFunctions = new TemplateFunctionWrapper();
-		requestContext.get(HookSystemFeature.class).hookSystem()
-				.doAction(Hooks.TEMPLATE_FUNCTION.hook(), Map.of("functions", templateFunctions));
-		
-		return templateFunctions;
-	}
 	
-	public TemplateComponentsWrapper getComponents (Map<String, Function<Parameter, String>> components) {
-		var componentsWrapper = new TemplateComponentsWrapper(components);
-		requestContext.get(HookSystemFeature.class).hookSystem()
-				.doAction(Hooks.TEMPLATE_COMPONENT.hook(), Map.of("components", componentsWrapper));
-		
-		return componentsWrapper;
-	}
 }

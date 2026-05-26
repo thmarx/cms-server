@@ -1,4 +1,6 @@
-package com.condation.cms.api.hooks;
+package com.condation.cms.hooksystem;
+
+import com.condation.cms.api.hooks.ActionFunction;
 
 /*-
  * #%L

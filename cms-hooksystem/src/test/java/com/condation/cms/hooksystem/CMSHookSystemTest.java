@@ -1,4 +1,4 @@
-package com.condation.cms.api.hooks;
+package com.condation.cms.hooksystem;
 
 /*-
  * #%L
@@ -24,6 +24,8 @@ package com.condation.cms.api.hooks;
 
 import com.condation.cms.api.annotations.Filter;
 import com.condation.cms.api.annotations.Action;
+import com.condation.cms.api.hooks.ActionContext;
+import com.condation.cms.api.hooks.FilterContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,13 +37,13 @@ import org.junit.jupiter.api.Test;
  *
  * @author t.marx
  */
-public class HookSystemTest {
+public class CMSHookSystemTest {
 
-	private HookSystem hookSystem;
+	private CMSHookSystem hookSystem;
 	
 	@BeforeEach
 	public void setup() {
-		hookSystem = new HookSystem();
+		hookSystem = new CMSHookSystem();
 	}
 
 	@Test

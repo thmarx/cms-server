@@ -22,6 +22,7 @@ package com.condation.cms.content.pipeline;
  */
 import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.hooks.Hooks;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +35,7 @@ class HTMLPipelineTest {
 
 	@BeforeEach
 	void setUp() {
-		hookSystem = new HookSystem();
+		hookSystem = new CMSHookSystem();
 		pipeline = new HTMLPipeline(hookSystem);
 	}
 

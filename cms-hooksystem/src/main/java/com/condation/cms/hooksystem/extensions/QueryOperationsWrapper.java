@@ -1,8 +1,8 @@
-package com.condation.cms.api.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
- * CMS Api
+ * CMS Extensions
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -22,10 +22,20 @@ package com.condation.cms.api.hooks;
  */
 
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiPredicate;
+import lombok.Getter;
+
 /**
  *
  * @author t.marx
  */
-public interface Hook {
+public class QueryOperationsWrapper {
+	@Getter
+	private final Map<String, BiPredicate<Object, Object>> operations = new HashMap<>();
 	
+	public void add (final String operation, final BiPredicate<Object, Object> predicate) {
+		operations.put(operation, predicate);
+	}
 }

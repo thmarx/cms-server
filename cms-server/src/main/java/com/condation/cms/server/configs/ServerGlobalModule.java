@@ -38,6 +38,7 @@ import com.condation.cms.core.eventbus.MessagingEventBus;
 import com.condation.cms.core.messaging.DefaultMessaging;
 import com.condation.cms.core.scheduler.ServerCronJobScheduler;
 import com.condation.cms.core.site.DefaultSiteService;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import com.condation.modules.api.ModuleManager;
 import com.condation.modules.manager.ModuleAPIClassLoader;
 import com.condation.modules.manager.ModuleManagerImpl;
@@ -165,7 +166,7 @@ public class ServerGlobalModule implements com.google.inject.Module {
     @Singleton
     @Named("server")
     public HookSystem hookSystem() {
-        return new HookSystem();
+        return new CMSHookSystem();
     }
 
     @Provides

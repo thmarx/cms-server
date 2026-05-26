@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -22,32 +22,26 @@ package com.condation.cms.extensions.hooks;
  */
 
 
-import com.condation.cms.api.annotations.Experimental;
-import com.condation.cms.api.annotations.FeatureScope;
-import com.condation.cms.api.feature.Feature;
-import com.condation.cms.api.feature.features.HookSystemFeature;
+import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.hooks.Hooks;
-import com.condation.cms.api.model.Parameter;
-import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.scheduler.CronJobScheduler;
 import java.util.Map;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@Experimental
 @RequiredArgsConstructor
-@FeatureScope(FeatureScope.Scope.REQUEST)
-public class ContentHooks implements Feature {
+public class GlobalHooks {
+	private final HookSystem globalHookSystem;
 	
-	private final RequestContext requestContext;
+	private final CronJobScheduler scheduler;
 	
-	public TagsWrapper getTags (Map<String, Function<Parameter, String>> codes) {
-		var codeWrapper = new TagsWrapper(codes);
-		requestContext.get(HookSystemFeature.class).hookSystem()
-				.doAction(Hooks.CONTENT_TAGS.hook(), Map.of("tags", codeWrapper));
-		return codeWrapper;
+	public void registerCronJob () {
+		globalHookSystem.doAction(Hooks.SCHEDULER_REGISTER.hook(), Map.of("scheduler", scheduler));
+	}
+	public void removeCronJob () {
+		globalHookSystem.doAction(Hooks.SCHEDULER_REMOVE.hook(), Map.of("scheduler", scheduler));
 	}
 }
