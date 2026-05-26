@@ -48,7 +48,7 @@ public class HTMLPipeline {
 			return rawContent;
 		}
 		
-		var result = hookSystem.execute(hook.hook());
+		var result = hookSystem.doAction(hook.hook());
 		
 		var hookValues = result.results().stream()
 				.filter(Objects::nonNull)

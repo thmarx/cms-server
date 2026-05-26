@@ -48,7 +48,7 @@ public class TemplateHooks implements Feature {
 	public TemplateSupplierWrapper getTemplateSupplier () {
 		var templateSupplier = new TemplateSupplierWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.TEMPLATE_SUPPLIER.hook(), Map.of("suppliers", templateSupplier));
+				.doAction(Hooks.TEMPLATE_SUPPLIER.hook(), Map.of("suppliers", templateSupplier));
 		
 		return templateSupplier;
 	}
@@ -56,7 +56,7 @@ public class TemplateHooks implements Feature {
 	public TemplateFunctionWrapper getTemplateFunctions () {
 		var templateFunctions = new TemplateFunctionWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.TEMPLATE_FUNCTION.hook(), Map.of("functions", templateFunctions));
+				.doAction(Hooks.TEMPLATE_FUNCTION.hook(), Map.of("functions", templateFunctions));
 		
 		return templateFunctions;
 	}
@@ -64,7 +64,7 @@ public class TemplateHooks implements Feature {
 	public TemplateComponentsWrapper getComponents (Map<String, Function<Parameter, String>> components) {
 		var componentsWrapper = new TemplateComponentsWrapper(components);
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.TEMPLATE_COMPONENT.hook(), Map.of("components", componentsWrapper));
+				.doAction(Hooks.TEMPLATE_COMPONENT.hook(), Map.of("components", componentsWrapper));
 		
 		return componentsWrapper;
 	}

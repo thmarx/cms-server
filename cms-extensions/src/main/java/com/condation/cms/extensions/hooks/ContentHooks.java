@@ -47,7 +47,7 @@ public class ContentHooks implements Feature {
 	public TagsWrapper getTags (Map<String, Function<Parameter, String>> codes) {
 		var codeWrapper = new TagsWrapper(codes);
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.CONTENT_TAGS.hook(), Map.of("tags", codeWrapper));
+				.doAction(Hooks.CONTENT_TAGS.hook(), Map.of("tags", codeWrapper));
 		return codeWrapper;
 	}
 }

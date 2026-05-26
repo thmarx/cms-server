@@ -55,7 +55,7 @@ public class HookHandler extends JettyHandler {
 
 		String body = getBody(request);
 		var command = UIGsonProvider.INSTANCE.fromJson(body, HookCall.class);
-		ActionContext<?> actionContext  = hookSystem.execute(command.hook(), command.parameters());
+		ActionContext<?> actionContext  = hookSystem.doAction(command.hook(), command.parameters());
 		
 		Map<String, Object> commandResponse = new HashMap<>();
 		commandResponse.put("hook", command.hook());

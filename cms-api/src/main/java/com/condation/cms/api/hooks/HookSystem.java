@@ -88,11 +88,11 @@ public class HookSystem {
 		filters.put(name, new FilterHook<>(name, priority, hookFunction));
 	}
 
-	public ActionContext<Object> execute(final String name) {
-		return execute(name, Map.of());
+	public ActionContext<Object> doAction(final String name) {
+		return HookSystem.this.doAction(name, Map.of());
 	}
 
-	public ActionContext<Object> execute(final String name, final Map<String, Object> arguments) {
+	public ActionContext<Object> doAction(final String name, final Map<String, Object> arguments) {
 		var context = new ActionContext(new HashMap<>(arguments), new ArrayList<>());
 		actions.get(name).stream()
 				.sorted((h1, h2) -> Integer.compare(h1.priority(), h2.priority()))
@@ -119,7 +119,7 @@ public class HookSystem {
 	 * @param parameters
 	 * @return
 	 */
-	public <T> FilterContext<T> filter(final String name, final T parameters) {
+	public <T> FilterContext<T> doFilter(final String name, final T parameters) {
 		final FilterContext<T> returnContext = new FilterContext(
 				parameters
 		);

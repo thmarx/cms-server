@@ -39,9 +39,9 @@ public class GlobalHooks {
 	private final CronJobScheduler scheduler;
 	
 	public void registerCronJob () {
-		globalHookSystem.execute(Hooks.SCHEDULER_REGISTER.hook(), Map.of("scheduler", scheduler));
+		globalHookSystem.doAction(Hooks.SCHEDULER_REGISTER.hook(), Map.of("scheduler", scheduler));
 	}
 	public void removeCronJob () {
-		globalHookSystem.execute(Hooks.SCHEDULER_REMOVE.hook(), Map.of("scheduler", scheduler));
+		globalHookSystem.doAction(Hooks.SCHEDULER_REMOVE.hook(), Map.of("scheduler", scheduler));
 	}
 }

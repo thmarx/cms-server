@@ -46,7 +46,7 @@ public class ServerHooks implements Feature {
 	public HttpHandlerWrapper getHttpExtensions () {
 		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.HTTP_EXTENSION.hook(), Map.of("httpExtensions", httpExtensions));
+				.doAction(Hooks.HTTP_EXTENSION.hook(), Map.of("httpExtensions", httpExtensions));
 		
 		return httpExtensions;
 	}
@@ -54,7 +54,7 @@ public class ServerHooks implements Feature {
 	public HttpHandlerWrapper getHttpRoutes () {
 		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.HTTP_ROUTE.hook(), Map.of("httpRoutes", httpExtensions));
+				.doAction(Hooks.HTTP_ROUTE.hook(), Map.of("httpRoutes", httpExtensions));
 		
 		return httpExtensions;
 	}
@@ -62,7 +62,7 @@ public class ServerHooks implements Feature {
 	public HttpHandlerWrapper getAPIRoutes () {
 		var httpExtensions = new HttpHandlerWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.API_ROUTE.hook(), Map.of("apiRoutes", httpExtensions));
+				.doAction(Hooks.API_ROUTE.hook(), Map.of("apiRoutes", httpExtensions));
 		
 		return httpExtensions;
 	}
