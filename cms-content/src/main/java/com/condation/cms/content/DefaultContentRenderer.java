@@ -49,6 +49,7 @@ import com.condation.cms.api.utils.SlotUtil;
 import com.condation.cms.content.pipeline.ContentPipelineFactory;
 import com.condation.cms.content.views.model.View;
 import com.condation.cms.api.content.MapAccess;
+import com.condation.cms.content.pipeline.HTMLPipeline;
 import com.condation.cms.extensions.hooks.DBHooks;
 import com.condation.cms.extensions.hooks.TemplateHooks;
 import com.condation.cms.content.template.functions.LinkFunction;
@@ -218,7 +219,10 @@ public class DefaultContentRenderer implements ContentRenderer {
 		
 		model.values.putAll(namespace.getNamespaces());
 
-		return templates.get().render((String) meta.get("template"), model);
+		var htmlContent = templates.get().render((String) meta.get("template"), model);
+		
+		HTMLPipeline htmlPipeline = new HTMLPipeline(context.get(HookSystemFeature.class).hookSystem());
+		return htmlPipeline.process(htmlContent);
 	}
 
 	protected MarkdownFunction createMarkdownFunction(final RequestContext context) {

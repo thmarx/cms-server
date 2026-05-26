@@ -63,7 +63,7 @@ public class ContentPipeline {
 		});
 
 	}
-
+	
 	public String process(String rawContent) {
 		return hookSystem.filter(Hooks.CONTENT_FILTER.hook(), rawContent).value();
 	}
