@@ -20,64 +20,271 @@ package com.condation.cms.templates;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 import com.condation.cms.templates.loaders.StringTemplateLoader;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- *
- * @author thmar
- */
 public class TemplateEngineFORTest extends AbstractTemplateEngineTest {
 
-	
-	@Override
-	public TemplateLoader getLoader() {
-		return new StringTemplateLoader()
-				.add("simple", """
+    @Override
+    public TemplateLoader getLoader() {
+        return new StringTemplateLoader()
+                // LIST ITERATION
+                .add("simple", """
                    {% for name in names %}
-						<li>{{ name }}</li>
+                       <li>{{ name }}</li>
                    {% endfor %}
                    """)
-				.add("index", """
+                // LOOP INDEX
+                .add("index", """
                    {% for name in names %}
-						<li>{{ loop.getIndex() }}</li>
+                       <li>{{ loop.getIndex() }}</li>
                    {% /for %}
-                   """);
-	}
-	
-	@Test
-	public void test_for() throws IOException {
-		
-		var expected = """
+                   """)
+                // MAP ITERATION (key/value)
+                .add("map", """
+                   {% for key, value in data %}
+                       <li>{{ key }}:{{ value }}</li>
+                   {% endfor %}
+                   """)
+                // MIXED STRUCTURE: MapEntry loop object
+                .add("map_entry_loop", """
+                   {% for entry in data %}
+                       <li>{{ entry.key }}={{ entry.value }}</li>
+                   {% endfor %}
+                   """)
+                // EMPTY LIST
+                .add("empty", """
+                   {% for item in list %}
+                       <li>{{ item }}</li>
+                   {% endfor %}
+                   """)
+                // SINGLE ITEM
+                .add("single", """
+                   {% for item in list %}
+                       <li>{{ item }}</li>
+                   {% endfor %}
+                   """)
+                // RANGE ASCENDING
+                .add("range", """
+                    {% for i in 1..5 %}
+                        <li>{{ i }}</li>
+                    {% endfor %}
+                    """)
+                // RANGE DESCENDING
+                .add("range_desc", """
+                    {% for i in 5..1 %}
+                        <li>{{ i }}</li>
+                    {% endfor %}
+                    """)
+                // RANGE WITH EXPRESSION
+                .add("range_expression", """
+                    {% for i in (1..page.totalPages) %}
+                        <li>{{ i }}</li>
+                    {% endfor %}
+                    """)
+                .add("range_index", """
+                    {% for i in 3..5 %}
+                        <li>{{ loop.getIndex() }}={{ i }}</li>
+                    {% endfor %}
+                    """);
+    }
+
+    @Test
+    public void test_for_list() throws IOException {
+
+        var expected = """
                  <li>one</li>
                  <li>two</li>
                  <li>three</li>
                  """;
-		
-		Template simpleTemplate = SUT.getTemplate("simple");
-		Assertions.assertThat(simpleTemplate).isNotNull();
-		Map<String, Object> context = Map.of("names", List.of("one", "two", "three"));
-		Assertions.assertThat(simpleTemplate.evaluate(context)).isEqualToIgnoringWhitespace(expected);
-	}
-	
-	@Test
-	public void test_index() throws IOException {
-		
-		var expected = """
+
+        Template template = SUT.getTemplate("simple");
+
+        Map<String, Object> context = Map.of(
+                "names", List.of("one", "two", "three")
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_loop_index() throws IOException {
+
+        var expected = """
                  <li>0</li>
                  <li>1</li>
                  <li>2</li>
                  """;
-		
-		Template simpleTemplate = SUT.getTemplate("index");
-		Assertions.assertThat(simpleTemplate).isNotNull();
-		Map<String, Object> context = Map.of("names", List.of("one", "two", "three"));
-		Assertions.assertThat(simpleTemplate.evaluate(context)).isEqualToIgnoringWhitespace(expected);
-	}
-	
+
+        Template template = SUT.getTemplate("index");
+
+        Map<String, Object> context = Map.of(
+                "names", List.of("a", "b", "c")
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_map_iteration_key_value() throws IOException {
+
+        var expected = """
+                 <li>a:1</li>
+                 <li>b:2</li>
+                 """;
+
+        Template template = SUT.getTemplate("map");
+
+        var data = new LinkedHashMap<>();
+        data.put("a", 1);
+        data.put("b", 2);
+
+        Map<String, Object> context = Map.of(
+                "data", data
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_map_entry_loop_object() throws IOException {
+
+        var expected = """
+                 <li>a=1</li>
+                 <li>b=2</li>
+                 """;
+
+        Template template = SUT.getTemplate("map_entry_loop");
+
+        var data = new LinkedHashMap<>();
+        data.put("a", 1);
+        data.put("b", 2);
+
+        Map<String, Object> context = Map.of(
+                "data", data
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_empty_list() throws IOException {
+
+        var expected = "";
+
+        Template template = SUT.getTemplate("empty");
+
+        Map<String, Object> context = Map.of(
+                "list", List.of()
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_single_item() throws IOException {
+
+        var expected = "<li>only</li>";
+
+        Template template = SUT.getTemplate("single");
+
+        Map<String, Object> context = Map.of(
+                "list", List.of("only")
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range() throws IOException {
+
+        var expected = """
+             <li>1</li>
+             <li>2</li>
+             <li>3</li>
+             <li>4</li>
+             <li>5</li>
+             """;
+
+        Template template = SUT.getTemplate("range");
+
+        Assertions.assertThat(template.evaluate(Map.of()))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range_descending() throws IOException {
+
+        var expected = """
+             <li>5</li>
+             <li>4</li>
+             <li>3</li>
+             <li>2</li>
+             <li>1</li>
+             """;
+
+        Template template = SUT.getTemplate("range_desc");
+
+        Assertions.assertThat(template.evaluate(Map.of()))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range_expression() throws IOException {
+
+        var expected = """
+             <li>1</li>
+             <li>2</li>
+             <li>3</li>
+             <li>4</li>
+             """;
+
+        Template template = SUT.getTemplate("range_expression");
+
+        Map<String, Object> context = Map.of(
+                "page", new Page(4)
+        );
+
+        Assertions.assertThat(template.evaluate(context))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    public void test_range_with_index() throws IOException {
+
+        var expected = """
+             <li>0=3</li>
+             <li>1=4</li>
+             <li>2=5</li>
+             """;
+
+        Template template = SUT.getTemplate("range_index");
+
+        Assertions.assertThat(template.evaluate(Map.of()))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    public static class Page {
+
+        private final int totalPages;
+
+        public Page(int totalPages) {
+            this.totalPages = totalPages;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
+    }
 }

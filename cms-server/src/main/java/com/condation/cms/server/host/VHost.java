@@ -82,21 +82,18 @@ import com.condation.cms.server.handler.http.RoutesHandler;
 import com.condation.cms.server.handler.media.JettyMediaHandler;
 import com.condation.cms.server.handler.module.JettyModuleHandler;
 import com.condation.modules.api.ModuleManager;
-import com.google.inject.Binding;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Provider;
 import com.google.inject.name.Names;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import com.google.inject.spi.DefaultBindingTargetVisitor;
-import com.google.inject.spi.InstanceBinding;
-import java.lang.annotation.Annotation;
 import com.condation.cms.server.annotations.Eager;
+import com.condation.cms.server.filter.metrics.PipelineRequestMetricsFilter;
+import com.condation.cms.server.filter.metrics.RequestMetricsFilter;
+import io.micrometer.core.instrument.MeterRegistry;
 
 /**
  *
@@ -286,9 +283,11 @@ public class VHost {
         PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
         pathMappingsHandler.addMapping(
                 PathSpec.from("/"),
-                defaultHandlerSequence
+                instrument("content", defaultHandlerSequence)
         );
-        pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
+        pathMappingsHandler.addMapping(
+                PathSpec.from("/assets/*"),
+                instrument("assets", assetsHandler));
 
         var assetsMediaManager = this.injector.getInstance(SiteMediaManager.class);
         injector.getInstance(EventBus.class).register(ConfigurationReloadEvent.class, assetsMediaManager);
@@ -305,18 +304,24 @@ public class VHost {
                 uiPreviewFilter,
                 mediaHandler
         );
-        pathMappingsHandler.addMapping(PathSpec.from("/media/*"), siteMediaHandlerSequence);
-
-        pathMappingsHandler.addMapping(PathSpec.from("/" + JettyModuleHandler.PATH + "/*"),
-                createModuleHandler()
+        pathMappingsHandler.addMapping(
+                PathSpec.from("/media/*"),
+                instrument("media", siteMediaHandlerSequence)
         );
 
-        pathMappingsHandler.addMapping(PathSpec.from("/" + JettyHttpHandlerExtensionHandler.PATH + "/*"),
-                createExtensionHandler()
+        pathMappingsHandler.addMapping(
+                PathSpec.from("/" + JettyModuleHandler.PATH + "/*"),
+                instrument("modules", createModuleHandler())
         );
 
-        pathMappingsHandler.addMapping(PathSpec.from("/" + APIHandler.PATH + "/*"),
-                createAPIHandler()
+        pathMappingsHandler.addMapping(
+                PathSpec.from("/" + JettyHttpHandlerExtensionHandler.PATH + "/*"),
+                instrument("extensions", createExtensionHandler())
+        );
+
+        pathMappingsHandler.addMapping(
+                PathSpec.from("/" + APIHandler.PATH + "/*"),
+                instrument("api", createAPIHandler())
         );
 
         ContextHandler defaultContextHandler = new ContextHandler(
@@ -339,7 +344,7 @@ public class VHost {
 
         hostHandler = logContextHandler;
 
-        return requestContextFilter(hostHandler, injector);
+        return new RequestMetricsFilter(requestContextFilter(hostHandler, injector), siteId, injector.getInstance(MeterRegistry.class));
     }
 
     private Handler createAPIHandler() {
@@ -403,9 +408,20 @@ public class VHost {
         ResourceHandler assetsHandler = this.injector.getInstance(Key.get(ResourceHandler.class, Names.named("theme.assets")));
 
         PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
-        pathMappingsHandler.addMapping(PathSpec.from("/assets/*"), assetsHandler);
-        pathMappingsHandler.addMapping(PathSpec.from("/media/*"), mediaHandler);
+        pathMappingsHandler.addMapping(
+                PathSpec.from("/assets/*"),
+                instrument("theme-assets", assetsHandler)
+        );
+        pathMappingsHandler.addMapping(
+                PathSpec.from("/media/*"),
+                instrument("theme-media", mediaHandler)
+        );
 
         return new ContextHandler(pathMappingsHandler, appendContextIfNeeded("/theme"));
+    }
+
+    private Handler instrument(String pipeline, Handler handler) {
+        return new PipelineRequestMetricsFilter(handler, siteId, injector.getInstance(MeterRegistry.class),
+                pipeline);
     }
 }
