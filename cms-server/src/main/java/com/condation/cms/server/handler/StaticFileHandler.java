@@ -102,16 +102,7 @@ public class StaticFileHandler extends AbstractHandler {
         }
     }
 
-    private String getRelativePath(Request request) {
-        String path = request.getHttpURI().getPath();
-        String contextPath = RequestUtil.getContextPath(request);
 
-        if (!contextPath.endsWith("/")) {
-            contextPath += "/";
-        }
-
-        return path.replaceFirst("^" + contextPath, "");
-    }
 
     private String guessContentType(Path path) {
         try {

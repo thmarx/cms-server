@@ -93,6 +93,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.condation.cms.server.annotations.Eager;
 import com.condation.cms.server.filter.metrics.PipelineRequestMetricsFilter;
 import com.condation.cms.server.filter.metrics.RequestMetricsFilter;
+import com.condation.cms.server.handler.WellKnownHandler;
 import io.micrometer.core.instrument.MeterRegistry;
 
 /**
@@ -269,6 +270,7 @@ public class VHost {
         var defaultHandlerSequence = new Handler.Sequence(
                 authHandler,
                 publicHandlerSequence,
+				injector.getInstance(WellKnownHandler.class),
                 initContextHandler,
                 uiPreviewFilter,
                 routesHandler,
