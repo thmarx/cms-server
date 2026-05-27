@@ -72,12 +72,17 @@ public class ConfigManagement {
 								.get()).getTaxonomies()
 				)
 		);
-		configuration.add(
-				com.condation.cms.api.configuration.configs.MediaConfiguration.class, 
-				new com.condation.cms.api.configuration.configs.MediaConfiguration(
+		var mediaConfig = new com.condation.cms.api.configuration.configs.MediaConfiguration(
 						((com.condation.cms.core.configuration.configs.MediaConfiguration) get("media")
 								.get()).getMediaFormats()
-				)
+				);
+		mediaConfig.setProcessor(((com.condation.cms.core.configuration.configs.MediaConfiguration) get("media")
+								.get()).getProcessor());
+		mediaConfig.setBinPath(((com.condation.cms.core.configuration.configs.MediaConfiguration) get("media")
+								.get()).getValueOrDefault("bin_path", ""));
+		configuration.add(
+				com.condation.cms.api.configuration.configs.MediaConfiguration.class, 
+				mediaConfig
 		);
 		
 	}
