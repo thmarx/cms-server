@@ -1,3 +1,4 @@
+processor = "imageio"
 [[formats]]
 name = "small"
 width = 256

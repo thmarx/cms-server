@@ -31,7 +31,7 @@ import com.condation.cms.api.media.meta.Meta;
 import com.condation.cms.api.theme.Theme;
 import com.condation.cms.api.utils.FileUtils;
 import com.condation.cms.api.utils.PathUtil;
-import java.io.File;
+import com.condation.cms.media.processor.ImageProcessorFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnails;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -58,6 +57,8 @@ public abstract class MediaManager implements EventListener<ConfigurationReloadE
 
 	protected Map<String, MediaFormat> mediaFormats;
 	protected Path tempDirectory;
+
+	private ImageProcessorFactory processorFactory;
 
 	protected MediaManager(List<Path> assetPath, Path tempFolder, Theme theme, Configuration configuration) {
 		this.assetBase = assetPath;
@@ -134,43 +135,41 @@ public abstract class MediaManager implements EventListener<ConfigurationReloadE
 				return tempContent;
 			}
 
-			Thumbnails.Builder<File> scaleBuilder = Thumbnails
-					.of(resolve.get().toFile())
-					.size(mediaFormat.width(), mediaFormat.height());
+			CropCalculator.CropArea crop = mediaFormat.cropped()
+					? resolveCrop(resolve.get(), mediaFormat)
+					: null;
 
-			if (mediaFormat.cropped()) {
-				setupImageBuilder(scaleBuilder, resolve.get(), mediaFormat);
-			}
+			Path tempFile = writeTempPlaceholder(mediaPath, mediaFormat);
+			getProcessorFactory().get().process(resolve.get(), tempFile, mediaFormat, crop);
 
-			byte[] data = Scale.toFormat(scaleBuilder.asBufferedImage(), mediaFormat);
-
-			writeTempContent(mediaPath, mediaFormat, data);
-
-			return Optional.of(data);
+			return Optional.of(Files.readAllBytes(tempFile));
 		}
 		return Optional.empty();
 	}
 
-	private void setupImageBuilder(Thumbnails.Builder<File> builder, Path media, MediaFormat format) {
+	private CropCalculator.CropArea resolveCrop(Path media, MediaFormat format) {
 		var metaFileName = media.getFileName().toString() + ".meta.yaml";
 		var metaFile = media.getParent().resolve(metaFileName);
 		var size = ImageSize.getSize(media);
-		double focal_x = 0.5;
-		double focal_y = 0.5;
+		double focalX = 0.5;
+		double focalY = 0.5;
 		if (Files.exists(metaFile)) {
 			try {
 				final Meta meta = new Yaml().loadAs(Files.readString(metaFile, StandardCharsets.UTF_8), Meta.class);
-				focal_x = meta.getFocalPoint_x();
-				focal_y = meta.getFocalPoint_y();
+				focalX = meta.getFocalPoint_x();
+				focalY = meta.getFocalPoint_y();
 			} catch (IOException ex) {
 				log.warn("Could not read meta file: {}", metaFile, ex);
 			}
 		}
-		CropCalculator.CropArea crop = CropCalculator.calculateCrop(
-				size.width(), size.height(),
-				focal_x, focal_y,
-				format.width(), format.height());
-		builder.sourceRegion(crop.toRectangle());
+		return CropCalculator.calculateCrop(size.width(), size.height(), focalX, focalY, format.width(), format.height());
+	}
+
+	private ImageProcessorFactory getProcessorFactory() {
+		if (processorFactory == null) {
+			processorFactory = new ImageProcessorFactory(configuration.get(MediaConfiguration.class));
+		}
+		return processorFactory;
 	}
 
 	public String getTempFilename(final String mediaPath, final MediaFormat mediaFormat) {
@@ -180,13 +179,10 @@ public abstract class MediaManager implements EventListener<ConfigurationReloadE
 		return tempFilename;
 	}
 
-	private Path writeTempContent(final String mediaPath, final MediaFormat mediaFormat, byte[] content) throws IOException {
+	private Path writeTempPlaceholder(final String mediaPath, final MediaFormat mediaFormat) throws IOException {
 		var tempFilename = getTempFilename(mediaPath, mediaFormat);
-
 		var tempFile = getTempDirectory().resolve(tempFilename);
 		Files.deleteIfExists(tempFile);
-		Files.write(tempFile, content);
-
 		return tempFile;
 	}
 
@@ -221,6 +217,9 @@ public abstract class MediaManager implements EventListener<ConfigurationReloadE
 			return;
 		}
 		this.mediaFormats = null;
+		if (processorFactory != null) {
+			processorFactory.reset();
+		}
 		getMediaFormats();
 	}
 }

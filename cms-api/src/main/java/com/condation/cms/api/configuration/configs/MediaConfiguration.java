@@ -37,4 +37,10 @@ import lombok.RequiredArgsConstructor;
 public class MediaConfiguration implements Config {
 	private final List<MediaFormat> formats;
 
+	/**
+	 * Image processor to use. Possible values: libvips, imagemagick, imageio.
+	 */
+	private String processor = "imageio";
+	
+	private String binPath;
 }

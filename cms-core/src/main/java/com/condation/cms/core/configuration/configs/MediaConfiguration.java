@@ -28,13 +28,9 @@ import com.condation.cms.core.configuration.reload.NoReload;
 import com.condation.cms.api.eventbus.events.ConfigurationReloadEvent;
 import com.condation.cms.api.media.MediaFormat;
 import com.condation.cms.api.media.MediaUtils;
-import com.google.common.hash.HashCode;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import lombok.Data;
@@ -82,6 +78,24 @@ public class MediaConfiguration extends AbstractConfiguration implements IConfig
 		});
 	}
 
+	public String getProcessor() {
+		var processor = getSources().stream()
+				.filter(ConfigSource::exists)
+				.map(config -> config.getString("processor"))
+				.filter(Objects::nonNull)
+				.findFirst();
+		return processor.orElse("imageio");
+	}
+	
+	public String getValueOrDefault(String name, String defaultValue) {
+		var valueGetter = getSources().stream()
+				.filter(ConfigSource::exists)
+				.map(config -> config.getString(name))
+				.filter(Objects::nonNull)
+				.findFirst();
+		return valueGetter.orElse(defaultValue);
+	}
+	
 	public List<Format> getFormats() {
 		var sorted = new TreeSet<Format>((o1, o2) -> o1.name.compareTo(o2.name));
 		sorted.addAll(getList("formats", Format.class));
