@@ -39,6 +39,7 @@ import com.condation.cms.api.mapper.ContentNodeMapper;
 import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.model.NavNode;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +93,7 @@ public class NavigationFunctionTest {
 		Mockito.lenient().when(content.byUri("current")).thenReturn(Optional.empty());
 		
 		
-		hookSystem = new HookSystem();
+		hookSystem = new CMSHookSystem();
 		requestContext = new RequestContext();
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
 		requestContext.add(ContentParserFeature.class, new ContentParserFeature(contentParser));

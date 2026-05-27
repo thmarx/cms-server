@@ -24,7 +24,6 @@
 			<groupId>com.condation.cms</groupId>
 			<artifactId>cms-filesystem</artifactId>
 		</dependency>
-		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

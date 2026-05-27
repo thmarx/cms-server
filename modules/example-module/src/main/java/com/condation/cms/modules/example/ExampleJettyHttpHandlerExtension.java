@@ -50,7 +50,7 @@ public class ExampleJettyHttpHandlerExtension extends HttpHandlerExtensionPoint 
 		mapping.add(PathSpec.from("/people"), new ExampleHandler("Hello people!"));
 		mapping.add(PathSpec.from("/hook"), (request, response, callback) -> {
 			
-			ActionContext hookContext = getRequestContext().get(HookSystemFeature.class).hookSystem().execute("example/test");
+			ActionContext hookContext = getRequestContext().get(HookSystemFeature.class).hookSystem().doAction("example/test");
 			
 			var content = (String)hookContext.results().get(0);
 			

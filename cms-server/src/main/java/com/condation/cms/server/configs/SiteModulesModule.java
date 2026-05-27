@@ -30,6 +30,7 @@ import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.theme.Theme;
 import com.condation.cms.filesystem.FileDB;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import com.condation.modules.api.ModuleManager;
 import com.condation.modules.manager.ModuleAPIClassLoader;
 import com.condation.modules.manager.ModuleManagerImpl;
@@ -156,7 +157,7 @@ public class SiteModulesModule extends AbstractModule {
 	 */
 	@Provides
 	public HookSystem hookSystem(final ModuleManager moduleManager) {
-		var hookSystem = new HookSystem();
+		var hookSystem = new CMSHookSystem();
 		
 		/*
 			moduleManager.extensions(HookSystemRegisterExtensionPoint.class).forEach(extensionPoint -> {

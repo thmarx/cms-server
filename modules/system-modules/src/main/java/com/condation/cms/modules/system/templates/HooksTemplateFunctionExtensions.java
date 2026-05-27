@@ -49,7 +49,7 @@ public class HooksTemplateFunctionExtensions extends RegisterTemplateFunctionExt
 			return "";
 		}
 		
-		List<String> results = getRequestContext().get(HookSystemFeature.class).hookSystem().execute(hook).results().stream()
+		List<String> results = getRequestContext().get(HookSystemFeature.class).hookSystem().doAction(hook).results().stream()
                               .map(Object::toString) // oder o -> o.getName()
                               .toList();
 		

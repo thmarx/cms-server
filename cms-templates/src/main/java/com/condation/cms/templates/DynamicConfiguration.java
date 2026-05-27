@@ -24,7 +24,7 @@ import com.condation.cms.api.extensions.RegisterTemplateFunctionExtensionPoint;
 import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.model.Parameter;
 import com.condation.cms.api.request.RequestContext;
-import com.condation.cms.extensions.hooks.TemplateHooks;
+import com.condation.cms.hooksystem.extensions.TemplateHooks;
 import com.condation.cms.templates.components.TemplateComponents;
 import com.condation.cms.templates.components.TemplateFunctions;
 import com.condation.cms.templates.functions.TemplateFunction;

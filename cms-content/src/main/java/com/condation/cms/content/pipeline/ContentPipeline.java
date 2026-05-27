@@ -63,9 +63,9 @@ public class ContentPipeline {
 		});
 
 	}
-
+	
 	public String process(String rawContent) {
-		return hookSystem.filter(Hooks.CONTENT_FILTER.hook(), rawContent).value();
+		return hookSystem.doFilter(Hooks.CONTENT_FILTER.hook(), rawContent).value();
 	}
 
 	private String processMarkdown(FilterContext<String> context) {

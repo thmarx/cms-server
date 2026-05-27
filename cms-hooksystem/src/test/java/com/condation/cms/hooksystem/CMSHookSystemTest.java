@@ -1,4 +1,4 @@
-package com.condation.cms.api.hooks;
+package com.condation.cms.hooksystem;
 
 /*-
  * #%L
@@ -24,6 +24,8 @@ package com.condation.cms.api.hooks;
 
 import com.condation.cms.api.annotations.Filter;
 import com.condation.cms.api.annotations.Action;
+import com.condation.cms.api.hooks.ActionContext;
+import com.condation.cms.api.hooks.FilterContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,13 +37,13 @@ import org.junit.jupiter.api.Test;
  *
  * @author t.marx
  */
-public class HookSystemTest {
+public class CMSHookSystemTest {
 
-	private HookSystem hookSystem;
+	private CMSHookSystem hookSystem;
 	
 	@BeforeEach
 	public void setup() {
-		hookSystem = new HookSystem();
+		hookSystem = new CMSHookSystem();
 	}
 
 	@Test
@@ -49,7 +51,7 @@ public class HookSystemTest {
 		hookSystem.registerAction("test/test1", (context) -> {
 			return true;
 		});
-		var context = hookSystem.execute("test/test1");
+		var context = hookSystem.doAction("test/test1");
 		Assertions.assertThat(context.results()).hasSize(1).contains(true);
 	}
 	
@@ -61,7 +63,7 @@ public class HookSystemTest {
 		hookSystem.registerAction("test/test1", (context) -> {
 			return "test2";
 		});
-		var context = hookSystem.execute("test/test1");
+		var context = hookSystem.doAction("test/test1");
 		Assertions.assertThat(context.results()).hasSize(2).contains("test1", "test2");
 	}
 	
@@ -76,7 +78,7 @@ public class HookSystemTest {
 		hookSystem.registerAction("test/test1", (context) -> {
 			return "test2";
 		}, 200);
-		var context = hookSystem.execute("test/test1");
+		var context = hookSystem.doAction("test/test1");
 		Assertions.assertThat(context.results()).hasSize(3).containsExactly("test1", "test2", "test3");
 	}
 	
@@ -91,14 +93,14 @@ public class HookSystemTest {
 		hookSystem.registerAction("test/test1", (context) -> {
 			return "test2";
 		}, 200);
-		var context = hookSystem.execute("test/test1");
+		var context = hookSystem.doAction("test/test1");
 		Assertions.assertThat(context.results()).hasSize(3).containsExactly("test3", "test2", "test1");
 	}
 	
 	@Test
 	public void test_filter_reversed () {
 		hookSystem.registerFilter("test/list", (context) -> ((List<String>)context.value()).reversed());
-		var context = hookSystem.filter("test/list", List.of("1", "2", "3"));
+		var context = hookSystem.doFilter("test/list", List.of("1", "2", "3"));
 		Assertions.assertThat(context.value()).containsExactly("3", "2", "1");
 	}
 	
@@ -108,7 +110,7 @@ public class HookSystemTest {
 			context.value().remove("2");
 			return context.value();
 		});
-		var context = hookSystem.filter("test/list", new ArrayList<>(List.of("1", "2", "3")));
+		var context = hookSystem.doFilter("test/list", new ArrayList<>(List.of("1", "2", "3")));
 		Assertions.assertThat(context.value()).containsExactly("1", "3");
 	}
 	
@@ -118,7 +120,7 @@ public class HookSystemTest {
 		
 		hookSystem.register(actionObject);
 		
-		hookSystem.execute("test/annotation/action1");
+		hookSystem.doAction("test/annotation/action1");
 		
 		Assertions.assertThat(actionObject.counter).hasValue(2);
 	}
@@ -129,7 +131,7 @@ public class HookSystemTest {
 		
 		hookSystem.register(myFilters);
 		
-		var context = hookSystem.filter("test/annotation/filter1", new ArrayList<>(List.of("1", "2", "3")));
+		var context = hookSystem.doFilter("test/annotation/filter1", new ArrayList<>(List.of("1", "2", "3")));
 		Assertions.assertThat(context.value()).containsExactly("1", "3");
 	}
 	

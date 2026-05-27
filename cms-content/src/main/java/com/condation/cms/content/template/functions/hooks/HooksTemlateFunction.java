@@ -42,13 +42,13 @@ public class HooksTemlateFunction {
 		return execute(name, Map.of());
 	}
 	public ActionContext<Object> execute (String name, Map<String, Object> arguments) {
-		return hookSystem.execute(name, arguments);
+		return hookSystem.doAction(name, arguments);
 	}
 	
 	public FilterContext<Object> filter (String name) {
 		return filter(name, List.of());
 	}
 	public FilterContext<Object> filter (String name, List<Object> arguments) {
-		return hookSystem.filter(name, arguments);
+		return hookSystem.doFilter(name, arguments);
 	}
 }

@@ -52,3 +52,10 @@ $hooks.registerFilter("module/ui/translations", (context) => {
 	
 	return translations;
 })
+
+$hooks.registerAction("system/content/slot/header", (context) => {
+	return "<!-- this comes into the header slot -->";
+})
+$hooks.registerAction("system/content/slot/footer", (context) => {
+	return "<!-- this comes into the footer slot -->";
+})

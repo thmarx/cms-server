@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -46,7 +46,7 @@ public class DBHooks implements Feature {
 	public QueryOperationsWrapper getQueryOperations () {
 		var wrapper = new QueryOperationsWrapper();
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.DB_QUERY_OPERATIONS.hook(), Map.of("operations", wrapper));
+				.doAction(Hooks.DB_QUERY_OPERATIONS.hook(), Map.of("operations", wrapper));
 		
 		return wrapper;
 	}

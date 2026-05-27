@@ -42,6 +42,7 @@ import com.condation.cms.content.markdown.module.CMSMarkdownRenderer;
 import com.condation.cms.content.template.functions.navigation.NavigationFunction;
 import com.condation.cms.core.eventbus.DefaultEventBus;
 import com.condation.cms.filesystem.FileDB;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import com.google.inject.Injector;
 import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
@@ -110,7 +111,7 @@ public class NavigationFunctionITest {
 		requestContext.add(ContentParserFeature.class, new ContentParserFeature(contentParser));
 		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(new ContentNodeMapper(db, contentParser)));
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(new CMSMarkdownRenderer()));
-		requestContext.add(HookSystemFeature.class, new HookSystemFeature(new HookSystem()));
+		requestContext.add(HookSystemFeature.class, new HookSystemFeature(new CMSHookSystem()));
 
 		Mockito.lenient().when(request.getAttribute("_requestContext")).thenReturn(requestContext);
 	}

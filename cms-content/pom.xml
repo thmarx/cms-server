@@ -44,7 +44,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.condation.cms</groupId>
-			<artifactId>cms-core</artifactId>
+				<artifactId>cms-hooksystem</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>

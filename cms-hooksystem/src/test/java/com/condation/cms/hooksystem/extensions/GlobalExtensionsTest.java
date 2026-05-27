@@ -1,4 +1,4 @@
-package com.condation.cms.extensions;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -22,8 +22,9 @@ package com.condation.cms.extensions;
  */
 
 
-import com.condation.cms.extensions.GlobalExtensions;
 import com.condation.cms.api.hooks.HookSystem;
+import com.condation.cms.extensions.GlobalExtensions;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import java.io.IOException;
 import org.assertj.core.api.Assertions;
 import org.graalvm.polyglot.Context;
@@ -51,7 +52,7 @@ public class GlobalExtensionsTest {
 				.allowValueSharing(true)
 				.build();
 		
-		hookSystem = new HookSystem();
+		hookSystem = new CMSHookSystem();
 		globalExtensions = new GlobalExtensions(hookSystem, context);
 		globalExtensions.init();
 
@@ -70,7 +71,7 @@ public class GlobalExtensionsTest {
 	public void test_hook () {
 		globalExtensions.evaluate("$hooks.registerAction('test/hook1', (context) => {return 'Hello';})");
 		
-		var context = hookSystem.execute("test/hook1");
+		var context = hookSystem.doAction("test/hook1");
 		
 		Assertions.assertThat(context.results())
 				.hasSize(1)

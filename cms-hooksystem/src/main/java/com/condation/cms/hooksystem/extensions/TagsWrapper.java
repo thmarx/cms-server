@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -24,28 +24,29 @@ package com.condation.cms.extensions.hooks;
 
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.model.Parameter;
-import com.condation.cms.extensions.TemplateFunctionExtension;
 import com.google.common.base.Strings;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-public class TemplateFunctionWrapper {
+@RequiredArgsConstructor
+public class TagsWrapper {
 
 	@Getter
-	private final List<TemplateFunctionExtension> registerTemplateFunctions = new ArrayList<>();
+	private final Map<String, Function<Parameter, String>> tags;
 
-	public void put(final String path, final Function<Parameter, ?> function) {
-		put(Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE, path, function);
+	public void put(final String namespace, final String tag, final Function<Parameter, String> function) {
+        var ns = !Strings.isNullOrEmpty(namespace) ? namespace : "ext";
+        var key = "%s:%s".formatted(ns, tag);
+		tags.put(key, function);
 	}
     
-    public void put(final String namespace, final String path, final Function<Parameter, ?> function) {
-        var ns = !Strings.isNullOrEmpty(namespace) ? namespace : "ext";
-		registerTemplateFunctions.add(new TemplateFunctionExtension(ns, path, function));
-	}
+    public void put (final String tag, final Function<Parameter, String> function) {
+        put(Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE, tag, function);
+    }
 }

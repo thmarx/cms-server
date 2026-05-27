@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -27,8 +27,10 @@ import com.condation.cms.api.annotations.FeatureScope;
 import com.condation.cms.api.feature.Feature;
 import com.condation.cms.api.feature.features.HookSystemFeature;
 import com.condation.cms.api.hooks.Hooks;
+import com.condation.cms.api.model.Parameter;
 import com.condation.cms.api.request.RequestContext;
 import java.util.Map;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -38,32 +40,14 @@ import lombok.RequiredArgsConstructor;
 @Experimental
 @RequiredArgsConstructor
 @FeatureScope(FeatureScope.Scope.REQUEST)
-public class ServerHooks implements Feature {
+public class ContentHooks implements Feature {
 	
 	private final RequestContext requestContext;
 	
-	
-	public HttpHandlerWrapper getHttpExtensions () {
-		var httpExtensions = new HttpHandlerWrapper();
+	public TagsWrapper getTags (Map<String, Function<Parameter, String>> codes) {
+		var codeWrapper = new TagsWrapper(codes);
 		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.HTTP_EXTENSION.hook(), Map.of("httpExtensions", httpExtensions));
-		
-		return httpExtensions;
-	}
-	
-	public HttpHandlerWrapper getHttpRoutes () {
-		var httpExtensions = new HttpHandlerWrapper();
-		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.HTTP_ROUTE.hook(), Map.of("httpRoutes", httpExtensions));
-		
-		return httpExtensions;
-	}
-
-	public HttpHandlerWrapper getAPIRoutes () {
-		var httpExtensions = new HttpHandlerWrapper();
-		requestContext.get(HookSystemFeature.class).hookSystem()
-				.execute(Hooks.API_ROUTE.hook(), Map.of("apiRoutes", httpExtensions));
-		
-		return httpExtensions;
+				.doAction(Hooks.CONTENT_TAGS.hook(), Map.of("tags", codeWrapper));
+		return codeWrapper;
 	}
 }

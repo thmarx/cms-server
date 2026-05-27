@@ -1,4 +1,4 @@
-package com.condation.cms.extensions;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -28,7 +28,9 @@ import com.condation.cms.api.feature.features.HookSystemFeature;
 import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.theme.Theme;
+import com.condation.cms.extensions.ExtensionManager;
 import com.condation.cms.filesystem.FileSystem;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
@@ -91,12 +93,12 @@ public class ExtensionManagerTest {
 	public void test_with_auth() throws IOException {
 
 		var requestContext = new RequestContext();
-		final HookSystem hookSystem = new HookSystem();
+		final HookSystem hookSystem = new CMSHookSystem();
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
 		requestContext.add(AuthFeature.class, new AuthFeature("thorsten"));
 		extensionManager.newContext(theme, requestContext);
 
-		Assertions.assertThat(hookSystem.execute("test").results())
+		Assertions.assertThat(hookSystem.doAction("test").results())
 				.hasSize(1)
 				.containsExactly("Hallo thorsten");
 	}
@@ -105,11 +107,11 @@ public class ExtensionManagerTest {
 	public void test_without_auth() throws IOException {
 
 		var requestContext = new RequestContext();
-		final HookSystem hookSystem = new HookSystem();
+		final HookSystem hookSystem = new CMSHookSystem();
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(hookSystem));
 		extensionManager.newContext(theme, requestContext);
 
-		Assertions.assertThat(hookSystem.execute("test").results())
+		Assertions.assertThat(hookSystem.doAction("test").results())
 				.hasSize(1)
 				.containsExactly("Guten Tag");
 	}

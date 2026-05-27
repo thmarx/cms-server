@@ -1,4 +1,4 @@
-package com.condation.cms.extensions.hooks;
+package com.condation.cms.hooksystem.extensions;
 
 /*-
  * #%L
@@ -22,31 +22,27 @@ package com.condation.cms.extensions.hooks;
  */
 
 
-import com.condation.cms.api.Constants;
-import com.condation.cms.api.model.Parameter;
-import com.google.common.base.Strings;
-import java.util.Map;
-import java.util.function.Function;
+import com.condation.cms.extensions.HttpHandlerExtension;
+import com.condation.cms.extensions.http.ExtensionHttpHandler;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
-public class TagsWrapper {
+public class HttpHandlerWrapper {
 
 	@Getter
-	private final Map<String, Function<Parameter, String>> tags;
+	private final List<HttpHandlerExtension> httpHandlerExtensions = new ArrayList<>();
 
-	public void put(final String namespace, final String tag, final Function<Parameter, String> function) {
-        var ns = !Strings.isNullOrEmpty(namespace) ? namespace : "ext";
-        var key = "%s:%s".formatted(ns, tag);
-		tags.put(key, function);
+	public void add(final String method, final String path, final ExtensionHttpHandler handler) {
+		httpHandlerExtensions.add(new HttpHandlerExtension(method, path, handler));
 	}
-    
-    public void put (final String tag, final Function<Parameter, String> function) {
-        put(Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE, tag, function);
-    }
+
+	public Optional<HttpHandlerExtension> findHttpHandler(final String method, final String path) {
+		return httpHandlerExtensions.stream().filter(handler -> handler.method().equalsIgnoreCase(method) && handler.path().equalsIgnoreCase(path)).findFirst();
+	}
 }

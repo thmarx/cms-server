@@ -24,6 +24,7 @@ import com.condation.cms.api.hooks.FilterContext;
 import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.ui.elements.Menu;
 import com.condation.cms.api.ui.elements.MenuEntry;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -38,7 +39,7 @@ public class UIHooksTest {
 	@Test
 	public void registerMenuEntry() {
 
-		HookSystem hookSystem = new HookSystem();
+		HookSystem hookSystem = new CMSHookSystem();
 
 		hookSystem.registerFilter(UIHooks.HOOK_MENU, (FilterContext<Menu> context) -> {
 			var menu = context.value();
@@ -62,7 +63,7 @@ public class UIHooksTest {
 	@Test
 	public void registerMenuEntryAreSorted() {
 
-		HookSystem hookSystem = new HookSystem();
+		HookSystem hookSystem = new CMSHookSystem();
 
 		hookSystem.registerFilter(UIHooks.HOOK_MENU, (FilterContext<Menu> context) -> {
 			var menu = context.value();

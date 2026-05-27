@@ -25,6 +25,7 @@ import com.condation.cms.api.feature.features.HookSystemFeature;
 import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.template.TemplateEngine;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -37,8 +38,8 @@ public final class ContentPipelineFactory {
 	
 	public static ContentPipeline create (final RequestContext requestContext, final TemplateEngine.Model model) {
 		
-		var hookSystem = requestContext.get(HookSystemFeature.class).hookSystem();
-		var pipeline = new ContentPipeline(new HookSystem(hookSystem), requestContext, model);
+		var hookSystem = (CMSHookSystem)requestContext.get(HookSystemFeature.class).hookSystem();
+		var pipeline = new ContentPipeline(new CMSHookSystem(hookSystem), requestContext, model);
 		pipeline.init();
 		
 		return pipeline;

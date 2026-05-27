@@ -1,4 +1,4 @@
-package com.condation.cms.api.hooks;
+package com.condation.cms.hooksystem;
 
 /*-
  * #%L
@@ -26,5 +26,6 @@ package com.condation.cms.api.hooks;
  *
  * @author t.marx
  */
-record FilterHook<T>(String name, int priority, FilterFunction<T> function) implements Hook {
+public interface Hook {
+	
 }

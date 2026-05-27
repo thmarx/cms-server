@@ -31,6 +31,7 @@ import com.condation.cms.api.ui.elements.Menu;
 import com.condation.cms.api.ui.elements.MenuEntry;
 import com.condation.cms.auth.services.User;
 import com.condation.cms.core.cache.LocalCacheProvider;
+import com.condation.cms.hooksystem.CMSHookSystem;
 import com.condation.modules.api.ModuleManager;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +62,7 @@ public class TemplateEngineTest {
 		TemplateEngine templateEngine = new TemplateEngine(cacheManager);
         
         
-		var hookSystem = new HookSystem();
+		var hookSystem = new CMSHookSystem();
 		hookSystem.registerFilter("module/ui/menu", (FilterContext<Menu> context)
 				-> {
 			var menu = context.value();
