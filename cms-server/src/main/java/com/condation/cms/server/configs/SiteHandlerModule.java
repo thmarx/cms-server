@@ -43,6 +43,7 @@ import com.condation.cms.server.FileFolderPathResource;
 import com.condation.cms.server.filter.InitRequestContextFilter;
 import com.condation.cms.server.filter.PreviewFilter;
 import com.condation.cms.server.handler.StaticFileHandler;
+import com.condation.cms.server.handler.WellKnownHandler;
 import com.condation.cms.server.handler.auth.JettyAuthenticationHandler;
 import com.condation.cms.server.handler.content.JettyContentHandler;
 import com.condation.cms.server.handler.content.JettyTaxonomyHandler;
@@ -57,6 +58,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -131,5 +133,20 @@ public class SiteHandlerModule extends AbstractModule {
 	@Named("site.public")
 	public StaticFileHandler publicHandler (@Named("public") Path publicBase, ServerProperties serverProperties) throws IOException {
 		return new StaticFileHandler(List.of(publicBase));
+	}
+	
+	@Provides
+	@Singleton
+	public WellKnownHandler wellKnownHandler (@Named("public") Path publicBase, Theme theme) throws IOException {
+		
+		List<Path> paths = new ArrayList<>();
+		paths.add(publicBase);
+        paths.add(theme.publicPath());
+        
+        if (theme.getParentTheme() != null) {
+            paths.add(theme.getParentTheme().publicPath());
+        }
+		
+		return new WellKnownHandler(List.of(publicBase));
 	}
 }
