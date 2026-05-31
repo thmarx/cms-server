@@ -37,20 +37,18 @@ public class HTMLPipeline {
 	private final HookSystem hookSystem;
 	
 	public String process(String rawContent) {
-		rawContent = updateSlot(Hooks.CONTENT_SLOT_HEADER, "</head>", rawContent);
-		return updateSlot(Hooks.CONTENT_SLOT_FOOTER, "</body>", rawContent);
+		rawContent = updateLayoutPosition(Hooks.LAYOUT_HEADER, "</head>", rawContent);
+		return updateLayoutPosition(Hooks.LAYOUT_FOOTER, "</body>", rawContent);
 	}
 
-	public String updateSlot (Hooks hook, String elementName, String rawContent) {
+	public String updateLayoutPosition (Hooks hook, String elementName, String rawContent) {
 		
 		if (!rawContent.contains(elementName)) {
-			log.warn("No {} found, skipping header slot injection", elementName);
+			log.debug("No {} found, skipping layout position injection", elementName);
 			return rawContent;
 		}
 		
-		var result = hookSystem.doAction(hook.hook());
-		
-		var hookValues = result.results().stream()
+		var hookValues = hookSystem.doAction(hook.hook()).stream()
 				.filter(Objects::nonNull)
 				.filter(String.class::isInstance)
 				.map(String.class::cast)

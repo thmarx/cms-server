@@ -1,8 +1,6 @@
-package com.condation.cms.content;
-
 /*-
  * #%L
- * CMS Content
+ * CMS Extensions
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -10,33 +8,31 @@ package com.condation.cms.content;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
+import { $hooks } from 'system/hooks.mjs';
 
-import com.condation.cms.api.Constants;
-import java.util.Map;
+$hooks.registerAction("system/content/tags", ({tags}) => {
 
+	// default namespace (ext) — no parameters
+	tags.put("hello", () => "Hello World")
 
-/**
- *
- * @author t.marx
- */
-public record SlotItem(String name, int index, String content, Map<String, Object> data, String uri) {
+	// default namespace (ext) — destructured parameter
+	tags.put("greet", ({name = "stranger"}) => `Hello ${name}`)
 
-	public SlotItem(String name, int index, String content, Map<String, Object> data) {
-		this(name, index, content, data, null);
-	}
-	
-	public SlotItem(String name, String content, Map<String, Object> data) {
-		this(name, Constants.DEFAULT_SLOT_ITEM_LAYOUT_ORDER, content, data, null);
-	}
-}
+	// explicit namespace
+	tags.put("theme", "info", () => "theme-info")
+
+	// multiple parameters
+	tags.put("full_name", ({firstName, lastName}) => `${firstName} ${lastName}`)
+
+})

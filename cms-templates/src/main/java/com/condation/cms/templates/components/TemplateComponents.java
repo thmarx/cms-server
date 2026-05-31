@@ -24,8 +24,9 @@ import com.condation.cms.api.Constants;
 import com.condation.cms.api.annotations.TemplateComponent;
 import com.condation.cms.api.model.Parameter;
 import com.condation.cms.api.request.RequestContext;
-import com.condation.cms.api.utils.AnnotationsUtil;
-import com.google.common.base.Strings;
+import com.condation.cms.api.utils.ParamAnnotationUtil;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,30 +65,44 @@ public class TemplateComponents {
 		if (handler == null) {
 			return;
 		}
-
-		var annotations = AnnotationsUtil.process(handler, TemplateComponent.class, List.of(Parameter.class), String.class);
-
-		for (var entry : annotations) {
-			String name = entry.annotation().value();
-            String namespace = entry.annotation().namespace();
-            if (Strings.isNullOrEmpty(namespace)) {
-                namespace = Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE;
-            }
-            String key;
-            if (!Strings.isNullOrEmpty(namespace)) {
-                key = "%s:%s".formatted(namespace, name);
-            } else {
-                key = name;
-            }
-            
-			componentMap.put(key, param -> {
-				try {
-					return entry.invoke(param);
-				} catch (Exception e) {
-					throw new RuntimeException("Error calling component: " + key, e);
-				}
-			});
+		for (Method method : handler.getClass().getMethods()) {
+			if (!Modifier.isPublic(method.getModifiers())) {
+				continue;
+			}
+			if (!method.isAnnotationPresent(TemplateComponent.class)) {
+				continue;
+			}
+			TemplateComponent annotation = method.getAnnotation(TemplateComponent.class);
+			String key = buildKey(annotation);
+			Function<Parameter, String> fn = buildFunction(handler, method, key);
+			if (fn != null) {
+				componentMap.put(key, fn);
+			}
 		}
+	}
+
+	private Function<Parameter, String> buildFunction(Object target, Method method, String key) {
+		java.lang.reflect.Parameter[] params = method.getParameters();
+
+		if (ParamAnnotationUtil.isContextStyle(params, Parameter.class)) {
+			return param -> (String) ParamAnnotationUtil.invokeOrThrow(target, method, key, param);
+		}
+
+		String[] names = ParamAnnotationUtil.extractParamNames(params);
+		if (names != null) {
+			return param -> (String) ParamAnnotationUtil.invokeOrThrow(target, method, key,
+					ParamAnnotationUtil.resolveArgs(param, names));
+		}
+
+		log.warn("@TemplateComponent method '{}' in '{}' has unsupported signature — skipped",
+				method.getName(), target.getClass().getSimpleName());
+		return null;
+	}
+
+	private String buildKey(TemplateComponent annotation) {
+		return ParamAnnotationUtil.buildNamespaceKey(
+				annotation.namespace(), annotation.value(),
+				Constants.TemplateNamespaces.DEFAULT_MODULE_NAMESPACE);
 	}
 
 	public Set<String> getComponentNames() {

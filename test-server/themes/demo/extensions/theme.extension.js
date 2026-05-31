@@ -2,44 +2,51 @@ import { $hooks } from 'system/hooks.mjs';
 import { $templates } from 'system/templates.mjs';
 
 
-$hooks.registerAction("system/content/tags", (context) => {
-	context.arguments().get("tags").put(
+$hooks.registerAction("system/content/tags", ({tags}) => {
+	tags.put(
 			"theme_name",
 			(params) => `Hello, I'm your <b>demo</b> theme.`
 	)
 	return null;
 })
 
-$hooks.registerAction("system/template/function", (context) => {
-	context.arguments().get("functions").put(
-			"fn_message",
-			(params) => `<div style="color: ${params.color}">${params.message}</div>`
+$hooks.registerAction("system/content/tags", ({tags}) => {
+	tags.put(
+			"say_hello",
+			({name}) => `Hello, ${name}`
 	)
 	return null;
 })
 
-$hooks.registerAction("system/template/component", (context) => {
-	context.arguments().get("components").put(
+$hooks.registerAction("system/template/function", ({functions}) => {
+	functions.put(
+			"fn_message",
+			({color, message}) => `<div style="color: ${color}">MESSAGE: ${message}</div>`
+	)
+	return null;
+})
+
+$hooks.registerAction("system/template/component", ({components}) => {
+	components.put(
 			"component",
-			(params) => `<div style="color: ${params.color}">${params.message}</div>`
+			({color, message}) => `<div style="color: ${color}">COMPONENT: ${message}</div>`
 	)
 	
-	context.arguments().get("components").put(
+	components.put(
 			"tempcomp",
 			(params) => {
 				var model = {
-					"name": params.get("name"),
-					"message_text": params.get("message")
+					"name": params.name,
+					"message_text": params.message
 				}
-				return $templates.render("components/test.html", model);
+				return "rendered: " + $templates.render("components/test.html", model);
 			}
 	)
 	
 	return null;
 })
 
-$hooks.registerFilter("module/ui/translations", (context) => {
-	var translations = context.value()
+$hooks.registerFilter("module/ui/translations", ({translations}) => {
 	
 	translations.en["field.title"] = "Title";
 	translations.de["field.title"] = "Titel";
@@ -53,9 +60,9 @@ $hooks.registerFilter("module/ui/translations", (context) => {
 	return translations;
 })
 
-$hooks.registerAction("system/content/slot/header", (context) => {
-	return "<!-- this comes into the header slot -->";
+$hooks.registerAction("system/layout/html/header", (args) => {
+	return "<!-- this comes into the header -->";
 })
-$hooks.registerAction("system/content/slot/footer", (context) => {
-	return "<!-- this comes into the footer slot -->";
+$hooks.registerAction("system/layout/html/footer", (args) => {
+	return "<!-- this comes into the footer -->";
 })
