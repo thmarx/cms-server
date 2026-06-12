@@ -25,6 +25,7 @@ package com.condation.cms.content.markdown.rules.block;
 import com.condation.cms.content.markdown.Block;
 import com.condation.cms.content.markdown.BlockElementRule;
 import com.condation.cms.content.markdown.InlineRenderer;
+import com.condation.cms.content.markdown.utils.StringUtils;
 import com.google.common.html.HtmlEscapers;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,15 +53,15 @@ public class CodeBlockRule implements BlockElementRule {
 	public static record CodeBlock (int start, int end, String content, String language) implements Block {
 
 		@Override
-		public String render(InlineRenderer inlineRenderer) {
+		public String render(InlineRenderer inlineRenderer, int documentOffset) {
 			if (language == null || "".equals(language)) {
 				return "<pre><code>%s</code></pre>".formatted(escape(content));
 			}
 			return "<pre><code class='lang-%s'>%s</code></pre>".formatted(language, escape(content));
 		}
 		
-		private String escape (String html) {
-			return HtmlEscapers.htmlEscaper().escape(html);
+		private String escape(String html) {
+			return StringUtils.escapeToEntities(HtmlEscapers.htmlEscaper().escape(html));
 		}
 		
 	}

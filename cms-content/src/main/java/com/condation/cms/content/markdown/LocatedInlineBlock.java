@@ -1,8 +1,8 @@
-package com.condation.cms.api.extensions;
+package com.condation.cms.content.markdown;
 
 /*-
  * #%L
- * CMS Api
+ * CMS Content
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -10,36 +10,22 @@ package com.condation.cms.api.extensions;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
-
-import com.condation.cms.api.model.Parameter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 /**
+ * Wraps an {@link InlineBlock} with its absolute start/end positions in the
+ * original markdown document, combining the enclosing block's document offset
+ * with the inline element's position within the block content.
  *
  * @author t.marx
  */
-public abstract class RegisterTagsExtensionPoint extends AbstractExtensionPoint {
-
-    @Deprecated(since = "8.1.0", forRemoval = true)
-    public Map<String, Function<Parameter, String>> tags () {
-		return Collections.emptyMap();
-	}
-	
-	public List<Object> tagDefinitions () {
-		return Collections.emptyList();
-	}
-}
+public record LocatedInlineBlock(InlineBlock block, int absoluteStart, int absoluteEnd) {}

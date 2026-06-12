@@ -42,7 +42,7 @@ Hello world!
 
 Here some content!
 
-Hello: [[cms:username]][[/cms:username]]
+Hello: [[cms:username]][[/cms:username]]  
 Theme: [[ext:theme_name]][[/ext:theme_name]]
 
 [about](/about)
@@ -51,8 +51,15 @@ Theme: [[ext:theme_name]][[/ext:theme_name]]
 
 
 ```java
+// its a comment
 System.out.println("Hello world!");
 ```
 
 ### say hello
 [[ext:say_hello name="CondationCMS" /]]
+
+
+### test ShortCode with content
+---
+[[ext:bold_content]]This content will be bold[[/ext:bold_content]]
+---

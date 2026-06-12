@@ -45,6 +45,7 @@ import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.eventbus.events.ConfigurationReloadEvent;
 import com.condation.cms.api.mail.MailService;
 import com.condation.cms.api.mapper.ContentNodeMapper;
+import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.media.MediaService;
 import com.condation.cms.api.messages.MessageSource;
 import com.condation.cms.api.messaging.Messaging;
@@ -58,7 +59,7 @@ import com.condation.cms.content.DefaultContentParser;
 import com.condation.cms.content.DefaultContentRenderer;
 import com.condation.cms.content.TaxonomyResolver;
 import com.condation.cms.content.ViewResolver;
-import com.condation.cms.content.tags.TagParser;
+import com.condation.cms.content.shortcodes.ShortCodeParser;
 import com.condation.cms.content.template.functions.taxonomy.TaxonomyFunction;
 import com.condation.cms.core.configuration.ConfigManagement;
 import com.condation.cms.core.configuration.ConfigurationFactory;
@@ -136,7 +137,7 @@ public class SiteModule extends AbstractModule {
     
 	@Provides
 	@Singleton
-	public TagParser tagParser (Configuration configuration) {
+	public ShortCodeParser ShortCodeParser (Configuration configuration, MarkdownRenderer markdownRenderer) {
 		var engine = new JexlBuilder()
 				.strict(true)
 				.cache(512);
@@ -149,7 +150,7 @@ public class SiteModule extends AbstractModule {
 			engine.silent(true);
 		}
 		
-		return new TagParser(engine.create());
+		return new ShortCodeParser(engine.create(), markdownRenderer);
 	}
 	
 	@Provides

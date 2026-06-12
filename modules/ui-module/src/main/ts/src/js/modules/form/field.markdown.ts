@@ -20,7 +20,7 @@
  */
 import { createID } from "@cms/modules/form/utils.js";
 import { i18n } from "@cms/modules/localization.js"
-import { getMediaFormats, getTagNames } from "@cms/modules/rpc/rpc-manager.js";
+import { getMediaFormats, getShortCodeNames } from "@cms/modules/rpc/rpc-manager.js";
 import { openFileBrowser } from "@cms/modules/filebrowser.js";
 import { alertSelect } from "@cms/modules/alerts.js";
 import { FieldOptions, FormContext, FormField } from "@cms/modules/form/forms.js";
@@ -52,11 +52,15 @@ const createMarkdownField = (options: MarkdownFieldOptions, value: string = '') 
 };
 
 const getData = (context : FormContext) => {
-    const data = {};
+    const data : any = {};
+    const formElement = context.formElement;
+    if (!formElement) {
+        return data;
+    }
 
-    const editorInputs = context.formElement.querySelectorAll('[data-cms-form-field-type="markdown"] input');
+    const editorInputs = formElement.querySelectorAll('[data-cms-form-field-type="markdown"] input');
     
-    editorInputs.forEach((input: HTMLInputElement) => {
+    editorInputs.forEach((input: any) => {
         const editor = (input as any).cherryEditor;
         
         if (editor && editor.getMarkdown) {
@@ -78,11 +82,15 @@ const getData = (context : FormContext) => {
 
 
 const init = async (context : FormContext) => {
+    const formElement = context.formElement;
+    if (!formElement) {
+        return;
+    }
 
-	const cmsTagsMenu = await buildCmsTagsMenu();
+	const cmsShortCodesMenu = await buildCmsShortCodesMenu();
 
-	const editorInputs = context.formElement.querySelectorAll('[data-cms-form-field-type="markdown"] input');
-	editorInputs.forEach((input: HTMLInputElement) => {
+	const editorInputs = formElement.querySelectorAll('[data-cms-form-field-type="markdown"] input');
+	editorInputs.forEach((input: any) => {
 		const containerId = input.dataset.cherryId;
 		const initialValue = decodeURIComponent(input.dataset.initialValue || "");
 
@@ -107,12 +115,12 @@ const init = async (context : FormContext) => {
 					'code',
 					'|',
 					'cmsImageSelection',
-					'cmsTagsMenu',
+					'cmsShortCodesMenu',
 				],
 				bubble: ['bold', 'italic', 'underline', 'strikethrough', 'sub', 'sup', 'quote', '|', 'size', 'color'], // array or false
 				float: ['h1', 'h2', 'h3', '|', 'checklist', 'table', 'code'],
 				customMenu: {
-					cmsTagsMenu: cmsTagsMenu,
+					cmsShortCodesMenu: cmsShortCodesMenu,
 					cmsImageSelection: cmsImageSelection
 				},
 			}
@@ -140,26 +148,26 @@ const getEditorFromEvent = (event: any): any => {
     return input ? (input as any).cherryEditor : null;
 };
 
-const buildCmsTagsMenu = async () => {
-	const response = await getTagNames({});
-	const tagNames = response.result || [];
+const buildCmsShortCodesMenu = async () => {
+	const response = await getShortCodeNames({});
+	const shortCodeNames = response.result || [];
 
-	const submenuConfig = tagNames.map(tag => ({
-		name: tag.charAt(0).toUpperCase() + tag.slice(1),
-		value: tag,
+	const submenuConfig = shortCodeNames.map((shortCode: string) => ({
+		name: shortCode.charAt(0).toUpperCase() + shortCode.slice(1),
+		value: shortCode,
 		noIcon: true,
 		onclick: (event: any) => {
 			const editor = getEditorFromEvent(event);
 			if (editor) {
-				editor.toolbar.menus.hooks["cmsTagsMenu"].fire(null, tag);
+				editor.toolbar.menus.hooks["cmsShortCodesMenu"].fire(null, shortCode);
 			}
 		}
 	}));
 
-	return window.Cherry.createMenuHook("CMS-Tags", {
-		title: "CMS Tags",
-		onClick: (selection, tag) => {
-			return `[[${tag}]]${selection || ""}[[/${tag}]]`;
+	return window.Cherry.createMenuHook("CMS-ShortCodes", {
+		title: "CMS Short Codes",
+		onClick: (selection: string, shortCode : string) => {
+			return `[[${shortCode}]]${selection || ""}[[/${shortCode}]]`;
 		},
 		subMenuConfig: submenuConfig
 	});
@@ -176,7 +184,7 @@ const cmsImageSelection = window.Cherry.createMenuHook("Image", {
 		openFileBrowser({
 			type: "assets",
 			fullscreen: false,
-			filter: (file) => {
+			filter: (file: any) => {
 				return file.media || file.directory;
 			},
 			onSelect: async (file: any) => {
@@ -194,7 +202,7 @@ const cmsImageSelection = window.Cherry.createMenuHook("Image", {
 
 					// select media format
 					var mediaFormats  = (await getMediaFormats({})).result || [];
-					var formatOptions = {};
+					var formatOptions : any = {};
 					formatOptions["original"] = "Original";
 					mediaFormats.forEach((format : any) => {
 						formatOptions[format.name] = format.name;

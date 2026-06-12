@@ -21,8 +21,8 @@ package com.condation.cms.content;
  * #L%
  */
 
-import com.condation.cms.content.tags.ShortCodeParser;
-import com.condation.cms.content.tags.TagParser;
+import com.condation.cms.api.markdown.MarkdownRenderer;
+import com.condation.cms.content.shortcodes.ShortCodeParser;
 import org.apache.commons.jexl3.JexlBuilder;
 
 /**
@@ -31,13 +31,11 @@ import org.apache.commons.jexl3.JexlBuilder;
  */
 public abstract class ContentBaseTest {
 	
-	private ShortCodeParser shortCodeParser;
+	private ShortCodeParser tagParser;
 	
-	private TagParser tagParser;
-	
-	public TagParser getTagParser () {
+	public ShortCodeParser getTagParser () {
 		if (tagParser == null) {
-			tagParser = new TagParser(
+			tagParser = new ShortCodeParser(
 					new JexlBuilder().cache(512).strict(true).silent(false).create()
 			);
 		}
@@ -45,12 +43,10 @@ public abstract class ContentBaseTest {
 		return tagParser;
 	}
 	
-	public ShortCodeParser getShortCodeParser () {
-		if (shortCodeParser == null) {
-			shortCodeParser = new ShortCodeParser(
-			);
-		}
-		
-		return shortCodeParser;
+	public ShortCodeParser getTagParser(MarkdownRenderer markdownRenderer) {
+		return new ShortCodeParser(
+			new JexlBuilder().cache(512).strict(true).silent(false).create(),
+			markdownRenderer
+		);
 	}
 }

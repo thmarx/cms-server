@@ -31,9 +31,9 @@ import org.junit.jupiter.api.Test;
  *
  * @author t.marx
  */
-public class TagBlockRuleTest {
+public class ShortCodeBlockRuleTest {
 	
-	private TagBlockRule sut = new TagBlockRule();
+	private ShortCodeBlockRule sut = new ShortCodeBlockRule();
 
 	@Test
 	void long_form() {
@@ -44,17 +44,17 @@ public class TagBlockRuleTest {
 
 		Assertions.assertThat(next)
 				.isNotNull()
-				.isInstanceOf(TagBlockRule.TagBlock.class);
+				.isInstanceOf(ShortCodeBlockRule.ShortCodeBlock.class);
 
-		var tag = (TagBlockRule.TagBlock)next;
-		Assertions.assertThat(tag.tagInfo())
+		var tag = (ShortCodeBlockRule.ShortCodeBlock)next;
+		Assertions.assertThat(tag.shortCodeInfo())
 				.hasFieldOrPropertyWithValue("name", "link")
 				.hasFieldOrPropertyWithValue("rawAttributes", Map.of(
 						"url", "https://google.de/",
 						"_content", "Google"
 				));
 		
-		Assertions.assertThat(next.render((content) -> content)).isEqualTo("[[link url=\"https://google.de/\"]]Google[[/link]]");
+		Assertions.assertThat(next.render((content, offset) -> content)).isEqualTo("[[link url=\"https://google.de/\"]]Google[[/link]]");
 	}
 	
 	@Test
@@ -66,16 +66,16 @@ public class TagBlockRuleTest {
 
 		Assertions.assertThat(next)
 				.isNotNull()
-				.isInstanceOf(TagBlockRule.TagBlock.class);
+				.isInstanceOf(ShortCodeBlockRule.ShortCodeBlock.class);
 
-		var tag = (TagBlockRule.TagBlock)next;
-		Assertions.assertThat(tag.tagInfo())
+		var tag = (ShortCodeBlockRule.ShortCodeBlock)next;
+		Assertions.assertThat(tag.shortCodeInfo())
 				.hasFieldOrPropertyWithValue("name", "link")
 				.hasFieldOrPropertyWithValue("rawAttributes", Map.of(
 						"url", "https://google.de/"
 				));
 		
-		Assertions.assertThat(next.render((content) -> content)).isEqualTo("[[link url=\"https://google.de/\"]][[/link]]");
+		Assertions.assertThat(next.render((content, offset) -> content)).isEqualTo("[[link url=\"https://google.de/\"]][[/link]]");
 	}
 	
 	@Test
@@ -86,11 +86,11 @@ public class TagBlockRuleTest {
 
 		Assertions.assertThat(next)
 				.isNotNull()
-				.isInstanceOf(TagBlockRule.TagBlock.class)
+				.isInstanceOf(ShortCodeBlockRule.ShortCodeBlock.class)
 				;
 
-		var tag = (TagBlockRule.TagBlock)next;
-		Assertions.assertThat(tag.tagInfo())
+		var tag = (ShortCodeBlockRule.ShortCodeBlock)next;
+		Assertions.assertThat(tag.shortCodeInfo())
 				.hasFieldOrPropertyWithValue("name", "video")
 				.hasFieldOrPropertyWithValue("rawAttributes", Map.of(
 						"type", "youtube",
@@ -98,7 +98,7 @@ public class TagBlockRuleTest {
 						"title", "Everybody loves little cats"
 				));
 		
-		Assertions.assertThat(next.render((content) -> content))
+		Assertions.assertThat(next.render((content, offset) -> content))
 				.isEqualTo("[[video id=\"y0sF5xhGreA\" title=\"Everybody loves little cats\" type=\"youtube\"]][[/video]]");
 
 	}

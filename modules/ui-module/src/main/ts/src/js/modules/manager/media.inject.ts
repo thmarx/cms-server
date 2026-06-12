@@ -21,7 +21,7 @@
 import { EDIT_ATTRIBUTES_ICON, IMAGE_ICON, MEDIA_CROP_ICON } from "@cms/modules/manager/toolbar-icons";
 import frameMessenger from '@cms/modules/frameMessenger.js';
 
-const isSameDomainImage = (imgElement) => {
+const isSameDomainImage = (imgElement : HTMLImageElement) => {
 	if (!(imgElement instanceof HTMLImageElement)) {
 		return false; // ist kein <img>
 	}
@@ -78,7 +78,7 @@ export const initMediaUploadOverlay = (img: HTMLImageElement) => {
 		}
 	});
 
-	overlay.addEventListener('click', (e) => {
+	overlay.addEventListener('click', (e: any) => {
 		selectMedia(img.dataset.cmsMetaElement, img.dataset.cmsNodeUri);
 	});
 
@@ -98,7 +98,7 @@ export const initContentMediaToolbar = (img: HTMLImageElement) => {
 	}
 
 	var toolbar = img.closest('[data-cms-toolbar]') as HTMLElement;
-    var parentToolbarDef = JSON.parse(toolbar.dataset.cmsToolbar);
+    var parentToolbarDef = JSON.parse(toolbar.dataset.cmsToolbar || '{}');
 
 	if (!parentToolbarDef) {
 		return;
@@ -107,9 +107,12 @@ export const initContentMediaToolbar = (img: HTMLImageElement) => {
 	var toolbarDefinition =
 	{
 		"options": {
-			"uri": parentToolbarDef.uri
+			"uri": parentToolbarDef.uri,
+			"start": img.dataset.cmsMdStart || null,
+			"end": img.dataset.cmsMdEnd || null
 		},
 		"actions": [
+			"replace",
 			"meta",
 			"focalPoint"
 		]
@@ -123,7 +126,7 @@ export const initMediaToolbar = (img: HTMLImageElement) => {
 		return;
 	}
 
-	var toolbarDefinition = JSON.parse(img.dataset.cmsMediaToolbar);
+	var toolbarDefinition = JSON.parse(img.dataset.cmsMediaToolbar || '{}');
 
 	initToolbar(img, toolbarDefinition);
 };
@@ -141,6 +144,15 @@ export const initToolbar = (img: HTMLImageElement, toolbarDefinition: any) => {
 			selectMedia(toolbarDefinition.options.element, toolbarDefinition.options.uri);
 		});
 		toolbar.appendChild(selectButton);
+	}
+	if (toolbarDefinition.actions.includes('replace')) {
+		const replaceButton = document.createElement('button');
+		replaceButton.innerHTML = IMAGE_ICON;
+		replaceButton.setAttribute("title", "Replace media");
+		replaceButton.addEventListener('click', (event) => {
+			replaceMedia(toolbarDefinition.options.start, toolbarDefinition.options.end, toolbarDefinition.options.element, toolbarDefinition.options.uri);
+		});
+		toolbar.appendChild(replaceButton);
 	}
 	if (toolbarDefinition.actions.includes('meta')) {
 		const metaButton = document.createElement('button');
@@ -203,7 +215,24 @@ export const initToolbar = (img: HTMLImageElement, toolbarDefinition: any) => {
 	});
 };
 
-const selectMedia = (metaElement: string, uri?: string) => {
+const replaceMedia = (start : number, end : number, metaElement?: string, uri?: string) => {
+	var command = {
+		type: 'edit',
+		payload: {
+			editor: "replace",
+			element: "image",
+			options: {
+				metaElement: metaElement,
+				uri: uri,
+				start: start,
+				end: end
+			}
+		}
+	}
+	frameMessenger.send(window.parent, command);
+}
+
+const selectMedia = (metaElement?: string, uri?: string) => {
 	var command = {
 		type: 'edit',
 		payload: {

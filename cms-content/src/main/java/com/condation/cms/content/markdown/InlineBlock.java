@@ -37,12 +37,31 @@ public interface InlineBlock {
 
 	String render();
 
+	/**
+	 * Renders with absolute document positions. Override for elements that need
+	 * to embed position metadata (e.g. images). Defaults to {@link #render()}.
+	 */
+	default String render(int absoluteStart, int absoluteEnd) {
+		return render();
+	}
+
 	default boolean isPreview() {
 		if (!RequestContextScope.REQUEST_CONTEXT.isBound()) {
 			return false;
 		}
 		var requestContext = RequestContextScope.REQUEST_CONTEXT.get();
 		return requestContext != null && requestContext.has(IsPreviewFeature.class);
+	}
+	
+	default boolean isManagerPreview() {
+		if (!RequestContextScope.REQUEST_CONTEXT.isBound()) {
+			return false;
+		}
+		var requestContext = RequestContextScope.REQUEST_CONTEXT.get();
+		if (requestContext == null || !requestContext.has(IsPreviewFeature.class)) {
+			return false;
+		}
+		return IsPreviewFeature.Mode.MANAGER.equals(requestContext.get(IsPreviewFeature.class).mode());
 	}
 	
 	default Optional<RequestContext> getRequestContext () {

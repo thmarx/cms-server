@@ -90,7 +90,7 @@ public class FeaturesTest extends MarkdownTest {
 	}
 
 	@RepeatedTest(1)
-	public void test_tags() throws IOException {
+	public void test_shortCodes() throws IOException {
 
 		var md = load("features.tags.md").trim();
 		var expected = load("features.tags.html");
@@ -111,7 +111,7 @@ public class FeaturesTest extends MarkdownTest {
            """;
 		var expected = """
             [[hello]]
-			<strong>bold text</strong>
+			**bold text**
 			[[/hello]]
             <p></p>
             """.trim();

@@ -50,6 +50,17 @@ const executeImageSelect = (payload: any) => {
     executeScriptAction(cmd);
 }
 
+const executeContentImageReplace = (payload: any) => {
+    const cmd: any = {
+        "module": window.manager.baseUrl + "/actions/media/select-content-media",
+        "function": "runAction",
+        "parameters": {
+            "options": payload.options ? payload.options : {}
+        }
+    }
+    executeScriptAction(cmd);
+}
+
 const initMessageHandlers = () => {
     frameMessenger.on('preview:reload', (payload: any) => {
 
@@ -89,6 +100,8 @@ const initMessageHandlers = () => {
             executeImageForm(payload);
         } else if (payload.element === "image" && payload.editor === "select") {
             executeImageSelect(payload);
+        } else if (payload.element === "image" && payload.editor === "replace") {
+            executeContentImageReplace(payload);
         } else if (payload.element === "image" && payload.editor === "focal-point") {
             var cmd: any = {
                 "module": window.manager.baseUrl + "/actions/media/edit-focal-point",
@@ -117,7 +130,7 @@ const initMessageHandlers = () => {
             executeScriptAction(cmd)
         }
     });
-    frameMessenger.on('edit-sections', (payload) => {
+    frameMessenger.on('edit-sections', (payload : any) => {
         var cmd : any= {
             "module": window.manager.baseUrl + "/actions/page/edit-sections",
             "function": "runAction",
@@ -154,8 +167,7 @@ const initMessageHandlers = () => {
     });
 
     frameMessenger.on('shortkeys', (payload : any) => {
-        const ninja: any = document.querySelector('ninja-keys');
-        ninja.open();
+        window.manager.commandPalette.open();
     });
 
     frameMessenger.on("section-set-published", (payload: any) => {
