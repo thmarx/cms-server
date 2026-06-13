@@ -25,7 +25,6 @@ import com.condation.cms.api.hooks.ActionFunction;
 import com.condation.cms.hooksystem.ActionHook;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -37,7 +36,7 @@ import java.util.List;
 public class ActionRegistry {
 
     private final Multimap<String, ActionHook> hooks = ArrayListMultimap.create();
-
+    
     public <T> void register(String name, ActionFunction<T> function, int priority) {
         hooks.put(name, new ActionHook<>(name, priority, function));
     }
