@@ -74,6 +74,17 @@
 				{% endfor %}
 			{% endif %}
 		</div>
+		
+		<h2>vertical test</h2>
+		<div class="container sections_v" 
+			{{ ext.ui.toolbar("vsection", "section", ["addSectionEntry", "orderSectionEntries", "dragSectionEntries"], { "section": "vsection"}) | raw }}
+			>
+			{% if node.sections.containsKey('vsection') %}
+				{% for item in node.sections.get('vsection') %}
+					{{ item.content() | raw }}
+				{% endfor %}
+			{% endif %}
+		</div>
 
 		<div>
 			<h3>Test Node references</h3>

@@ -175,16 +175,29 @@ const initDragDrop = (container) => {
         const siblings = Array.from(container.querySelectorAll(':scope > .cms-ui-editable-sections')).filter(el => el !== draggedEl);
         if (siblings.length === 0)
             return;
-        // Reading-order insertion: scan siblings in DOM order and find the first
-        // one the cursor "comes before" — either because the cursor is above its
-        // row, or on the same row and to the left of its horizontal midpoint.
+        const containerWidth = container.getBoundingClientRect().width;
         let insertBeforeEl = null;
         for (const el of siblings) {
             const r = el.getBoundingClientRect();
             const aboveRow = e.clientY < r.top;
-            const sameRow = e.clientY >= r.top && e.clientY <= r.bottom;
-            const leftHalf = e.clientX < r.left + r.width / 2;
-            if (aboveRow || (sameRow && leftHalf)) {
+            const belowRow = e.clientY > r.bottom;
+            const sameRow = !aboveRow && !belowRow;
+            let placeBefore;
+            if (aboveRow) {
+                placeBefore = true;
+            }
+            else if (belowRow) {
+                placeBefore = false;
+            }
+            else if (r.width >= containerWidth * 0.9) {
+                // Full-width element (vertical layout): top/bottom half decides
+                placeBefore = e.clientY < r.top + r.height / 2;
+            }
+            else {
+                // Partial-width element (horizontal/wrap layout): left/right half decides
+                placeBefore = sameRow && e.clientX < r.left + r.width / 2;
+            }
+            if (placeBefore) {
                 insertBeforeEl = el;
                 break;
             }

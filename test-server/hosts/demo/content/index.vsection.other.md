@@ -1,5 +1,5 @@
 ---
-template: section.html
+template: section_v.html
 layout:
   order: 0
 parent:

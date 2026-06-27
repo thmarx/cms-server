@@ -1,6 +1,6 @@
 ---
 title: Startseite
-template: section.html
+template: section_v.html
 search:
   index: false
 description: my new descritpion for that awesome section-lol
