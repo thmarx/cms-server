@@ -207,59 +207,25 @@ const initDragDrop = (container: HTMLElement) => {
 
 		if (siblings.length === 0) return;
 
-		const centers = siblings.map(el => {
+		// Reading-order insertion: scan siblings in DOM order and find the first
+		// one the cursor "comes before" — either because the cursor is above its
+		// row, or on the same row and to the left of its horizontal midpoint.
+		let insertBeforeEl: HTMLElement | null = null;
+		for (const el of siblings) {
 			const r = el.getBoundingClientRect();
-			return { el, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
-		});
-
-		// Build n+1 gap points for n siblings.
-		// Middle gaps: midpoint between consecutive element centers.
-		// Edge gaps: extrapolate from the first/last inter-element direction so
-		// the "before first" and "after last" zones are symmetric with the rest.
-		const gaps: Array<{ x: number; y: number; before: HTMLElement | null }> = [];
-
-		if (centers.length === 1) {
-			const r = siblings[0].getBoundingClientRect();
-			gaps.push({ x: r.left, y: r.top + r.height / 2, before: siblings[0] });
-			gaps.push({ x: r.right, y: r.top + r.height / 2, before: null });
-		} else {
-			const dx0 = centers[1].cx - centers[0].cx;
-			const dy0 = centers[1].cy - centers[0].cy;
-			gaps.push({ x: centers[0].cx - dx0 / 2, y: centers[0].cy - dy0 / 2, before: centers[0].el });
-
-			for (let i = 1; i < centers.length; i++) {
-				gaps.push({
-					x: (centers[i - 1].cx + centers[i].cx) / 2,
-					y: (centers[i - 1].cy + centers[i].cy) / 2,
-					before: centers[i].el
-				});
-			}
-
-			const last = centers.length - 1;
-			const dxL = centers[last].cx - centers[last - 1].cx;
-			const dyL = centers[last].cy - centers[last - 1].cy;
-			gaps.push({ x: centers[last].cx + dxL / 2, y: centers[last].cy + dyL / 2, before: null });
-		}
-
-		let bestDist = Infinity;
-		let bestBefore: HTMLElement | null | undefined = undefined;
-
-		for (const gap of gaps) {
-			const dx = e.clientX - gap.x;
-			const dy = e.clientY - gap.y;
-			const dist = dx * dx + dy * dy;
-			if (dist < bestDist) {
-				bestDist = dist;
-				bestBefore = gap.before;
+			const aboveRow = e.clientY < r.top;
+			const sameRow = e.clientY >= r.top && e.clientY <= r.bottom;
+			const leftHalf = e.clientX < r.left + r.width / 2;
+			if (aboveRow || (sameRow && leftHalf)) {
+				insertBeforeEl = el;
+				break;
 			}
 		}
 
-		if (bestBefore === undefined) return;
-
-		if (bestBefore === null) {
+		if (insertBeforeEl === null) {
 			container.appendChild(placeholder);
 		} else {
-			container.insertBefore(placeholder, bestBefore);
+			container.insertBefore(placeholder, insertBeforeEl);
 		}
 	});
 
