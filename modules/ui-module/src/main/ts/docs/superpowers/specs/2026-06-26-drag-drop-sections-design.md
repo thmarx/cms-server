@@ -1,7 +1,7 @@
 # Drag & Drop Section Sorting — Design Spec
 
 **Date:** 2026-06-26  
-**Branch:** e2e_example_module  
+**Branch:** main  
 
 ## Overview
 
