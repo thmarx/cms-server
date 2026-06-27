@@ -116,71 +116,62 @@ const editAttributes = (event) => {
     frameMessenger.send(window.parent, command);
 };
 const initDragDrop = (container) => {
+    if (container.dataset.cmsDragDropInitialized === 'true') {
+        return;
+    }
     const draggableItems = Array.from(container.querySelectorAll(':scope > .cms-ui-editable-sections'));
     if (draggableItems.length === 0) {
         return;
     }
+    container.dataset.cmsDragDropInitialized = 'true';
     let draggedEl = null;
     let placeholder = null;
-    draggableItems.forEach((item) => {
-        item.setAttribute('draggable', 'false');
-        const itemToolbar = item.querySelector('.cms-ui-toolbar');
-        if (itemToolbar) {
-            const handle = document.createElement('button');
-            handle.setAttribute('data-cms-drag-handle', '');
-            handle.setAttribute('title', 'Drag to reorder');
-            handle.innerHTML = MOVE_ICON;
-            handle.style.cursor = 'grab';
-            handle.addEventListener('mousedown', () => {
-                item.setAttribute('draggable', 'true');
-            });
-            itemToolbar.appendChild(handle);
+    let dragItems = [];
+    let pendingDragPosition = null;
+    let dragOverFrame = 0;
+    const createPlaceholder = (item) => {
+        const nextPlaceholder = document.createElement('div');
+        nextPlaceholder.setAttribute('data-cms-drag-placeholder', '');
+        const cs = getComputedStyle(item);
+        nextPlaceholder.style.width = item.offsetWidth + 'px';
+        nextPlaceholder.style.height = item.offsetHeight + 'px';
+        nextPlaceholder.style.margin = cs.margin;
+        nextPlaceholder.style.border = '2px dashed #aaa';
+        nextPlaceholder.style.boxSizing = 'border-box';
+        nextPlaceholder.style.opacity = '0.5';
+        nextPlaceholder.style.flexShrink = cs.flexShrink;
+        nextPlaceholder.style.flexGrow = cs.flexGrow;
+        nextPlaceholder.style.flexBasis = cs.flexBasis;
+        return nextPlaceholder;
+    };
+    const resetDragState = () => {
+        if (dragOverFrame) {
+            cancelAnimationFrame(dragOverFrame);
+            dragOverFrame = 0;
         }
-        item.addEventListener('dragstart', (e) => {
-            draggedEl = item;
-            e.dataTransfer?.setData('text/plain', '');
-            placeholder = document.createElement('div');
-            placeholder.setAttribute('data-cms-drag-placeholder', '');
-            const cs = getComputedStyle(item);
-            placeholder.style.width = item.offsetWidth + 'px';
-            placeholder.style.height = item.offsetHeight + 'px';
-            placeholder.style.margin = cs.margin;
-            placeholder.style.border = '2px dashed #aaa';
-            placeholder.style.boxSizing = 'border-box';
-            placeholder.style.opacity = '0.5';
-            placeholder.style.flexShrink = cs.flexShrink;
-            placeholder.style.flexGrow = cs.flexGrow;
-            placeholder.style.flexBasis = cs.flexBasis;
-            requestAnimationFrame(() => {
-                if (draggedEl && placeholder) {
-                    container.insertBefore(placeholder, draggedEl);
-                    draggedEl.style.display = 'none';
-                }
-            });
-        });
-        item.addEventListener('dragend', () => {
-            if (draggedEl) {
-                draggedEl.style.display = '';
-                draggedEl.setAttribute('draggable', 'false');
-            }
-            placeholder?.remove();
-            placeholder = null;
-            draggedEl = null;
-        });
-    });
-    container.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        if (!draggedEl || !placeholder)
-            return;
-        const siblings = Array.from(container.querySelectorAll(':scope > .cms-ui-editable-sections')).filter(el => el !== draggedEl);
-        if (siblings.length === 0)
-            return;
+        if (draggedEl) {
+            draggedEl.style.display = '';
+            draggedEl.setAttribute('draggable', 'false');
+        }
+        placeholder?.remove();
+        placeholder = null;
+        draggedEl = null;
+        dragItems = [];
+        pendingDragPosition = null;
+    };
+    const getInsertBeforeElement = (position) => {
+        if (!draggedEl) {
+            return null;
+        }
+        const siblings = dragItems.filter(el => el !== draggedEl);
+        if (siblings.length === 0) {
+            return null;
+        }
         const containerWidth = container.getBoundingClientRect().width;
-        let insertBeforeEl = null;
         for (const el of siblings) {
             const r = el.getBoundingClientRect();
-            const aboveRow = e.clientY < r.top;
-            const belowRow = e.clientY > r.bottom;
+            const aboveRow = position.clientY < r.top;
+            const belowRow = position.clientY > r.bottom;
             const sameRow = !aboveRow && !belowRow;
             let placeBefore;
             if (aboveRow) {
@@ -191,33 +182,112 @@ const initDragDrop = (container) => {
             }
             else if (r.width >= containerWidth * 0.9) {
                 // Full-width element (vertical layout): top/bottom half decides
-                placeBefore = e.clientY < r.top + r.height / 2;
+                placeBefore = position.clientY < r.top + r.height / 2;
             }
             else {
                 // Partial-width element (horizontal/wrap layout): left/right half decides
-                placeBefore = sameRow && e.clientX < r.left + r.width / 2;
+                placeBefore = sameRow && position.clientX < r.left + r.width / 2;
             }
             if (placeBefore) {
-                insertBeforeEl = el;
-                break;
+                return el;
             }
         }
-        if (insertBeforeEl === null) {
-            container.appendChild(placeholder);
+        return null;
+    };
+    const updatePlaceholderPosition = () => {
+        dragOverFrame = 0;
+        if (!placeholder || !pendingDragPosition) {
+            return;
         }
-        else {
+        const insertBeforeEl = getInsertBeforeElement(pendingDragPosition);
+        if (insertBeforeEl === null) {
+            if (placeholder.nextElementSibling !== null) {
+                container.appendChild(placeholder);
+            }
+            return;
+        }
+        if (placeholder.nextElementSibling !== insertBeforeEl) {
             container.insertBefore(placeholder, insertBeforeEl);
+        }
+    };
+    draggableItems.forEach((item) => {
+        if (item.dataset.cmsDragDropItemInitialized === 'true') {
+            return;
+        }
+        item.dataset.cmsDragDropItemInitialized = 'true';
+        item.setAttribute('draggable', 'false');
+        const itemToolbar = item.querySelector('.cms-ui-toolbar');
+        if (itemToolbar && !itemToolbar.querySelector('[data-cms-drag-handle]')) {
+            const handle = document.createElement('button');
+            handle.setAttribute('type', 'button');
+            handle.setAttribute('data-cms-drag-handle', '');
+            handle.setAttribute('title', 'Drag to reorder');
+            handle.setAttribute('aria-label', 'Drag to reorder');
+            handle.innerHTML = MOVE_ICON;
+            handle.style.cursor = 'grab';
+            handle.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) {
+                    return;
+                }
+                item.setAttribute('draggable', 'true');
+                document.addEventListener('mouseup', () => {
+                    if (!draggedEl) {
+                        item.setAttribute('draggable', 'false');
+                    }
+                }, { once: true });
+            });
+            itemToolbar.appendChild(handle);
+        }
+        item.addEventListener('dragstart', (e) => {
+            if (item.getAttribute('draggable') !== 'true') {
+                e.preventDefault();
+                return;
+            }
+            draggedEl = item;
+            dragItems = Array.from(container.querySelectorAll(':scope > .cms-ui-editable-sections'));
+            e.dataTransfer?.setData('text/plain', '');
+            if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+            }
+            placeholder = createPlaceholder(item);
+            requestAnimationFrame(() => {
+                if (draggedEl && placeholder) {
+                    container.insertBefore(placeholder, draggedEl);
+                    draggedEl.style.display = 'none';
+                }
+            });
+        });
+        item.addEventListener('dragend', () => {
+            resetDragState();
+        });
+    });
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!draggedEl || !placeholder)
+            return;
+        pendingDragPosition = {
+            clientX: e.clientX,
+            clientY: e.clientY
+        };
+        if (!dragOverFrame) {
+            dragOverFrame = requestAnimationFrame(updatePlaceholderPosition);
         }
     });
     container.addEventListener('drop', (e) => {
         e.preventDefault();
         if (!draggedEl || !placeholder)
             return;
+        if (dragOverFrame) {
+            cancelAnimationFrame(dragOverFrame);
+            dragOverFrame = 0;
+            updatePlaceholderPosition();
+        }
+        const droppedEl = draggedEl;
         container.insertBefore(draggedEl, placeholder);
         placeholder.remove();
         placeholder = null;
-        draggedEl.style.display = '';
-        draggedEl.setAttribute('draggable', 'false');
+        droppedEl.style.display = '';
+        droppedEl.setAttribute('draggable', 'false');
         const items = Array.from(container.querySelectorAll(':scope > .cms-ui-editable-sections'));
         const updates = items.map((el, index) => {
             const toolbarData = el.dataset.cmsToolbar ? JSON.parse(el.dataset.cmsToolbar) : {};
@@ -232,6 +302,8 @@ const initDragDrop = (container) => {
             };
         }).filter(u => u.uri);
         draggedEl = null;
+        dragItems = [];
+        pendingDragPosition = null;
         frameMessenger.send(window.parent, {
             type: 'sort-sections',
             payload: { updates }
