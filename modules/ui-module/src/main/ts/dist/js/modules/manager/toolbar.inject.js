@@ -129,6 +129,7 @@ const initDragDrop = (container) => {
     let dragItems = [];
     let pendingDragPosition = null;
     let dragOverFrame = 0;
+    const keepPlaceholderPosition = Symbol('keepPlaceholderPosition');
     const createPlaceholder = (item) => {
         const nextPlaceholder = document.createElement('div');
         nextPlaceholder.setAttribute('data-cms-drag-placeholder', '');
@@ -139,6 +140,7 @@ const initDragDrop = (container) => {
         nextPlaceholder.style.border = '2px dashed #aaa';
         nextPlaceholder.style.boxSizing = 'border-box';
         nextPlaceholder.style.opacity = '0.5';
+        nextPlaceholder.style.pointerEvents = 'none';
         nextPlaceholder.style.flexShrink = cs.flexShrink;
         nextPlaceholder.style.flexGrow = cs.flexGrow;
         nextPlaceholder.style.flexBasis = cs.flexBasis;
@@ -159,40 +161,28 @@ const initDragDrop = (container) => {
         dragItems = [];
         pendingDragPosition = null;
     };
+    const getDirectChildSectionEntry = (element) => {
+        const item = element?.closest('.cms-ui-editable-sections');
+        if (!item || item.parentElement !== container || item === draggedEl) {
+            return null;
+        }
+        return item;
+    };
     const getInsertBeforeElement = (position) => {
-        if (!draggedEl) {
-            return null;
+        if (!draggedEl || !placeholder) {
+            return keepPlaceholderPosition;
         }
-        const siblings = dragItems.filter(el => el !== draggedEl);
-        if (siblings.length === 0) {
-            return null;
+        const targetItem = getDirectChildSectionEntry(document.elementFromPoint(position.clientX, position.clientY));
+        if (targetItem) {
+            const children = Array.from(container.children);
+            const placeholderIndex = children.indexOf(placeholder);
+            const targetIndex = children.indexOf(targetItem);
+            if (placeholderIndex > -1 && targetIndex > -1 && placeholderIndex < targetIndex) {
+                return targetItem.nextElementSibling;
+            }
+            return targetItem;
         }
-        const containerWidth = container.getBoundingClientRect().width;
-        for (const el of siblings) {
-            const r = el.getBoundingClientRect();
-            const aboveRow = position.clientY < r.top;
-            const belowRow = position.clientY > r.bottom;
-            const sameRow = !aboveRow && !belowRow;
-            let placeBefore;
-            if (aboveRow) {
-                placeBefore = true;
-            }
-            else if (belowRow) {
-                placeBefore = false;
-            }
-            else if (r.width >= containerWidth * 0.9) {
-                // Full-width element (vertical layout): top/bottom half decides
-                placeBefore = position.clientY < r.top + r.height / 2;
-            }
-            else {
-                // Partial-width element (horizontal/wrap layout): left/right half decides
-                placeBefore = sameRow && position.clientX < r.left + r.width / 2;
-            }
-            if (placeBefore) {
-                return el;
-            }
-        }
-        return null;
+        return keepPlaceholderPosition;
     };
     const updatePlaceholderPosition = () => {
         dragOverFrame = 0;
@@ -200,13 +190,16 @@ const initDragDrop = (container) => {
             return;
         }
         const insertBeforeEl = getInsertBeforeElement(pendingDragPosition);
+        if (insertBeforeEl === keepPlaceholderPosition) {
+            return;
+        }
         if (insertBeforeEl === null) {
             if (placeholder.nextElementSibling !== null) {
                 container.appendChild(placeholder);
             }
             return;
         }
-        if (placeholder.nextElementSibling !== insertBeforeEl) {
+        if (insertBeforeEl !== placeholder && placeholder.nextElementSibling !== insertBeforeEl) {
             container.insertBefore(placeholder, insertBeforeEl);
         }
     };
