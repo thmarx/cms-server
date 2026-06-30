@@ -64,10 +64,4 @@ public class HttpUtil {
 
         return response.body();
     }
-
-    // --- Beispielaufruf ---
-    public static void main(String[] args) throws Exception {
-        String inhalt = fetchText("https://example.com");
-        System.out.println(inhalt);
-    }
 }

@@ -1,8 +1,8 @@
-package com.condation.cms.modules.example;
+package com.condation.cms.e2e;
 
 /*-
  * #%L
- * CMS Example Module
+ * integration-tests
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -20,21 +20,27 @@ package com.condation.cms.modules.example;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-
-import com.condation.cms.api.annotations.ShortCode;
-import com.condation.cms.api.extensions.RegisterShortCodesExtensionPoint;
-import com.condation.modules.api.annotation.Extension;
+import com.condation.cms.test.e2e.CMSServerExtension;
+import com.condation.cms.test.e2e.HttpUtil;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.junit.UsePlaywright;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
- * @author t.marx
+ * @author thmar
  */
-@Extension(RegisterShortCodesExtensionPoint.class)
-public class ExampleTagExtension extends RegisterShortCodesExtensionPoint {
-    
-    @ShortCode("example")
-    public String example () {
-        return "<b>example from module</b>";
-    }
+@UsePlaywright
+@ExtendWith(CMSServerExtension.class)
+public class ExtensionsTest {
+	
+	
+	
+	@Test
+	void test_template_function_node_paramter (Page page) throws Exception {
+		page.navigate("http://localhost:2020");
+        Assertions.assertThat(page.locator("body").innerHTML()).contains("<div>TITLE: Startpage</div>");
+	}
 }
