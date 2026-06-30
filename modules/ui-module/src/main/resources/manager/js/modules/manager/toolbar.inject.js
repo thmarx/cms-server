@@ -139,6 +139,7 @@ const initDragDrop = (container) => {
         nextPlaceholder.style.border = '2px dashed #aaa';
         nextPlaceholder.style.boxSizing = 'border-box';
         nextPlaceholder.style.opacity = '0.5';
+        nextPlaceholder.style.pointerEvents = 'none';
         nextPlaceholder.style.flexShrink = cs.flexShrink;
         nextPlaceholder.style.flexGrow = cs.flexGrow;
         nextPlaceholder.style.flexBasis = cs.flexBasis;
@@ -159,36 +160,43 @@ const initDragDrop = (container) => {
         dragItems = [];
         pendingDragPosition = null;
     };
-    const getInsertBeforeElement = (position) => {
-        if (!draggedEl) {
+    const getDirectChildSectionEntry = (element) => {
+        const item = element?.closest('.cms-ui-editable-sections');
+        if (!item || item.parentElement !== container || item === draggedEl) {
             return null;
+        }
+        return item;
+    };
+    const isPointInsideElement = (position, element) => {
+        const r = element.getBoundingClientRect();
+        return position.clientX >= r.left
+            && position.clientX <= r.right
+            && position.clientY >= r.top
+            && position.clientY <= r.bottom;
+    };
+    const getInsertBeforeElement = (position) => {
+        if (!draggedEl || !placeholder) {
+            return null;
+        }
+        const targetItem = getDirectChildSectionEntry(document.elementFromPoint(position.clientX, position.clientY));
+        if (targetItem) {
+            const draggedIndex = dragItems.indexOf(draggedEl);
+            const targetIndex = dragItems.indexOf(targetItem);
+            if (draggedIndex > -1 && targetIndex > -1 && draggedIndex < targetIndex) {
+                return targetItem.nextElementSibling;
+            }
+            return targetItem;
+        }
+        if (isPointInsideElement(position, placeholder)) {
+            return placeholder.nextElementSibling;
         }
         const siblings = dragItems.filter(el => el !== draggedEl);
         if (siblings.length === 0) {
             return null;
         }
-        const containerWidth = container.getBoundingClientRect().width;
         for (const el of siblings) {
             const r = el.getBoundingClientRect();
-            const aboveRow = position.clientY < r.top;
-            const belowRow = position.clientY > r.bottom;
-            const sameRow = !aboveRow && !belowRow;
-            let placeBefore;
-            if (aboveRow) {
-                placeBefore = true;
-            }
-            else if (belowRow) {
-                placeBefore = false;
-            }
-            else if (r.width >= containerWidth * 0.9) {
-                // Full-width element (vertical layout): top/bottom half decides
-                placeBefore = position.clientY < r.top + r.height / 2;
-            }
-            else {
-                // Partial-width element (horizontal/wrap layout): left/right half decides
-                placeBefore = sameRow && position.clientX < r.left + r.width / 2;
-            }
-            if (placeBefore) {
+            if (position.clientY < r.top + r.height / 2) {
                 return el;
             }
         }
@@ -206,7 +214,7 @@ const initDragDrop = (container) => {
             }
             return;
         }
-        if (placeholder.nextElementSibling !== insertBeforeEl) {
+        if (insertBeforeEl !== placeholder && placeholder.nextElementSibling !== insertBeforeEl) {
             container.insertBefore(placeholder, insertBeforeEl);
         }
     };
