@@ -129,6 +129,7 @@ const initDragDrop = (container) => {
     let dragItems = [];
     let pendingDragPosition = null;
     let dragOverFrame = 0;
+    const keepPlaceholderPosition = Symbol('keepPlaceholderPosition');
     const createPlaceholder = (item) => {
         const nextPlaceholder = document.createElement('div');
         nextPlaceholder.setAttribute('data-cms-drag-placeholder', '');
@@ -167,40 +168,21 @@ const initDragDrop = (container) => {
         }
         return item;
     };
-    const isPointInsideElement = (position, element) => {
-        const r = element.getBoundingClientRect();
-        return position.clientX >= r.left
-            && position.clientX <= r.right
-            && position.clientY >= r.top
-            && position.clientY <= r.bottom;
-    };
     const getInsertBeforeElement = (position) => {
         if (!draggedEl || !placeholder) {
-            return null;
+            return keepPlaceholderPosition;
         }
         const targetItem = getDirectChildSectionEntry(document.elementFromPoint(position.clientX, position.clientY));
         if (targetItem) {
-            const draggedIndex = dragItems.indexOf(draggedEl);
-            const targetIndex = dragItems.indexOf(targetItem);
-            if (draggedIndex > -1 && targetIndex > -1 && draggedIndex < targetIndex) {
+            const children = Array.from(container.children);
+            const placeholderIndex = children.indexOf(placeholder);
+            const targetIndex = children.indexOf(targetItem);
+            if (placeholderIndex > -1 && targetIndex > -1 && placeholderIndex < targetIndex) {
                 return targetItem.nextElementSibling;
             }
             return targetItem;
         }
-        if (isPointInsideElement(position, placeholder)) {
-            return placeholder.nextElementSibling;
-        }
-        const siblings = dragItems.filter(el => el !== draggedEl);
-        if (siblings.length === 0) {
-            return null;
-        }
-        for (const el of siblings) {
-            const r = el.getBoundingClientRect();
-            if (position.clientY < r.top + r.height / 2) {
-                return el;
-            }
-        }
-        return null;
+        return keepPlaceholderPosition;
     };
     const updatePlaceholderPosition = () => {
         dragOverFrame = 0;
@@ -208,6 +190,9 @@ const initDragDrop = (container) => {
             return;
         }
         const insertBeforeEl = getInsertBeforeElement(pendingDragPosition);
+        if (insertBeforeEl === keepPlaceholderPosition) {
+            return;
+        }
         if (insertBeforeEl === null) {
             if (placeholder.nextElementSibling !== null) {
                 container.appendChild(placeholder);
