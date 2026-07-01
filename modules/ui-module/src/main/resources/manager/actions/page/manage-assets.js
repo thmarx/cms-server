@@ -22,6 +22,9 @@ import { openMediaBrowser } from '@cms/modules/media/mediabrowser.js';
 // hook.js
 export async function runAction(params) {
     openMediaBrowser({
-        type: "assets"
+        type: "assets",
+        filter: (file) => {
+            return file.media || file.directory;
+        },
     });
 }
