@@ -134,6 +134,10 @@ const editAttributes = (event: Event) => {
 
 
 const initDragDrop = (container: HTMLElement) => {
+	if (container.dataset.cmsDragDropInitialized === 'true') {
+		return;
+	}
+
 	const draggableItems = Array.from(
 		container.querySelectorAll<HTMLElement>(':scope > .cms-ui-editable-sections')
 	);
@@ -141,42 +145,146 @@ const initDragDrop = (container: HTMLElement) => {
 	if (draggableItems.length === 0) {
 		return;
 	}
+	container.dataset.cmsDragDropInitialized = 'true';
 
 	let draggedEl: HTMLElement | null = null;
 	let placeholder: HTMLElement | null = null;
+	let dragItems: HTMLElement[] = [];
+	let pendingDragPosition: { clientX: number; clientY: number } | null = null;
+	let dragOverFrame = 0;
+	const keepPlaceholderPosition = Symbol('keepPlaceholderPosition');
+
+	const createPlaceholder = (item: HTMLElement) => {
+		const nextPlaceholder = document.createElement('div');
+		nextPlaceholder.setAttribute('data-cms-drag-placeholder', '');
+		const cs = getComputedStyle(item);
+		nextPlaceholder.style.width = item.offsetWidth + 'px';
+		nextPlaceholder.style.height = item.offsetHeight + 'px';
+		nextPlaceholder.style.margin = cs.margin;
+		nextPlaceholder.style.border = '2px dashed #aaa';
+		nextPlaceholder.style.boxSizing = 'border-box';
+		nextPlaceholder.style.opacity = '0.5';
+		nextPlaceholder.style.pointerEvents = 'none';
+		nextPlaceholder.style.flexShrink = cs.flexShrink;
+		nextPlaceholder.style.flexGrow = cs.flexGrow;
+		nextPlaceholder.style.flexBasis = cs.flexBasis;
+		return nextPlaceholder;
+	};
+
+	const resetDragState = () => {
+		if (dragOverFrame) {
+			cancelAnimationFrame(dragOverFrame);
+			dragOverFrame = 0;
+		}
+		if (draggedEl) {
+			draggedEl.style.display = '';
+			draggedEl.setAttribute('draggable', 'false');
+		}
+		placeholder?.remove();
+		placeholder = null;
+		draggedEl = null;
+		dragItems = [];
+		pendingDragPosition = null;
+	};
+
+	const getDirectChildSectionEntry = (element: Element | null) => {
+		const item = element?.closest<HTMLElement>('.cms-ui-editable-sections');
+		if (!item || item.parentElement !== container || item === draggedEl) {
+			return null;
+		}
+		return item;
+	};
+
+	const getInsertBeforeElement = (position: { clientX: number; clientY: number }): Element | null | typeof keepPlaceholderPosition => {
+		if (!draggedEl || !placeholder) {
+			return keepPlaceholderPosition;
+		}
+
+		const targetItem = getDirectChildSectionEntry(document.elementFromPoint(position.clientX, position.clientY));
+		if (targetItem) {
+			const children = Array.from(container.children);
+			const placeholderIndex = children.indexOf(placeholder);
+			const targetIndex = children.indexOf(targetItem);
+
+			if (placeholderIndex > -1 && targetIndex > -1 && placeholderIndex < targetIndex) {
+				return targetItem.nextElementSibling;
+			}
+
+			return targetItem;
+		}
+
+		return keepPlaceholderPosition;
+	};
+
+	const updatePlaceholderPosition = () => {
+		dragOverFrame = 0;
+		if (!placeholder || !pendingDragPosition) {
+			return;
+		}
+
+		const insertBeforeEl = getInsertBeforeElement(pendingDragPosition);
+		if (insertBeforeEl === keepPlaceholderPosition) {
+			return;
+		}
+
+		if (insertBeforeEl === null) {
+			if (placeholder.nextElementSibling !== null) {
+				container.appendChild(placeholder);
+			}
+			return;
+		}
+
+		if (insertBeforeEl !== placeholder && placeholder.nextElementSibling !== insertBeforeEl) {
+			container.insertBefore(placeholder, insertBeforeEl);
+		}
+	};
 
 	draggableItems.forEach((item) => {
+		if (item.dataset.cmsDragDropItemInitialized === 'true') {
+			return;
+		}
+		item.dataset.cmsDragDropItemInitialized = 'true';
 		item.setAttribute('draggable', 'false');
 
 		const itemToolbar = item.querySelector<HTMLElement>('.cms-ui-toolbar');
-		if (itemToolbar) {
+		if (itemToolbar && !itemToolbar.querySelector('[data-cms-drag-handle]')) {
 			const handle = document.createElement('button');
+			handle.setAttribute('type', 'button');
 			handle.setAttribute('data-cms-drag-handle', '');
 			handle.setAttribute('title', 'Drag to reorder');
+			handle.setAttribute('aria-label', 'Drag to reorder');
 			handle.innerHTML = MOVE_ICON;
 			handle.style.cursor = 'grab';
-			handle.addEventListener('mousedown', () => {
+			handle.addEventListener('mousedown', (e: MouseEvent) => {
+				if (e.button !== 0) {
+					return;
+				}
 				item.setAttribute('draggable', 'true');
+				document.addEventListener('mouseup', () => {
+					if (!draggedEl) {
+						item.setAttribute('draggable', 'false');
+					}
+				}, { once: true });
 			});
 			itemToolbar.appendChild(handle);
 		}
 
 		item.addEventListener('dragstart', (e: DragEvent) => {
-			draggedEl = item;
-			e.dataTransfer?.setData('text/plain', '');
+			if (item.getAttribute('draggable') !== 'true') {
+				e.preventDefault();
+				return;
+			}
 
-			placeholder = document.createElement('div');
-			placeholder.setAttribute('data-cms-drag-placeholder', '');
-			const cs = getComputedStyle(item);
-			placeholder.style.width = item.offsetWidth + 'px';
-			placeholder.style.height = item.offsetHeight + 'px';
-			placeholder.style.margin = cs.margin;
-			placeholder.style.border = '2px dashed #aaa';
-			placeholder.style.boxSizing = 'border-box';
-			placeholder.style.opacity = '0.5';
-			placeholder.style.flexShrink = cs.flexShrink;
-			placeholder.style.flexGrow = cs.flexGrow;
-			placeholder.style.flexBasis = cs.flexBasis;
+			draggedEl = item;
+			dragItems = Array.from(
+				container.querySelectorAll<HTMLElement>(':scope > .cms-ui-editable-sections')
+			);
+			e.dataTransfer?.setData('text/plain', '');
+			if (e.dataTransfer) {
+				e.dataTransfer.effectAllowed = 'move';
+			}
+
+			placeholder = createPlaceholder(item);
 
 			requestAnimationFrame(() => {
 				if (draggedEl && placeholder) {
@@ -187,13 +295,7 @@ const initDragDrop = (container: HTMLElement) => {
 		});
 
 		item.addEventListener('dragend', () => {
-			if (draggedEl) {
-				draggedEl.style.display = '';
-				draggedEl.setAttribute('draggable', 'false');
-			}
-			placeholder?.remove();
-			placeholder = null;
-			draggedEl = null;
+			resetDragState();
 		});
 	});
 
@@ -201,44 +303,12 @@ const initDragDrop = (container: HTMLElement) => {
 		e.preventDefault();
 		if (!draggedEl || !placeholder) return;
 
-		const siblings = Array.from(
-			container.querySelectorAll<HTMLElement>(':scope > .cms-ui-editable-sections')
-		).filter(el => el !== draggedEl);
-
-		if (siblings.length === 0) return;
-
-		const containerWidth = container.getBoundingClientRect().width;
-
-		let insertBeforeEl: HTMLElement | null = null;
-		for (const el of siblings) {
-			const r = el.getBoundingClientRect();
-			const aboveRow = e.clientY < r.top;
-			const belowRow = e.clientY > r.bottom;
-			const sameRow = !aboveRow && !belowRow;
-
-			let placeBefore: boolean;
-			if (aboveRow) {
-				placeBefore = true;
-			} else if (belowRow) {
-				placeBefore = false;
-			} else if (r.width >= containerWidth * 0.9) {
-				// Full-width element (vertical layout): top/bottom half decides
-				placeBefore = e.clientY < r.top + r.height / 2;
-			} else {
-				// Partial-width element (horizontal/wrap layout): left/right half decides
-				placeBefore = sameRow && e.clientX < r.left + r.width / 2;
-			}
-
-			if (placeBefore) {
-				insertBeforeEl = el;
-				break;
-			}
-		}
-
-		if (insertBeforeEl === null) {
-			container.appendChild(placeholder);
-		} else {
-			container.insertBefore(placeholder, insertBeforeEl);
+		pendingDragPosition = {
+			clientX: e.clientX,
+			clientY: e.clientY
+		};
+		if (!dragOverFrame) {
+			dragOverFrame = requestAnimationFrame(updatePlaceholderPosition);
 		}
 	});
 
@@ -246,11 +316,18 @@ const initDragDrop = (container: HTMLElement) => {
 		e.preventDefault();
 		if (!draggedEl || !placeholder) return;
 
+		if (dragOverFrame) {
+			cancelAnimationFrame(dragOverFrame);
+			dragOverFrame = 0;
+			updatePlaceholderPosition();
+		}
+
+		const droppedEl = draggedEl;
 		container.insertBefore(draggedEl, placeholder);
 		placeholder.remove();
 		placeholder = null;
-		draggedEl.style.display = '';
-		draggedEl.setAttribute('draggable', 'false');
+		droppedEl.style.display = '';
+		droppedEl.setAttribute('draggable', 'false');
 
 		const items = Array.from(
 			container.querySelectorAll<HTMLElement>(':scope > .cms-ui-editable-sections')
@@ -270,6 +347,8 @@ const initDragDrop = (container: HTMLElement) => {
 		}).filter(u => u.uri);
 
 		draggedEl = null;
+		dragItems = [];
+		pendingDragPosition = null;
 
 		frameMessenger.send(window.parent, {
 			type: 'sort-sections',
