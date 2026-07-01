@@ -1,8 +1,8 @@
-package com.condation.cms.modules.example;
+package com.condation.cms.e2e;
 
 /*-
  * #%L
- * CMS Example Module
+ * integration-tests
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -20,21 +20,28 @@ package com.condation.cms.modules.example;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-
-import com.condation.cms.api.annotations.ShortCode;
-import com.condation.cms.api.extensions.RegisterShortCodesExtensionPoint;
-import com.condation.modules.api.annotation.Extension;
+import com.condation.cms.test.e2e.CMSServerExtension;
+import com.condation.cms.test.e2e.HttpUtil;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
- * @author t.marx
+ * @author thmar
  */
-@Extension(RegisterShortCodesExtensionPoint.class)
-public class ExampleTagExtension extends RegisterShortCodesExtensionPoint {
-    
-    @ShortCode("example")
-    public String example () {
-        return "<b>example from module</b>";
+@ExtendWith(CMSServerExtension.class)
+public class RoutesTest {
+	
+	@Test
+    void test_extension_route() throws Exception {
+        var response = HttpUtil.fetchText("http://localhost:2020/ext-route");
+		Assertions.assertThat(response).isEqualTo("Hello from an extension");
     }
+	
+	@Test
+	void test_module_route () throws Exception {
+		var response = HttpUtil.fetchText("http://localhost:2020/world1");
+		Assertions.assertThat(response).isEqualTo("Hello world1!");
+	}
 }
