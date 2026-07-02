@@ -20,7 +20,7 @@
  */
 import { createID } from "@cms/modules/form/utils.js";
 import { i18n } from "@cms/modules/localization.js"
-import { openFileBrowser } from "@cms/modules/filebrowser.js";
+import { openFileBrowser } from "@cms/modules/filebrowser/filebrowser.js";
 import { FieldOptions, FormContext, FormField } from "@cms/modules/form/forms.js";
 
 export interface ReferenceFieldOptions extends FieldOptions {

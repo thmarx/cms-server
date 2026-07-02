@@ -18,7 +18,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import { FieldOptions, FormField } from "@cms/modules/form/forms.js";
-export interface ColorFieldOptions extends FieldOptions {
-}
-export declare const ColorField: FormField;
+export { template as filebrowserTemplate };
+declare const template: any;

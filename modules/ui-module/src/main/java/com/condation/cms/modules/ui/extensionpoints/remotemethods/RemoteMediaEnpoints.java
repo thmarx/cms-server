@@ -28,7 +28,6 @@ import com.condation.cms.api.extensions.AbstractExtensionPoint;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
-import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.feature.features.SiteMediaServiceFeature;
 import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
@@ -40,7 +39,6 @@ import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.utils.ImageUtil;
 import com.condation.cms.modules.ui.utils.MetaConverter;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
-import com.condation.cms.media.SiteMediaManager;
 import java.net.URI;
 import java.util.HashMap;
 

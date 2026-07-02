@@ -25,8 +25,8 @@ import { openModal } from '@cms/modules/modal.js'
 import { i18n } from '@cms/modules/localization.js'
 import { alertPrompt } from '@cms/modules/alerts.js'
 import { showToast } from '@cms/modules/toast.js'
-import { filebrowserTemplate } from '@cms/modules/filebrowser.template.js'
-import { createFolderAction } from '@cms/modules/filebrowser.actions.js'
+import { filebrowserTemplate } from '@cms/modules/filebrowser/filebrowser.template.js'
+import { createFolderAction } from '@cms/modules/filebrowser/filebrowser.actions.js'
 
 const defaultOptions = {
 	uri: "",
