@@ -26,8 +26,6 @@ import { loadPreview } from '@cms/modules/preview.utils.js'
 import { i18n } from '@cms/modules/localization.js';
 
 import { renameFileAction, deleteElementAction, createFolderAction, createFileAction, createPageActionOfContentType } from '@cms/modules/filebrowser/filebrowser.actions.js'
-import { initDragAndDropUpload, handleFileUpload } from '@cms/modules/filebrowser/filebrowser.upload.js';
-import { EventBus } from '@cms/modules/event-bus.js';
 import { filebrowserTemplate } from '@cms/modules/filebrowser/filebrowser.template.js';
 import { getPageTemplates } from '@cms/modules/rpc/rpc-manager.js';
 import { showToast } from '@cms/modules/toast.js';
@@ -47,11 +45,6 @@ const state = {
 	options: null,
 	currentFolder: ""
 };
-
-
-EventBus.on("upload:success", (folder) => {
-	initFileBrowser(state.currentFolder);
-});
 
 const openFileBrowser = async (optionsParam) => {
 	state.options = {
@@ -113,7 +106,6 @@ const initFileBrowser = async (uri) => {
 		
 		fileActions();
 		initBootstrapTooltips();
-		initDragAndDropUpload();
 	}
 };
 const initBootstrapTooltips = () => {
@@ -250,12 +242,6 @@ const fileActions = () => {
 			await initFileBrowser(state.currentFolder);
 		});
 	})
-
-	if (document.getElementById("cms-filebrowser-upload-button")) {
-		document.getElementById("cms-filebrowser-upload-button").addEventListener("click", async (event) => {
-			await handleFileUpload();
-		});
-	}
 
 	document.querySelectorAll("[data-cms-filbrowser-ct-action='create']").forEach((element) => {
 		element.addEventListener("click", async (event) => {

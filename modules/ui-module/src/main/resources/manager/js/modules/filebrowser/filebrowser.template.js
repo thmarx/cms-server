@@ -56,9 +56,7 @@ const template = Handlebars.compile(`
 				</ul>
 			</div>
 
-			{{#unless asset}}
-				{{> fileBrowserContentActions pageTemplates=pageContentTypes }} 
-			{{/unless}}
+			{{> fileBrowserContentActions pageTemplates=pageContentTypes }} 
 		</div>
 	<table class="table table-hover">
 		<thead>
@@ -77,13 +75,6 @@ const template = Handlebars.compile(`
 				<th scope="row">
 					{{#if directory}}
 						<i class="bi bi-folder"></i>
-					{{else if media}}
-						<div class="position-relative d-inline-block cms-image-hover-wrapper">
-							<img src="{{patchPathWithContext (concat "/assets" uri)}}" alt="{{name}}" class="img-thumbnail cms-small-image" />
-							<div class="cms-overlay-image">
-								<img src="{{patchPathWithContext (concat "/assets" uri)}}" alt="Zoom" class="cms-enlarged-image" />
-							</div>
-						</div>
 					{{else}}
 						<i class="bi bi-file"></i>
 					{{/if}}
@@ -139,12 +130,6 @@ const template = Handlebars.compile(`
 		{{/each}}
 		</tbody>
 	</table>
-	{{#if asset}} 
-		<input id="cms-fileupload" type="file" name="cms-fileupload" accept="image/png, image/jpeg, image/web, image/gif, image/svg+xml, image/tiff, image/avif" />
-		<button id="cms-filebrowser-upload-button"> Upload </button>
-		<span id="cms-filebrowser-upload-progress"></span>
-		<div id="drop-zone">Drop files here</div>
-	{{/if}}
 	</div>
 `);
 export { template as filebrowserTemplate };
