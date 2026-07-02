@@ -28,20 +28,6 @@ Handlebars.registerHelper('concat', function (...args) {
 Handlebars.registerHelper('ifNotEquals', function (arg1, arg2, options) {
     return (arg1 !== arg2) ? options.fn(this) : options.inverse(this);
 });
-Handlebars.registerPartial('mediaBrowserContentActions', `
-	{{#if pageTemplates}}
-	<div class="dropdown">
-		<button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-			Create Content
-		</button>
-		<ul class="dropdown-menu">
-			{{#each pageTemplates}}
-				<li><a class="dropdown-item" data-cms-filbrowser-ct-action="create" href="#" data-cms-contenttype="{{name}}">{{name}}</a></li>
-			{{/each}}
-		</ul>
-	</div>
-	{{/if}}
-`);
 const template = Handlebars.compile(`
 	<div>
 		<div class="d-flex gap-3 mb-3">
@@ -55,10 +41,6 @@ const template = Handlebars.compile(`
 					{{/each}}
 				</ul>
 			</div>
-
-			{{#unless asset}}
-				{{> mediaBrowserContentActions pageTemplates=pageContentTypes }}
-			{{/unless}}
 		</div>
 
 		<div class="cms-media-grid" id="cms-filebrowser-files">
@@ -87,19 +69,6 @@ const template = Handlebars.compile(`
 							{{#if directory}}
 								<li><a class="dropdown-item" href="#" data-cms-file-uri="{{uri}}" data-cms-file-action="deleteFolder">
 									<i class="bi bi-folder-x me-2"></i>Delete folder
-								</a></li>
-								<li><a class="dropdown-item" href="#" data-cms-file-uri="{{uri}}" data-cms-file-action="renameFile">
-									<i class="bi bi-pencil-square me-2"></i>Rename
-								</a></li>
-							{{else if content}}
-								<li><a class="dropdown-item" href="#" data-cms-file-uri="{{uri}}" data-cms-file-action="open">
-									<i class="bi bi-file-arrow-up me-2"></i>Open page
-								</a></li>
-								<li><a class="dropdown-item" href="#" data-cms-file-uri="{{uri}}" data-cms-file-action="deletePage">
-									<i class="bi bi-file-earmark-x me-2"></i>Delete page
-								</a></li>
-								<li><a class="dropdown-item" href="#" data-cms-file-uri="{{uri}}" data-cms-file-action="copyUrl">
-									<i class="bi bi-copy me-2"></i>Copy URL
 								</a></li>
 								<li><a class="dropdown-item" href="#" data-cms-file-uri="{{uri}}" data-cms-file-action="renameFile">
 									<i class="bi bi-pencil-square me-2"></i>Rename

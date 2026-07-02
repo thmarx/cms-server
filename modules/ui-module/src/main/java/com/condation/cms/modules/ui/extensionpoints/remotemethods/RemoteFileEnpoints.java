@@ -51,28 +51,6 @@ import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
-	private static ReadOnlyFile getBase(ReadOnlyFileSystem fileSystem, String type) {
-		return switch (type) {
-			case "content" ->
-				fileSystem.contentBase();
-			case "assets" ->
-				fileSystem.assetBase();
-			default ->
-				null;
-		};
-	}
-
-	private static Path getWritableBase(DBFileSystem fileSystem, String type) {
-		return switch (type) {
-			case "content" ->
-				fileSystem.resolve(Constants.Folders.CONTENT);
-			case "assets" ->
-				fileSystem.resolve(Constants.Folders.ASSETS);
-			default ->
-				null;
-		};
-	}
-
 	@RemoteMethod(name = "files.list", permissions = {Permissions.CONTENT_EDIT})
 	public Object list(Map<String, Object> parameters) {
 		final DB db = getDB(parameters);

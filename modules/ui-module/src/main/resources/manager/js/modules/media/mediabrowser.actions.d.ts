@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-export function renameFileAction({ state, getTargetFolder, filename }: {
+export function renameMediaAction({ state, getTargetFolder, filename }: {
     state: any;
     getTargetFolder: any;
     filename: any;
@@ -32,13 +32,4 @@ export function deleteElementAction({ elementName, state, deleteFN, getTargetFol
 export function createFolderAction({ state, getTargetFolder }: {
     state: any;
     getTargetFolder: any;
-}): Promise<void>;
-export function createFileAction({ state, getTargetFolder }: {
-    state: any;
-    getTargetFolder: any;
-}): Promise<void>;
-export function createPageActionOfContentType({ state, getTargetFolder, contentType }: {
-    state: any;
-    getTargetFolder: any;
-    contentType: any;
 }): Promise<void>;

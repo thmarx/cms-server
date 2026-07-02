@@ -33,4 +33,11 @@ const setMediaMetaData = async (options) => {
     };
     return await executeRemoteCall(data);
 };
-export { getMediaMetaData, setMediaMetaData };
+const renameMedia = async (options) => {
+    var data = {
+        method: "media.rename",
+        parameters: options
+    };
+    return await executeRemoteCall(data);
+};
+export { getMediaMetaData, setMediaMetaData, renameMedia };

@@ -25,7 +25,7 @@ import { openModal } from '@cms/modules/modal.js'
 import { loadPreview } from '@cms/modules/preview.utils.js'
 import { i18n } from '@cms/modules/localization.js';
 
-import { renameFileAction, deleteElementAction, createFolderAction, createFileAction, createPageActionOfContentType } from '@cms/modules/media/mediabrowser.actions.js'
+import { renameMediaAction, deleteElementAction, createFolderAction } from '@cms/modules/media/mediabrowser.actions.js'
 import { initDragAndDropUpload, handleFileUpload } from '@cms/modules/media/mediabrowser.upload.js';
 import { EventBus } from '@cms/modules/event-bus.js';
 import { mediabrowserTemplate } from '@cms/modules/media/mediabrowser.template.js';
@@ -104,8 +104,7 @@ const initMediaBrowser = async (uri) => {
 			filenameHeader: i18n.t("filebrowser.filename", "Filename"),
 			actionHeader: i18n.t("filebrowser.action", "Action"),
 			actions: getActions(),
-			asset: state.options.type === "assets",
-			pageContentTypes: (cachedPageTemplates ??= (await getPageTemplates()).result)
+			asset: state.options.type === "assets"
 		});
 		makeDirectoriesClickable();
 		if (state.options.onSelect) {
@@ -222,7 +221,7 @@ const fileActions = () => {
 					await initMediaBrowser(state.currentFolder);
 				});
 			} else if (action === "renameFile") {
-				renameFileAction({
+				renameMediaAction({
 					state: state,
 					getTargetFolder: getTargetFolder,
 					filename: filename
@@ -250,23 +249,6 @@ const fileActions = () => {
 			await handleFileUpload();
 		});
 	}
-
-	document.querySelectorAll("[data-cms-filbrowser-ct-action='create']").forEach((element) => {
-		element.addEventListener("click", async (event) => {
-			event.preventDefault();
-			const contentType = element.getAttribute("data-cms-contenttype");
-			if (contentType) {
-				createPageActionOfContentType({
-					state: state,
-					getTargetFolder: getTargetFolder,
-					contentType: contentType
-				}).then(async () => {
-					await initMediaBrowser(state.currentFolder);
-				});
-			}
-		});
-	});
-
 };
 
 const getTargetFolder = () => {
