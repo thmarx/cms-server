@@ -1,0 +1,15 @@
+export function renameMediaAction({ state, getTargetFolder, filename }: {
+    state: any;
+    getTargetFolder: any;
+    filename: any;
+}): Promise<void>;
+export function deleteElementAction({ elementName, state, deleteFN, getTargetFolder }: {
+    elementName: any;
+    state: any;
+    deleteFN: any;
+    getTargetFolder: any;
+}): Promise<void>;
+export function createFolderAction({ state, getTargetFolder }: {
+    state: any;
+    getTargetFolder: any;
+}): Promise<void>;

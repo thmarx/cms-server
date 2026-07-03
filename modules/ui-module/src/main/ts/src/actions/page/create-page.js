@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import {openFileBrowser} from '@cms/modules/filebrowser.js'
+import {openFileBrowser} from '@cms/modules/filebrowser/filebrowser.js'
 		// hook.js
 export async function runAction(params) {
 

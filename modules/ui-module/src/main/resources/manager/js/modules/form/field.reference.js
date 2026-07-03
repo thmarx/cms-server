@@ -20,7 +20,7 @@
  */
 import { createID } from "@cms/modules/form/utils.js";
 import { i18n } from "@cms/modules/localization.js";
-import { openFileBrowser } from "@cms/modules/filebrowser.js";
+import { openFileBrowser } from "@cms/modules/filebrowser/filebrowser.js";
 const createReferenceField = (options, value = '') => {
     const id = createID();
     const key = "field." + options.name;

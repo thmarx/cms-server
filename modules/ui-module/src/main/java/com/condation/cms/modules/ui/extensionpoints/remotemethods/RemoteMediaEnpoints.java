@@ -23,12 +23,12 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.configuration.configs.MediaConfiguration;
+import com.condation.cms.api.db.DB;
 import com.condation.cms.api.eventbus.events.InvalidateMediaCache;
 import com.condation.cms.api.extensions.AbstractExtensionPoint;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
-import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.feature.features.SiteMediaServiceFeature;
 import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
@@ -40,8 +40,8 @@ import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.utils.ImageUtil;
 import com.condation.cms.modules.ui.utils.MetaConverter;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
-import com.condation.cms.media.SiteMediaManager;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.HashMap;
 
 /**
@@ -50,7 +50,7 @@ import java.util.HashMap;
  */
 @Slf4j
 @Extension(UIRemoteMethodExtensionPoint.class)
-public class RemoteMediaEnpoints extends AbstractExtensionPoint implements UIRemoteMethodExtensionPoint {
+public class RemoteMediaEnpoints extends AbstractRemoteMethodeExtension implements UIRemoteMethodExtensionPoint {
 
     @RemoteMethod(name = "media.formats.get", permissions = {Permissions.CONTENT_EDIT})
 	public Object getResolutions(Map<String, Object> parameters) throws RPCException {
@@ -109,6 +109,60 @@ public class RemoteMediaEnpoints extends AbstractExtensionPoint implements UIRem
 			log.error("", e);
 			throw new RPCException(0, e.getMessage());
 		}
+	}
+    
+    @RemoteMethod(name = "media.rename", permissions = {Permissions.CONTENT_EDIT})
+	public Object renameFile(Map<String, Object> parameters) throws RPCException {
+		final DB db = getDB(parameters);
+		Map<String, Object> result = new HashMap<>();
+
+		try {
+			var uri = (String) parameters.getOrDefault("uri", "");
+			var name = (String) parameters.getOrDefault("name", "");
+			var newName = (String) parameters.get("newName");
+
+			if (newName == null || newName.isBlank()) {
+				throw new IllegalArgumentException("newName must not be null or blank");
+			}
+
+			var mediaBase = getBase(db.getReadOnlyFileSystem(), "assets");
+			
+			// check if both paths are in host directory
+			mediaBase.resolve(uri).resolve(name);
+			mediaBase.resolve(uri).resolve(newName);
+			
+			var writableBase = getWritableBase(db.getFileSystem(), "assets");
+
+			var sourcePath = writableBase.resolve(uri).resolve(name);
+			var targetPath = writableBase.resolve(uri).resolve(newName);
+            
+            var metaSource = writableBase.resolve(uri).resolve(name + ".meta.yaml");
+            var metaTarget = writableBase.resolve(uri).resolve(newName + ".meta.yaml");
+            
+			log.debug("renaming from {} to {}", sourcePath, targetPath);
+
+			if (!Files.exists(sourcePath)) {
+				throw new RPCException("Source file not found: " + sourcePath);
+			}
+			if (Files.exists(targetPath)) {
+				throw new RPCException("Target file already exists: " + targetPath);
+			}
+
+			Files.move(sourcePath, targetPath);
+
+            if (Files.exists(metaSource)) {
+                Files.move(metaSource, metaTarget);
+            }
+            
+			result.put("success", true);
+			result.put("newName", newName);
+
+		} catch (Exception e) {
+			log.error("Error during rename", e);
+			throw new RPCException(0, e.getMessage());
+		}
+
+		return result;
 	}
 	
 	private String getMediaPath (String image) {

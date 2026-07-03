@@ -21,7 +21,11 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  * #L%
  */
 
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.db.DBFileSystem;
+import com.condation.cms.api.db.cms.ReadOnlyFile;
+import com.condation.cms.api.db.cms.ReadOnlyFileSystem;
 import com.condation.cms.api.extensions.AbstractExtensionPoint;
 import com.condation.cms.api.feature.features.AuthFeature;
 import com.condation.cms.api.feature.features.DBFeature;
@@ -30,6 +34,7 @@ import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.core.serivce.ServiceRegistry;
 import com.condation.cms.core.serivce.impl.SiteDBService;
 import com.condation.cms.modules.ui.utils.UIHooks;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -56,5 +61,27 @@ public abstract class AbstractRemoteMethodeExtension extends AbstractExtensionPo
 		} else {
 			return getContext().get(DBFeature.class).db();
 		}
+	}
+    
+    public static ReadOnlyFile getBase(ReadOnlyFileSystem fileSystem, String type) {
+		return switch (type) {
+			case "content" ->
+				fileSystem.contentBase();
+			case "assets" ->
+				fileSystem.assetBase();
+			default ->
+				null;
+		};
+	}
+
+	public static Path getWritableBase(DBFileSystem fileSystem, String type) {
+		return switch (type) {
+			case "content" ->
+				fileSystem.resolve(Constants.Folders.CONTENT);
+			case "assets" ->
+				fileSystem.resolve(Constants.Folders.ASSETS);
+			default ->
+				null;
+		};
 	}
 }

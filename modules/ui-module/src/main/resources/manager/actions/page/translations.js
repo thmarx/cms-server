@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import { openFileBrowser } from '@cms/modules/filebrowser.js';
+import { openFileBrowser } from '@cms/modules/filebrowser/filebrowser.js';
 import { i18n } from '@cms/modules/localization.js';
 import { openModal } from '@cms/modules/modal.js';
 import { getPreviewUrl } from '@cms/modules/preview.utils.js';

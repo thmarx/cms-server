@@ -19,7 +19,7 @@
  * #L%
  */
 import { i18n } from '@cms/modules/localization';
-import { openCreateContentBrowser } from '@cms/modules/filebrowser.create.js';
+import { openCreateContentBrowser } from '@cms/modules/filebrowser/filebrowser.create.js';
 import { loadPreview } from '@cms/modules/preview.utils';
 import { patchPathWithContext } from '@cms/js/manager-globals';
 // hook.js
