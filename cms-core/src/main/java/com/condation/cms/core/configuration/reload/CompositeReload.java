@@ -1,6 +1,8 @@
+package com.condation.cms.core.configuration.reload;
+
 /*-
  * #%L
- * UI Module
+ * CMS Core
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -18,8 +20,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-export function openFileBrowser(optionsParam: any): Promise<void>;
-export namespace state {
-    let options: null;
-    let currentFolder: string;
+
+import com.condation.cms.core.configuration.IConfiguration;
+import com.condation.cms.core.configuration.ReloadStrategy;
+import java.util.List;
+
+public class CompositeReload implements ReloadStrategy {
+
+	private final List<ReloadStrategy> reloadStrategies;
+
+	public CompositeReload(ReloadStrategy... reloadStrategies) {
+		this.reloadStrategies = List.of(reloadStrategies);
+	}
+
+	@Override
+	public void register(IConfiguration configuration) {
+		reloadStrategies.forEach(reloadStrategy -> reloadStrategy.register(configuration));
+	}
 }
