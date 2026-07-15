@@ -22,9 +22,6 @@ package com.condation.cms.api.db;
  */
 
 
-import com.condation.cms.api.Constants;
-import com.condation.cms.api.db.ContentNode;
-import java.util.Calendar;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,50 +36,7 @@ public class ContentNodeTest {
 	@Test
 	public void test_publish() {
 		var contentNode = new ContentNode("", "", Map.of());
+		Assertions.assertThat(NodeVisibility.isVisible(contentNode)).isFalse();
 		Assertions.assertThat(contentNode.isVisible()).isFalse();
-	}
-	
-	@Test
-	public void test_publish_date_1_11_2023() {
-		var cal = Calendar.getInstance();
-		cal.set(2023, 11, 1);
-		var contentNode = new ContentNode("", "", Map.of(
-				Constants.MetaFields.PUBLISH_DATE, cal.getTime(),
-				Constants.MetaFields.PUBLISHED, true
-		));
-		Assertions.assertThat(contentNode.isVisible()).isTrue();
-	}
-	
-	@Test
-	public void test_publish_date_1_11_2123() {
-		var cal = Calendar.getInstance();
-		cal.set(2123, 11, 1);
-		var contentNode = new ContentNode("", "", Map.of(
-				Constants.MetaFields.PUBLISH_DATE, cal.getTime(),
-				Constants.MetaFields.PUBLISHED, true
-		));
-		Assertions.assertThat(contentNode.isVisible()).isFalse();
-	}
-	
-	@Test
-	public void test_unpublish_date_1_11_2023() {
-		var cal = Calendar.getInstance();
-		cal.set(2023, 11, 1);
-		var contentNode = new ContentNode("", "", Map.of(
-				Constants.MetaFields.UNPUBLISH_DATE, cal.getTime(),
-				Constants.MetaFields.PUBLISHED, true
-		));
-		Assertions.assertThat(contentNode.isVisible()).isFalse();
-	}
-	
-	@Test
-	public void test_unpublish_date_1_11_2123() {
-		var cal = Calendar.getInstance();
-		cal.set(2123, 11, 1);
-		var contentNode = new ContentNode("", "", Map.of(
-				Constants.MetaFields.UNPUBLISH_DATE, cal.getTime(),
-				Constants.MetaFields.PUBLISHED, true
-		));
-		Assertions.assertThat(contentNode.isVisible()).isTrue();
 	}
 }

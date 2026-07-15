@@ -24,12 +24,17 @@ export async function runAction(params) {
     var request = {
         uri: params.sectionUri,
         meta: {
-            published: {
+            status: {
                 type: "select",
-                value: params.published ? true : false,
+                value: params.published ? "published" : "draft",
             }
         }
     };
-    var setMetaResponse = await setMeta(request);
-    reloadPreview();
+    try {
+        await setMeta(request);
+        reloadPreview();
+    }
+    catch (e) {
+        console.error("Error setting section published state", e);
+    }
 }

@@ -1,4 +1,4 @@
-package com.condation.cms.api.db;
+package com.condation.cms.api.workflow;
 
 /*-
  * #%L
@@ -21,26 +21,17 @@ package com.condation.cms.api.db;
  * #L%
  */
 
-import com.condation.cms.api.Constants;
-import com.condation.cms.api.utils.DateRange;
-import java.time.Instant;
-import java.util.Date;
-import java.util.Map;
-
 /**
  *
- * @author thmar
+ * @author thorstenmarx
  */
-public class NodeStatus {
+public class WFTransitionException extends RuntimeException {
 	
-	public static Status get (Map<String, Object> meta) {
-		var published = (boolean) meta.getOrDefault(Constants.MetaFields.PUBLISHED, false);
-		var publish_date = (Date) meta.getOrDefault(Constants.MetaFields.PUBLISH_DATE, Date.from(Instant.now()));
-		
-		var unpublish_date = (Date) meta.getOrDefault(Constants.MetaFields.UNPUBLISH_DATE, null);
-		
-		return new Status(published, DateRange.isNowWithin(publish_date, unpublish_date));
+	public WFTransitionException (String message, Throwable throwable) {
+		super(message, throwable);
 	}
 	
-	public static record Status (boolean published, boolean withinSchedule){};
+	public WFTransitionException (String message) {
+		super(message);
+	}
 }

@@ -18,6 +18,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #L%
 -->
+<!-- formatter:off -->
 {% macro menuEntry(entry) %}
 {% if entry != null && entry.hasChildren() %}
 <li class="nav-item dropdown cms-menu-dropdown">
@@ -47,10 +48,24 @@
 </li>
 {% endif %}
 {% endmacro %}
+<!-- formatter:on -->
 <!doctype html>
 <html lang="en" class="h-100">
 
 <head>
+    
+    	<script type="importmap">
+		{
+		  "imports": {
+			"@cms/js/": "{{ managerBaseURL }}/js/",
+			"@cms/libs/": "{{ managerBaseURL }}/js/libs/",
+			"@cms/manager/": "{{ managerBaseURL }}/js/manager/",
+			"@cms/modules/": "{{ managerBaseURL }}/js/modules/",
+			"condation-cms-ui/dist/js/modules/" : "{{ managerBaseURL }}/js/modules/"
+		  }
+		}
+	</script>
+    
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Manager</title>
@@ -72,7 +87,7 @@
 		import Tags from 'https://cdn.jsdelivr.net/npm/bootstrap5-tags@1.7.17/tags.min.js';
 		window.Tags = Tags;
 	</script>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap5-tags@1.7.17/tags.min.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap5-tags@1.7.17/tags-pure.min.css" />
 
 	<script src="https://cdn.jsdelivr.net/npm/cherry-markdown@0.11.1/dist/cherry-markdown.core.min.js"></script>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cherry-markdown@0.11.1/dist/cherry-markdown.min.css">
@@ -86,17 +101,7 @@
 			height: 100%;
 		}
 	</style>
-	<script type="importmap">
-		{
-		  "imports": {
-			"@cms/js/": "{{ managerBaseURL }}/js/",
-			"@cms/libs/": "{{ managerBaseURL }}/js/libs/",
-			"@cms/manager/": "{{ managerBaseURL }}/js/manager/",
-			"@cms/modules/": "{{ managerBaseURL }}/js/modules/",
-			"condation-cms-ui/dist/js/modules/" : "{{ managerBaseURL }}/js/modules/"
-		  }
-		}
-	</script>
+
 	<meta name="csrf-token" content="{{ csrfToken }}">
 	<script>
 
@@ -115,113 +120,159 @@
 
 <body class="d-flex flex-column h-100 m-0">
 
-	<div id="menu">
-		<nav class="navbar navbar-expand-lg navbar-expand-md bg-dark" data-bs-theme="dark">
-			<div class="container-fluid">
-				<span class="navbar-brand mb-0 h1">CondationCMS</span>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-					data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-					aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="navbarSupportedContent">
-					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-						<li class="nav-item">
-							<a class="nav-link cms-toolbar-button" title="Reload"
-								data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/reload-preview') }}","parameters":{},"type":"script"}'>
-								<i class="bi bi-arrow-clockwise"></i>
-							</a>
-						</li>
+    <div id="menu">
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">CondationCMS</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                        aria-controls="navbarMain" aria-expanded="false" aria-label="Navigation umschalten">
+
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link cms-toolbar-button" title="Reload"
+                               data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/reload-preview') }}","parameters":{},"type":"script"}'>
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </a>
+                        </li>
                         {% assign contentTypeMenu = actionFactory.createContentTypeMenu() %}
                         {% if contentTypeMenu.entries().size() > 0 %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle dropdown-nocaret" href="#" role="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false"
-                                    title="Create new content">
-                                    <i class="bi bi-plus-circle"></i>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    {% for entry in contentTypeMenu.entries() %}
-                                        <li>
-                                            <a class="dropdown-item cms-ct-create" href="#"
-                                               data-cms-action-definition='{{ entry.getActionDefinition() }}'
-                                               >Create {{ entry.name }}</a>
-                                        </li>
-                                    {% /for %}
-                                </ul>
-                            </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle dropdown-nocaret" href="#" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false"
+                               title="Create new content">
+                                <i class="bi bi-plus-circle"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                {% for entry in contentTypeMenu.entries() %}
+                                <li>
+                                    <a class="dropdown-item cms-ct-create" href="#"
+                                       data-cms-action-definition='{{ entry.getActionDefinition() }}'
+                                       >Create {{ entry.name }}</a>
+                                </li>
+                                {% /for %}
+                            </ul>
+                        </li>
                         {% /if %}
-						<li class="nav-item">
-							<a class="nav-link cms-toolbar-button" title="New page"
-								data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/create-page') }}","parameters":{},"type":"script"}'>
-								<i class="bi bi-folder2-open"></i>
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link cms-toolbar-button" title="Manage media"
-								data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/manage-assets') }}","parameters":{},"type":"script"}'>
-								<i class="bi bi-images"></i>
-							</a>
-						</li>
-						{% for entry in actionFactory.createMenu().entries() %}
-							{{ menuEntry(entry) | raw }}
-						{% endfor %}
-					</ul>
-					<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-						<li class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle dropdown-nocaret" href="#" role="button"
-								data-bs-toggle="dropdown" aria-expanded="false" data-cms-i18n-key11="menu.settings">
-								<i class="bi bi-sliders2-vertical"></i>
-							</a>
-							<ul class="dropdown-menu">
-								<li>
-									<a class="dropdown-item" id="cms-action-logout"
-										href="{{ links.createUrl('/manager/logout') }}"
-										data-cms-i18n-key="menu.settings.logout">Logout</a>
-								</li>
-							</ul>
-						</li>
-						<!--li class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle dropdown-nocaret" href="#" role="button"
-								data-bs-toggle="dropdown" aria-expanded="false" data-cms-i18n-key11="language"
-								title="Language">
-								<i class="bi bi-globe2"></i>
-							</a>
-							<ul class="dropdown-menu">
-								<li>
-									<a class="dropdown-item cms-lang-selector" href="#" data-cms-i18n-lang="en"
-										data-cms-i18n-key="language.en">English</a>
-								</li>
-								<li>
-									<a class="dropdown-item cms-lang-selector" href="#" data-cms-i18n-lang="de"
-										data-cms-i18n-key="language.de">German</a>
-								</li>
-							</ul>
-						</li-->
-						<li class="nav-item dropdown">
-							<a class="btn dropdown-toggle dropdown-nocaret" href="#" data-bs-toggle="dropdown"
-								aria-expanded="false" id="cms-btn-status" data-cms-i18n-key="menu.status">Status
-							</a>
-							<ul class="dropdown-menu dropdown-menu-end">
-								<li>
-									<a class="dropdown-item" href="#" data-cms-i18n-lang="en"
-										data-cms-i18n-key="menu.page.settings"
-										data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/edit-page-settings')}}","parameters":{},"type":"script"}'>Page settings</a>
-								</li>
-								{% if translation.enabled %}
-									<li>
-										<a class="dropdown-item" href="#" data-cms-i18n-lang="en"
-											data-cms-i18n-key="menu.page.translation"
-											data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/translations')}}","parameters":{},"type":"script"}'>Translation</a>
-									</li>
-								{% endif %}
-							</ul>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</nav>
-	</div>
+                        <li class="nav-item">
+                            <a class="nav-link cms-toolbar-button" title="New page"
+                               data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/create-page') }}","parameters":{},"type":"script"}'>
+                                <i class="bi bi-folder2-open"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link cms-toolbar-button" title="Manage media"
+                               data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/manage-assets') }}","parameters":{},"type":"script"}'>
+                                <i class="bi bi-images"></i>
+                            </a>
+                        </li>
+                        {% for entry in actionFactory.createMenu().entries() %}
+                        {{ menuEntry(entry) | raw }}
+                        {% endfor %}
+                    </ul>
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
+                        <div class="dropdown">
+                            <button id="cms-btn-status" class="btn btn-sm dropdown-toggle workflow-status-button"
+                                    type="button" id="cms-btn-status" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside" aria-expanded="false">
+                                <i id="cms-btn-status-icon" class="bi  workflow-status-button__icon"></i>
+                                <span id="cms-btn-status-text" data-cms-i18n-key="menu.status">Status</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-lg-end workflow-dropdown" aria-labelledby="cms-btn-status">
+                                <button class="dropdown-item" data-cms-i18n-lang="en"
+                                        data-cms-i18n-key="menu.page.settings"
+                                        data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/edit-page-settings')}}","parameters":{},"type":"script"}'>
+                                    <i class="bi bi-sliders"></i>
+                                    <span>Page settings</span>
+                                </button>
+                                {% if translation.enabled %}
+                                <button class="dropdown-item" data-cms-i18n-lang="en"
+                                        data-cms-i18n-key="menu.page.translation"
+                                        data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/translations')}}","parameters":{},"type":"script"}'>
+                                    <i class="bi bi-translate"></i>
+                                    <span>Translation</span>
+                                </button>
+                                {% endif %}
+                                <div class="dropdown-divider"></div>
+                                <div class="workflow-info">
+                                    <div class="workflow-info-header">
+                                        <span>Workflow</span>
+                                    </div>
+
+                                    <div class="workflow-info-row">
+                                        <span class="workflow-info-label">Stage</span>
+
+                                        <span class="workflow-info-value">
+                                            <span id="cms-workflow-stage" class="workflow-stage workflow-stage--published">
+                                                ---
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <div class="workflow-info-row">
+                                        <span class="workflow-info-label">Visibility</span>
+
+                                        <span class="workflow-info-value">
+                                            <span id="cms-workflow-visibility" class="workflow-visibility workflow-visibility--visible">
+                                                ---
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <div class="workflow-info-row">
+                                        <span class="workflow-info-label">Visible from</span>
+                                        <span id="cms-workflow-visibility-since" class="workflow-info-value">---</span>
+                                    </div>
+                                    <div class="workflow-info-row">
+                                        <span class="workflow-info-label">Visible until</span>
+                                        <span id="cms-workflow-visibility-until" class="workflow-info-value">---</span>
+                                    </div>
+                                </div>
+                                <div id="cms-workflow-transitions">
+                                    <div class="dropdown-divider"></div>
+                                    <h6  class="dropdown-header">Workflow actions</h6>
+                                    <div id="cms-workflow-transitions-container">
+                                       
+                                    </div>
+                                </div>
+                                <div class="dropdown-divider"></div>
+
+                                <button class="dropdown-item" type="button"
+                                        data-cms-i18n-lang="en"
+                                        data-cms-i18n-key="menu.page.schedule"
+                                        data-cms-action-definition='{"function":"runAction","module":"{{ links.createUrl('/manager/actions/page/edit-schedule')}}","parameters":{},"type":"script"}'>
+                                  <i class="bi bi-calendar-event"></i>
+                                  <span>Edit schedule</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="dropdown">
+                            <a class="btn btn-sm btn-secondary dropdown-toggle dropdown-nocaret" href="#" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false" data-cms-i18n-key11="menu.settings">
+                                <i class="bi bi-sliders2-vertical"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-lg-end">
+                                <li>
+                                    <a class="dropdown-item" id="cms-action-logout"
+                                       href="{{ links.createUrl('/manager/logout') }}"
+                                       data-cms-i18n-key="menu.settings.logout">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                        <span>Logout</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
 	<div id="content" class="flex-grow-1 d-flex flex-column overflow-hidden">
 		<div id="previewWrapper" class="flex-grow-1 position-relative">
 			<iframe id="contentPreview" class="position-absolute top-0 start-0 w-100 h-100 border-0"></iframe>
@@ -246,6 +297,7 @@
 	<div id="sidebarContainer"></div>
 	<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
+    <!-- formatter:off -->
 	<script type="module">
 
 		import {executeScriptAction, executeHookAction} from "@cms/js/manager-globals.js";
@@ -275,6 +327,7 @@
 			commands: shortCuts
 		});
 	</script>
+    <!-- formatter:on -->
 </body>
 
 </html>

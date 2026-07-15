@@ -24,9 +24,9 @@ import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
-import com.condation.cms.api.eventbus.events.ContentChangedEvent;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.condation.cms.api.feature.features.EventBusFeature;
+import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.FileUtils;
 import com.condation.modules.api.annotation.Extension;
@@ -78,6 +78,7 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
                 query.excerpt(excerpt);
             } catch (NumberFormatException e) {
                 log.error("Error parsing excerpt", e);
+                throw new RPCException(0, "invalid excerpt value: " + parameters.get("excerpt"));
             }
         }
         
@@ -185,7 +186,7 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 			meta.put("createdBy", getUserName());
 			meta.put(Constants.MetaFields.TITLE, name);
 			meta.put(Constants.MetaFields.TEMPLATE, pageTemplate.get().template());
-			meta.put(Constants.MetaFields.PUBLISHED, false);
+			meta.put(Constants.MetaFields.STATUS, getContext().get(WorkflowFeature.class).workflow().getStatusProvider().newNodeStatus());
 
 			name = UIPathUtil.toValidFilename(name);
 			

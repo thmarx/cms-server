@@ -5,7 +5,7 @@ layout:
   order: 1
 parent:
   text: sec parent text
-published: false
+status: draft
 ---
 
 test
