@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.h2.mvstore.MVStore;
 
@@ -53,6 +57,8 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 
 	private LuceneIndex index;
 	private MVStore store;
+	
+	private TitleQueryFactory titleQueryFactory;
 
 	@Override
 	public void open() throws IOException {
@@ -63,13 +69,17 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 		index = new LuceneIndex();
 		index.open(hostPath.resolve("data/metadata/index"));
 
+		
+		
 		store = MVStore.open(hostPath.resolve("data/metadata/store/data.db").toString());
 
 		nodes = store.openMap("nodes");
 		tree = store.openMap("tree");
-		
+
 		nodes.clear();
 		tree.clear();
+
+		titleQueryFactory = new TitleQueryFactory(LuceneIndex.SEARCH_ANALYZER);
 	}
 
 	@Override
@@ -120,6 +130,8 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 
 		DocumentHelper.addData(document, data);
 
+		DocumentHelper.addSearchFields(document, data);
+		
 		document.add(new StringField("content.type", node.contentType(), Field.Store.NO));
 
 		try {
@@ -157,4 +169,9 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 		return new LuceneQuery<>(uri, this.index, this, new ExcerptMapperFunction<>(nodeMapper));
 	}
 
+	@Override
+	public TitleQuery searchByTitle (String input) {
+		return new TitleQuery(titleQueryFactory, input, index, this);
+		
+	}
 }

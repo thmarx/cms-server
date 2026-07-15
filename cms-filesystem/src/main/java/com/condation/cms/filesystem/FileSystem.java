@@ -290,7 +290,7 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 	}
 
 	public void init() throws IOException {
-		init(MetaData.Type.MEMORY);
+		init(MetaData.Type.PERSISTENT);
 	}
 
 	public void init(MetaData.Type metaDataType) throws IOException {

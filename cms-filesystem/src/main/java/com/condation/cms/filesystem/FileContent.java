@@ -94,4 +94,11 @@ public class FileContent implements Content {
 		return fileSystem.getMeta(uri);
 	}
 	
+	@Override
+	public List<ContentNode> searchByTitle (String input) {
+		var titleQuery =  fileSystem.getMetaData().searchByTitle(input);
+		
+		return titleQuery.list();
+	}
+	
 }
