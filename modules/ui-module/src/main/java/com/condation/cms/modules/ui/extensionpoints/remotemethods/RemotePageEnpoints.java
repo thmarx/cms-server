@@ -25,6 +25,7 @@ import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
+import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
@@ -57,7 +58,42 @@ import java.util.List;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 
-    @RemoteMethod(name = "pages.filter", permissions = {Permissions.CONTENT_EDIT})
+	public record SearchResultDto(String uri, String title) {
+	}
+
+	@RemoteMethod(name = "pages.search", permissions = {Permissions.CONTENT_EDIT})
+    public Object searchPages (Map<String, Object> parameters) throws RPCException {
+		String query = "";
+
+		if (parameters.get("query") instanceof String stringValue) {
+			query = stringValue;
+		}
+
+		final DB db = getContext().get(DBFeature.class).db();
+		var contentBase = db.getFileSystem().contentBase();
+
+		var hits = db.getContent().searchByTitle(query).stream()
+				.map(node -> {
+					var contentFile = contentBase.resolve(node.uri());
+					var url = PathUtil.toURL(contentFile, contentBase);
+					url = HTTPUtil.modifyUrl(url, context);
+
+					String title = "";
+					if (node.data().get(Constants.MetaFields.TITLE) instanceof String titleValue) {
+						title = titleValue;
+					}
+
+					return new SearchResultDto(url, title);
+				})
+				.toList();
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("result", hits);
+
+		return result;
+	}
+	
+	@RemoteMethod(name = "pages.filter", permissions = {Permissions.CONTENT_EDIT})
     public Object filterPages (Map<String, Object> parameters) throws RPCException {
         
         final DB db = getDB(parameters);
