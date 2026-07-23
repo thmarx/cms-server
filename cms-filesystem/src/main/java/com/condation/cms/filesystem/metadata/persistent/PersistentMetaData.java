@@ -24,13 +24,15 @@ package com.condation.cms.filesystem.metadata.persistent;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.NodeVisibility;
+import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.filesystem.metadata.AbstractMetaData;
 import com.condation.cms.filesystem.metadata.query.ExcerptMapperFunction;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -40,9 +42,10 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.TermQuery;
+import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -57,6 +60,9 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 
 	private LuceneIndex index;
 	private MVStore store;
+	private SectionIndex sectionIndex;
+	private UrlIndex urlIndex;
+	private MVMap<String, ContentNode> nodesByPath;
 	
 	private TitleQueryFactory titleQueryFactory;
 
@@ -69,15 +75,21 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 		index = new LuceneIndex();
 		index.open(hostPath.resolve("data/metadata/index"));
 
-		
-		
+
+
 		store = MVStore.open(hostPath.resolve("data/metadata/store/data.db").toString());
 
-		nodes = store.openMap("nodes");
+		nodesByPath = store.openMap("nodes");
+		nodes = nodesByPath;
 		tree = store.openMap("tree");
+        urlToUri = store.openMap("urlToUri");
+		sectionIndex = new SectionIndex(store);
+		urlIndex = new UrlIndex(store, urlToUri);
 
-		nodes.clear();
+		nodesByPath.clear();
 		tree.clear();
+		sectionIndex.clear();
+		urlIndex.clear();
 
 		titleQueryFactory = new TitleQueryFactory(LuceneIndex.SEARCH_ANALYZER);
 	}
@@ -108,14 +120,28 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 			log.error("error commiting index", ex);
 		}
 	}
+
+	@Override
+	public synchronized void createDirectory(String path) {
+		super.createDirectory(path);
+	}
 	
 	@Override
-	public void addFile(String uri, Map<String, Object> data, LocalDate lastModified) {
+	public synchronized void addFile(String uri, Map<String, Object> data, LocalDate lastModified) {
+
+		var url = PathUtil.toURL(uri);
+
+		if (data.get(Constants.MetaFields.URL) instanceof String configuredUrl && !configuredUrl.isBlank()) {
+			url = configuredUrl;
+		}
+		url = PathUtil.normalizeURL(url);
 
 		var parts = uri.split(Constants.SPLIT_PATH_PATTERN);
-		final ContentNode node = new ContentNode(uri, parts[parts.length - 1], data, lastModified);
+		final ContentNode node = new ContentNode(uri, url, parts[parts.length - 1], data, lastModified);
 
 		nodes.put(uri, node);
+		urlIndex.put(node);
+		sectionIndex.add(uri);
 
 		var folder = getFolder(uri);
 		if (folder.isPresent()) {
@@ -126,6 +152,7 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 
 		Document document = new Document();
 		document.add(new StringField("_uri", uri, Field.Store.YES));
+        document.add(new StringField("_url", node.url(), Field.Store.YES));
 		//document.add(new StringField("_source", GSON.toJson(node), Field.Store.NO));
 
 		DocumentHelper.addData(document, data);
@@ -143,10 +170,98 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 	}
 
 	@Override
-	public void clear() {
-		super.clear();
+	public synchronized void removeFile(String path) {
+		var node = nodesByPath.remove(path);
+		if (node == null) {
+			return;
+		}
+
+		removeNodeFromSecondaryIndexes(node);
+		removeFromTree(path);
 		try {
-			index.delete(new MatchAllDocsQuery());
+			index.delete(new TermQuery(new Term("_uri", path)));
+		} catch (IOException ex) {
+			log.error("error deleting metadata for {}", path, ex);
+		}
+	}
+
+	@Override
+	public synchronized void removeDirectory(String path) {
+		var normalizedPath = stripTrailingSlash(path);
+		if (normalizedPath.isEmpty() || getFolder(normalizedPath).isEmpty()) {
+			return;
+		}
+
+		var prefix = normalizedPath + "/";
+		var affectedPaths = pathsWithPrefix(prefix);
+		removeFromTree(normalizedPath);
+		affectedPaths.forEach(affectedPath -> {
+			var node = nodesByPath.remove(affectedPath);
+			if (node != null) {
+				removeNodeFromSecondaryIndexes(node);
+			}
+		});
+
+		try {
+			index.delete(new PrefixQuery(new Term("_uri", prefix)));
+		} catch (IOException ex) {
+			log.error("error deleting metadata below {}", normalizedPath, ex);
+		}
+	}
+
+	@Override
+	public synchronized void removePath(String path) {
+		var normalizedPath = stripTrailingSlash(path);
+		if (nodesByPath.containsKey(normalizedPath)) {
+			removeFile(normalizedPath);
+		} else {
+			removeDirectory(normalizedPath);
+		}
+	}
+
+	private List<String> pathsWithPrefix(String prefix) {
+		var paths = new ArrayList<String>();
+		var cursor = nodesByPath.cursor(prefix);
+		while (cursor.hasNext()) {
+			var path = cursor.next();
+			if (!path.startsWith(prefix)) {
+				break;
+			}
+			paths.add(path);
+		}
+		return paths;
+	}
+
+	private void removeNodeFromSecondaryIndexes(ContentNode node) {
+		urlIndex.remove(node.path());
+		sectionIndex.remove(node.path());
+	}
+
+	private static String stripTrailingSlash(String path) {
+		var normalized = path.replace('\\', '/');
+		while (normalized.endsWith("/")) {
+			normalized = normalized.substring(0, normalized.length() - 1);
+		}
+		return normalized;
+	}
+
+	@Override
+	public List<ContentNode> listSectionEntries(String pagePath) {
+		return sectionIndex.findByPagePath(pagePath).stream()
+				.map(nodes::get)
+				.filter(node -> node != null)
+				.filter(node -> !node.isHidden())
+				.filter(NodeVisibility::isVisible)
+				.toList();
+	}
+
+	@Override
+	public synchronized void clear() {
+		super.clear();
+		sectionIndex.clear();
+		urlIndex.clear();
+		try {
+			index.delete(MatchAllDocsQuery.INSTANCE);
 		} catch (IOException ex) {
 			log.error("", ex);
 		}

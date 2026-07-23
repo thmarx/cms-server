@@ -61,7 +61,7 @@ public class PresistentFileSystemTest {
 				throw new RuntimeException(e);
 			}
 		});
-		fileSystem.init(MetaData.Type.PERSISTENT);
+		fileSystem.init();
 
 		content = new FileContent(fileSystem);
 	}
@@ -281,5 +281,28 @@ public class PresistentFileSystemTest {
 		List<ContentNode> nodes = content.searchByTitle("");
 
 		Assertions.assertThat(nodes).hasSize(3);
+	}
+
+	@Test
+	public void test_byUrl() throws IOException {
+		var node = content.byUrl("/");
+
+		Assertions.assertThat(node).isPresent();
+		Assertions.assertThat(node.get().uri()).isEqualTo("index.md");
+
+		node = content.byUrl("/test/test1");
+
+		Assertions.assertThat(node).isPresent();
+        Assertions.assertThat(node.get().uri()).isEqualTo("test/test1.md");
+	}
+
+	@Test
+	public void test_listSectionEntriesUsesPagePath() {
+		var page = fileSystem.contentBase().resolve("index.md");
+
+		Assertions.assertThat(content.listSectionEntries(page))
+				.singleElement()
+				.extracting(node -> node.path())
+				.isEqualTo("index.slot.item.md");
 	}
 }

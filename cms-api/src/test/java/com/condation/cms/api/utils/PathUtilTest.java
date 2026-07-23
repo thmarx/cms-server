@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  *
@@ -60,6 +61,32 @@ public class PathUtilTest {
 		
 		toURI = PathUtil.toURL(contentBase.resolve(""), contentBase);
 		assertThat(toURI).isEqualTo("/");
+	}
+
+	@Test
+	public void test_normalize_url() {
+		assertThat(PathUtil.normalizeURL(null)).isEqualTo("/");
+		assertThat(PathUtil.normalizeURL("shop//item/")).isEqualTo("/shop/item");
+		assertThat(PathUtil.normalizeURL("/shop/item")).isEqualTo("/shop/item");
+	}
+
+	@Test
+	public void relativeEntryDoesNotNeedToExist(@TempDir Path tempDirectory) {
+		var deletedEntry = tempDirectory.resolve("old/sub/page.md");
+
+		assertThat(PathUtil.toRelativeEntry(deletedEntry, tempDirectory))
+				.isEqualTo("old/sub/page.md");
+	}
+
+	@Test
+	public void relativePathsAcceptAbsoluteEntryAndRelativeBase() {
+		var relativeBase = Path.of("target", "mixed-paths");
+		var absoluteFile = relativeBase.resolve("sections/page.md").toAbsolutePath().normalize();
+
+		assertThat(PathUtil.toRelativeFile(absoluteFile, relativeBase))
+				.isEqualTo("sections/page.md");
+		assertThat(PathUtil.toRelativePath(absoluteFile, relativeBase))
+				.isEqualTo("sections");
 	}
 	
 }
