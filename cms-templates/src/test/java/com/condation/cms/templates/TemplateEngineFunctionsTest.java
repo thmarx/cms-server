@@ -23,11 +23,16 @@ package com.condation.cms.templates;
 
 import com.condation.cms.api.annotations.Param;
 import com.condation.cms.api.annotations.TemplateFunction;
+import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.extensions.RegisterTemplateFunctionExtensionPoint;
+import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.HookSystemFeature;
 import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.feature.features.ModuleManagerFeature;
 import com.condation.cms.api.model.Parameter;
+import com.condation.cms.api.menu.Menu;
+import com.condation.cms.api.menu.MenuItem;
+import com.condation.cms.api.menu.MenuService;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.hooksystem.CMSHookSystem;
 import com.condation.cms.hooksystem.extensions.TemplateHooks;
@@ -40,6 +45,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -55,10 +61,12 @@ public class TemplateEngineFunctionsTest extends AbstractTemplateEngineTest {
 	static DynamicConfiguration dynamicConfiguration;
 
 	@BeforeAll
-	public void setupFunctions() {
+	public void setupFunctions() throws IOException {
 		var requestContext = new RequestContext();
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(new CMSHookSystem()));
 		requestContext.add(TemplateHooks.class, new TemplateHooks(requestContext));
+		requestContext.add(CurrentNodeFeature.class, new CurrentNodeFeature(
+				new ContentNode("index.md", "/", "index.md", Map.of())));
 
 		var injectorMock = Mockito.mock(Injector.class);
 		requestContext.add(InjectorFeature.class, new InjectorFeature(injectorMock));
@@ -67,6 +75,12 @@ public class TemplateEngineFunctionsTest extends AbstractTemplateEngineTest {
 		requestContext.add(ModuleManagerFeature.class, new ModuleManagerFeature(moduleManagerMock));
 
 		Mockito.when(injectorMock.getInstance(ModuleManager.class)).thenReturn(moduleManagerMock);
+		var menuService = Mockito.mock(MenuService.class);
+		Mockito.when(menuService.get("main")).thenReturn(Optional.of(new Menu(
+				"main",
+				"Main navigation",
+				List.of(new MenuItem("home", "link", "Home", "/", "_self", true, List.of())))));
+		Mockito.when(injectorMock.getInstance(MenuService.class)).thenReturn(menuService);
 		Mockito.when(moduleManagerMock.extensions(RegisterTemplateFunctionExtensionPoint.class))
 				.thenReturn(List.of(new TestFunctions()));
 
@@ -77,6 +91,7 @@ public class TemplateEngineFunctionsTest extends AbstractTemplateEngineTest {
 	public TemplateLoader getLoader() {
 		return new StringTemplateLoader()
 				.add("date", "{{ date() | date('YYYY') }}")
+				.add("menu", "{% assign navigation = cms.menu('main') %}{{ navigation.name }}:{{ navigation.items[0].label }}:{{ navigation.items[0].current }}")
 				// no-arg style
 				.add("fn_noarg", "{{ ext.testfn3() }}")
 				// context style (Parameter)
@@ -97,6 +112,13 @@ public class TemplateEngineFunctionsTest extends AbstractTemplateEngineTest {
 		Template simpleTemplate = SUT.getTemplate("date");
 		Assertions.assertThat(simpleTemplate).isNotNull();
 		Assertions.assertThat(simpleTemplate.evaluate()).isEqualToIgnoringWhitespace(year);
+	}
+
+	@Test
+	void test_menu() throws IOException {
+		Template template = SUT.getTemplate("menu");
+		Assertions.assertThat(template.evaluate(Map.of(), dynamicConfiguration))
+				.isEqualToIgnoringWhitespace("Main navigation:Home:true");
 	}
 
 	// --- no-arg style renders correctly ---

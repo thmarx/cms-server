@@ -55,7 +55,9 @@ const openFileBrowser = async (optionsParam) => {
             if (selectedRow && state.options.onSelect) {
                 const uri = selectedRow.getAttribute("data-cms-file-uri");
                 const name = selectedRow.getAttribute("data-cms-file-name");
-                state.options.onSelect({ uri, name });
+                const title = selectedRow.getAttribute("data-cms-file-title");
+                const url = selectedRow.getAttribute("data-cms-file-url");
+                state.options.onSelect({ uri, name, title, url });
             }
         },
         onShow: async () => {
@@ -108,8 +110,10 @@ const makeFilesSelectable = () => {
         row.addEventListener("dblclick", () => {
             const uri = row.getAttribute("data-cms-file-uri");
             const name = row.getAttribute("data-cms-file-name");
+            const title = row.getAttribute("data-cms-file-title");
+            const url = row.getAttribute("data-cms-file-url");
             if (state.options.onSelect) {
-                state.options.onSelect({ uri, name });
+                state.options.onSelect({ uri, name, title, url });
             }
             state.modal.hide();
         });

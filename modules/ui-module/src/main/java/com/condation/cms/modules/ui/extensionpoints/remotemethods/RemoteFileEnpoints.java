@@ -308,14 +308,15 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 							.filter(value -> !value.isBlank())
 							.orElse(readOnlyFile.getFileName());
 			return new Content(
-					readOnlyFile.getFileName(), 
+					readOnlyFile.getFileName(),
+					readOnlyFile.uri(),
 					readOnlyFile.uri(),
 					title
 			);
 		}
 	}
 	
-	public record Content(String name, String uri, String title) implements File {
+	public record Content(String name, String uri, String url, String title) implements File {
 		@Override
 		public String displayName() {
 			return title;

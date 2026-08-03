@@ -90,8 +90,8 @@ public class RemotePageEnpointsTest {
         pageEndpoints = new RemotePageEnpoints();
         pageEndpoints.setContext(moduleContext);
 		
-		when(db.getFileSystem()).thenReturn(fileSystem);
-		when(fileSystem.contentBase()).thenReturn(contentBase);
+		Mockito.lenient().when(db.getFileSystem()).thenReturn(fileSystem);
+		Mockito.lenient().when(fileSystem.contentBase()).thenReturn(contentBase);
     }
 
     @Test
@@ -170,16 +170,13 @@ public class RemotePageEnpointsTest {
         when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
         when(db.getContent()).thenReturn(content);
         when(moduleContext.get(SitePropertiesFeature.class)).thenReturn(new SitePropertiesFeature(siteProperties));
+		when(siteProperties.contextPath()).thenReturn("/cms");
 
         Map<String, Object> meta = new HashMap<>();
         meta.put(Constants.MetaFields.TITLE, "Superman Returns");
         ContentNode node = new ContentNode("test/test1.md", "/test/test1", "test1.md", meta);
 
-        when(content.searchByTitle("superman", VariantSearchMode.ORIGINAL)).thenReturn(List.of(node));
-        when(contentBase.resolve("test/test1.md")).thenReturn(contentFile);
-        when(contentBase.relativize(contentFile)).thenReturn(contentFile);
-        when(contentFile.toString()).thenReturn("test/test1.md");
-
+		when(content.searchByTitle("superman", VariantSearchMode.ORIGINAL)).thenReturn(List.of(node));
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("query", "superman");
 
@@ -193,10 +190,11 @@ public class RemotePageEnpointsTest {
         @SuppressWarnings("unchecked")
         List<RemotePageEnpoints.SearchResultDto> hits = (List<RemotePageEnpoints.SearchResultDto>) resultMap.get("result");
 
-        assertThat(hits).hasSize(1);
-        assertThat(hits.get(0).title()).isEqualTo("Superman Returns");
-        assertThat(hits.get(0).uri()).isNotNull();
-        verify(content).searchByTitle("superman", VariantSearchMode.ORIGINAL);
+		assertThat(hits).hasSize(1);
+		assertThat(hits.get(0).title()).isEqualTo("Superman Returns");
+		assertThat(hits.get(0).uri()).isEqualTo("/cms/test/test1");
+		assertThat(hits.get(0).url()).isEqualTo("/test/test1");
+		verify(content).searchByTitle("superman", VariantSearchMode.ORIGINAL);
     }
 
     @Test
@@ -205,14 +203,11 @@ public class RemotePageEnpointsTest {
         when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
         when(db.getContent()).thenReturn(content);
         when(moduleContext.get(SitePropertiesFeature.class)).thenReturn(new SitePropertiesFeature(siteProperties));
+		when(siteProperties.contextPath()).thenReturn("/");
 
         ContentNode node = new ContentNode("test/test2.md", "/test/test2", "test2.md", new HashMap<>());
 
-        when(content.searchByTitle("", VariantSearchMode.ORIGINAL)).thenReturn(List.of(node));
-        when(contentBase.resolve("test/test2.md")).thenReturn(contentFile);
-        when(contentBase.relativize(contentFile)).thenReturn(contentFile);
-        when(contentFile.toString()).thenReturn("test/test2.md");
-
+		when(content.searchByTitle("", VariantSearchMode.ORIGINAL)).thenReturn(List.of(node));
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("query", "");
 

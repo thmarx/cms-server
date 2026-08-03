@@ -42,6 +42,7 @@ const openModal = (optionsParam) => {
 	if (options.size) {
 		size = "modal-" + options.size
 	}
+	const footerClass = options.showFooter === false ? "d-none" : "";
 
 	const modalHtml = `
 		<div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
@@ -54,7 +55,7 @@ const openModal = (optionsParam) => {
 			  <div class="modal-body" id="${modalId}_bodyContainer">
 				${options.body || ''}
 			  </div>
-			  <div class="modal-footer">
+			  <div class="modal-footer ${footerClass}">
 				<button type="button" class="btn btn-secondary" id="${modalId}_cancelBtn">${i18n.t("buttons.cancel", "Cancel")}</button>
 				<button type="button" class="btn btn-primary" id="${modalId}_okBtn">${i18n.t("buttons.ok", "Ok")}</button>
 			  </div>
@@ -73,10 +74,11 @@ const openModal = (optionsParam) => {
 	// Prüfe ob eine Offcanvas offen ist
 	const openOffcanvas = document.querySelector('.offcanvas.show');
 	const hasOpenOffcanvas = openOffcanvas !== null;
+	const openModalCount = document.querySelectorAll('.modal.show').length;
 	
-	// Z-Index höher setzen wenn Offcanvas offen ist
-	const modalZIndex = hasOpenOffcanvas ? 1080 : 1060;
-	const backdropZIndex = hasOpenOffcanvas ? 1070 : 1055;
+	// Stack dialogs above an already open dialog (for example the page picker in the menu editor).
+	const modalZIndex = (hasOpenOffcanvas ? 1080 : 1060) + (openModalCount * 20);
+	const backdropZIndex = modalZIndex - 5;
 	
 	modalElement.style.zIndex = modalZIndex;
 	modalElement.style.pointerEvents = 'auto';
@@ -164,6 +166,9 @@ const openModal = (optionsParam) => {
 		}
 		
 		modalNode.remove();
+		if (document.querySelector('.modal.show')) {
+			document.body.classList.add('modal-open');
+		}
 		if (options.onClose) {
 			options.onClose();
 		}
