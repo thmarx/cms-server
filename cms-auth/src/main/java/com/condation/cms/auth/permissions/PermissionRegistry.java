@@ -22,7 +22,7 @@ package com.condation.cms.auth.permissions;
  */
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
@@ -31,7 +31,17 @@ import java.util.Map;
  */
 public class PermissionRegistry {
 
-	private static final Map<String, Permission> registry = new HashMap<>();
+	private static final Map<String, Permission> registry = new ConcurrentHashMap<>();
+
+	static {
+		register(Permission.CONTENT_EDIT);
+		register(Permission.CACHE_INVALIDATE);
+		register(Permission.USER_MANAGE);
+		register(Permission.ROLE_MANAGE);
+		register(Permission.MENU_MANAGE);
+		register(Permission.WORKFLOW_EXECUTE);
+		register(Permission.WORKFLOW_PUBLISH);
+	}
 
 	public static void register(Permission permission) {
 		registry.put(permission.key(), permission);

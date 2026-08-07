@@ -20,7 +20,7 @@
  */
 import { openModal } from '@cms/modules/modal.js';
 import { i18n } from '@cms/modules/localization.js';
-import { filterPages } from '@cms/modules/rpc/rpc-page';
+import { getUnpublishedPages } from '@cms/modules/rpc/rpc-workflow';
 import { loadPreview } from '@cms/modules/preview.utils';
 const ITEMS_PER_PAGE = 5; // Feste Seitengröße wie angefordert
 const renderPageListHtml = (pages, currentPage, totalPages) => {
@@ -46,21 +46,23 @@ const renderPageListHtml = (pages, currentPage, totalPages) => {
             </ul>
         `;
     }
-    const paginationHtml = `
-        <nav aria-label="Page navigation">
+    const disabledState = (pageNumber) => pageNumber < 1 || pageNumber > totalPages ? 'disabled' : '';
+    let paginationHtml = '';
+    if (totalPages > 1) {
+        paginationHtml = `<nav aria-label="Page navigation">
             <ul class="pagination justify-content-center mt-3">
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <li class="page-item ${disabledState(currentPage - 1)}">
                     <a class="page-link" href="#" data-page="${currentPage - 1}">${i18n.t('pagination.previous', 'Previous')}</a>
                 </li>
                 <li class="page-item disabled">
                     <span class="page-link">${currentPage} / ${totalPages}</span>
                 </li>
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <li class="page-item ${disabledState(currentPage + 1)}">
                     <a class="page-link" href="#" data-page="${currentPage + 1}">${i18n.t('pagination.next', 'Next')}</a>
                 </li>
             </ul>
-        </nav>
-    `;
+        </nav>`;
+    }
     return `
         <div>
             ${pageItemsHtml}
@@ -73,21 +75,13 @@ const state = {
 };
 const updateDialog = async (pageNumber) => {
     const filterOptions = {
-        where: [
-            {
-                field: "status",
-                operator: "=",
-                value: "draft"
-            }
-        ],
         page: pageNumber,
         size: ITEMS_PER_PAGE
     };
     try {
-        const response = await filterPages(filterOptions);
-        var pageData = response.result;
+        let pageData = await getUnpublishedPages(filterOptions);
         const modalBodyHtml = renderPageListHtml(pageData.items, pageData.page, pageData.totalPages);
-        var modalElement = document.getElementById('cms-unpublished-pages-modal-body');
+        let modalElement = document.getElementById('cms-unpublished-pages-modal-body');
         if (modalElement) {
             modalElement.innerHTML = modalBodyHtml;
             modalElement.querySelectorAll('.page-link').forEach(link => {
@@ -109,7 +103,7 @@ const updateDialog = async (pageNumber) => {
         }
     }
     catch (e) {
-        var modalElement = document.getElementById('cms-unpublished-pages-modal-body');
+        let modalElement = document.getElementById('cms-unpublished-pages-modal-body');
         if (modalElement) {
             modalElement.innerHTML = `<p>${i18n.t('page.unpublished.loadError', 'Could not load unpublished pages.')}</p>`;
         }

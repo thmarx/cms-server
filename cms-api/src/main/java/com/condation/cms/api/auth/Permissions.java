@@ -28,4 +28,12 @@ package com.condation.cms.api.auth;
 public class Permissions {
 	public static final String CONTENT_EDIT = "content.edit";
 	public static final String CACHE_INVALIDATE = "cache.invalidate";
+	public static final String USER_MANAGE = "user.manage";
+	public static final String ROLE_MANAGE = "role.manage";
+	public static final String MENU_MANAGE = "menu.manage";
+	public static final String WORKFLOW_EXECUTE = "workflow.execute";
+	public static final String WORKFLOW_PUBLISH = "workflow.publish";
+
+	private Permissions() {
+	}
 }

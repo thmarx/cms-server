@@ -49,6 +49,10 @@ public class UserService {
 
 	private static final String FILENAME_PATTERN = "%s.realm";
 
+	/** Excludes ':' and CR/LF, which would corrupt the ':'-delimited, line-based .realm file format. */
+	private static final String USERNAME_PATTERN = "[A-Za-z0-9][A-Za-z0-9_.-]{0,63}";
+	private static final String MAIL_PATTERN = "[\\w.%+-]+@[\\w.-]+\\.[A-Za-z]{2,}";
+
 	private final static Splitter userSplitter = Splitter.on(":").trimResults();
 	private final static Splitter groupSplitter = Splitter.on(",").trimResults();
 
@@ -57,8 +61,10 @@ public class UserService {
 	public void addUser (Realm realm, String username, String password, String[] roles) throws Exception {
 		addUser(realm, username, password, roles, Map.of());
 	}
-	
+
 	public void addUser(Realm realm, String username, String password, String[] roles, Map<String, Object> data) throws IOException {
+		validateUsername(username);
+		validateMail(data);
 		List<User> users = loadUsers(realm);
 		users = new ArrayList<>(users.stream()
 				.filter(user -> !user.username().equals(username))
@@ -81,6 +87,34 @@ public class UserService {
 		saveUsers(realm, users);
 	}
 
+	public List<User> listUsers(Realm realm) throws IOException {
+		return loadUsers(realm).stream()
+				.sorted(java.util.Comparator.comparing(User::username, String.CASE_INSENSITIVE_ORDER))
+				.toList();
+	}
+
+	/** Updates roles/data and changes the password only when a non-blank password is supplied. */
+	public void updateUser(Realm realm, String username, String password, String[] roles, Map<String, Object> data) throws IOException {
+		validateMail(data);
+		List<User> users = new ArrayList<>(loadUsers(realm));
+		int index = java.util.stream.IntStream.range(0, users.size())
+				.filter(position -> users.get(position).username().equals(username))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+		User existing = users.get(index);
+		Map<String, Object> userData = new HashMap<>(data == null ? Map.of() : data);
+		String passwordHash = existing.passwordHash();
+		if (password != null && !password.isBlank()) {
+			byte[] salt = SecurityUtil.generateSalt();
+			userData.put("salt", Base64.getEncoder().encodeToString(salt));
+			passwordHash = SecurityUtil.hashPBKDF2(password, salt);
+		} else if (existing.data() != null && existing.data().containsKey("salt")) {
+			userData.put("salt", existing.data().get("salt"));
+		}
+		users.set(index, new User(username, passwordHash, roles, userData));
+		saveUsers(realm, users);
+	}
+
 	public Optional<User> byUsername(final Realm realm, final String username) {
 		try {
 			return loadUsers(realm).stream().filter(user -> user.username().equals(username)).findFirst();
@@ -88,6 +122,21 @@ public class UserService {
 			log.error("", ex);
 		}
 		return Optional.empty();
+	}
+
+	private static void validateUsername(String username) {
+		if (username == null || !username.matches(USERNAME_PATTERN)) {
+			throw new IllegalArgumentException("Username must match " + USERNAME_PATTERN);
+		}
+	}
+
+	private static void validateMail(Map<String, Object> data) {
+		if (data == null || !(data.get("mail") instanceof String mail) || mail.isBlank()) {
+			return;
+		}
+		if (!mail.matches(MAIL_PATTERN)) {
+			throw new IllegalArgumentException("Mail address is invalid: " + mail);
+		}
 	}
 
 	private static User fromString(final String userString) {

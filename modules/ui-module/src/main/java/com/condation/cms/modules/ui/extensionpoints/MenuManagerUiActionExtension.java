@@ -43,7 +43,7 @@ public class MenuManagerUiActionExtension extends AbstractExtensionPoint impleme
     @ShortCut(
             id = "manage_menus",
             title = "Manage menus",
-            permissions = {Permissions.CONTENT_EDIT},
+            permissions = {Permissions.MENU_MANAGE},
             section = "tools",
             scriptAction = @ScriptAction(module = "/manager/actions/menu/manage-menus")
     )

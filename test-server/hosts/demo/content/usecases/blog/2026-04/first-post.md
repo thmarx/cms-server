@@ -1,5 +1,5 @@
 ---
-title: Our first blog post
+title: Our first blog post april
 status: published
 publish_date: 2026-04-07T00:00:00Z
 template: usecases/blog/article.html
