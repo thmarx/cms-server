@@ -1,5 +1,9 @@
 import { $hooks } from 'system/hooks.mjs';
 import { $templates } from 'system/templates.mjs';
+import { getLogger } from 'system/logging.mjs'
+
+
+const LOGGER = getLogger("extensions");
 
 
 $hooks.registerAction("system/content/shortcode", ({shortCodes}) => {
@@ -69,6 +73,7 @@ $hooks.registerFilter("module/ui/translations", ({translations}) => {
 })
 
 $hooks.registerAction("system/layout/html/header", (args) => {
+    LOGGER.info("theme: logging from a extension");
 	return "<!-- this comes into the header -->";
 })
 $hooks.registerAction("system/layout/html/footer", (args) => {

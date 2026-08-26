@@ -30,7 +30,8 @@ public final class ExtensionClassAccess {
         "com.condation.cms.api.",
         "java.time.",
         "java.util.",
-		"java.nio.charset.StandardCharsets"
+		"java.nio.charset.StandardCharsets",
+        "org.slf4j.LoggerFactory"
     );
 
     private static final Set<String> BLOCKED_CLASSES = Set.of(
