@@ -40,8 +40,12 @@ import org.semver4j.Semver;
 @Slf4j
 public class CMSServer {
 
-	public static boolean isRunning () throws IOException {
-		return CLIServerUtils.getCMSProcess().isPresent();
+	public static boolean isRunning () {
+        try {
+            return CLIServerUtils.getCMSProcess().isPresent();
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
 	}
 	
 	public static Semver getVersion () {
