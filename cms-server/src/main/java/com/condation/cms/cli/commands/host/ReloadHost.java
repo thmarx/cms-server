@@ -26,6 +26,7 @@ package com.condation.cms.cli.commands.host;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.ServerProperties;
 import com.condation.cms.api.utils.ServerUtil;
+import com.condation.cms.cli.tools.CLIServerUtils;
 import com.condation.cms.core.configuration.ConfigurationFactory;
 import com.condation.cms.core.configuration.properties.ExtendedServerProperties;
 import com.condation.cms.ipc.Command;
@@ -84,12 +85,7 @@ public class ReloadHost implements Runnable {
 	}
 	
 	private static Optional<ProcessHandle> getCMSProcess () throws Exception {
-		var pidFile = ServerUtil.getPath(Constants.PID_FILE);
-		if (!Files.exists(pidFile)) {
-			return Optional.empty();
-		}
-		var pid = Files.readString(pidFile);
-		return ProcessHandle.of(Long.parseLong(pid.trim()));
+		return CLIServerUtils.getCMSProcess();
 	}
 
 	

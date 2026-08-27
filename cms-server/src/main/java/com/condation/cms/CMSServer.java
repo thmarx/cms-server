@@ -23,11 +23,8 @@ package com.condation.cms;
 
 
 
-import com.condation.cms.api.Constants;
-import com.condation.cms.api.utils.ServerUtil;
-
+import com.condation.cms.cli.tools.CLIServerUtils;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import org.semver4j.Semver;
@@ -40,18 +37,11 @@ import org.semver4j.Semver;
 public class CMSServer {
 
 	public static boolean isRunning () {
-		var pidFile = ServerUtil.getPath(Constants.PID_FILE);
-		if (!Files.exists(pidFile)) {
-			return false;
-		}
-		try {
-			var pid = Files.readString(pidFile);
-			
-			return ProcessHandle.of(Long.parseLong(pid)).isPresent();
-		} catch (IOException ex) {
-			log.error("", ex);
-		}
-		return false;
+        try {
+            return CLIServerUtils.getCMSProcess().isPresent();
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
 	}
 	
 	public static Semver getVersion () {
