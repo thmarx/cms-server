@@ -28,6 +28,7 @@ import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.taxonomy.Taxonomies;
+import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.filesystem.taxonomy.FileTaxonomies;
 import java.io.IOException;
@@ -51,6 +52,7 @@ public class FileDB implements DB {
 	
 	private FileSystem fileSystem;
 	private FileContent content;
+	private FileCollections collections;
 	private ReadOnlyFileSystem readOnlyFileSystem;
 	
 	private FileTaxonomies taxonomies;
@@ -68,6 +70,8 @@ public class FileDB implements DB {
 		readOnlyFileSystem = new WrappedReadOnlyFileSystem(fileSystem);
 		
 		content = new FileContent(fileSystem);
+		collections = new FileCollections(siteProperties.id(), hostBaseDirectory, contentParser);
+		collections.init();
 		
 		taxonomies = new FileTaxonomies(configuration, content);	
 	}
@@ -97,12 +101,23 @@ public class FileDB implements DB {
 
 	@Override
 	public void close() throws Exception {
-		fileSystem.shutdown();
+		try {
+			if (collections != null) {
+				collections.close();
+			}
+		} finally {
+			fileSystem.shutdown();
+		}
 	}
 
 	@Override
 	public Content getContent() {
 		return content;
+	}
+
+	@Override
+	public Collections getCollections() {
+		return collections;
 	}
 
 	@Override
