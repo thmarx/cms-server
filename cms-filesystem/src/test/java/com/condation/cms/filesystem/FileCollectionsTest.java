@@ -190,7 +190,7 @@ class FileCollectionsTest {
 	private Path writeMeta(String relativePath, String meta, String body) throws Exception {
 		var file = tempDirectory.resolve("collections").resolve(relativePath);
 		Files.createDirectories(file.getParent());
-		Files.writeString(file, "---\n%s\n---\n%s\n".formatted(meta, body));
+		Files.writeString(file, "---%n%s%n---%n%s%n".formatted(meta, body));
 		return file;
 	}
 

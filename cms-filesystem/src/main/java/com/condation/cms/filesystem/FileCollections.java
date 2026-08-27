@@ -36,6 +36,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -81,7 +82,10 @@ public class FileCollections implements Collections, AutoCloseable {
 		rebuild();
 
 		watcher = new MultiRootRecursiveWatcher(siteId, List.of(collectionsBase));
-		watcher.getPublisher(collectionsBase).subscribe(
+		var publisher = Objects.requireNonNull(
+				watcher.getPublisher(collectionsBase),
+				"collections publisher must be available");
+		publisher.subscribe(
 				new MultiRootRecursiveWatcher.AbstractFileEventSubscriber() {
 					@Override
 					public void onNext(FileEvent item) {
