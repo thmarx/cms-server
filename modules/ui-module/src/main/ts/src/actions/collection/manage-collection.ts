@@ -20,7 +20,7 @@
  */
 
 import { openCollectionItemCreator } from './create-collection-item.js';
-import { openCollectionItemEditor } from './edit-collection-item.js';
+import { CollectionItemEditor, createCollectionItemEditor } from './edit-collection-item.js';
 import { i18n } from '@cms/modules/localization.js';
 import { openModal } from '@cms/modules/modal.js';
 import { loadPreview } from '@cms/modules/preview.utils.js';
@@ -67,30 +67,118 @@ export const runAction = async (options: { collection: string }) => {
 	let currentPage = 1;
 	let currentQuery = '';
 	let requestVersion = 0;
+	let editorRequestVersion = 0;
 	let modal: any;
+	let modalElement: HTMLElement | null = null;
+	let collectionSlider: HTMLElement | null = null;
+	let browsePanel: HTMLElement | null = null;
+	let editorPanel: HTMLElement | null = null;
+	let editorContent: HTMLElement | null = null;
+	let editorSaveButton: HTMLButtonElement | null = null;
+	let currentEditor: CollectionItemEditor | null = null;
+	let isSaving = false;
 
 	const body = `
-		<div>
-			<div class="d-flex justify-content-between align-items-end gap-3">
-				<div class="flex-grow-1">
-					<label class="form-label" for="cms-collection-search">
-						${i18n.t('collection.items.searchLabel', 'Search by title')}
-					</label>
-			<input type="search" class="form-control" id="cms-collection-search"
-				placeholder="${i18n.t('collection.items.searchPlaceholder', 'Search by title...')}" autocomplete="off">
+		<div class="cms-collection-manager-slider" data-collection-slider>
+			<section class="cms-collection-manager-panel cms-collection-manager-panel--browse" data-collection-browse-panel>
+				<div class="d-flex justify-content-between align-items-end gap-3">
+					<div class="flex-grow-1">
+						<label class="form-label" for="cms-collection-search">
+							${i18n.t('collection.items.searchLabel', 'Search by title')}
+						</label>
+						<input type="search" class="form-control" id="cms-collection-search"
+							placeholder="${i18n.t('collection.items.searchPlaceholder', 'Search by title...')}" autocomplete="off">
+					</div>
+					<button type="button" class="btn btn-primary flex-shrink-0" data-collection-create>
+						<i class="bi bi-plus-lg"></i> ${i18n.t('collection.items.create', 'New item')}
+					</button>
 				</div>
-				<button type="button" class="btn btn-primary flex-shrink-0" data-collection-create>
-					<i class="bi bi-plus-lg"></i> ${i18n.t('collection.items.create', 'New item')}
-				</button>
-			</div>
-			<div class="mt-3" data-collection-results></div>
-			<div class="mt-3" data-collection-pagination></div>
+				<div class="mt-3" data-collection-results></div>
+				<div class="mt-3" data-collection-pagination></div>
+			</section>
+			<section class="cms-collection-manager-panel cms-collection-manager-panel--editor"
+				data-collection-editor-panel aria-hidden="true" inert>
+				<div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+					<h6 class="mb-0">${i18n.t('collection.item.edit.title', 'Edit collection item')}</h6>
+					<button type="button" class="btn btn-sm btn-secondary" data-collection-editor-back>
+						${i18n.t('buttons.back', 'Back')}
+					</button>
+				</div>
+				<div data-collection-editor-content></div>
+				<div class="d-flex justify-content-end gap-2 mt-3">
+					<button type="button" class="btn btn-secondary" data-collection-editor-cancel>
+						${i18n.t('buttons.cancel', 'Cancel')}
+					</button>
+					<button type="button" class="btn btn-primary" data-collection-editor-save disabled>
+						${i18n.t('buttons.save', 'Save')}
+					</button>
+				</div>
+			</section>
 		</div>`;
+
+	const closeEditor = () => {
+		editorRequestVersion++;
+		currentEditor = null;
+		isSaving = false;
+		if (editorSaveButton) editorSaveButton.disabled = true;
+		collectionSlider?.classList.remove('is-editing-item');
+		browsePanel?.setAttribute('aria-hidden', 'false');
+		editorPanel?.setAttribute('aria-hidden', 'true');
+		if (browsePanel) browsePanel.inert = false;
+		if (editorPanel) editorPanel.inert = true;
+	};
+
+	const openEditor = async (id: string) => {
+		if (!collectionSlider || !editorContent || !editorSaveButton) return;
+		const version = ++editorRequestVersion;
+		currentEditor = null;
+		editorSaveButton.disabled = true;
+		editorContent.innerHTML = `<div class="text-muted">${i18n.t('collection.item.edit.loading', 'Loading collection item...')}</div>`;
+		collectionSlider.classList.add('is-editing-item');
+		browsePanel?.setAttribute('aria-hidden', 'true');
+		editorPanel?.setAttribute('aria-hidden', 'false');
+		if (browsePanel) browsePanel.inert = true;
+		if (editorPanel) editorPanel.inert = false;
+
+		try {
+			const editor = await createCollectionItemEditor({
+				collection: options.collection,
+				id,
+				onSaved: async () => {
+					await update();
+					closeEditor();
+				}
+			});
+			if (version !== editorRequestVersion) return;
+			currentEditor = editor;
+			editorContent.innerHTML = '';
+			editor.form.init(editorContent);
+			editorSaveButton.disabled = false;
+		} catch (error: any) {
+			if (version !== editorRequestVersion) return;
+			showToast({
+				title: i18n.t('collection.item.edit.loadError.title', 'Collection item could not be loaded'),
+				message: error?.message ?? String(error),
+				type: 'error',
+				timeout: 3000
+			});
+			closeEditor();
+		}
+	};
+
+	const saveEditor = async () => {
+		if (!currentEditor || !editorSaveButton || isSaving || !currentEditor.form.validate()) return;
+		isSaving = true;
+		editorSaveButton.disabled = true;
+		const saved = await currentEditor.save();
+		isSaving = false;
+		if (!saved && currentEditor) editorSaveButton.disabled = false;
+	};
 
 	const update = async () => {
 		const version = ++requestVersion;
-		const root = document.querySelector('[data-collection-results]') as HTMLElement | null;
-		const pagination = document.querySelector('[data-collection-pagination]') as HTMLElement | null;
+		const root = modalElement?.querySelector('[data-collection-results]') as HTMLElement | null;
+		const pagination = modalElement?.querySelector('[data-collection-pagination]') as HTMLElement | null;
 		if (!root || !pagination) return;
 		root.innerHTML = `<div class="text-muted">${i18n.t('collection.items.loading', 'Loading collection items...')}</div>`;
 		try {
@@ -125,11 +213,7 @@ export const runAction = async (options: { collection: string }) => {
 				</nav>` : '';
 
 			root.querySelectorAll<HTMLElement>('[data-collection-edit]').forEach(button => {
-				button.addEventListener('click', () => openCollectionItemEditor({
-					collection: options.collection,
-					id: button.dataset.collectionEdit ?? '',
-					onSaved: update
-				}));
+				button.addEventListener('click', () => openEditor(button.dataset.collectionEdit ?? ''));
 			});
 			root.querySelectorAll<HTMLElement>('[data-collection-open]').forEach(button => {
 				button.addEventListener('click', () => {
@@ -180,7 +264,16 @@ export const runAction = async (options: { collection: string }) => {
 		size: 'xl',
 		showFooter: false,
 		onShow: (element: HTMLElement) => {
+			modalElement = element;
+			collectionSlider = element.querySelector('[data-collection-slider]');
+			browsePanel = element.querySelector('[data-collection-browse-panel]');
+			editorPanel = element.querySelector('[data-collection-editor-panel]');
+			editorContent = element.querySelector('[data-collection-editor-content]');
+			editorSaveButton = element.querySelector('[data-collection-editor-save]');
 			const input = element.querySelector<HTMLInputElement>('#cms-collection-search');
+			element.querySelectorAll('[data-collection-editor-back], [data-collection-editor-cancel]')
+				.forEach(button => button.addEventListener('click', closeEditor));
+			editorSaveButton?.addEventListener('click', saveEditor);
 			element.querySelector('[data-collection-create]')?.addEventListener('click', () => {
 				openCollectionItemCreator({
 					collection: options.collection,

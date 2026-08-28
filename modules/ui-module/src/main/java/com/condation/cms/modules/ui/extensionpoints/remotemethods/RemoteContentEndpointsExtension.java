@@ -81,7 +81,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		if (target.file().exists()) {
 			try {
 				ContentFileParser parser = new ContentFileParser(target.file());
-				result.put("content", parser.getContent());
+				result.put(Parameters.CONTENT, parser.getContent());
 				result.put("meta", parser.getHeader());
 			} catch (IOException ex) {
 				log.error("", ex);
@@ -97,7 +97,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 	@RemoteMethod(name = "content.set", permissions = {Permissions.CONTENT_EDIT})
 	public Object setContent(Map<String, Object> parameters) throws RPCException {
 		final DB db = getContext().get(DBFeature.class).db();
-		var updatedContent = FormHelper.getContent(parameters.get("content"));
+		var updatedContent = FormHelper.getContent(parameters.get(Parameters.CONTENT));
 		var target = editableTarget(parameters, db);
 
 		Map<String, Object> result = new HashMap<>();
@@ -109,7 +109,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 				Map<String, Object> meta = parser.getHeader();
 				YamlHeaderUpdater.saveMarkdownFileWithHeader(target.writableFile(db), meta, updatedContent);
 				refresh(target, db);
-				log.debug("file {} saved", target.uri());
+				log.debug(LOG_PATTERN, target.uri());
 			} catch (IOException ex) {
 				log.error("", ex);
 				throw new RPCException(0, ex.getMessage());
@@ -118,13 +118,14 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 		return result;
 	}
+    private static final String LOG_PATTERN = "file {} saved";
 	
 	@RemoteMethod(name = "content.replace", permissions = {Permissions.CONTENT_EDIT})
 	public Object replaceContent(Map<String, Object> parameters) throws RPCException {
 		final DB db = getContext().get(DBFeature.class).db();
 		var contentBase = db.getFileSystem().contentBase();
 
-		var replacement = (String)parameters.get("content");
+		var replacement = (String)parameters.get(Parameters.CONTENT);
 		int start = NumberUtils.toInt(parameters.getOrDefault("start", -1l));
 		int end = NumberUtils.toInt(parameters.getOrDefault("end", -1l));
 		var uri = contentUri(parameters);
@@ -151,7 +152,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 				var filePath = db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(uri);
 
 				YamlHeaderUpdater.saveMarkdownFileWithHeader(filePath, parser.getHeader(), updatedContent);
-				log.debug("file {} saved", uri);
+				log.debug(LOG_PATTERN, uri);
 			} catch (IOException ex) {
 				log.error("", ex);
 				throw new RPCException(0, ex.getMessage());
@@ -179,7 +180,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 				YamlHeaderUpdater.saveMarkdownFileWithHeader(target.writableFile(db), meta, parser.getContent());
 				refresh(target, db);
-				log.debug("file {} saved", target.uri());
+				log.debug(LOG_PATTERN, target.uri());
 			} catch (IOException ex) {
 				log.error("", ex);
 				throw new RPCException(0, ex.getMessage());
@@ -222,7 +223,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 						var filePath = db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(update.uri);
 
 						YamlHeaderUpdater.saveMarkdownFileWithHeader(filePath, fileMeta, parser.getContent());
-						log.debug("file {} saved", update.uri);
+						log.debug(LOG_PATTERN, update.uri);
 
 						getContext().get(EventBusFeature.class).eventBus().publish(new ReIndexContentMetaDataEvent(update.uri));
 					} catch (IOException ex) {
@@ -270,7 +271,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		final DB db = getContext().get(DBFeature.class).db();
 		var contentBase = db.getFileSystem().resolve(Constants.Folders.CONTENT);
 
-		var content = (String) parameters.getOrDefault("content", "");
+		var content = (String) parameters.getOrDefault(Parameters.CONTENT, "");
 		var parentUri = contentUri(parameters, "parentUri");
 		var section = (String) parameters.get("section");
 		var sectionEntryName = (String) parameters.get("sectionEntryName");
@@ -297,7 +298,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 				var filePath = db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(uri);
 
 				YamlHeaderUpdater.saveMarkdownFileWithHeader(filePath, meta, content);
-				log.debug("file {} saved", uri);
+				log.debug(LOG_PATTERN, uri);
 
 				getContext().get(EventBusFeature.class).eventBus().publish(new ReIndexContentMetaDataEvent(uri));
 			} catch (IOException ex) {

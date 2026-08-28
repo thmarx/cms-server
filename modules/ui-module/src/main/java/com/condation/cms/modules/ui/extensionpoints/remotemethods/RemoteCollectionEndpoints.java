@@ -78,7 +78,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	@RemoteMethod(name = "collections.items", permissions = {Permissions.CONTENT_EDIT})
 	public Object items(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
-		var collectionName = requiredString(parameters, "collection");
+		var collectionName = requiredString(parameters, Parameters.COLLECTION);
 		ensureCollectionExists(db.getCollections().names(), collectionName);
 
 		long page = Math.max(1, NumberUtils.toLong(parameters.getOrDefault("page", 1L)));
@@ -102,6 +102,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 				result.getItems().stream().map(this::itemDto).toList());
 	}
 
+
 	@RemoteMethod(name = "collections.item.get", permissions = {Permissions.CONTENT_EDIT})
 	public Object get(Map<String, Object> parameters) throws RPCException {
 		var item = item(parameters);
@@ -124,8 +125,8 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 			var meta = new HashMap<>(parser.getHeader());
 			var rawMeta = typedMeta(parameters.get("meta"));
 			YamlHeaderUpdater.mergeFlatMapIntoNestedMap(meta, MetaConverter.convertMeta(rawMeta));
-			var content = parameters.containsKey("content")
-					? FormHelper.getContent(parameters.get("content"))
+			var content = parameters.containsKey(Parameters.CONTENT)
+					? FormHelper.getContent(parameters.get(Parameters.CONTENT))
 					: parser.getContent();
 			YamlHeaderUpdater.saveMarkdownFileWithHeader(writableFile, meta, content);
 			db.getCollections().refresh(item.collection(), item.id());
@@ -140,7 +141,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	@RemoteMethod(name = "collections.item.create", permissions = {Permissions.CONTENT_EDIT})
 	public Object create(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
-		var collectionName = requiredString(parameters, "collection");
+		var collectionName = requiredString(parameters, Parameters.COLLECTION);
 		var id = requiredItemId(parameters);
 		ensureCollectionExists(db.getCollections().names(), collectionName);
 		var writableFile = writableFile(db, collectionName, id);
@@ -158,7 +159,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 		meta.put(
 				Constants.MetaFields.STATUS,
 				getContext().get(WorkflowFeature.class).workflow().getStatusProvider().newNodeStatus());
-		var content = FormHelper.getContent(parameters.get("content"));
+		var content = FormHelper.getContent(parameters.get(Parameters.CONTENT));
 
 		try {
 			Files.createDirectories(writableFile.getParent());
@@ -180,7 +181,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	@RemoteMethod(name = "collections.item.delete", permissions = {Permissions.CONTENT_EDIT})
 	public Object delete(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
-		var collectionName = requiredString(parameters, "collection");
+		var collectionName = requiredString(parameters, Parameters.COLLECTION);
 		var id = requiredItemId(parameters);
 		ensureCollectionExists(db.getCollections().names(), collectionName);
 		var writableFile = writableFile(db, collectionName, id);
@@ -201,7 +202,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 
 	private CollectionItem item(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
-		var collectionName = requiredString(parameters, "collection");
+		var collectionName = requiredString(parameters, Parameters.COLLECTION);
 		var id = requiredString(parameters, "id");
 		ensureCollectionExists(db.getCollections().names(), collectionName);
 		try {

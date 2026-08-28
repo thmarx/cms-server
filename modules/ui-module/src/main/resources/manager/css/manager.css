@@ -760,6 +760,33 @@ i[data-cms-section-handle] {
 	transform: translateX(-100%);
 }
 
+.cms-collection-manager-slider {
+	display: grid;
+	grid-template-columns: 100% 100%;
+	overflow: hidden;
+}
+
+.cms-collection-manager-panel {
+	grid-row: 1;
+	min-width: 0;
+	transition: transform 0.25s ease;
+}
+
+.cms-collection-manager-panel--browse {
+	grid-column: 1;
+}
+
+.cms-collection-manager-panel--editor {
+	grid-column: 2;
+	max-height: 70vh;
+	overflow-y: auto;
+	padding-left: 1rem;
+}
+
+.cms-collection-manager-slider.is-editing-item .cms-collection-manager-panel {
+	transform: translateX(-100%);
+}
+
 .cms-media-grid {
 	--cms-media-grid-gap: 12px;
 	--cms-media-card-preview-height: 140px;

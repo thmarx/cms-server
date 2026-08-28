@@ -113,8 +113,8 @@ class RemoteWorkflowEndpointsExtensionTest {
 		@SuppressWarnings("unchecked")
 		Map<String, Object> result = (Map<String, Object>) endpoints.nodeStatus(params);
 
-		assertThat(result).doesNotContainKey("status");
-		assertThat(result).doesNotContainKey("error");
+		assertThat(result).doesNotContainKey("status")
+                .doesNotContainKey("error");
 	}
 
 	@Test
@@ -124,8 +124,8 @@ class RemoteWorkflowEndpointsExtensionTest {
 		@SuppressWarnings("unchecked")
 		Map<String, Object> result = (Map<String, Object>) endpoints.getTransitions(params);
 
-		assertThat(result).containsEntry("transitions", java.util.List.of());
-		assertThat(result).doesNotContainKey("error");
+		assertThat(result).containsEntry("transitions", java.util.List.of())
+                .doesNotContainKey("error");
 	}
 
 	@Test
@@ -161,8 +161,8 @@ class RemoteWorkflowEndpointsExtensionTest {
 				RequestContextScope.REQUEST_CONTEXT,
 				requestContext).call(() -> endpoints.nodeStatus(Map.of()));
 
-		assertThat(result).containsEntry("status", status);
-		assertThat(result).containsEntry("transitions", List.of());
+		assertThat(result).containsEntry("status", status)
+                .containsEntry("transitions", List.of());
 	}
 
 	@Test

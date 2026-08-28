@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import { Form } from '@cms/modules/form/forms.js';
 import { CollectionType } from '@cms/modules/rpc/rpc-manager.js';
 export declare const collectionForm: (types: CollectionType[], collection: string, mode?: "create" | "edit") => any;
 export interface EditCollectionItemOptions {
@@ -26,5 +27,10 @@ export interface EditCollectionItemOptions {
     reloadAfterSave?: boolean;
     onSaved?: () => void | Promise<void>;
 }
+export interface CollectionItemEditor {
+    form: Form;
+    save: () => Promise<boolean>;
+}
+export declare const createCollectionItemEditor: (options: EditCollectionItemOptions) => Promise<CollectionItemEditor>;
 export declare const openCollectionItemEditor: (options: EditCollectionItemOptions) => Promise<void>;
 export declare const runAction: (options: EditCollectionItemOptions) => Promise<void>;
