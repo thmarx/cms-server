@@ -25,6 +25,7 @@ import com.condation.cms.api.Constants;
 import com.condation.cms.core.configuration.configs.SimpleConfiguration;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.eventbus.events.ReloadMediaConfig;
+import com.condation.cms.api.eventbus.events.ReloadCollectionsConfig;
 import com.condation.cms.api.eventbus.events.ReloadParentThemeConfig;
 import com.condation.cms.api.eventbus.events.ReloadServerConfig;
 import com.condation.cms.api.eventbus.events.ReloadSiteConfig;
@@ -73,6 +74,14 @@ public class ConfigurationFactory {
 						new EventReload<>(eventBus, ReloadTaxonomyConfig.class)
 				)
 		);
+		final com.condation.cms.core.configuration.configs.CollectionConfiguration collectionConfiguration = collectionConfiguration(
+				eventBus,
+				hostBase,
+				new CompositeReload(
+						new CronReload("0/10 * * * * ?", cronScheduler),
+						new EventReload<>(eventBus, ReloadCollectionsConfig.class)
+				)
+		);
 
 		final SimpleConfiguration themeConfiguration = themeConfiguration(
 				"theme", 
@@ -97,6 +106,7 @@ public class ConfigurationFactory {
 		management.add(serverConfiguration.id(), serverConfiguration);
 		management.add(siteConfiguration.id(), siteConfiguration);
 		management.add(taxonomyConfiguration.id(), taxonomyConfiguration);
+		management.add(collectionConfiguration.id(), collectionConfiguration);
 		management.add(mediaConfiguration.id(), mediaConfiguration);
 		management.add(themeConfiguration.id(), themeConfiguration);
 		management.add(themeConfiguration.id(), parentThemeConfiguration);
@@ -188,6 +198,18 @@ public class ConfigurationFactory {
 				.hostBase(hostBase)
 				.addSource(YamlConfigSource.build(hostBase.resolve("config/taxonomy.yaml")))
 				.addSource(TomlConfigSource.build(hostBase.resolve("config/taxonomy.toml")))
+				.build();
+	}
+
+	private static com.condation.cms.core.configuration.configs.CollectionConfiguration collectionConfiguration(
+			EventBus eventBus,
+			Path hostBase,
+			ReloadStrategy reloadStrategy) throws IOException {
+		return com.condation.cms.core.configuration.configs.CollectionConfiguration.builder(eventBus)
+				.id("collections")
+				.reloadStrategy(reloadStrategy)
+				.addSource(YamlConfigSource.build(hostBase.resolve("config/collections.yaml")))
+				.addSource(TomlConfigSource.build(hostBase.resolve("config/collections.toml")))
 				.build();
 	}
 }

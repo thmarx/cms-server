@@ -1,4 +1,4 @@
-package com.condation.cms.api.db.collection;
+package com.condation.cms.api.configuration.configs;
 
 /*-
  * #%L
@@ -21,17 +21,25 @@ package com.condation.cms.api.db.collection;
  * #L%
  */
 
-import com.condation.cms.api.db.ContentQuery;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
- * A named, file-backed collection.
+ * Configuration of one named collection.
  */
-public interface Collection {
+public record CollectionDefinition(String name, CollectionDetailConfiguration detail) {
 
-	String name();
+	private static final Pattern NAME = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_-]*");
 
-	Optional<CollectionItem> item(String id);
+	public CollectionDefinition {
+		Objects.requireNonNull(name, "collection name must not be null");
+		if (!NAME.matcher(name).matches()) {
+			throw new IllegalArgumentException("invalid collection name: " + name);
+		}
+	}
 
-	ContentQuery<CollectionItem> query();
+	public Optional<CollectionDetailConfiguration> detailPage() {
+		return Optional.ofNullable(detail);
+	}
 }

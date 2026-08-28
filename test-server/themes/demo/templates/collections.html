@@ -23,7 +23,7 @@
 			
 			{% for item in items %}
 				<div class="container">
-					{{ item.meta.title | raw }}
+					<a href="{{ cms.links.collectionUrl(item) }}">{{ item.meta.title | raw }}</a>
 				</div>
 			{% endfor %}
 
@@ -32,7 +32,7 @@
 			
 			{% for item in items %}
 				<div class="container">
-					{{ item.meta.title | raw }}
+					<a href="{{ cms.links.collectionUrl(item) }}">{{ item.meta.title | raw }}</a>
 				</div>
 			{% endfor %}
 		</div>

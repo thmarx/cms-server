@@ -402,6 +402,12 @@ public class FileSystem implements ModuleFileSystem, DBFileSystem {
 	}
 
 	@Override
+	public ReadOnlyFile collectionsBase() {
+		var path = resolve(Constants.Folders.COLLECTIONS);
+		return new NIOReadOnlyFile(path, path);
+	}
+
+	@Override
 	public ReadOnlyFile assetBase() {
 		var path = resolve(Constants.Folders.ASSETS);
 		return new NIOReadOnlyFile(path, path);

@@ -1,4 +1,4 @@
-package com.condation.cms.api.db.collection;
+package com.condation.cms.api.configuration.configs;
 
 /*-
  * #%L
@@ -21,17 +21,25 @@ package com.condation.cms.api.db.collection;
  * #L%
  */
 
-import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.configuration.Config;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentMap;
+import lombok.RequiredArgsConstructor;
 
 /**
- * A named, file-backed collection.
+ * Reloadable, site-scoped collection definitions.
  */
-public interface Collection {
+@RequiredArgsConstructor
+public class CollectionConfiguration implements Config {
 
-	String name();
+	private final ConcurrentMap<String, CollectionDefinition> collections;
 
-	Optional<CollectionItem> item(String id);
+	public Optional<CollectionDefinition> collection(String name) {
+		return Optional.ofNullable(collections.get(name));
+	}
 
-	ContentQuery<CollectionItem> query();
+	public Map<String, CollectionDefinition> collections() {
+		return Map.copyOf(collections);
+	}
 }

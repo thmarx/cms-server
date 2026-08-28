@@ -24,6 +24,7 @@ package com.condation.cms.filesystem;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.NodeVisibility;
 import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.utils.PathUtil;
@@ -37,6 +38,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -50,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FileCollections implements Collections, AutoCloseable {
 
 	private static final Pattern COLLECTION_NAME = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_-]*");
+	private static final Pattern ITEM_ID = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_.-]*");
 	private static final Duration CHANGE_QUIET_PERIOD = Duration.ofMillis(200);
 
 	private final String siteId;
@@ -257,6 +260,12 @@ public class FileCollections implements Collections, AutoCloseable {
 		}
 	}
 
+	private static void validateItemId(String id) {
+		if (id == null || !ITEM_ID.matcher(id).matches()) {
+			throw new IllegalArgumentException("invalid collection item id: " + id);
+		}
+	}
+
 	@Override
 	public void close() throws IOException {
 		if (watcher != null) {
@@ -281,6 +290,14 @@ public class FileCollections implements Collections, AutoCloseable {
 		@Override
 		public String name() {
 			return name;
+		}
+
+		@Override
+		public Optional<CollectionItem> item(String id) {
+			validateItemId(id);
+			return metaData.byPath(name + "/" + id + ".md")
+					.filter(NodeVisibility::isVisible)
+					.map(node -> FileCollections.this.map(node, 0));
 		}
 
 		@Override

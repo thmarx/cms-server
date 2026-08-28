@@ -139,15 +139,20 @@ class FileCollectionsTest {
 			Assertions.assertThat(publicPage.getItems())
 					.extracting(item -> item.id())
 					.containsExactly("published");
+			Assertions.assertThat(collections.collection("blog").item("published")).isPresent();
+			Assertions.assertThat(collections.collection("blog").item("draft")).isEmpty();
 
 			var previewContext = new RequestContext();
 			previewContext.add(IsPreviewFeature.class, new IsPreviewFeature(IsPreviewFeature.Mode.PREVIEW));
 			var previewItems = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, previewContext)
 					.call(() -> collections.collection("blog").query().get());
+			var previewDraft = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, previewContext)
+					.call(() -> collections.collection("blog").item("draft"));
 
 			Assertions.assertThat(previewItems)
 					.extracting(item -> item.id())
 					.containsExactlyInAnyOrder("published", "draft", "future", "expired");
+			Assertions.assertThat(previewDraft).isPresent();
 		} finally {
 			collections.close();
 		}
@@ -167,11 +172,17 @@ class FileCollectionsTest {
 
 			var result = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, requestContext)
 					.call(() -> collections.collection("blog").query().page(1, 10));
+			var approvedItem = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, requestContext)
+					.call(() -> collections.collection("blog").item("approved"));
+			var blockedItem = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, requestContext)
+					.call(() -> collections.collection("blog").item("blocked"));
 
 			Assertions.assertThat(result.getTotalItems()).isEqualTo(1);
 			Assertions.assertThat(result.getItems())
 					.singleElement()
 					.satisfies(item -> Assertions.assertThat(item.id()).isEqualTo("approved"));
+			Assertions.assertThat(approvedItem).isPresent();
+			Assertions.assertThat(blockedItem).isEmpty();
 		} finally {
 			collections.close();
 		}

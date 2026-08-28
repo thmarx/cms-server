@@ -1,4 +1,4 @@
-package com.condation.cms.api.db.collection;
+package com.condation.cms.api.eventbus.events;
 
 /*-
  * #%L
@@ -21,17 +21,10 @@ package com.condation.cms.api.db.collection;
  * #L%
  */
 
-import com.condation.cms.api.db.ContentQuery;
-import java.util.Optional;
+import com.condation.cms.api.eventbus.Event;
 
 /**
- * A named, file-backed collection.
+ * Triggers reloading the site collection configuration.
  */
-public interface Collection {
-
-	String name();
-
-	Optional<CollectionItem> item(String id);
-
-	ContentQuery<CollectionItem> query();
+public record ReloadCollectionsConfig() implements Event {
 }
