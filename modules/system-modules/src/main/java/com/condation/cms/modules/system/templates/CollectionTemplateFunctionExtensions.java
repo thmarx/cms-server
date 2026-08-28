@@ -35,7 +35,7 @@ public class CollectionTemplateFunctionExtensions extends RegisterTemplateFuncti
 
 	@TemplateFunction(value = "collection", namespace = "cms")
 	public Object collection(Parameter params) {
-		var value = params.containsKey("name") ? params.get("name") : params.get("value");
+		var value = params.get(params.containsKey("name") ? "name" : "value");
 		if (value == null) {
 			throw new IllegalArgumentException("collection name must not be null");
 		}

@@ -21,20 +21,23 @@ package com.condation.cms.core.configuration;
  * #L%
  */
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.eventbus.events.ConfigurationReloadEvent;
 import com.condation.cms.core.configuration.configs.CollectionConfiguration;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class CollectionConfigurationTest {
 
 	@Test
 	void updatesTheSharedConfigurationOnReload() {
-		var eventBus = Mockito.mock(EventBus.class);
-		var source = Mockito.mock(ConfigSource.class);
+		var eventBus = mock(EventBus.class);
+		var source = mock(ConfigSource.class);
 		var initial = Map.<String, Object>of(
 				"blog",
 				Map.of("detail", Map.of(
@@ -48,9 +51,9 @@ class CollectionConfigurationTest {
 						"route", "/products/{id}",
 						"template", "collections/product.html")));
 
-		Mockito.when(source.exists()).thenReturn(true);
-		Mockito.when(source.reload()).thenReturn(false, true);
-		Mockito.when(source.getMap("collections")).thenReturn(initial, updated);
+		when(source.exists()).thenReturn(true);
+		when(source.reload()).thenReturn(false, true);
+		when(source.getMap("collections")).thenReturn(initial, updated);
 
 		var configuration = CollectionConfiguration.builder(eventBus)
 				.id("collections")
@@ -68,6 +71,6 @@ class CollectionConfigurationTest {
 		Assertions.assertThat(sharedCollections).containsOnlyKeys("products");
 		Assertions.assertThat(sharedCollections.get("products").detailPage().orElseThrow().route())
 				.isEqualTo("/products/{id}");
-		Mockito.verify(eventBus).publish(new ConfigurationReloadEvent("collections"));
+		verify(eventBus).publish(new ConfigurationReloadEvent("collections"));
 	}
 }

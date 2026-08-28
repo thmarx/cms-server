@@ -30,11 +30,11 @@ import java.util.regex.Pattern;
  */
 public record CollectionDefinition(String name, CollectionDetailConfiguration detail) {
 
-	private static final Pattern NAME = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_-]*");
+	private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_-]*");
 
 	public CollectionDefinition {
 		Objects.requireNonNull(name, "collection name must not be null");
-		if (!NAME.matcher(name).matches()) {
+		if (!VALID_NAME_PATTERN.matcher(name).matches()) {
 			throw new IllegalArgumentException("invalid collection name: " + name);
 		}
 	}

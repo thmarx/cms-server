@@ -21,6 +21,13 @@ package com.condation.cms.content;
  * #L%
  */
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.configuration.configs.CollectionDefinition;
@@ -44,18 +51,17 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 class CollectionResolverTest {
 
-	private final ContentRenderer renderer = Mockito.mock(ContentRenderer.class);
-	private final DB db = Mockito.mock(DB.class);
+	private final ContentRenderer renderer = mock(ContentRenderer.class);
+	private final DB db = mock(DB.class);
 	private final com.condation.cms.api.db.collection.Collections collections =
-			Mockito.mock(com.condation.cms.api.db.collection.Collections.class);
-	private final Collection collection = Mockito.mock(Collection.class);
-	private final DBFileSystem fileSystem = Mockito.mock(DBFileSystem.class);
-	private final ReadOnlyFile collectionsBase = Mockito.mock(ReadOnlyFile.class);
-	private final ReadOnlyFile itemFile = Mockito.mock(ReadOnlyFile.class);
+			mock(com.condation.cms.api.db.collection.Collections.class);
+	private final Collection collection = mock(Collection.class);
+	private final DBFileSystem fileSystem = mock(DBFileSystem.class);
+	private final ReadOnlyFile collectionsBase = mock(ReadOnlyFile.class);
+	private final ReadOnlyFile itemFile = mock(ReadOnlyFile.class);
 	private final ConcurrentHashMap<String, CollectionDefinition> definitions = new ConcurrentHashMap<>();
 	private final Configuration configuration = new Configuration();
 	private final CollectionItem item = new CollectionItem(
@@ -68,24 +74,24 @@ class CollectionResolverTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(definitions));
-		Mockito.when(db.getCollections()).thenReturn(collections);
-		Mockito.when(collections.collection("blog")).thenReturn(collection);
-		Mockito.when(db.getFileSystem()).thenReturn(fileSystem);
-		Mockito.when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
-		Mockito.when(collectionsBase.resolve("blog/first.md")).thenReturn(itemFile);
-		Mockito.when(itemFile.exists()).thenReturn(true);
-		Mockito.when(renderer.renderCollection(
-				Mockito.eq(itemFile),
-				Mockito.any(),
-				Mockito.eq(item),
-				Mockito.anyString(),
-				Mockito.any())).thenReturn("<h1>First</h1>");
+		when(db.getCollections()).thenReturn(collections);
+		when(collections.collection("blog")).thenReturn(collection);
+		when(db.getFileSystem()).thenReturn(fileSystem);
+		when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
+		when(collectionsBase.resolve("blog/first.md")).thenReturn(itemFile);
+		when(itemFile.exists()).thenReturn(true);
+		when(renderer.renderCollection(
+				eq(itemFile),
+				any(),
+				eq(item),
+				anyString(),
+				any())).thenReturn("<h1>First</h1>");
 	}
 
 	@Test
 	void resolvesAnIdRouteAndUsesReloadedDefinitions() throws Exception {
 		definitions.put("blog", definition("/old/{id}"));
-		Mockito.when(collection.item("first")).thenReturn(Optional.of(item));
+		when(collection.item("first")).thenReturn(Optional.of(item));
 		var resolver = new CollectionResolver(renderer, db, configuration);
 		var context = context("/blog/first");
 
@@ -101,12 +107,12 @@ class CollectionResolverTest {
 						Assertions.assertThat(content.content()).isEqualTo("<h1>First</h1>"));
 		Assertions.assertThat(context.get(CurrentNodeFeature.class).node().url()).isEqualTo("/blog/first");
 		var node = ArgumentCaptor.forClass(com.condation.cms.api.db.ContentNode.class);
-		Mockito.verify(renderer).renderCollection(
-				Mockito.eq(itemFile),
+		verify(renderer).renderCollection(
+				eq(itemFile),
 				node.capture(),
-				Mockito.eq(item),
-				Mockito.eq("collections/detail.html"),
-				Mockito.eq(context));
+				eq(item),
+				eq("collections/detail.html"),
+				eq(context));
 		Assertions.assertThat(node.getValue().data()).containsEntry("template", "collections/detail.html");
 	}
 
@@ -114,16 +120,16 @@ class CollectionResolverTest {
 	void resolvesAConfiguredFrontMatterField() throws Exception {
 		definitions.put("blog", definition("/blog/{slug}"));
 		@SuppressWarnings("unchecked")
-		var query = (ContentQuery<CollectionItem>) Mockito.mock(ContentQuery.class);
-		Mockito.when(collection.query()).thenReturn(query);
-		Mockito.when(query.where("slug", "first-post")).thenReturn(query);
-		Mockito.when(query.page(1, 1)).thenReturn(new Page<>(1, 1, 1, 1, List.of(item)));
+		var query = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
+		when(collection.query()).thenReturn(query);
+		when(query.where("slug", "first-post")).thenReturn(query);
+		when(query.page(1, 1)).thenReturn(new Page<>(1, 1, 1, 1, List.of(item)));
 		var resolver = new CollectionResolver(renderer, db, configuration);
 
 		var response = resolver.getContent(context("/blog/first-post/"));
 
 		Assertions.assertThat(response).isPresent();
-		Mockito.verify(query).where("slug", "first-post");
+		verify(query).where("slug", "first-post");
 	}
 
 	private static CollectionDefinition definition(String route) {

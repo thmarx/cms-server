@@ -21,6 +21,9 @@ package com.condation.cms.content.template.functions;
  * #L%
  */
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
@@ -35,7 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class LinkFunctionTest {
 
@@ -54,8 +56,8 @@ class LinkFunctionTest {
 		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(definitions));
 		context.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
 
-		var siteProperties = Mockito.mock(SiteProperties.class);
-		Mockito.when(siteProperties.contextPath()).thenReturn("/docs");
+		var siteProperties = mock(SiteProperties.class);
+		when(siteProperties.contextPath()).thenReturn("/docs");
 		context.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 	}
 

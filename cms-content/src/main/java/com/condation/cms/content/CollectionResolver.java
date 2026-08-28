@@ -61,20 +61,30 @@ public class CollectionResolver {
 		for (var definition : collectionConfiguration.collections().values().stream()
 				.sorted(Comparator.comparing(CollectionDefinition::name))
 				.toList()) {
-			var detail = definition.detailPage();
-			if (detail.isEmpty()) {
-				continue;
+			var content = resolve(definition, uri, context);
+			if (content.isPresent()) {
+				return content;
 			}
-			var routeValue = match(detail.get(), uri);
-			if (routeValue.isEmpty()) {
-				continue;
-			}
-			return resolve(definition, detail.get(), routeValue.get(), uri, context);
 		}
 		return Optional.empty();
 	}
 
 	private Optional<ContentResponse> resolve(
+			CollectionDefinition definition,
+			String uri,
+			RequestContext context) throws IOException {
+		var detail = definition.detailPage();
+		if (detail.isEmpty()) {
+			return Optional.empty();
+		}
+		var routeValue = match(detail.get(), uri);
+		if (routeValue.isEmpty()) {
+			return Optional.empty();
+		}
+		return resolveItem(definition, detail.get(), routeValue.get(), uri, context);
+	}
+
+	private Optional<ContentResponse> resolveItem(
 			CollectionDefinition definition,
 			CollectionDetailConfiguration detail,
 			String routeValue,
@@ -124,7 +134,7 @@ public class CollectionResolver {
 			String id) {
 		try {
 			return collection.item(id);
-		} catch (IllegalArgumentException ex) {
+		} catch (IllegalArgumentException _) {
 			return Optional.empty();
 		}
 	}

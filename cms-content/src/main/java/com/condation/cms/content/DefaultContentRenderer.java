@@ -90,6 +90,14 @@ public class DefaultContentRenderer implements ContentRenderer {
 	private final SiteProperties siteProperties;
 	private final ModuleManager moduleManager;
 
+	private record ResolvedRenderInput(
+			String uri,
+			Map<String, List<SectionEntry>> sectionEntries,
+			Map<String, Object> meta,
+			String rawContent,
+			Optional<ContentNode> contentNode) {
+	}
+
 	@Override
 	public String render(final ReadOnlyFile contentFile, final RequestContext context) throws IOException {
 		return render(contentFile, context, Collections.emptyMap());
@@ -149,12 +157,13 @@ public class DefaultContentRenderer implements ContentRenderer {
 		meta.put("template", template);
 		return renderResolved(
 				collectionFile,
-				collectionNode.url(),
 				context,
-				Collections.emptyMap(),
-				meta,
-				item.content(),
-				Optional.of(collectionNode),
+				new ResolvedRenderInput(
+						collectionNode.url(),
+						Collections.emptyMap(),
+						meta,
+						item.content(),
+						Optional.of(collectionNode)),
 				model -> {
 					model.values.put("collection_item", item);
 					model.values.put("collection", db.getCollections().collection(item.collection()));
@@ -171,24 +180,26 @@ public class DefaultContentRenderer implements ContentRenderer {
 		Optional<ContentNode> contentNode = db.getContent().byUri(uri);
 		return renderResolved(
 				contentFile,
-				uri,
 				context,
-				sectionEntries,
-				meta,
-				rawContent,
-				contentNode,
+				new ResolvedRenderInput(
+						uri,
+						sectionEntries,
+						meta,
+						rawContent,
+						contentNode),
 				modelExtending);
 	}
 
 	private String renderResolved(
 			ReadOnlyFile contentFile,
-			String uri,
 			RequestContext context,
-			Map<String, List<SectionEntry>> sectionEntries,
-			Map<String, Object> meta,
-			String rawContent,
-			Optional<ContentNode> contentNode,
+			ResolvedRenderInput input,
 			Consumer<TemplateEngine.Model> modelExtending) throws IOException {
+		var uri = input.uri();
+		var sectionEntries = input.sectionEntries();
+		var meta = input.meta();
+		var rawContent = input.rawContent();
+		var contentNode = input.contentNode();
 		TemplateEngine.Model model = new TemplateEngine.Model(
 				contentFile, 
 				contentNode.orElse(null),

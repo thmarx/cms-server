@@ -52,6 +52,7 @@ import java.util.List;
  * @author t.marx
  */
 public class ConfigurationFactory {
+	private static final String CONFIG_RELOAD_CRON = "0/10 * * * * ?";
 
 	public static ConfigManagement create(Path hostBase, EventBus eventBus, CronJobScheduler cronScheduler) throws IOException {
 		ConfigManagement management = new ConfigManagement();
@@ -62,7 +63,7 @@ public class ConfigurationFactory {
 				serverConfiguration.getString("env", "dev"), 
 				hostBase,
 				new CompositeReload(
-						new CronReload("0/10 * * * * ?", cronScheduler),
+					new CronReload(CONFIG_RELOAD_CRON, cronScheduler),
 						new EventReload<>(eventBus, ReloadSiteConfig.class)
 				)
 		);
@@ -70,7 +71,7 @@ public class ConfigurationFactory {
 				eventBus, 
 				hostBase,
 				new CompositeReload(
-						new CronReload("0/10 * * * * ?", cronScheduler),
+					new CronReload(CONFIG_RELOAD_CRON, cronScheduler),
 						new EventReload<>(eventBus, ReloadTaxonomyConfig.class)
 				)
 		);
@@ -78,7 +79,7 @@ public class ConfigurationFactory {
 				eventBus,
 				hostBase,
 				new CompositeReload(
-						new CronReload("0/10 * * * * ?", cronScheduler),
+					new CronReload(CONFIG_RELOAD_CRON, cronScheduler),
 						new EventReload<>(eventBus, ReloadCollectionsConfig.class)
 				)
 		);
@@ -119,9 +120,12 @@ public class ConfigurationFactory {
 	}
 	private static SimpleConfiguration themeConfiguration(String id, EventBus eventBus, String theme) throws IOException {
 		var themeBase = ServerUtil.getPath(Constants.Folders.THEMES);
-		ReloadStrategy reloadStrategy = "parent-theme".equals(id)
-				? new EventReload<>(eventBus, ReloadParentThemeConfig.class)
-				: new EventReload<>(eventBus, ReloadThemeConfig.class);
+		ReloadStrategy reloadStrategy;
+		if ("parent-theme".equals(id)) {
+			reloadStrategy = new EventReload<>(eventBus, ReloadParentThemeConfig.class);
+		} else {
+			reloadStrategy = new EventReload<>(eventBus, ReloadThemeConfig.class);
+		}
 		return SimpleConfiguration.builder(eventBus)
 				.id(id)
 				.reloadStrategy(reloadStrategy)
