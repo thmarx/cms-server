@@ -38,8 +38,13 @@ const defaultForm = {
 	tabs: []
 };
 
-const collectionForm = (types: CollectionType[], collection: string): any => {
-	return types.find(type => type.name === collection)?.forms?.edit ?? defaultForm;
+export const collectionForm = (
+	types: CollectionType[],
+	collection: string,
+	mode: 'create' | 'edit' = 'edit'
+): any => {
+	const forms = types.find(type => type.name === collection)?.forms;
+	return forms?.[mode] ?? forms?.edit ?? defaultForm;
 };
 
 export interface EditCollectionItemOptions {

@@ -154,6 +154,20 @@ class FileCollectionsTest {
 	}
 
 	@Test
+	void removesDeletedCollectionItemImmediatelyOnRefresh() throws Exception {
+		var item = write("blog/item.md", "title: Before", "Before");
+		var collections = createCollections();
+		try {
+			Files.delete(item);
+			collections.refresh("blog", "item");
+
+			Assertions.assertThat(collections.collection("blog").query().get()).isEmpty();
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
 	void rejectsUnsafeCollectionNames() throws Exception {
 		var collections = createCollections();
 		try {

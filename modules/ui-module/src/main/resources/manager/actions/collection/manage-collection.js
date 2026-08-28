@@ -18,11 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import { openCollectionItemCreator } from './create-collection-item.js';
 import { openCollectionItemEditor } from './edit-collection-item.js';
 import { i18n } from '@cms/modules/localization.js';
 import { openModal } from '@cms/modules/modal.js';
 import { loadPreview } from '@cms/modules/preview.utils.js';
-import { listCollectionItems } from '@cms/modules/rpc/rpc-collection.js';
+import { deleteCollectionItem, listCollectionItems } from '@cms/modules/rpc/rpc-collection.js';
+import { showToast } from '@cms/modules/toast.js';
 const PAGE_SIZE = 10;
 const MIN_SEARCH_LENGTH = 3;
 const escapeHtml = (value) => String(value ?? '')
@@ -49,6 +51,10 @@ const renderItems = (items) => {
 					data-collection-open="${escapeHtml(item.detailUrl)}">
 					${i18n.t('collection.items.open', 'Open detail page')}
 				</button>` : ''}
+				<button type="button" class="btn btn-outline-danger" data-collection-delete="${escapeHtml(item.id)}"
+					title="${i18n.t('collection.items.delete', 'Delete')}">
+					<i class="bi bi-trash"></i>
+				</button>
 			</div>
 		</div>`).join('')}</div>`;
 };
@@ -59,11 +65,18 @@ export const runAction = async (options) => {
     let modal;
     const body = `
 		<div>
-			<label class="form-label" for="cms-collection-search">
-				${i18n.t('collection.items.searchLabel', 'Search by title')}
-			</label>
+			<div class="d-flex justify-content-between align-items-end gap-3">
+				<div class="flex-grow-1">
+					<label class="form-label" for="cms-collection-search">
+						${i18n.t('collection.items.searchLabel', 'Search by title')}
+					</label>
 			<input type="search" class="form-control" id="cms-collection-search"
 				placeholder="${i18n.t('collection.items.searchPlaceholder', 'Search by title...')}" autocomplete="off">
+				</div>
+				<button type="button" class="btn btn-primary flex-shrink-0" data-collection-create>
+					<i class="bi bi-plus-lg"></i> ${i18n.t('collection.items.create', 'New item')}
+				</button>
+			</div>
 			<div class="mt-3" data-collection-results></div>
 			<div class="mt-3" data-collection-pagination></div>
 		</div>`;
@@ -83,6 +96,11 @@ export const runAction = async (options) => {
             });
             if (version !== requestVersion)
                 return;
+            if (page.items.length === 0 && currentPage > 1) {
+                currentPage--;
+                await update();
+                return;
+            }
             root.innerHTML = renderItems(page.items);
             pagination.innerHTML = page.totalPages > 1 ? `
 				<nav aria-label="Collection pagination">
@@ -113,6 +131,32 @@ export const runAction = async (options) => {
                     loadPreview(button.dataset.collectionOpen ?? '');
                 });
             });
+            root.querySelectorAll('[data-collection-delete]').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const id = button.dataset.collectionDelete ?? '';
+                    const prompt = `${i18n.t('collection.items.deleteConfirm', 'Delete collection item')} “${id}”?`;
+                    if (!window.confirm(prompt))
+                        return;
+                    try {
+                        await deleteCollectionItem(options.collection, id);
+                        showToast({
+                            title: i18n.t('collection.items.deleteSuccess.title', 'Collection item deleted'),
+                            message: i18n.t('collection.items.deleteSuccess.message', 'The collection item was deleted successfully.'),
+                            type: 'success',
+                            timeout: 3000
+                        });
+                        await update();
+                    }
+                    catch (error) {
+                        showToast({
+                            title: i18n.t('collection.items.deleteError.title', 'Collection item not deleted'),
+                            message: error?.message ?? String(error),
+                            type: 'error',
+                            timeout: 3000
+                        });
+                    }
+                });
+            });
             pagination.querySelectorAll('[data-collection-page]').forEach(button => {
                 button.addEventListener('click', () => {
                     currentPage = Number(button.dataset.collectionPage ?? 1);
@@ -134,6 +178,18 @@ export const runAction = async (options) => {
         showFooter: false,
         onShow: (element) => {
             const input = element.querySelector('#cms-collection-search');
+            element.querySelector('[data-collection-create]')?.addEventListener('click', () => {
+                openCollectionItemCreator({
+                    collection: options.collection,
+                    onCreated: async () => {
+                        currentQuery = '';
+                        currentPage = 1;
+                        if (input)
+                            input.value = '';
+                        await update();
+                    }
+                });
+            });
             let debounce;
             input?.addEventListener('input', () => {
                 window.clearTimeout(debounce);

@@ -84,3 +84,22 @@ export const saveCollectionItem = async (options: {
 		parameters: options
 	});
 };
+
+export const createCollectionItem = async (options: {
+	collection: string;
+	id: string;
+	content: any;
+	meta: Record<string, any>;
+}): Promise<CollectionItemSummary> => {
+	return (await executeRemoteCall({
+		method: 'collections.item.create',
+		parameters: options
+	})).result as CollectionItemSummary;
+};
+
+export const deleteCollectionItem = async (collection: string, id: string): Promise<void> => {
+	await executeRemoteCall({
+		method: 'collections.item.delete',
+		parameters: { collection, id }
+	});
+};

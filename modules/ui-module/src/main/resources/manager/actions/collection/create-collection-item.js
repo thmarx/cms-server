@@ -11,81 +11,73 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import { collectionForm } from './edit-collection-item.js';
 import { createForm, getFormFields } from '@cms/modules/form/forms.js';
 import { i18n } from '@cms/modules/localization.js';
 import { openModal } from '@cms/modules/modal.js';
-import { buildValuesFromFields } from '@cms/modules/node.js';
-import { reloadPreview } from '@cms/modules/preview.utils.js';
-import { getCollectionItem, saveCollectionItem } from '@cms/modules/rpc/rpc-collection.js';
+import { loadPreview } from '@cms/modules/preview.utils.js';
+import { createCollectionItem } from '@cms/modules/rpc/rpc-collection.js';
 import { getCollectionTypes } from '@cms/modules/rpc/rpc-manager.js';
 import { showToast } from '@cms/modules/toast.js';
+const ID_FIELD = 'id';
 const CONTENT_FIELD = 'content';
-const defaultForm = {
-    fields: [
-        { type: 'text', name: 'title', title: 'Title', required: true },
-        { type: 'markdown', name: CONTENT_FIELD, title: 'Content', height: '60vh' }
-    ],
-    tabs: []
-};
-export const collectionForm = (types, collection, mode = 'edit') => {
-    const forms = types.find(type => type.name === collection)?.forms;
-    return forms?.[mode] ?? forms?.edit ?? defaultForm;
-};
-export const openCollectionItemEditor = async (options) => {
+const fieldValue = (field) => String(field?.value ?? field ?? '').trim();
+export const openCollectionItemCreator = async (options) => {
     try {
-        const [item, typeResponse] = await Promise.all([
-            getCollectionItem(options.collection, options.id),
-            getCollectionTypes()
-        ]);
-        const definition = collectionForm(typeResponse.result, options.collection);
-        const fields = getFormFields(definition);
+        const typeResponse = await getCollectionTypes();
+        const definition = collectionForm(typeResponse.result, options.collection, 'create');
+        const hasIdField = getFormFields(definition).some(field => field.name === ID_FIELD);
         const form = createForm({
-            fields: definition.fields ?? [],
+            fields: [
+                ...(hasIdField ? [] : [{
+                        type: 'text',
+                        name: ID_FIELD,
+                        title: i18n.t('collection.item.create.id', 'Item ID'),
+                        required: true
+                    }]),
+                ...(definition.fields ?? [])
+            ],
             tabs: definition.tabs ?? [],
-            values: {
-                ...buildValuesFromFields(fields, item.meta),
-                [CONTENT_FIELD]: item.content
-            }
+            values: {}
         });
         openModal({
-            title: i18n.t('collection.item.edit.title', 'Edit collection item'),
+            title: i18n.t('collection.item.create.title', 'Create collection item'),
             body: '',
             form,
             fullscreen: true,
             onCancel: () => { },
             onOk: async () => {
                 const data = form.getData();
+                const id = fieldValue(data[ID_FIELD]);
                 const content = data[CONTENT_FIELD];
+                delete data[ID_FIELD];
                 delete data[CONTENT_FIELD];
                 try {
-                    await saveCollectionItem({
+                    const item = await createCollectionItem({
                         collection: options.collection,
-                        id: options.id,
+                        id,
                         content,
                         meta: data
                     });
                     showToast({
-                        title: i18n.t('collection.item.edit.success.title', 'Collection item updated'),
-                        message: i18n.t('collection.item.edit.success.message', 'The collection item was updated successfully.'),
+                        title: i18n.t('collection.item.create.success.title', 'Collection item created'),
+                        message: i18n.t('collection.item.create.success.message', 'The collection item was created successfully.'),
                         type: 'success',
                         timeout: 3000
                     });
-                    await options.onSaved?.();
-                    if (options.reloadAfterSave) {
-                        reloadPreview();
-                    }
+                    await options.onCreated?.(item);
                     return true;
                 }
                 catch (error) {
                     showToast({
-                        title: i18n.t('collection.item.edit.error.title', 'Collection item not updated'),
+                        title: i18n.t('collection.item.create.error.title', 'Collection item not created'),
                         message: error?.message ?? String(error),
                         type: 'error',
                         timeout: 3000
@@ -97,7 +89,7 @@ export const openCollectionItemEditor = async (options) => {
     }
     catch (error) {
         showToast({
-            title: i18n.t('collection.item.edit.loadError.title', 'Collection item could not be loaded'),
+            title: i18n.t('collection.item.create.loadError.title', 'Collection form could not be loaded'),
             message: error?.message ?? String(error),
             type: 'error',
             timeout: 3000
@@ -105,5 +97,12 @@ export const openCollectionItemEditor = async (options) => {
     }
 };
 export const runAction = async (options) => {
-    await openCollectionItemEditor({ ...options, reloadAfterSave: true });
+    await openCollectionItemCreator({
+        ...options,
+        onCreated: item => {
+            if (item.detailUrl) {
+                loadPreview(item.detailUrl);
+            }
+        }
+    });
 };

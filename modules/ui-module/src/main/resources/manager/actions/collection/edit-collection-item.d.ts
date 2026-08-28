@@ -18,6 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import { CollectionType } from '@cms/modules/rpc/rpc-manager.js';
+export declare const collectionForm: (types: CollectionType[], collection: string, mode?: "create" | "edit") => any;
 export interface EditCollectionItemOptions {
     collection: string;
     id: string;

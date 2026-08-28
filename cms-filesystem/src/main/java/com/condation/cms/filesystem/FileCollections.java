@@ -120,10 +120,11 @@ public class FileCollections implements Collections, AutoCloseable {
 		validateItemId(id);
 		var file = collectionsBase.resolve(collection).resolve(id + ".md");
 		try {
-			if (!Files.isRegularFile(file)) {
-				throw new IllegalArgumentException("collection item does not exist: " + collection + "/" + id);
+			if (Files.isRegularFile(file)) {
+				index(file);
+			} else {
+				metaData.removeFile(collection + "/" + id + ".md");
 			}
-			index(file);
 		} catch (IOException ex) {
 			throw new IllegalStateException("could not refresh collection item", ex);
 		}

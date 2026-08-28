@@ -19,11 +19,13 @@
  * #L%
  */
 
+import { openCollectionItemCreator } from './create-collection-item.js';
 import { openCollectionItemEditor } from './edit-collection-item.js';
 import { i18n } from '@cms/modules/localization.js';
 import { openModal } from '@cms/modules/modal.js';
 import { loadPreview } from '@cms/modules/preview.utils.js';
-import { CollectionItemSummary, listCollectionItems } from '@cms/modules/rpc/rpc-collection.js';
+import { CollectionItemSummary, deleteCollectionItem, listCollectionItems } from '@cms/modules/rpc/rpc-collection.js';
+import { showToast } from '@cms/modules/toast.js';
 
 const PAGE_SIZE = 10;
 const MIN_SEARCH_LENGTH = 3;
@@ -53,6 +55,10 @@ const renderItems = (items: CollectionItemSummary[]): string => {
 					data-collection-open="${escapeHtml(item.detailUrl)}">
 					${i18n.t('collection.items.open', 'Open detail page')}
 				</button>` : ''}
+				<button type="button" class="btn btn-outline-danger" data-collection-delete="${escapeHtml(item.id)}"
+					title="${i18n.t('collection.items.delete', 'Delete')}">
+					<i class="bi bi-trash"></i>
+				</button>
 			</div>
 		</div>`).join('')}</div>`;
 };
@@ -65,11 +71,18 @@ export const runAction = async (options: { collection: string }) => {
 
 	const body = `
 		<div>
-			<label class="form-label" for="cms-collection-search">
-				${i18n.t('collection.items.searchLabel', 'Search by title')}
-			</label>
+			<div class="d-flex justify-content-between align-items-end gap-3">
+				<div class="flex-grow-1">
+					<label class="form-label" for="cms-collection-search">
+						${i18n.t('collection.items.searchLabel', 'Search by title')}
+					</label>
 			<input type="search" class="form-control" id="cms-collection-search"
 				placeholder="${i18n.t('collection.items.searchPlaceholder', 'Search by title...')}" autocomplete="off">
+				</div>
+				<button type="button" class="btn btn-primary flex-shrink-0" data-collection-create>
+					<i class="bi bi-plus-lg"></i> ${i18n.t('collection.items.create', 'New item')}
+				</button>
+			</div>
 			<div class="mt-3" data-collection-results></div>
 			<div class="mt-3" data-collection-pagination></div>
 		</div>`;
@@ -88,6 +101,11 @@ export const runAction = async (options: { collection: string }) => {
 				size: PAGE_SIZE
 			});
 			if (version !== requestVersion) return;
+			if (page.items.length === 0 && currentPage > 1) {
+				currentPage--;
+				await update();
+				return;
+			}
 			root.innerHTML = renderItems(page.items);
 			pagination.innerHTML = page.totalPages > 1 ? `
 				<nav aria-label="Collection pagination">
@@ -119,6 +137,30 @@ export const runAction = async (options: { collection: string }) => {
 					loadPreview(button.dataset.collectionOpen ?? '');
 				});
 			});
+			root.querySelectorAll<HTMLElement>('[data-collection-delete]').forEach(button => {
+				button.addEventListener('click', async () => {
+					const id = button.dataset.collectionDelete ?? '';
+					const prompt = `${i18n.t('collection.items.deleteConfirm', 'Delete collection item')} “${id}”?`;
+					if (!window.confirm(prompt)) return;
+					try {
+						await deleteCollectionItem(options.collection, id);
+						showToast({
+							title: i18n.t('collection.items.deleteSuccess.title', 'Collection item deleted'),
+							message: i18n.t('collection.items.deleteSuccess.message', 'The collection item was deleted successfully.'),
+							type: 'success',
+							timeout: 3000
+						});
+						await update();
+					} catch (error: any) {
+						showToast({
+							title: i18n.t('collection.items.deleteError.title', 'Collection item not deleted'),
+							message: error?.message ?? String(error),
+							type: 'error',
+							timeout: 3000
+						});
+					}
+				});
+			});
 			pagination.querySelectorAll<HTMLElement>('[data-collection-page]').forEach(button => {
 				button.addEventListener('click', () => {
 					currentPage = Number(button.dataset.collectionPage ?? 1);
@@ -139,6 +181,17 @@ export const runAction = async (options: { collection: string }) => {
 		showFooter: false,
 		onShow: (element: HTMLElement) => {
 			const input = element.querySelector<HTMLInputElement>('#cms-collection-search');
+			element.querySelector('[data-collection-create]')?.addEventListener('click', () => {
+				openCollectionItemCreator({
+					collection: options.collection,
+					onCreated: async () => {
+						currentQuery = '';
+						currentPage = 1;
+						if (input) input.value = '';
+						await update();
+					}
+				});
+			});
 			let debounce: number | undefined;
 			input?.addEventListener('input', () => {
 				window.clearTimeout(debounce);

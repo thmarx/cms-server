@@ -54,3 +54,10 @@ export declare const saveCollectionItem: (options: {
     content: any;
     meta: Record<string, any>;
 }) => Promise<void>;
+export declare const createCollectionItem: (options: {
+    collection: string;
+    id: string;
+    content: any;
+    meta: Record<string, any>;
+}) => Promise<CollectionItemSummary>;
+export declare const deleteCollectionItem: (collection: string, id: string) => Promise<void>;

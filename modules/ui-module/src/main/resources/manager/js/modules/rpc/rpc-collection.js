@@ -37,3 +37,15 @@ export const saveCollectionItem = async (options) => {
         parameters: options
     });
 };
+export const createCollectionItem = async (options) => {
+    return (await executeRemoteCall({
+        method: 'collections.item.create',
+        parameters: options
+    })).result;
+};
+export const deleteCollectionItem = async (collection, id) => {
+    await executeRemoteCall({
+        method: 'collections.item.delete',
+        parameters: { collection, id }
+    });
+};

@@ -23,10 +23,12 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
+import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.feature.features.EventBusFeature;
+import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.ui.annotations.RemoteMethod;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.ui.rpc.RPCException;
@@ -38,8 +40,13 @@ import com.condation.cms.modules.ui.utils.MetaConverter;
 import com.condation.cms.modules.ui.utils.NumberUtils;
 import com.condation.modules.api.annotation.Extension;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 
 /** Manager endpoints for listing and editing collection items. */
@@ -49,6 +56,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 
 	private static final long DEFAULT_PAGE_SIZE = 10;
 	private static final long MAX_PAGE_SIZE = 100;
+	private static final Pattern ITEM_ID = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_.-]*");
 
 	public record ItemDto(
 			String id,
@@ -121,11 +129,73 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 					: parser.getContent();
 			YamlHeaderUpdater.saveMarkdownFileWithHeader(writableFile, meta, content);
 			db.getCollections().refresh(item.collection(), item.id());
-			getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
+			invalidateContentCache();
 			return Map.of("saved", true);
 		} catch (IOException | RuntimeException ex) {
 			log.error("could not save collection item {}/{}", item.collection(), item.id(), ex);
 			throw new RPCException(0, ex.getMessage());
+		}
+	}
+
+	@RemoteMethod(name = "collections.item.create", permissions = {Permissions.CONTENT_EDIT})
+	public Object create(Map<String, Object> parameters) throws RPCException {
+		var db = getDB(parameters);
+		var collectionName = requiredString(parameters, "collection");
+		var id = requiredItemId(parameters);
+		ensureCollectionExists(db.getCollections().names(), collectionName);
+		var writableFile = writableFile(db, collectionName, id);
+		if (Files.exists(writableFile)) {
+			throw new RPCException(409, "collection item already exists");
+		}
+
+		var meta = new HashMap<String, Object>();
+		YamlHeaderUpdater.mergeFlatMapIntoNestedMap(
+				meta,
+				MetaConverter.convertMeta(typedMeta(parameters.get("meta"))));
+		meta.putIfAbsent(Constants.MetaFields.TITLE, id);
+		meta.put("createdAt", Date.from(Instant.now()));
+		meta.put("createdBy", getUserName());
+		meta.put(
+				Constants.MetaFields.STATUS,
+				getContext().get(WorkflowFeature.class).workflow().getStatusProvider().newNodeStatus());
+		var content = FormHelper.getContent(parameters.get("content"));
+
+		try {
+			Files.createDirectories(writableFile.getParent());
+			YamlHeaderUpdater.saveMarkdownFileWithHeader(writableFile, meta, content);
+			db.getCollections().refresh(collectionName, id);
+			invalidateContentCache();
+			return itemDto(new CollectionItem(
+					id,
+					collectionName,
+					collectionName + "/" + id + ".md",
+					content,
+					meta));
+		} catch (IOException | RuntimeException exception) {
+			log.error("could not create collection item {}/{}", collectionName, id, exception);
+			throw new RPCException(0, exception.getMessage());
+		}
+	}
+
+	@RemoteMethod(name = "collections.item.delete", permissions = {Permissions.CONTENT_EDIT})
+	public Object delete(Map<String, Object> parameters) throws RPCException {
+		var db = getDB(parameters);
+		var collectionName = requiredString(parameters, "collection");
+		var id = requiredItemId(parameters);
+		ensureCollectionExists(db.getCollections().names(), collectionName);
+		var writableFile = writableFile(db, collectionName, id);
+		if (!Files.isRegularFile(writableFile)) {
+			throw new RPCException(404, "collection item not found");
+		}
+
+		try {
+			Files.delete(writableFile);
+			db.getCollections().refresh(collectionName, id);
+			invalidateContentCache();
+			return Map.of("deleted", true);
+		} catch (IOException | RuntimeException exception) {
+			log.error("could not delete collection item {}/{}", collectionName, id, exception);
+			throw new RPCException(0, exception.getMessage());
 		}
 	}
 
@@ -161,6 +231,16 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 		}
 	}
 
+	private void invalidateContentCache() {
+		getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
+	}
+
+	private static Path writableFile(DB db, String collectionName, String id) {
+		return db.getFileSystem().resolve(Constants.Folders.COLLECTIONS)
+				.resolve(collectionName)
+				.resolve(id + ".md");
+	}
+
 	private static void ensureCollectionExists(java.util.Set<String> names, String name) throws RPCException {
 		if (!names.contains(name)) {
 			throw new RPCException(404, "collection not found: " + name);
@@ -173,6 +253,14 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 			throw new RPCException(400, name + " must not be blank");
 		}
 		return value;
+	}
+
+	private static String requiredItemId(Map<String, Object> parameters) throws RPCException {
+		var id = requiredString(parameters, "id");
+		if (!ITEM_ID.matcher(id).matches()) {
+			throw new RPCException(400, "invalid collection item id");
+		}
+		return id;
 	}
 
 	private static String optionalString(Map<String, Object> parameters, String name) {
