@@ -67,6 +67,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
 			scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/create-page")
 	)
 	public void create_page() {
+        // can be empty
 
 	}
 	/*
@@ -85,7 +86,9 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
 			section = "Page",
 			scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/edit-page-settings")
 	)
-	public void page_settings() {}
+	public void page_settings() {
+        // can be empty
+    }
 	/*
 	@com.condation.cms.api.ui.annotations.MenuEntry(
 			parent = "pageMenu",
