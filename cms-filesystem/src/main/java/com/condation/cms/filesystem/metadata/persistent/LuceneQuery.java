@@ -58,6 +58,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 
 /**
  *
@@ -91,7 +92,8 @@ public class LuceneQuery<T> extends ExtendableQuery<T> implements ContentQuery.S
 
     private List<Predicate<ContentNode>> extensionOperations = new ArrayList<>();
 
-    private final Parser expressionsParser = new Parser();
+	private final Parser expressionsParser = new Parser();
+	private final TitleQueryFactory titleQueryFactory = new TitleQueryFactory(LuceneIndex.SEARCH_ANALYZER);
 
     public LuceneQuery(
             final String startUri,
@@ -299,6 +301,19 @@ public class LuceneQuery<T> extends ExtendableQuery<T> implements ContentQuery.S
 					BooleanClause.Occur.FILTER));
 		}
 		return baseQuery.build();
+	}
+
+	@Override
+	public ContentQuery<T> searchByTitle(String input) {
+		if (input == null || input.isBlank()) {
+			return this;
+		}
+		try {
+			queryBuilder.add(titleQueryFactory.createQuery(input), BooleanClause.Occur.MUST);
+			return this;
+		} catch (QueryNodeException ex) {
+			throw new IllegalArgumentException("invalid title search", ex);
+		}
 	}
 
 	private Query structuralVisibilityQuery(Query query) {

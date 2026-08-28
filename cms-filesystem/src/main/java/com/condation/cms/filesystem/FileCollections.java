@@ -114,6 +114,21 @@ public class FileCollections implements Collections, AutoCloseable {
 		return Set.copyOf(collectionNames);
 	}
 
+	@Override
+	public void refresh(String collection, String id) {
+		validateCollectionName(collection);
+		validateItemId(id);
+		var file = collectionsBase.resolve(collection).resolve(id + ".md");
+		try {
+			if (!Files.isRegularFile(file)) {
+				throw new IllegalArgumentException("collection item does not exist: " + collection + "/" + id);
+			}
+			index(file);
+		} catch (IOException ex) {
+			throw new IllegalStateException("could not refresh collection item", ex);
+		}
+	}
+
 	void handleEvent(FileEvent event) {
 		if (event.type() == FileEvent.Type.OVERFLOW) {
 			changeCoordinator.requestFullResync();

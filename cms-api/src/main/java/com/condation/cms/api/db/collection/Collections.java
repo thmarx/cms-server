@@ -31,4 +31,7 @@ public interface Collections {
 	Collection collection(String name);
 
 	Set<String> names();
+
+	/** Re-indexes one item after a synchronous manager write. */
+	void refresh(String collection, String id);
 }

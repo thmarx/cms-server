@@ -83,6 +83,7 @@ class RemoteContentEndpointsExtensionTest {
 	@Test
 	void getContent_throwsRPCException_whenParsingFails() throws IOException {
 		when(contentBase.resolve("broken.md")).thenReturn(contentFile);
+		when(contentFile.exists()).thenReturn(true);
 		when(contentFile.getContent()).thenThrow(new IOException("disk error"));
 
 		Map<String, Object> params = Map.of("uri", "broken.md");
@@ -95,6 +96,7 @@ class RemoteContentEndpointsExtensionTest {
 	@Test
 	void setContent_throwsRPCException_whenParsingFails() throws IOException {
 		when(contentBase.resolve("broken.md")).thenReturn(contentFile);
+		when(contentFile.exists()).thenReturn(true);
 		when(contentFile.getContent()).thenThrow(new IOException("disk error"));
 
 		Map<String, Object> params = Map.of("uri", "broken.md", "content", "hello");
@@ -113,6 +115,7 @@ class RemoteContentEndpointsExtensionTest {
 				new CurrentNodeFeature(new ContentNode(uri, "/about", "about.md", Map.of()))
 		);
 		when(contentBase.resolve(uri)).thenReturn(contentFile);
+		when(contentFile.exists()).thenReturn(true);
 		when(contentFile.getContent()).thenThrow(new IOException("variant selected"));
 
 		assertThatThrownBy(() -> ScopedValue.where(

@@ -8,25 +8,32 @@
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-export interface ActivePreviewContent {
-    uri: string;
-    url?: string;
-    canonicalUri?: string;
-    variantId?: string | null;
-    contentKind?: 'content' | 'collection';
-    collection?: string;
-    collectionItemId?: string;
-}
-declare const setActivePreviewContent: (content: ActivePreviewContent | null) => void;
-declare const getActivePreviewContent: (currentPreviewUrl?: string) => ActivePreviewContent | null;
-export { getActivePreviewContent, setActivePreviewContent };
+import { executeRemoteCall } from '@cms/modules/rpc/rpc.js';
+export const listCollectionItems = async (options) => {
+    return (await executeRemoteCall({
+        method: 'collections.items',
+        parameters: options
+    })).result;
+};
+export const getCollectionItem = async (collection, id) => {
+    return (await executeRemoteCall({
+        method: 'collections.item.get',
+        parameters: { collection, id }
+    })).result;
+};
+export const saveCollectionItem = async (options) => {
+    await executeRemoteCall({
+        method: 'collections.item.save',
+        parameters: options
+    });
+};

@@ -13,7 +13,7 @@
 
 	<body class="centered">
 
-		<div id="content"  >
+		<div id="content" {{ ext.ui.collectionToolbar(collection_item, ["editCollectionItem"]) | raw }}>
 			<h2>{{ node.meta.title }}</h2>
 			<div class="container">
 				{{ node.content | raw }}

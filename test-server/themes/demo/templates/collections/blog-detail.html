@@ -8,7 +8,7 @@
 	</head>
 
 	<body class="centered">
-		<div id="content">
+		<div id="content" {{ ext.ui.collectionToolbar(collection_item, ["editCollectionItem"]) | raw }}>
 			<h1>{{ node.meta.title }}</h1>
 			<p>{{ node.meta.description }}</p>
 			<div class="container">

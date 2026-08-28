@@ -24,21 +24,17 @@ package com.condation.cms.content;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
-import com.condation.cms.api.configuration.configs.CollectionDefinition;
-import com.condation.cms.api.configuration.configs.CollectionDetailConfiguration;
 import com.condation.cms.api.content.ContentResponse;
 import com.condation.cms.api.content.DefaultContentResponse;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
-import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -56,65 +52,29 @@ public class CollectionResolver {
 		if (collectionConfiguration == null) {
 			return Optional.empty();
 		}
-
-		var uri = normalizeUri(context.get(RequestFeature.class).uri());
-		for (var definition : collectionConfiguration.collections().values().stream()
-				.sorted(Comparator.comparing(CollectionDefinition::name))
-				.toList()) {
-			var content = resolve(definition, uri, context);
-			if (content.isPresent()) {
-				return content;
-			}
+		var route = new CollectionRouteResolver(db, collectionConfiguration)
+				.resolve(context.get(RequestFeature.class).uri());
+		if (route.isEmpty()) {
+			return Optional.empty();
 		}
-		return Optional.empty();
+		return render(route.get(), context);
 	}
 
-	private Optional<ContentResponse> resolve(
-			CollectionDefinition definition,
-			String uri,
+	private Optional<ContentResponse> render(
+			CollectionRouteResolver.ResolvedRoute route,
 			RequestContext context) throws IOException {
-		var detail = definition.detailPage();
-		if (detail.isEmpty()) {
-			return Optional.empty();
-		}
-		var routeValue = match(detail.get(), uri);
-		if (routeValue.isEmpty()) {
-			return Optional.empty();
-		}
-		return resolveItem(definition, detail.get(), routeValue.get(), uri, context);
-	}
-
-	private Optional<ContentResponse> resolveItem(
-			CollectionDefinition definition,
-			CollectionDetailConfiguration detail,
-			String routeValue,
-			String uri,
-			RequestContext context) throws IOException {
-		var collection = db.getCollections().collection(definition.name());
-		Optional<CollectionItem> item;
-		if ("id".equals(detail.parameter())) {
-			item = findById(collection, routeValue);
-		} else {
-			item = collection.query()
-					.where(detail.parameter(), routeValue)
-					.page(1, 1)
-					.getItems()
-					.stream()
-					.findFirst();
-		}
-		if (item.isEmpty()) {
-			return Optional.empty();
-		}
-
-		var collectionItem = item.get();
+		var collectionItem = route.item();
 		var nodeData = new HashMap<>(collectionItem.meta());
-		nodeData.put("template", detail.template());
+		nodeData.put("template", route.detail().template());
 		var node = new ContentNode(
 				collectionItem.path(),
-				uri,
+				route.uri(),
 				collectionItem.id() + ".md",
 				nodeData);
 		context.add(CurrentNodeFeature.class, new CurrentNodeFeature(node));
+		context.add(
+				CurrentCollectionItemFeature.class,
+				new CurrentCollectionItemFeature(collectionItem));
 
 		var collectionFile = db.getFileSystem().collectionsBase().resolve(collectionItem.path());
 		if (!collectionFile.exists()) {
@@ -124,37 +84,8 @@ public class CollectionResolver {
 				collectionFile,
 				node,
 				collectionItem,
-				detail.template(),
+				route.detail().template(),
 				context);
 		return Optional.of(new DefaultContentResponse(content, Constants.DEFAULT_CONTENT_TYPE, node));
-	}
-
-	private static Optional<CollectionItem> findById(
-			com.condation.cms.api.db.collection.Collection collection,
-			String id) {
-		try {
-			return collection.item(id);
-		} catch (IllegalArgumentException _) {
-			return Optional.empty();
-		}
-	}
-
-	private static Optional<String> match(CollectionDetailConfiguration detail, String uri) {
-		var token = "{" + detail.parameter() + "}";
-		var tokenStart = detail.route().indexOf(token);
-		var prefix = detail.route().substring(0, tokenStart);
-		var suffix = detail.route().substring(tokenStart + token.length());
-		var routePattern = Pattern.compile(
-				"^" + Pattern.quote(prefix) + "([^/]+)" + Pattern.quote(suffix) + "/?$");
-		var matcher = routePattern.matcher(uri);
-		return matcher.matches() ? Optional.of(matcher.group(1)) : Optional.empty();
-	}
-
-	private static String normalizeUri(String uri) {
-		var normalized = uri == null ? "" : uri.trim();
-		if (!normalized.startsWith("/")) {
-			normalized = "/" + normalized;
-		}
-		return normalized;
 	}
 }

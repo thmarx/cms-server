@@ -18,15 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-export interface ActivePreviewContent {
-    uri: string;
-    url?: string;
-    canonicalUri?: string;
-    variantId?: string | null;
-    contentKind?: 'content' | 'collection';
-    collection?: string;
-    collectionItemId?: string;
+export interface EditCollectionItemOptions {
+    collection: string;
+    id: string;
+    reloadAfterSave?: boolean;
+    onSaved?: () => void | Promise<void>;
 }
-declare const setActivePreviewContent: (content: ActivePreviewContent | null) => void;
-declare const getActivePreviewContent: (currentPreviewUrl?: string) => ActivePreviewContent | null;
-export { getActivePreviewContent, setActivePreviewContent };
+export declare const openCollectionItemEditor: (options: EditCollectionItemOptions) => Promise<void>;
+export declare const runAction: (options: EditCollectionItemOptions) => Promise<void>;

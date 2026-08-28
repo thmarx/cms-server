@@ -40,6 +40,7 @@ import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
@@ -106,6 +107,7 @@ class CollectionResolverTest {
 				.isInstanceOfSatisfying(DefaultContentResponse.class, content ->
 						Assertions.assertThat(content.content()).isEqualTo("<h1>First</h1>"));
 		Assertions.assertThat(context.get(CurrentNodeFeature.class).node().url()).isEqualTo("/blog/first");
+		Assertions.assertThat(context.get(CurrentCollectionItemFeature.class).item()).isEqualTo(item);
 		var node = ArgumentCaptor.forClass(com.condation.cms.api.db.ContentNode.class);
 		verify(renderer).renderCollection(
 				eq(itemFile),

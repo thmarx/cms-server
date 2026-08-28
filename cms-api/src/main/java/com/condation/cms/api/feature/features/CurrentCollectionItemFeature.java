@@ -1,6 +1,8 @@
+package com.condation.cms.api.feature.features;
+
 /*-
  * #%L
- * UI Module
+ * CMS Api
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -18,15 +20,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-export interface ActivePreviewContent {
-    uri: string;
-    url?: string;
-    canonicalUri?: string;
-    variantId?: string | null;
-    contentKind?: 'content' | 'collection';
-    collection?: string;
-    collectionItemId?: string;
+
+import com.condation.cms.api.annotations.FeatureScope;
+import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.feature.Feature;
+
+/** Identifies the collection item represented by the current request. */
+@FeatureScope({FeatureScope.Scope.REQUEST})
+public record CurrentCollectionItemFeature(CollectionItem item) implements Feature {
 }
-declare const setActivePreviewContent: (content: ActivePreviewContent | null) => void;
-declare const getActivePreviewContent: (currentPreviewUrl?: string) => ActivePreviewContent | null;
-export { getActivePreviewContent, setActivePreviewContent };

@@ -25,6 +25,7 @@ import com.condation.cms.api.extensions.TemplateModelExtendingExtensionPoint;
 import com.condation.cms.api.feature.features.IsPreviewFeature;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.utils.JSONUtil;
+import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.modules.api.annotation.Extension;
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,6 +100,23 @@ public class UiTemplateModelExtension extends TemplateModelExtendingExtensionPoi
 		}
 		public String toolbar (String id, String uri) {
 			return toolbar(id, uri, new String[0]);
+		}
+
+		public String collectionToolbar(CollectionItem item, String[] actions) {
+			return collectionToolbar(item, actions, Map.of());
+		}
+
+		public String collectionToolbar(
+				CollectionItem item,
+				String[] actions,
+				Map<String, Object> additional) {
+			if (item == null) {
+				return "";
+			}
+			var options = new HashMap<>(additional);
+			options.put("collection", item.collection());
+			options.put("itemId", item.id());
+			return toolbar(item.collection() + "-" + item.id(), "collectionItem", actions, options);
 		}
 		
 		public String mediaToolbar (String [] actions, Map<String, Object> options) {

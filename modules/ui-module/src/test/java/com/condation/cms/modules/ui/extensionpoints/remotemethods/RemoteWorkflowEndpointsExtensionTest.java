@@ -21,6 +21,7 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  * #L%
  */
 
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.Content;
@@ -29,14 +30,20 @@ import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.VariantSearchMode;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
+import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.module.SiteModuleContext;
+import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.ui.rpc.RPCException;
+import com.condation.cms.api.workflow.WFStatusProvider;
 import com.condation.cms.api.workflow.WFStatusQueryProvider;
 import com.condation.cms.api.workflow.Workflow;
 import java.util.List;
 import java.util.Map;
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,6 +77,18 @@ class RemoteWorkflowEndpointsExtensionTest {
 	@Mock
 	private ReadOnlyFile contentFile;
 
+	@Mock
+	private ReadOnlyFile collectionsBase;
+
+	@Mock
+	private ReadOnlyFile collectionFile;
+
+	@Mock
+	private Path collectionsWritableBase;
+
+	@Mock
+	private Path collectionWritableFile;
+
 	private RemoteWorkflowEndpointsExtension endpoints;
 
 	@BeforeEach
@@ -78,7 +97,11 @@ class RemoteWorkflowEndpointsExtensionTest {
 		endpoints.setContext(moduleContext);
 		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
 		when(db.getFileSystem()).thenReturn(fileSystem);
-		when(fileSystem.contentBase()).thenReturn(contentBase);
+		lenient().when(fileSystem.contentBase()).thenReturn(contentBase);
+		lenient().when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
+		lenient().when(collectionsBase.resolve("blog/first.md")).thenReturn(collectionFile);
+		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsWritableBase);
+		lenient().when(collectionsWritableBase.resolve("blog/first.md")).thenReturn(collectionWritableFile);
 		lenient().when(contentBase.resolve("missing.md")).thenReturn(contentFile);
 		lenient().when(contentFile.exists()).thenReturn(false);
 	}
@@ -112,6 +135,34 @@ class RemoteWorkflowEndpointsExtensionTest {
 		assertThatThrownBy(() -> endpoints.transit(params))
 				.isInstanceOf(RPCException.class)
 				.satisfies(ex -> assertThat(((RPCException) ex).getCode()).isEqualTo(404));
+	}
+
+	@Test
+	void nodeStatus_usesCurrentCollectionItemOnDetailPage() throws Exception {
+		var item = new CollectionItem(
+				"first",
+				"blog",
+				"blog/first.md",
+				"Body",
+				Map.of("title", "First", "status", "draft"));
+		var requestContext = new RequestContext();
+		requestContext.add(
+				CurrentCollectionItemFeature.class,
+				new CurrentCollectionItemFeature(item));
+		var workflow = mock(Workflow.class);
+		var statusProvider = mock(WFStatusProvider.class);
+		var status = new WFStatusProvider.Status(false, null, null, true, "draft");
+		when(workflow.getStatusProvider()).thenReturn(statusProvider);
+		when(statusProvider.status(any(ContentNode.class))).thenReturn(status);
+		when(moduleContext.get(WorkflowFeature.class)).thenReturn(new WorkflowFeature(workflow));
+
+		@SuppressWarnings("unchecked")
+		var result = (Map<String, Object>) ScopedValue.where(
+				RequestContextScope.REQUEST_CONTEXT,
+				requestContext).call(() -> endpoints.nodeStatus(Map.of()));
+
+		assertThat(result).containsEntry("status", status);
+		assertThat(result).containsEntry("transitions", List.of());
 	}
 
 	@Test

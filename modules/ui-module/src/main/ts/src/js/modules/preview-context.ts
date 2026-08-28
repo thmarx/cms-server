@@ -24,6 +24,9 @@ export interface ActivePreviewContent {
 	url?: string;
 	canonicalUri?: string;
 	variantId?: string | null;
+	contentKind?: 'content' | 'collection';
+	collection?: string;
+	collectionItemId?: string;
 }
 
 let activeContent: ActivePreviewContent | null = null;

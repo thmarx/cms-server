@@ -132,6 +132,18 @@ const editAttributes = (event: Event) => {
 	frameMessenger.send(window.parent, command);
 }
 
+const editCollectionItem = (event: Event) => {
+	const toolbar = (event.target as HTMLElement).closest('[data-cms-toolbar]') as HTMLElement;
+	const definition = JSON.parse(toolbar.dataset.cmsToolbar || '{}');
+	frameMessenger.send(window.parent, {
+		type: 'edit-collection-item',
+		payload: {
+			collection: definition.collection,
+			id: definition.itemId
+		}
+	});
+};
+
 
 const initDragDrop = (container: HTMLElement) => {
 	if (container.dataset.cmsDragDropInitialized === 'true') {
@@ -403,6 +415,14 @@ export const initToolbar = (container: HTMLElement) => {
 			button.innerHTML = EDIT_ATTRIBUTES_ICON;
 			button.setAttribute("title", "Edit attributes");
 			button.addEventListener('click', editAttributes);
+
+			toolbar.appendChild(button);
+		} else if (action === "editCollectionItem") {
+			const button = document.createElement('button');
+			button.setAttribute('data-cms-action', 'editCollectionItem');
+			button.innerHTML = EDIT_ATTRIBUTES_ICON;
+			button.setAttribute('title', 'Edit collection item');
+			button.addEventListener('click', editCollectionItem);
 
 			toolbar.appendChild(button);
 		} else if (action === "orderSectionEntries") {

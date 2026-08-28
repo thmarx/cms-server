@@ -109,6 +109,51 @@ class FileCollectionsTest {
 	}
 
 	@Test
+	void searchesCollectionTitlesWithPaging() throws Exception {
+		write("blog/first.md", "title: Collection Article One", "First");
+		write("blog/second.md", "title: Collection Article Two", "Second");
+		write("blog/other.md", "title: Unrelated Entry", "Other");
+
+		var collections = createCollections();
+		try {
+			var page = collections.collection("blog")
+					.query()
+					.searchByTitle("Collection Article")
+					.orderby("title")
+					.asc()
+					.page(2, 1);
+
+			Assertions.assertThat(page.getTotalItems()).isEqualTo(2);
+			Assertions.assertThat(page.getTotalPages()).isEqualTo(2);
+			Assertions.assertThat(page.getItems())
+					.extracting(item -> item.id())
+					.containsExactly("second");
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
+	void refreshesOneCollectionItemImmediately() throws Exception {
+		write("blog/item.md", "title: Before", "Before");
+		var collections = createCollections();
+		try {
+			write("blog/item.md", "title: After", "After");
+			collections.refresh("blog", "item");
+
+			Assertions.assertThat(collections.collection("blog").item("item"))
+					.isPresent()
+					.get()
+					.satisfies(item -> {
+						Assertions.assertThat(item.meta()).containsEntry("title", "After");
+						Assertions.assertThat(item.content()).isEqualTo("After\r\n");
+					});
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
 	void rejectsUnsafeCollectionNames() throws Exception {
 		var collections = createCollections();
 		try {
