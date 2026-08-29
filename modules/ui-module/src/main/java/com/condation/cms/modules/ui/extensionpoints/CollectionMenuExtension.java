@@ -44,7 +44,10 @@ public class CollectionMenuExtension extends AbstractExtensionPoint implements U
 	@Override
 	public void addMenuItems(Menu menu) {
 		var db = getContext().get(DBFeature.class).db();
-		var names = db.getCollections().names().stream().sorted().toList();
+		var names = db.getCollections().names().stream()
+				.filter(db.getCollections()::isLocal)
+				.sorted()
+				.toList();
 		if (names.isEmpty()) {
 			return;
 		}

@@ -436,6 +436,9 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		if (!parameters.containsKey("uri")
 				&& getRequestContext().has(CurrentCollectionItemFeature.class)) {
 			var item = getRequestContext().get(CurrentCollectionItemFeature.class).item();
+			if (!db.getCollections().isLocal(item.collection())) {
+				throw new RPCException(403, "referenced collection is read-only: " + item.collection());
+			}
 			return new EditableTarget(
 					item.path(),
 					db.getFileSystem().collectionsBase().resolve(item.path()),

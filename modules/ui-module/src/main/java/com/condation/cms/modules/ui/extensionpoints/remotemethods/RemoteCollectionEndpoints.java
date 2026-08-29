@@ -118,6 +118,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	public Object save(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
 		var item = item(parameters);
+		ensureLocalCollection(db, item.collection());
 		var sourceFile = db.getFileSystem().collectionsBase().resolve(item.path());
 		var writableFile = db.getFileSystem().resolve(Constants.Folders.COLLECTIONS).resolve(item.path());
 		try {
@@ -144,6 +145,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 		var collectionName = requiredString(parameters, Parameters.COLLECTION);
 		var id = requiredItemId(parameters);
 		ensureCollectionExists(db.getCollections().names(), collectionName);
+		ensureLocalCollection(db, collectionName);
 		var writableFile = writableFile(db, collectionName, id);
 		if (Files.exists(writableFile)) {
 			throw new RPCException(409, "collection item already exists");
@@ -184,6 +186,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 		var collectionName = requiredString(parameters, Parameters.COLLECTION);
 		var id = requiredItemId(parameters);
 		ensureCollectionExists(db.getCollections().names(), collectionName);
+		ensureLocalCollection(db, collectionName);
 		var writableFile = writableFile(db, collectionName, id);
 		if (!Files.isRegularFile(writableFile)) {
 			throw new RPCException(404, "collection item not found");
@@ -245,6 +248,12 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	private static void ensureCollectionExists(java.util.Set<String> names, String name) throws RPCException {
 		if (!names.contains(name)) {
 			throw new RPCException(404, "collection not found: " + name);
+		}
+	}
+
+	private static void ensureLocalCollection(DB db, String name) throws RPCException {
+		if (!db.getCollections().isLocal(name)) {
+			throw new RPCException(403, "referenced collection is read-only: " + name);
 		}
 	}
 

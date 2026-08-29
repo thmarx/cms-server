@@ -24,6 +24,8 @@ package com.condation.cms.content;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
+import com.condation.cms.api.configuration.configs.CollectionDefinition;
+import com.condation.cms.api.configuration.configs.SiteConfiguration;
 import com.condation.cms.api.content.ContentResponse;
 import com.condation.cms.api.content.DefaultContentResponse;
 import com.condation.cms.api.db.ContentNode;
@@ -32,6 +34,8 @@ import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.core.serivce.ServiceRegistry;
+import com.condation.cms.core.serivce.impl.SiteDBService;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
@@ -76,7 +80,8 @@ public class CollectionResolver {
 				CurrentCollectionItemFeature.class,
 				new CurrentCollectionItemFeature(collectionItem));
 
-		var collectionFile = db.getFileSystem().collectionsBase().resolve(collectionItem.path());
+		var sourceDB = sourceDB(route.definition());
+		var collectionFile = sourceDB.getFileSystem().collectionsBase().resolve(collectionItem.path());
 		if (!collectionFile.exists()) {
 			return Optional.empty();
 		}
@@ -87,5 +92,21 @@ public class CollectionResolver {
 				route.detail().template(),
 				context);
 		return Optional.of(new DefaultContentResponse(content, Constants.DEFAULT_CONTENT_TYPE, node));
+	}
+
+	private DB sourceDB(CollectionDefinition definition) {
+		var sourceSite = definition.sourceSite();
+		if (sourceSite.isEmpty()) {
+			return db;
+		}
+		var siteConfiguration = configuration.get(SiteConfiguration.class);
+		if (siteConfiguration != null
+				&& siteConfiguration.siteProperties().id().equals(sourceSite.get())) {
+			return db;
+		}
+		return ServiceRegistry.getInstance().get(sourceSite.get(), SiteDBService.class)
+				.orElseThrow(() -> new IllegalStateException(
+						"collection source site is not available: " + sourceSite.get()))
+				.db();
 	}
 }

@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 /**
  * Configuration of one named collection.
  */
-public record CollectionDefinition(String name, CollectionDetailConfiguration detail) {
+public record CollectionDefinition(String name, String site, CollectionDetailConfiguration detail) {
 
 	private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_-]*");
 
@@ -37,9 +37,24 @@ public record CollectionDefinition(String name, CollectionDetailConfiguration de
 		if (!VALID_NAME_PATTERN.matcher(name).matches()) {
 			throw new IllegalArgumentException("invalid collection name: " + name);
 		}
+		if (site != null) {
+			site = site.trim();
+			if (site.isEmpty()) {
+				throw new IllegalArgumentException("collection site must not be blank");
+			}
+		}
+	}
+
+	public CollectionDefinition(String name, CollectionDetailConfiguration detail) {
+		this(name, null, detail);
 	}
 
 	public Optional<CollectionDetailConfiguration> detailPage() {
 		return Optional.ofNullable(detail);
+	}
+
+	/** Site whose collection data should be used, or empty for a local collection. */
+	public Optional<String> sourceSite() {
+		return Optional.ofNullable(site);
 	}
 }

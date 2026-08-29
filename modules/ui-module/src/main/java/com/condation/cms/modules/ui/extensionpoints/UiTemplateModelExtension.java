@@ -22,10 +22,12 @@ package com.condation.cms.modules.ui.extensionpoints;
  */
 
 import com.condation.cms.api.extensions.TemplateModelExtendingExtensionPoint;
+import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.IsPreviewFeature;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.utils.JSONUtil;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.modules.api.annotation.Extension;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,13 +43,14 @@ public class UiTemplateModelExtension extends TemplateModelExtendingExtensionPoi
 
 	@Override
 	public Map<String, Object> getModel() {
-		return Map.of("ui", new UIHelper(getRequestContext()));	
+		return Map.of("ui", new UIHelper(getRequestContext(), getContext()));	
 	}	
 	
 	@RequiredArgsConstructor
 	public static class UIHelper {
 		
 		private final RequestContext requestContext;
+        private final SiteModuleContext siteContext;
 		
 		public String editMeta (String editor, String element) {
 			return editMeta(editor, element, Collections.emptyMap());
@@ -110,7 +113,13 @@ public class UiTemplateModelExtension extends TemplateModelExtendingExtensionPoi
 				CollectionItem item,
 				String[] actions,
 				Map<String, Object> additional) {
+			if (!requestContext.has(IsPreviewFeature.class)) {
+				return "";
+			}
 			if (item == null) {
+				return "";
+			}
+			if (!siteContext.get(DBFeature.class).db().getCollections().isLocal(item.collection())) {
 				return "";
 			}
 			var options = new HashMap<>(additional);

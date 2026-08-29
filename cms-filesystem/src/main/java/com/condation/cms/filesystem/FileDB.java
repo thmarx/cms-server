@@ -52,7 +52,8 @@ public class FileDB implements DB {
 	
 	private FileSystem fileSystem;
 	private FileContent content;
-	private FileCollections collections;
+	private FileCollections localCollections;
+	private Collections collections;
 	private ReadOnlyFileSystem readOnlyFileSystem;
 	
 	private FileTaxonomies taxonomies;
@@ -70,8 +71,13 @@ public class FileDB implements DB {
 		readOnlyFileSystem = new WrappedReadOnlyFileSystem(fileSystem);
 		
 		content = new FileContent(fileSystem);
-		collections = new FileCollections(siteProperties.id(), hostBaseDirectory, contentParser);
-		collections.init();
+		localCollections = new FileCollections(siteProperties.id(), hostBaseDirectory, contentParser);
+		localCollections.init();
+		var collectionConfiguration = configuration.get(
+				com.condation.cms.api.configuration.configs.CollectionConfiguration.class);
+		collections = collectionConfiguration == null
+				? localCollections
+				: new ReferencedCollections(siteProperties.id(), localCollections, collectionConfiguration);
 		
 		taxonomies = new FileTaxonomies(configuration, content);	
 	}
@@ -102,8 +108,8 @@ public class FileDB implements DB {
 	@Override
 	public void close() throws Exception {
 		try {
-			if (collections != null) {
-				collections.close();
+			if (localCollections != null) {
+				localCollections.close();
 			}
 		} finally {
 			fileSystem.shutdown();

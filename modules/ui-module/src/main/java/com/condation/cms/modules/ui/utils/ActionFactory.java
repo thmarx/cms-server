@@ -139,6 +139,7 @@ public class ActionFactory {
         }).forEach(menu::addMenuEntry);
 
 		context.get(DBFeature.class).db().getCollections().names().stream()
+				.filter(context.get(DBFeature.class).db().getCollections()::isLocal)
 				.sorted()
 				.map(name -> MenuEntry.builder()
 						.id("collection-" + name)

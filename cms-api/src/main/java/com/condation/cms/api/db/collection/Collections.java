@@ -32,6 +32,11 @@ public interface Collections {
 
 	Set<String> names();
 
+	/** Returns whether a collection is stored by this site and may be modified here. */
+	default boolean isLocal(String collection) {
+		return true;
+	}
+
 	/** Re-indexes one item after a synchronous manager write, or removes a deleted item from the index. */
 	void refresh(String collection, String id);
 }

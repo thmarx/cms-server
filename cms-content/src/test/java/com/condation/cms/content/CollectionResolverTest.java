@@ -44,12 +44,15 @@ import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.core.serivce.ServiceRegistry;
+import com.condation.cms.core.serivce.impl.SiteDBService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -87,6 +90,11 @@ class CollectionResolverTest {
 				eq(item),
 				anyString(),
 				any())).thenReturn("<h1>First</h1>");
+	}
+
+	@AfterEach
+	void clearServices() {
+		ServiceRegistry.getInstance().clear();
 	}
 
 	@Test
@@ -132,6 +140,48 @@ class CollectionResolverTest {
 
 		Assertions.assertThat(response).isPresent();
 		verify(query).where("slug", "first-post");
+	}
+
+	@Test
+	void readsTheItemFileFromTheConfiguredSourceSite() throws Exception {
+		definitions.put(
+				"blog",
+				new CollectionDefinition(
+						"blog",
+						"content-site",
+						new CollectionDetailConfiguration(
+								"/shared/{id}",
+								"collections/detail.html")));
+		when(collection.item("first")).thenReturn(Optional.of(item));
+		var sourceDB = mock(DB.class);
+		var sourceFileSystem = mock(DBFileSystem.class);
+		var sourceCollectionsBase = mock(ReadOnlyFile.class);
+		var sourceItemFile = mock(ReadOnlyFile.class);
+		when(sourceDB.getFileSystem()).thenReturn(sourceFileSystem);
+		when(sourceFileSystem.collectionsBase()).thenReturn(sourceCollectionsBase);
+		when(sourceCollectionsBase.resolve("blog/first.md")).thenReturn(sourceItemFile);
+		when(sourceItemFile.exists()).thenReturn(true);
+		when(renderer.renderCollection(
+				eq(sourceItemFile),
+				any(),
+				eq(item),
+				anyString(),
+				any())).thenReturn("<h1>Shared</h1>");
+		ServiceRegistry.getInstance().register(
+				"content-site",
+				SiteDBService.class,
+				new SiteDBService(sourceDB));
+
+		var response = new CollectionResolver(renderer, db, configuration)
+				.getContent(context("/shared/first"));
+
+		Assertions.assertThat(response).isPresent();
+		verify(renderer).renderCollection(
+				eq(sourceItemFile),
+				any(),
+				eq(item),
+				eq("collections/detail.html"),
+				any());
 	}
 
 	private static CollectionDefinition definition(String route) {

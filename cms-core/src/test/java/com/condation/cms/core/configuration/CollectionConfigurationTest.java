@@ -40,7 +40,7 @@ class CollectionConfigurationTest {
 		var source = mock(ConfigSource.class);
 		var initial = Map.<String, Object>of(
 				"blog",
-				Map.of("detail", Map.of(
+				Map.of("site", "content-site", "detail", Map.of(
 						"route", "/blog/{slug}",
 						"template", "collections/blog.html")),
 				"listing-only",
@@ -64,6 +64,8 @@ class CollectionConfigurationTest {
 		Assertions.assertThat(sharedCollections).containsOnlyKeys("blog", "listing-only");
 		Assertions.assertThat(sharedCollections.get("blog").detailPage().orElseThrow().parameter())
 				.isEqualTo("slug");
+		Assertions.assertThat(sharedCollections.get("blog").sourceSite()).contains("content-site");
+		Assertions.assertThat(sharedCollections.get("listing-only").sourceSite()).isEmpty();
 
 		configuration.reload();
 

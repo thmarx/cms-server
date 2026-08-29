@@ -56,6 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class RemoteCollectionEndpointsTest {
@@ -95,10 +96,11 @@ class RemoteCollectionEndpointsTest {
 		endpoints.setContext(moduleContext);
 
 		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		when(db.getFileSystem()).thenReturn(fileSystem);
+		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
 		when(db.getCollections()).thenReturn(collections);
 		when(collections.names()).thenReturn(Set.of("blog"));
-		when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsDirectory);
+		when(collections.isLocal("blog")).thenReturn(true);
+		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsDirectory);
 	}
 
 	@Test
@@ -154,6 +156,16 @@ class RemoteCollectionEndpointsTest {
 
 		assertThat(item).doesNotExist();
 		verify(collections).refresh("blog", "obsolete");
+	}
+
+	@Test
+	void rejectsWritesToReferencedCollections() {
+		when(collections.isLocal("blog")).thenReturn(false);
+
+		assertThatThrownBy(() -> endpoints.create(Map.of("collection", "blog", "id", "new-item")))
+				.isInstanceOfSatisfying(
+						RPCException.class,
+						exception -> assertThat(exception.getCode()).isEqualTo(403));
 	}
 
 	private RequestContext requestContext() {

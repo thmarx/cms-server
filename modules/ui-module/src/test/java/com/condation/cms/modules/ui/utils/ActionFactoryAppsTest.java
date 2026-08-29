@@ -102,7 +102,8 @@ class ActionFactoryAppsTest {
 		Collections collections = mock(Collections.class);
 		when(context.get(DBFeature.class)).thenReturn(new DBFeature(db));
 		when(db.getCollections()).thenReturn(collections);
-		when(collections.names()).thenReturn(Set.of("blog"));
+		when(collections.names()).thenReturn(Set.of("blog", "shared"));
+		when(collections.isLocal("blog")).thenReturn(true);
 
 		HookSystem hookSystem = mock(HookSystem.class);
 		when(hookSystem.doFilter(eq(UIHooks.HOOK_REGISTER_CONTENT_TYPES), any(ContentTypes.class)))
@@ -131,5 +132,6 @@ class ActionFactoryAppsTest {
 								Assertions.assertThat(action.getParameters()).containsEntry("collection", "blog");
 							});
 				});
+		Assertions.assertThat(factory.createContentTypeMenu().getMenuEntry("collection-shared")).isEmpty();
 	}
 }

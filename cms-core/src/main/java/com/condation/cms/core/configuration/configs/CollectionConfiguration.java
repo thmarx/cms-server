@@ -104,18 +104,20 @@ public class CollectionConfiguration extends AbstractConfiguration implements IC
 				throw new IllegalArgumentException("collection definition must be a map");
 			}
 
+			var site = optionalStringValue(collection.get("site"), "site");
 			var detailValue = collection.get("detail");
 			if (detailValue == null) {
-				return java.util.Optional.of(new CollectionDefinition(name, null));
+				return java.util.Optional.of(new CollectionDefinition(name, site, null));
 			}
 			if (!(detailValue instanceof Map<?, ?> detail)) {
 				throw new IllegalArgumentException("collection detail definition must be a map");
 			}
 
-			var route = stringValue(detail.get("route"), "route");
-			var template = stringValue(detail.get("template"), "template");
+			var route = stringValue(detail.get("route"), "collection detail route");
+			var template = stringValue(detail.get("template"), "collection detail template");
 			return java.util.Optional.of(new CollectionDefinition(
 					name,
+					site,
 					new CollectionDetailConfiguration(route, template)));
 		} catch (RuntimeException ex) {
 			log.error("invalid configuration for collection {}", name, ex);
@@ -125,9 +127,16 @@ public class CollectionConfiguration extends AbstractConfiguration implements IC
 
 	private static String stringValue(Object value, String field) {
 		if (!(value instanceof String string) || string.isBlank()) {
-			throw new IllegalArgumentException("collection detail " + field + " must be a non-empty string");
+			throw new IllegalArgumentException(field + " must be a non-empty string");
 		}
 		return string;
+	}
+
+	private static String optionalStringValue(Object value, String field) {
+		if (value == null) {
+			return null;
+		}
+		return stringValue(value, "collection " + field);
 	}
 
 	public static class Builder {

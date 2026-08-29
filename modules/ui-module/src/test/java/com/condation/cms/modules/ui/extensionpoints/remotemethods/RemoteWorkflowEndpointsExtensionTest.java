@@ -31,6 +31,7 @@ import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.VariantSearchMode;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
@@ -89,6 +90,9 @@ class RemoteWorkflowEndpointsExtensionTest {
 	@Mock
 	private Path collectionWritableFile;
 
+	@Mock
+	private Collections collections;
+
 	private RemoteWorkflowEndpointsExtension endpoints;
 
 	@BeforeEach
@@ -96,7 +100,9 @@ class RemoteWorkflowEndpointsExtensionTest {
 		endpoints = new RemoteWorkflowEndpointsExtension();
 		endpoints.setContext(moduleContext);
 		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		when(db.getFileSystem()).thenReturn(fileSystem);
+		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
+		lenient().when(db.getCollections()).thenReturn(collections);
+		lenient().when(collections.isLocal("blog")).thenReturn(true);
 		lenient().when(fileSystem.contentBase()).thenReturn(contentBase);
 		lenient().when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
 		lenient().when(collectionsBase.resolve("blog/first.md")).thenReturn(collectionFile);
@@ -163,6 +169,23 @@ class RemoteWorkflowEndpointsExtensionTest {
 
 		assertThat(result).containsEntry("status", status)
                 .containsEntry("transitions", List.of());
+	}
+
+	@Test
+	void nodeStatus_ignoresReferencedCollectionItems() throws Exception {
+		when(collections.isLocal("blog")).thenReturn(false);
+		var requestContext = new RequestContext();
+		requestContext.add(
+				CurrentCollectionItemFeature.class,
+				new CurrentCollectionItemFeature(new CollectionItem(
+						"first", "blog", "blog/first.md", "Body", Map.of())));
+
+		@SuppressWarnings("unchecked")
+		var result = (Map<String, Object>) ScopedValue.where(
+				RequestContextScope.REQUEST_CONTEXT,
+				requestContext).call(() -> endpoints.nodeStatus(Map.of()));
+
+		assertThat(result).isEmpty();
 	}
 
 	@Test

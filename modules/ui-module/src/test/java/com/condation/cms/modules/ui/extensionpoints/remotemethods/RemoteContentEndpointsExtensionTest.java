@@ -25,7 +25,10 @@ import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
+import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.feature.features.DBFeature;
+import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.module.SiteModuleContext;
@@ -47,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class RemoteContentEndpointsExtensionTest {
@@ -69,6 +73,9 @@ class RemoteContentEndpointsExtensionTest {
 	@Mock
 	private ReadOnlyFile contentFile;
 
+	@Mock
+	private Collections collections;
+
 	private RemoteContentEndpointsExtension endpoints;
 
 	@BeforeEach
@@ -76,8 +83,10 @@ class RemoteContentEndpointsExtensionTest {
 		endpoints = new RemoteContentEndpointsExtension();
 		endpoints.setContext(moduleContext);
 		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		when(db.getFileSystem()).thenReturn(fileSystem);
-		when(fileSystem.contentBase()).thenReturn(contentBase);
+		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
+		lenient().when(fileSystem.contentBase()).thenReturn(contentBase);
+		lenient().when(db.getCollections()).thenReturn(collections);
+		lenient().when(collections.isLocal("blog")).thenReturn(true);
 	}
 
 	@Test
@@ -124,6 +133,22 @@ class RemoteContentEndpointsExtensionTest {
 		).call(() -> endpoints.getContent(Map.of())))
 				.isInstanceOf(RPCException.class)
 				.hasMessage("variant selected");
+	}
+
+	@Test
+	void rejectsEditingAReferencedCollectionItem() {
+		when(collections.isLocal("blog")).thenReturn(false);
+		var requestContext = new RequestContext();
+		requestContext.add(
+				CurrentCollectionItemFeature.class,
+				new CurrentCollectionItemFeature(new CollectionItem(
+						"first", "blog", "blog/first.md", "Body", Map.of())));
+
+		assertThatThrownBy(() -> ScopedValue.where(
+				RequestContextScope.REQUEST_CONTEXT,
+				requestContext).call(() -> endpoints.getContent(Map.of())))
+				.isInstanceOfSatisfying(RPCException.class, exception ->
+						assertThat(exception.getCode()).isEqualTo(403));
 	}
 
 	@Test

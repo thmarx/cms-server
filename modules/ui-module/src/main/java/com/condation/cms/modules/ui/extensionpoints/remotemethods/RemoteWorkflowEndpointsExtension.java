@@ -111,6 +111,9 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 		if (!parameters.containsKey("uri")
 				&& getRequestContext().has(CurrentCollectionItemFeature.class)) {
 			var item = getRequestContext().get(CurrentCollectionItemFeature.class).item();
+			if (!db.getCollections().isLocal(item.collection())) {
+				return Optional.empty();
+			}
 			var node = new ContentNode(
 					item.path(),
 					item.path(),
