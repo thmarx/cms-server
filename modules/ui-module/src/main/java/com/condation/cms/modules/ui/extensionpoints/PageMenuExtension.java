@@ -48,7 +48,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
             section = "Page",
             scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/create-page")
     )
-    public void create_page() {
+    public void createPage() {
         // can be empty
 
     }
@@ -61,7 +61,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
             section = "Page",
             scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/edit-page-settings")
     )
-    public void page_settings() {
+    public void pageSettings() {
         // can be empty
     }
 
@@ -74,7 +74,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
             section = "Assets",
             scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/manage-assets")
     )
-    public void manage_media() {
+    public void managMedia() {
         // can be empty
     }
 
@@ -86,7 +86,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
             section = "Page",
             scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/translations")
     )
-    public void manage_translations() {
+    public void manageTranslations() {
         // can be empty
     }
 
@@ -98,7 +98,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
             section = "Page",
             scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/variants")
     )
-    public void page_variants() {
+    public void pageVariants() {
         // can be empty
     }
 
@@ -110,7 +110,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
             section = "Page",
             scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/create-variant")
     )
-    public void create_page_variant() {
+    public void createPageVariant() {
         // can be empty
     }
 
@@ -122,7 +122,7 @@ public class PageMenuExtension extends HookSystemRegisterExtensionPoint implemen
             section = "Page",
             scriptAction = @com.condation.cms.api.ui.annotations.ScriptAction(module = "/manager/actions/page/variant-selector")
     )
-    public void configure_variant_selector() {
+    public void configureVariantSelector() {
         // can be empty
     }
 
