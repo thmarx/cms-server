@@ -230,7 +230,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	private String detailUrl(CollectionItem item) {
 		try {
 			return new LinkFunction(getRequestContext()).collectionUrl(item);
-		} catch (IllegalArgumentException | IllegalStateException ex) {
+		} catch (IllegalArgumentException | IllegalStateException _) {
 			return null;
 		}
 	}
