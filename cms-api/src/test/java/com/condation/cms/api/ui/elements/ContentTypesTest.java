@@ -21,6 +21,7 @@ package com.condation.cms.api.ui.elements;
  * #L%
  */
 
+import com.condation.cms.api.ui.elements.fields.CollectionField;
 import com.condation.cms.api.ui.elements.fields.FormField;
 import com.condation.cms.api.ui.elements.fields.MarkdownField;
 import com.condation.cms.api.ui.elements.fields.NumberField;
@@ -143,5 +144,30 @@ class ContentTypesTest {
 		assertThat(form.fields()).allMatch(FormField.class::isInstance);
 		assertThat(form.tabs()).singleElement()
 				.satisfies(tab -> assertThat(tab.fields()).allMatch(FormField.class::isInstance));
+	}
+
+	@Test
+	void mapsCollectionFieldAndItsConfiguredCollection() {
+		Map<String, Object> collectionField = Map.of(
+				"type", "collection",
+				"name", "author",
+				"title", "Author",
+				"required", true,
+				"options", Map.of("collection", "authors"));
+		Map<String, Object> input = Map.of(
+				"name", "Article",
+				"template", "article.html",
+				"forms", Map.of("settings", Map.of("fields", List.of(collectionField))));
+
+		ContentTypes contentTypes = new ContentTypes();
+		contentTypes.registerPageTemplate(input);
+
+		assertThat(contentTypes.getPageTemplate("Article").orElseThrow().getForm("settings").fields())
+				.singleElement()
+				.isInstanceOfSatisfying(CollectionField.class, field -> {
+					assertThat(field.getName()).isEqualTo("author");
+					assertThat(field.isRequired()).isTrue();
+					assertThat(field.getOptions().collection()).isEqualTo("authors");
+				});
 	}
 }

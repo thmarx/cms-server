@@ -99,6 +99,14 @@ $hooks.registerFilter("manager/contentTypes/register", (contentTypes) => {
 								title: "Verlinkte Seite"
 							},
 							{
+								type: "collection",
+								name: "author",
+								title: "Autor",
+								options: {
+									collection: "authors"
+								}
+							},
+							{
 								type: "media",
 								name: "media_url",
 								title: "Media"
