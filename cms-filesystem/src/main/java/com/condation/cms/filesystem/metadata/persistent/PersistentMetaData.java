@@ -64,8 +64,6 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 	private SectionIndex sectionIndex;
 	private UrlIndex urlIndex;
 	private MVMap<String, ContentNode> nodesByPath;
-	
-	private TitleQueryFactory titleQueryFactory;
 
 	public PersistentMetaData(Path hostPath) {
 		this(hostPath, Map.of());
@@ -101,7 +99,6 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 		sectionIndex.clear();
 		urlIndex.clear();
 
-		titleQueryFactory = new TitleQueryFactory(LuceneIndex.SEARCH_ANALYZER);
 	}
 
 	@Override
@@ -307,9 +304,4 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 		return new LuceneQuery<>(uri, this.index, this, new ExcerptMapperFunction<>(nodeMapper));
 	}
 
-	@Override
-	public TitleQuery searchByTitle (String input) {
-		return new TitleQuery(titleQueryFactory, input, index, this);
-		
-	}
 }

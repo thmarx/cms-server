@@ -27,10 +27,7 @@ import com.condation.cms.filesystem.metadata.persistent.lucene.TitlePrefixAnalyz
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -122,44 +119,6 @@ public class LuceneIndex implements AutoCloseable {
 		if (!batchMode) {
 			commit();
 		}
-	}
-
-	List<Document> query(Query query, Sort sort) throws IOException {
-		IndexSearcher searcher = nrt_manager.acquire();
-		try {
-			var topDocs = searcher.search(query, Integer.MAX_VALUE, sort);
-
-			List<Document> result = new ArrayList<>();
-			for (var scoreDoc : topDocs.scoreDocs) {
-				result.add(searcher.storedFields().document(scoreDoc.doc));
-			}
-
-			return result;
-		} catch (IOException e) {
-			log.error("", e);
-		} finally {
-			nrt_manager.release(searcher);
-		}
-		return Collections.emptyList();
-	}
-
-	List<Document> query(Query query) throws IOException {
-		IndexSearcher searcher = nrt_manager.acquire();
-		try {
-			var topDocs = searcher.search(query, Integer.MAX_VALUE);
-
-			List<Document> result = new ArrayList<>();
-			for (var scoreDoc : topDocs.scoreDocs) {
-				result.add(searcher.storedFields().document(scoreDoc.doc));
-			}
-
-			return result;
-		} catch (IOException e) {
-			log.error("", e);
-		} finally {
-			nrt_manager.release(searcher);
-		}
-		return Collections.emptyList();
 	}
 
 	int count(Query query) throws IOException {

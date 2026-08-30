@@ -219,11 +219,6 @@ public class CollectionMetaData implements MetaData {
 	}
 
 	@Override
-	public TitleQuery searchByTitle(String input) {
-		throw new UnsupportedOperationException("title search is not exposed for collections");
-	}
-
-	@Override
 	public synchronized void clear() {
 		nodes.clear();
 		try {
