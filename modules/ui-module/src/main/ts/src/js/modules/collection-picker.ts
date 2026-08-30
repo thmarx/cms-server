@@ -66,14 +66,16 @@ const renderResults = (response: CollectionItemsPage, selectText: string): strin
 				</button>`).join('')}
 		</div>
 		<div class="d-flex justify-content-between align-items-center gap-2 mt-3">
-			<button type="button" class="btn btn-outline-secondary btn-sm" data-collection-picker-previous
+			<button type="button" class="btn btn-outline-secondary btn-sm"
+				data-collection-picker-page="${page - 1}"
 				${page <= 1 ? 'disabled' : ''}>
 				${escapeHtml(i18n.t('collection.picker.previous', 'Previous'))}
 			</button>
 			<span class="text-body-secondary small">
 				${escapeHtml(i18n.t('collection.picker.page', 'Page'))} ${page} / ${totalPages}
 			</span>
-			<button type="button" class="btn btn-outline-secondary btn-sm" data-collection-picker-next
+			<button type="button" class="btn btn-outline-secondary btn-sm"
+				data-collection-picker-page="${page + 1}"
 				${page >= totalPages ? 'disabled' : ''}>
 				${escapeHtml(i18n.t('collection.picker.next', 'Next'))}
 			</button>
@@ -131,16 +133,16 @@ export const openCollectionItemPicker = (options: CollectionItemPickerOptions): 
 							modal.hide();
 						});
 					});
-					resultsElement.querySelector<HTMLElement>('[data-collection-picker-previous]')
-						?.addEventListener('click', () => {
-							currentPage--;
+					resultsElement.querySelectorAll<HTMLButtonElement>('[data-collection-picker-page]')
+						.forEach(button => button.addEventListener('click', () => {
+							const targetPage = Number(button.dataset.collectionPickerPage);
+							if (button.disabled || !Number.isInteger(targetPage) || targetPage < 1
+									|| targetPage > response.totalPages || targetPage === currentPage) {
+								return;
+							}
+							currentPage = targetPage;
 							loadPage();
-						});
-					resultsElement.querySelector<HTMLElement>('[data-collection-picker-next]')
-						?.addEventListener('click', () => {
-							currentPage++;
-							loadPage();
-						});
+						}));
 				} catch (error) {
 					if (version !== requestVersion) return;
 					resultsElement.innerHTML = `
