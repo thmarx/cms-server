@@ -1,4 +1,12 @@
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=CondationCMS_cms-server&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=CondationCMS_cms-server)
+
+![Maven Central Version](https://img.shields.io/maven-central/v/com.condation.cms/cms-api)
+
+![NPM Version](https://img.shields.io/npm/v/condation-cms-ui)
+
+
 # CondationCMS
+
 
 CondationCMS is a fast, flexible, and developer-friendly content management system built with Java.
 
