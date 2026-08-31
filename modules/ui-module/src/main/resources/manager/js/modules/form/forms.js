@@ -48,11 +48,11 @@ const getFormFields = (definition) => {
     return [...fields, ...tabFields];
 };
 const escapeHtml = (value) => String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 const createForm = (options) => {
     const standaloneFields = Array.isArray(options.fields) ? options.fields : [];
     const tabs = Array.isArray(options.tabs) ? options.tabs : [];

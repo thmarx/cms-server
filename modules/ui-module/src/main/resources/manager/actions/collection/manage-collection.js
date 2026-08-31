@@ -28,11 +28,11 @@ import { showToast } from '@cms/modules/toast.js';
 const PAGE_SIZE = 10;
 const MIN_SEARCH_LENGTH = 3;
 const escapeHtml = (value) => String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 const renderItems = (items) => {
     if (items.length === 0) {
         return `<p class="text-muted mb-0">${i18n.t('collection.items.empty', 'No collection items found.')}</p>`;
