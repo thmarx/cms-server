@@ -9,6 +9,7 @@
     <artifactId>cms-sandbox</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>di</module>
         <module>tests</module>
         <module>benchmark</module>
     </modules>
