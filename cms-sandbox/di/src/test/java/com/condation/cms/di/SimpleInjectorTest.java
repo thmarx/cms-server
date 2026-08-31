@@ -111,10 +111,10 @@ class SimpleInjectorTest {
         }
     }
 
-    static final class StorageModule extends AbstractModule {
+    static final class StorageModule implements Module {
         @Override
-        protected void configure() {
-            bind(Store.class).to(MemoryStore.class).singleton();
+        public void configure(Binder binder) {
+            binder.bind(Store.class).to(MemoryStore.class).singleton();
         }
 
         @Provides
@@ -125,9 +125,9 @@ class SimpleInjectorTest {
         }
     }
 
-    static final class ApplicationModule extends AbstractModule {
+    static final class ApplicationModule implements Module {
         @Override
-        protected void configure() {
+        public void configure(Binder binder) {
             // Provider-only module.
         }
     }

@@ -6,7 +6,7 @@ only the features currently used by `cms-server`:
 - constructor injection using `jakarta.inject.Inject`
 - named dependencies using `jakarta.inject.Named`
 - singleton scope using `jakarta.inject.Singleton`
-- bindings to implementations, instances, and providers
+- bindings to implementations and instances
 - provider methods and separate modules
 - parent/child injectors
 - just-in-time construction of concrete classes
@@ -17,10 +17,10 @@ lifecycle handling, or custom scopes.
 Field and method injection are intentionally not supported.
 
 ```java
-class Services extends AbstractModule {
+class Services implements Module {
     @Override
-    protected void configure() {
-        bind(Store.class).to(FileStore.class).singleton();
+    public void configure(Binder binder) {
+        binder.bind(Store.class).to(FileStore.class).singleton();
     }
 
     @Provides

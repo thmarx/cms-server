@@ -21,10 +21,6 @@ package com.condation.cms.di;
  * #L%
  */
 
-import jakarta.inject.Provider;
-import jakarta.inject.Singleton;
-import java.lang.annotation.Annotation;
-
 /** Fluent configuration for one binding. */
 public interface BindingBuilder<T> {
     BindingBuilder<T> named(String name);
@@ -33,14 +29,5 @@ public interface BindingBuilder<T> {
 
     void toInstance(T instance);
 
-    BindingBuilder<T> toProvider(Provider<? extends T> provider);
-
     BindingBuilder<T> singleton();
-
-    default BindingBuilder<T> in(Class<? extends Annotation> scope) {
-        if (scope != Singleton.class) {
-            throw new DIException("Only jakarta.inject.Singleton is supported");
-        }
-        return singleton();
-    }
 }

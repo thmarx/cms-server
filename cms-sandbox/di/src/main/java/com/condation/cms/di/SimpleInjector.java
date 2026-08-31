@@ -23,7 +23,6 @@ package com.condation.cms.di;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -170,21 +169,19 @@ final class SimpleInjector implements Injector, Binder {
     }
 
     private void registerProviderMethods(Module module) {
-        for (Class<?> type : hierarchy(module.getClass())) {
-            for (Method method : type.getDeclaredMethods()) {
-                if (!method.isAnnotationPresent(Provides.class)) {
-                    continue;
-                }
-                if (method.getReturnType() == void.class) {
-                    throw new DIException("@Provides method must return a value: " + method);
-                }
-                Named named = method.getAnnotation(Named.class);
-                Key key = new Key(method.getReturnType(), named == null ? null : normalizeName(named.value()));
-                Binding<Object> binding = new Binding<>(key, injector -> invokeProvider(module, method));
-                binding.singleton = method.isAnnotationPresent(Singleton.class)
-                        || method.getReturnType().isAnnotationPresent(Singleton.class);
-                put(binding);
+        for (Method method : module.getClass().getDeclaredMethods()) {
+            if (!method.isAnnotationPresent(Provides.class)) {
+                continue;
             }
+            if (method.getReturnType() == void.class) {
+                throw new DIException("@Provides method must return a value: " + method);
+            }
+            Named named = method.getAnnotation(Named.class);
+            Key key = new Key(method.getReturnType(), named == null ? null : normalizeName(named.value()));
+            Binding<Object> binding = new Binding<>(key, injector -> invokeProvider(module, method));
+            binding.singleton = method.isAnnotationPresent(Singleton.class)
+                    || method.getReturnType().isAnnotationPresent(Singleton.class);
+            put(binding);
         }
     }
 
@@ -207,15 +204,6 @@ final class SimpleInjector implements Injector, Binder {
         if (bindings.putIfAbsent(binding.key, binding) != null) {
             throw new DIException("Duplicate binding for " + binding.key);
         }
-    }
-
-    private static List<Class<?>> hierarchy(Class<?> leaf) {
-        List<Class<?>> types = new ArrayList<>();
-        for (Class<?> type = leaf; type != null && type != Object.class; type = type.getSuperclass()) {
-            types.add(type);
-        }
-        Collections.reverse(types);
-        return types;
     }
 
     private static String normalizeName(String name) {
@@ -269,19 +257,6 @@ final class SimpleInjector implements Injector, Binder {
             binding.factory = ignored -> instance;
             binding.singleton = true;
             binding.instance = instance;
-        }
-
-        @Override
-        public BindingBuilder<T> toProvider(Provider<? extends T> provider) {
-            Objects.requireNonNull(provider, "provider");
-            binding.factory = ignored -> {
-                T value = provider.get();
-                if (value == null) {
-                    throw new DIException("Provider returned null for " + binding.key);
-                }
-                return value;
-            };
-            return this;
         }
 
         @Override
