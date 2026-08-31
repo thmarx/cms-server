@@ -36,12 +36,13 @@ export interface CollectionItemPickerOptions {
 	onSelect: (item: CollectionItemSummary) => void | Promise<void>;
 }
 
-const escapeHtml = (value: unknown): string => String(value ?? '')
-	.replace(/&/g, '&amp;')
-	.replace(/</g, '&lt;')
-	.replace(/>/g, '&gt;')
-	.replace(/"/g, '&quot;')
-	.replace(/'/g, '&#039;');
+const escapeHtml = (value: string | number | boolean | null | undefined): string =>
+    String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
 
 const renderMessage = (message: string): string =>
 	`<p class="text-body-secondary mb-0">${escapeHtml(message)}</p>`;
@@ -144,6 +145,7 @@ export const openCollectionItemPicker = (options: CollectionItemPickerOptions): 
 							loadPage();
 						}));
 				} catch (error) {
+					// exception is ignored, message to user is displayed in the modal
 					if (version !== requestVersion) return;
 					resultsElement.innerHTML = `
 						<div class="alert alert-danger mb-0">

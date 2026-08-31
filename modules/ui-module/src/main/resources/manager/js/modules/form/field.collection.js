@@ -22,11 +22,11 @@ import { openCollectionItemPicker } from '@cms/modules/collection-picker.js';
 import { createID } from '@cms/modules/form/utils.js';
 import { i18n } from '@cms/modules/localization.js';
 const escapeHtml = (value) => String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 const createCollectionField = (options, value = '') => {
     const id = createID();
     const key = `field.${options.name}`;

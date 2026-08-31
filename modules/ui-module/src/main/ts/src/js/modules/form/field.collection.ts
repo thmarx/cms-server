@@ -30,12 +30,13 @@ export interface CollectionFieldOptions extends FieldOptions {
 	};
 }
 
-const escapeHtml = (value: unknown): string => String(value ?? '')
-	.replace(/&/g, '&amp;')
-	.replace(/</g, '&lt;')
-	.replace(/>/g, '&gt;')
-	.replace(/"/g, '&quot;')
-	.replace(/'/g, '&#039;');
+const escapeHtml = (value: string | number | boolean | null | undefined): string =>
+    String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
 
 const createCollectionField = (options: CollectionFieldOptions, value: string = ''): string => {
 	const id = createID();

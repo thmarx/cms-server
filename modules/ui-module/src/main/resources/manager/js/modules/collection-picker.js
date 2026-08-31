@@ -23,11 +23,11 @@ import { openModal } from '@cms/modules/modal.js';
 import { listCollectionItems } from '@cms/modules/rpc/rpc-collection.js';
 const PAGE_SIZE = 10;
 const escapeHtml = (value) => String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 const renderMessage = (message) => `<p class="text-body-secondary mb-0">${escapeHtml(message)}</p>`;
 const renderResults = (response, selectText) => {
     if (response.items.length === 0) {
@@ -125,6 +125,7 @@ export const openCollectionItemPicker = (options) => {
                     }));
                 }
                 catch (error) {
+                    // exception is ignored, message to user is displayed in the modal
                     if (version !== requestVersion)
                         return;
                     resultsElement.innerHTML = `
