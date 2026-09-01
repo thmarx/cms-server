@@ -27,6 +27,14 @@ import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.db.collection.Collections;
+import com.condation.cms.api.configuration.Configuration;
+import com.condation.cms.api.configuration.configs.CollectionConfiguration;
+import com.condation.cms.api.configuration.configs.CollectionDefinition;
+import com.condation.cms.api.configuration.configs.CollectionDetailConfiguration;
+import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.Page;
+import com.condation.cms.api.db.collection.Collection;
+import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
@@ -40,6 +48,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -180,7 +189,54 @@ class RemoteContentEndpointsExtensionTest {
 
 		assertThat(result)
 				.containsEntry("uri", "pages/other.md")
-				.containsEntry("canonicalUri", "pages/other.md");
+				.containsEntry("canonicalUri", "pages/other.md")
+				.containsEntry("contentKind", "content")
+				.containsEntry("supportsVariants", true);
 		verify(content).byUrl("/total-other-page");
+	}
+
+	@Test
+	void getContentNodeKeepsPublicCollectionRouteAndDisablesVariants() throws Exception {
+		var nonExistingPath = org.mockito.Mockito.mock(ReadOnlyFile.class);
+		var authorCollection = org.mockito.Mockito.mock(Collection.class);
+		@SuppressWarnings("unchecked")
+		var query = (ContentQuery<CollectionItem>) org.mockito.Mockito.mock(ContentQuery.class);
+		var item = new CollectionItem(
+				"author-1", "authors", "authors/author-1.md", "", Map.of("slug", "jane-doe"));
+
+		when(db.getContent()).thenReturn(content);
+		when(content.byUrl("/people/jane-doe")).thenReturn(Optional.empty());
+		when(contentBase.resolve("people/jane-doe")).thenReturn(nonExistingPath);
+		when(contentBase.resolve("people/jane-doe.md")).thenReturn(nonExistingPath);
+		when(collections.collection("authors")).thenReturn(authorCollection);
+		when(authorCollection.query()).thenReturn(query);
+		when(query.where("slug", "jane-doe")).thenReturn(query);
+		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(item)));
+
+		var configuration = new Configuration();
+		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(
+				new ConcurrentHashMap<>(Map.of(
+						"authors",
+						new CollectionDefinition(
+								"authors",
+								new CollectionDetailConfiguration("/people/{slug}", "author.html"))))));
+		when(moduleContext.get(ConfigurationFeature.class))
+				.thenReturn(new ConfigurationFeature(configuration));
+
+		var requestContext = new RequestContext();
+		requestContext.add(RequestFeature.class, new RequestFeature("/", "/people/jane-doe", Map.of(), null));
+
+		@SuppressWarnings("unchecked")
+		var result = (Map<String, Object>) ScopedValue.where(
+				RequestContextScope.REQUEST_CONTEXT,
+				requestContext
+		).call(() -> endpoints.getContentNode(Map.of(
+				"url", "https://example.test/people/jane-doe?preview=manager")));
+
+		assertThat(result)
+				.containsEntry("url", "https://example.test/people/jane-doe?preview=manager")
+				.containsEntry("uri", "authors/author-1.md")
+				.containsEntry("contentKind", "collection")
+				.containsEntry("supportsVariants", false);
 	}
 }

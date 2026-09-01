@@ -371,12 +371,14 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 			result.put("canonicalUri", item.path());
 			result.put("variantId", null);
 			result.put("contentKind", "collection");
+			result.put("supportsVariants", false);
 			result.put("collection", item.collection());
 			result.put("collectionItemId", item.id());
 			result.put("sections", Map.of());
 			return result;
 		}
 		result.put("contentKind", "content");
+		result.put("supportsVariants", true);
 
 		var query = com.condation.cms.api.utils.HTTPUtil.queryParameters(requestUri.getQuery());
 		var variantId = query.getOrDefault(

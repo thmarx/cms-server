@@ -24,6 +24,7 @@ export interface ActivePreviewContent {
     canonicalUri?: string;
     variantId?: string | null;
     contentKind?: 'content' | 'collection';
+    supportsVariants?: boolean;
     collection?: string;
     collectionItemId?: string;
 }

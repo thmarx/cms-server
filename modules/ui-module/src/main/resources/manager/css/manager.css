@@ -126,6 +126,10 @@ i[data-cms-section-handle] {
 	white-space: nowrap;
 }
 
+.cms-current-variant[hidden] {
+	display: none;
+}
+
 .cms-current-variant:disabled {
 	opacity: 0.65;
 }

@@ -22,9 +22,11 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  */
 
 import com.condation.cms.api.Constants;
+import com.condation.cms.api.SiteProperties;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.configuration.configs.CollectionDefinition;
+import com.condation.cms.api.configuration.configs.CollectionDetailConfiguration;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.ContentQuery;
@@ -37,6 +39,7 @@ import com.condation.cms.api.feature.features.AuthFeature;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
+import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.request.RequestContext;
@@ -138,11 +141,14 @@ class RemoteCollectionEndpointsTest {
 
 		assertThat(result).isInstanceOfSatisfying(
 				RemoteCollectionEndpoints.ItemDto.class,
-				item -> assertThat(item)
-						.extracting(
-								RemoteCollectionEndpoints.ItemDto::id,
-								RemoteCollectionEndpoints.ItemDto::title)
-						.containsExactly("first-item", "First item"));
+				item -> {
+					assertThat(item)
+							.extracting(
+									RemoteCollectionEndpoints.ItemDto::id,
+									RemoteCollectionEndpoints.ItemDto::title)
+							.containsExactly("first-item", "First item");
+					assertThat(item.detailUrl()).isEqualTo("/articles/ueber-das-cms");
+				});
 		assertThat(collectionsDirectory.resolve("blog/first-item.md"))
 				.content()
 				.contains(
@@ -236,11 +242,16 @@ class RemoteCollectionEndpointsTest {
 	private RequestContext requestContext() {
 		var configuration = new Configuration();
 		var definitions = new ConcurrentHashMap<String, CollectionDefinition>();
-		definitions.put("blog", new CollectionDefinition("blog", null));
+		definitions.put("blog", new CollectionDefinition(
+				"blog",
+				new CollectionDetailConfiguration("/articles/{slug}", "article.html")));
 		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(definitions));
+		var siteProperties = org.mockito.Mockito.mock(SiteProperties.class);
+		when(siteProperties.contextPath()).thenReturn("/");
 		var requestContext = new RequestContext();
 		requestContext.add(AuthFeature.class, new AuthFeature("editor"));
 		requestContext.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
+		requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 		return requestContext;
 	}
 }
