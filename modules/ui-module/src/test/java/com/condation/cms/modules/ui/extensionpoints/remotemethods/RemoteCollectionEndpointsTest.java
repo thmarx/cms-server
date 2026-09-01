@@ -66,6 +66,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class RemoteCollectionEndpointsTest {
@@ -174,8 +175,8 @@ class RemoteCollectionEndpointsTest {
 				"blog/first.md",
 				"",
 				Map.of("slug", "Über uns"));
-		var collectionsBase = org.mockito.Mockito.mock(ReadOnlyFile.class);
-		var sourceFile = org.mockito.Mockito.mock(ReadOnlyFile.class);
+		var collectionsBase = mock(ReadOnlyFile.class);
+		var sourceFile = mock(ReadOnlyFile.class);
 		when(collection.item("second")).thenReturn(Optional.of(editedItem));
 		when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
 		when(collectionsBase.resolve("blog/second.md")).thenReturn(sourceFile);
@@ -246,7 +247,7 @@ class RemoteCollectionEndpointsTest {
 				"blog",
 				new CollectionDetailConfiguration("/articles/{slug}", "article.html")));
 		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(definitions));
-		var siteProperties = org.mockito.Mockito.mock(SiteProperties.class);
+		var siteProperties = mock(SiteProperties.class);
 		when(siteProperties.contextPath()).thenReturn("/");
 		var requestContext = new RequestContext();
 		requestContext.add(AuthFeature.class, new AuthFeature("editor"));
