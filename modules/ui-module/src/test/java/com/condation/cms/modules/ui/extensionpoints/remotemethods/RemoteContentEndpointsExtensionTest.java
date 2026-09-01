@@ -60,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class RemoteContentEndpointsExtensionTest {
@@ -197,10 +198,10 @@ class RemoteContentEndpointsExtensionTest {
 
 	@Test
 	void getContentNodeKeepsPublicCollectionRouteAndDisablesVariants() throws Exception {
-		var nonExistingPath = org.mockito.Mockito.mock(ReadOnlyFile.class);
-		var authorCollection = org.mockito.Mockito.mock(Collection.class);
+		var nonExistingPath = mock(ReadOnlyFile.class);
+		var authorCollection = mock(Collection.class);
 		@SuppressWarnings("unchecked")
-		var query = (ContentQuery<CollectionItem>) org.mockito.Mockito.mock(ContentQuery.class);
+		var query = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
 		var item = new CollectionItem(
 				"author-1", "authors", "authors/author-1.md", "", Map.of("slug", "jane-doe"));
 
