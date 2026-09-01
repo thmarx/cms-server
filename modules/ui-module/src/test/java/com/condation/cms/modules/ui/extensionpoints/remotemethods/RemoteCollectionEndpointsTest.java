@@ -27,6 +27,10 @@ import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.configuration.configs.CollectionDefinition;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
+import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.cms.ReadOnlyFile;
+import com.condation.cms.api.db.collection.Collection;
+import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.feature.features.AuthFeature;
@@ -42,7 +46,9 @@ import com.condation.cms.api.workflow.WFStatusProvider;
 import com.condation.cms.api.workflow.Workflow;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +83,12 @@ class RemoteCollectionEndpointsTest {
 	private Collections collections;
 
 	@Mock
+	private Collection collection;
+
+	@Mock
+	private ContentQuery<CollectionItem> collectionQuery;
+
+	@Mock
 	private EventBus eventBus;
 
 	@Mock
@@ -97,9 +109,12 @@ class RemoteCollectionEndpointsTest {
 
 		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
 		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
-		when(db.getCollections()).thenReturn(collections);
-		when(collections.names()).thenReturn(Set.of("blog"));
-		when(collections.isLocal("blog")).thenReturn(true);
+		lenient().when(db.getCollections()).thenReturn(collections);
+		lenient().when(collections.names()).thenReturn(Set.of("blog"));
+		lenient().when(collections.isLocal("blog")).thenReturn(true);
+		lenient().when(collections.collection("blog")).thenReturn(collection);
+		lenient().when(collection.query()).thenReturn(collectionQuery);
+		lenient().when(collectionQuery.get()).thenReturn(List.of());
 		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsDirectory);
 	}
 
@@ -114,7 +129,9 @@ class RemoteCollectionEndpointsTest {
 				"collection", "blog",
 				"id", "first-item",
 				"content", Map.of("type", "markdown", "value", "# Body"),
-				"meta", Map.of("title", Map.of("type", "text", "value", "First item")));
+				"meta", Map.of(
+						"title", Map.of("type", "text", "value", "First item"),
+						"slug", Map.of("type", "text", "value", "Über das CMS")));
 
 		var result = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, requestContext)
 				.call(() -> endpoints.create(parameters));
@@ -128,8 +145,44 @@ class RemoteCollectionEndpointsTest {
 						.containsExactly("first-item", "First item"));
 		assertThat(collectionsDirectory.resolve("blog/first-item.md"))
 				.content()
-				.contains("title: First item", "status: draft", "createdBy: editor", "# Body");
+				.contains(
+						"title: First item",
+						"slug: ueber-das-cms",
+						"status: draft",
+						"createdBy: editor",
+						"# Body");
 		verify(collections).refresh("blog", "first-item");
+	}
+
+	@Test
+	void rejectsDuplicateSlugsAfterNormalizationWhenSaving() throws Exception {
+		var editedItem = new CollectionItem(
+				"second",
+				"blog",
+				"blog/second.md",
+				"",
+				Map.of("slug", "second"));
+		var existingItem = new CollectionItem(
+				"first",
+				"blog",
+				"blog/first.md",
+				"",
+				Map.of("slug", "Über uns"));
+		var collectionsBase = org.mockito.Mockito.mock(ReadOnlyFile.class);
+		var sourceFile = org.mockito.Mockito.mock(ReadOnlyFile.class);
+		when(collection.item("second")).thenReturn(Optional.of(editedItem));
+		when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
+		when(collectionsBase.resolve("blog/second.md")).thenReturn(sourceFile);
+		when(sourceFile.getContent()).thenReturn("---\nslug: second\n---\n\nBody\n");
+		when(collectionQuery.get()).thenReturn(List.of(existingItem, editedItem));
+
+		assertThatThrownBy(() -> endpoints.save(Map.of(
+				"collection", "blog",
+				"id", "second",
+				"meta", Map.of("slug", Map.of("type", "text", "value", "Ueber uns")))))
+				.isInstanceOfSatisfying(
+						RPCException.class,
+						exception -> assertThat(exception.getCode()).isEqualTo(409));
 	}
 
 	@Test
@@ -144,6 +197,18 @@ class RemoteCollectionEndpointsTest {
 				.isInstanceOfSatisfying(
 						RPCException.class,
 						exception -> assertThat(exception.getCode()).isEqualTo(400));
+	}
+
+	@Test
+	void rejectsInvalidItemIdsConsistentlyWhenLoadingItems() {
+		assertThatThrownBy(() -> endpoints.get(Map.of("collection", "blog", "id", "invalid item")))
+				.isInstanceOfSatisfying(
+						RPCException.class,
+						exception -> {
+							assertThat(exception.getCode()).isEqualTo(400);
+							assertThat(exception.getMessage())
+									.isEqualTo("invalid collection item id: invalid item");
+						});
 	}
 
 	@Test

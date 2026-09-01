@@ -23,23 +23,30 @@ package com.condation.cms.api.configuration.configs;
 
 import com.condation.cms.api.configuration.Config;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentMap;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Reloadable, site-scoped collection definitions.
  */
-@RequiredArgsConstructor
 public class CollectionConfiguration implements Config {
 
-	private final ConcurrentMap<String, CollectionDefinition> collections;
+	private volatile Map<String, CollectionDefinition> collections;
+
+	public CollectionConfiguration(Map<String, CollectionDefinition> collections) {
+		replaceCollections(collections);
+	}
+
+	/** Atomically replaces the complete set of collection definitions. */
+	public void replaceCollections(Map<String, CollectionDefinition> collections) {
+		this.collections = Map.copyOf(Objects.requireNonNull(collections));
+	}
 
 	public Optional<CollectionDefinition> collection(String name) {
 		return Optional.ofNullable(collections.get(name));
 	}
 
 	public Map<String, CollectionDefinition> collections() {
-		return Map.copyOf(collections);
+		return collections;
 	}
 }

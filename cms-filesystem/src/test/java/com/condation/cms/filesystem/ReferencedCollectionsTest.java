@@ -82,12 +82,14 @@ class ReferencedCollectionsTest {
 		when(local.collection("shared")).thenReturn(localCollection);
 		var definitions = new ConcurrentHashMap<String, CollectionDefinition>();
 		definitions.put("shared", new CollectionDefinition("shared", "content-site", null));
+		var configuration = new CollectionConfiguration(definitions);
 		var collections = new ReferencedCollections(
 				"consumer-site",
 				local,
-				new CollectionConfiguration(definitions));
+				configuration);
 
 		definitions.put("shared", new CollectionDefinition("shared", null));
+		configuration.replaceCollections(definitions);
 
 		Assertions.assertThat(collections.isLocal("shared")).isTrue();
 		Assertions.assertThat(collections.collection("shared")).isSameAs(localCollection);

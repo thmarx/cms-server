@@ -26,10 +26,13 @@ import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.NodeVisibility;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.db.collection.CollectionItemId;
 import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.utils.PathUtil;
+import com.condation.cms.core.content.io.ContentFileParser;
 import com.condation.cms.filesystem.metadata.persistent.CollectionMetaData;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -52,7 +55,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FileCollections implements Collections, AutoCloseable {
 
 	private static final Pattern COLLECTION_NAME = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_-]*");
-	private static final Pattern ITEM_ID = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_.-]*");
 	private static final Duration CHANGE_QUIET_PERIOD = Duration.ofMillis(200);
 
 	private final String siteId;
@@ -117,7 +119,7 @@ public class FileCollections implements Collections, AutoCloseable {
 	@Override
 	public void refresh(String collection, String id) {
 		validateCollectionName(collection);
-		validateItemId(id);
+		CollectionItemId.requireValid(id);
 		var file = collectionsBase.resolve(collection).resolve(id + ".md");
 		try {
 			if (Files.isRegularFile(file)) {
@@ -171,7 +173,7 @@ public class FileCollections implements Collections, AutoCloseable {
 			}
 			return;
 		}
-		if (parts.length != 2 || !isMarkdown(path)) {
+		if (parts.length != 2 || !isValidItemFile(path)) {
 			return;
 		}
 		if (!isValidCollectionName(parts[0])) {
@@ -206,7 +208,7 @@ public class FileCollections implements Collections, AutoCloseable {
 		collectionNames.add(name);
 		metaData.removeDirectory(name);
 		try (var files = Files.list(collection)) {
-			for (var file : files.filter(Files::isRegularFile).filter(FileCollections::isMarkdown).toList()) {
+			for (var file : files.filter(Files::isRegularFile).filter(FileCollections::isValidItemFile).toList()) {
 				index(file);
 			}
 		}
@@ -237,33 +239,22 @@ public class FileCollections implements Collections, AutoCloseable {
 
 	private static String readMarkdownBody(Path file) {
 		try {
-			var lines = Files.readAllLines(file);
-			var body = new StringBuilder();
-			var inFrontMatter = false;
-			var frontMatterClosed = false;
-			for (var line : lines) {
-				if (line.trim().equals("---") && !frontMatterClosed) {
-					if (!inFrontMatter) {
-						inFrontMatter = true;
-					} else {
-						inFrontMatter = false;
-						frontMatterClosed = true;
-					}
-					continue;
-				}
-				if (!inFrontMatter) {
-					body.append(line).append("\r\n");
-				}
-			}
-			return body.toString();
+			return new ContentFileParser(file.toString()).getContent();
 		} catch (IOException ex) {
-			log.error("error reading collection item {}", file, ex);
-			return "";
+			throw new UncheckedIOException("could not read collection item " + file, ex);
 		}
 	}
 
 	private static boolean isMarkdown(Path file) {
 		return file.getFileName().toString().endsWith(".md");
+	}
+
+	private static boolean isValidItemFile(Path file) {
+		if (!isMarkdown(file)) {
+			return false;
+		}
+		var filename = file.getFileName().toString();
+		return CollectionItemId.isValid(filename.substring(0, filename.length() - 3));
 	}
 
 	private static boolean isValidCollectionName(String name) {
@@ -273,12 +264,6 @@ public class FileCollections implements Collections, AutoCloseable {
 	private static void validateCollectionName(String name) {
 		if (!isValidCollectionName(name)) {
 			throw new IllegalArgumentException("invalid collection name: " + name);
-		}
-	}
-
-	private static void validateItemId(String id) {
-		if (id == null || !ITEM_ID.matcher(id).matches()) {
-			throw new IllegalArgumentException("invalid collection item id: " + id);
 		}
 	}
 
@@ -310,7 +295,7 @@ public class FileCollections implements Collections, AutoCloseable {
 
 		@Override
 		public Optional<CollectionItem> item(String id) {
-			validateItemId(id);
+			CollectionItemId.requireValid(id);
 			return metaData.byPath(name + "/" + id + ".md")
 					.filter(NodeVisibility::isVisible)
 					.map(node -> FileCollections.this.map(node, 0));

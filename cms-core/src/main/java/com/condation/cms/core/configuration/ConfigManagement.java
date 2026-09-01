@@ -74,9 +74,8 @@ public class ConfigManagement {
 		);
 		configuration.add(
 				com.condation.cms.api.configuration.configs.CollectionConfiguration.class,
-				new com.condation.cms.api.configuration.configs.CollectionConfiguration(
-						((com.condation.cms.core.configuration.configs.CollectionConfiguration) get("collections")
-								.orElseThrow()).getCollections())
+				((com.condation.cms.core.configuration.configs.CollectionConfiguration) get("collections")
+						.orElseThrow()).apiConfiguration()
 		);
 		var mediaConfig = new com.condation.cms.api.configuration.configs.MediaConfiguration(
 						((com.condation.cms.core.configuration.configs.MediaConfiguration) get("media")

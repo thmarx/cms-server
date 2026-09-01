@@ -28,6 +28,7 @@ import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.utils.HTTPUtil;
 import com.condation.cms.api.utils.MapUtil;
+import com.condation.cms.content.utils.SlugUtil;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 
@@ -65,7 +66,8 @@ public class LinkFunction {
 		var detail = definition.detailPage()
 				.orElseThrow(() -> new IllegalArgumentException(
 						"collection has no detail route: " + item.collection()));
-		var parameterValue = "id".equals(detail.parameter())
+		var idParameter = "id".equals(detail.parameter());
+		var parameterValue = idParameter
 				? item.id()
 				: MapUtil.getValue(item.meta(), detail.parameter());
 		if (parameterValue == null || parameterValue.toString().isBlank()) {
@@ -73,9 +75,17 @@ public class LinkFunction {
 					"collection item has no route value for: " + detail.parameter());
 		}
 
+		var routeValue = idParameter
+				? parameterValue.toString()
+				: SlugUtil.slugify(parameterValue.toString());
+		if (routeValue.isBlank()) {
+			throw new IllegalArgumentException(
+					"collection item route value cannot be converted to a slug: " + detail.parameter());
+		}
+
 		var route = detail.route().replace(
 				"{" + detail.parameter() + "}",
-				parameterValue.toString());
+				routeValue);
 		return createUrl(route);
 	}
 }

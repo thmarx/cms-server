@@ -43,6 +43,7 @@ class LinkFunctionTest {
 
 	private final ConcurrentHashMap<String, CollectionDefinition> definitions = new ConcurrentHashMap<>();
 	private final RequestContext context = new RequestContext();
+	private CollectionConfiguration collectionConfiguration;
 	private final CollectionItem item = new CollectionItem(
 			"item_1",
 			"blog",
@@ -53,7 +54,8 @@ class LinkFunctionTest {
 	@BeforeEach
 	void setUp() {
 		var configuration = new Configuration();
-		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(definitions));
+		collectionConfiguration = new CollectionConfiguration(definitions);
+		configuration.add(CollectionConfiguration.class, collectionConfiguration);
 		context.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
 
 		var siteProperties = mock(SiteProperties.class);
@@ -63,7 +65,7 @@ class LinkFunctionTest {
 
 	@Test
 	void createsContextAwareUrlUsingTheItemId() {
-		definitions.put("blog", definition("/articles/{id}"));
+		define("/articles/{id}");
 
 		var url = new LinkFunction(context).collectionUrl(item);
 
@@ -72,7 +74,7 @@ class LinkFunctionTest {
 
 	@Test
 	void createsContextAwareUrlUsingConfiguredFrontMatter() {
-		definitions.put("blog", definition("/articles/{slug}"));
+		define("/articles/{slug}");
 
 		var url = new LinkFunction(context).collectionUrl(item);
 
@@ -80,19 +82,34 @@ class LinkFunctionTest {
 	}
 
 	@Test
+	void slugifiesConfiguredFrontMatterForTheUrl() {
+		define("/articles/{slug}");
+		var itemWithUnnormalizedSlug = new CollectionItem(
+				"item_2",
+				"blog",
+				"blog/item_2.md",
+				"",
+				Map.of("slug", "Über uns & das CMS"));
+
+		var url = new LinkFunction(context).collectionUrl(itemWithUnnormalizedSlug);
+
+		Assertions.assertThat(url).isEqualTo("/docs/articles/ueber-uns-das-cms");
+	}
+
+	@Test
 	void usesReloadedCollectionRoute() {
-		definitions.put("blog", definition("/old/{id}"));
+		define("/old/{id}");
 		var links = new LinkFunction(context);
 		Assertions.assertThat(links.collectionUrl(item)).isEqualTo("/docs/old/item_1");
 
-		definitions.put("blog", definition("/new/{slug}"));
+		define("/new/{slug}");
 
 		Assertions.assertThat(links.collectionUrl(item)).isEqualTo("/docs/new/first-post");
 	}
 
 	@Test
 	void rejectsItemsWithoutTheConfiguredRouteValue() {
-		definitions.put("blog", definition("/articles/{slug}"));
+		define("/articles/{slug}");
 		var itemWithoutSlug = new CollectionItem(
 				"item_2",
 				"blog",
@@ -109,5 +126,10 @@ class LinkFunctionTest {
 		return new CollectionDefinition(
 				"blog",
 				new CollectionDetailConfiguration(route, "collections/detail.html"));
+	}
+
+	private void define(String route) {
+		definitions.put("blog", definition(route));
+		collectionConfiguration.replaceCollections(definitions);
 	}
 }

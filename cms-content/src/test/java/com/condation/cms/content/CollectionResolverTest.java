@@ -68,6 +68,7 @@ class CollectionResolverTest {
 	private final ReadOnlyFile itemFile = mock(ReadOnlyFile.class);
 	private final ConcurrentHashMap<String, CollectionDefinition> definitions = new ConcurrentHashMap<>();
 	private final Configuration configuration = new Configuration();
+	private CollectionConfiguration collectionConfiguration;
 	private final CollectionItem item = new CollectionItem(
 			"first",
 			"blog",
@@ -77,7 +78,8 @@ class CollectionResolverTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(definitions));
+		collectionConfiguration = new CollectionConfiguration(definitions);
+		configuration.add(CollectionConfiguration.class, collectionConfiguration);
 		when(db.getCollections()).thenReturn(collections);
 		when(collections.collection("blog")).thenReturn(collection);
 		when(db.getFileSystem()).thenReturn(fileSystem);
@@ -99,14 +101,14 @@ class CollectionResolverTest {
 
 	@Test
 	void resolvesAnIdRouteAndUsesReloadedDefinitions() throws Exception {
-		definitions.put("blog", definition("/old/{id}"));
+		define(definition("/old/{id}"));
 		when(collection.item("first")).thenReturn(Optional.of(item));
 		var resolver = new CollectionResolver(renderer, db, configuration);
 		var context = context("/blog/first");
 
 		Assertions.assertThat(resolver.getContent(context)).isEmpty();
 
-		definitions.put("blog", definition("/blog/{id}"));
+		define(definition("/blog/{id}"));
 		var response = resolver.getContent(context);
 
 		Assertions.assertThat(response)
@@ -128,12 +130,12 @@ class CollectionResolverTest {
 
 	@Test
 	void resolvesAConfiguredFrontMatterField() throws Exception {
-		definitions.put("blog", definition("/blog/{slug}"));
+		define(definition("/blog/{slug}"));
 		@SuppressWarnings("unchecked")
 		var query = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
 		when(collection.query()).thenReturn(query);
 		when(query.where("slug", "first-post")).thenReturn(query);
-		when(query.page(1, 1)).thenReturn(new Page<>(1, 1, 1, 1, List.of(item)));
+		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(item)));
 		var resolver = new CollectionResolver(renderer, db, configuration);
 
 		var response = resolver.getContent(context("/blog/first-post/"));
@@ -143,9 +145,39 @@ class CollectionResolverTest {
 	}
 
 	@Test
-	void readsTheItemFileFromTheConfiguredSourceSite() throws Exception {
-		definitions.put(
+	void resolvesLegacyFrontMatterByItsSlugifiedValue() throws Exception {
+		define(definition("/blog/{slug}"));
+		var legacyItem = new CollectionItem(
+				"about",
 				"blog",
+				"blog/about.md",
+				"# About",
+				Map.of("title", "About", "slug", "Über uns"));
+		@SuppressWarnings("unchecked")
+		var exactQuery = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
+		@SuppressWarnings("unchecked")
+		var fallbackQuery = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
+		when(collection.query()).thenReturn(exactQuery, fallbackQuery);
+		when(exactQuery.where("slug", "ueber-uns")).thenReturn(exactQuery);
+		when(exactQuery.page(1, 2)).thenReturn(new Page<>(0, 2, 0, 1, List.of()));
+		when(fallbackQuery.get()).thenReturn(List.of(legacyItem));
+		when(collectionsBase.resolve("blog/about.md")).thenReturn(itemFile);
+		when(renderer.renderCollection(
+				eq(itemFile),
+				any(),
+				eq(legacyItem),
+				anyString(),
+				any())).thenReturn("<h1>About</h1>");
+
+		var response = new CollectionResolver(renderer, db, configuration)
+				.getContent(context("/blog/ueber-uns"));
+
+		Assertions.assertThat(response).isPresent();
+	}
+
+	@Test
+	void readsTheItemFileFromTheConfiguredSourceSite() throws Exception {
+		define(
 				new CollectionDefinition(
 						"blog",
 						"content-site",
@@ -188,6 +220,11 @@ class CollectionResolverTest {
 		return new CollectionDefinition(
 				"blog",
 				new CollectionDetailConfiguration(route, "collections/detail.html"));
+	}
+
+	private void define(CollectionDefinition definition) {
+		definitions.put("blog", definition);
+		collectionConfiguration.replaceCollections(definitions);
 	}
 
 	private static RequestContext context(String uri) {

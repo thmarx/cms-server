@@ -23,6 +23,7 @@ package com.condation.cms.core.configuration;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.condation.cms.api.eventbus.EventBus;
@@ -59,20 +60,55 @@ class CollectionConfigurationTest {
 				.id("collections")
 				.addSource(source)
 				.build();
-		var sharedCollections = configuration.getCollections();
+		var apiConfiguration = configuration.apiConfiguration();
+		var initialSnapshot = configuration.getCollections();
 
-		Assertions.assertThat(sharedCollections).containsOnlyKeys("blog", "listing-only");
-		Assertions.assertThat(sharedCollections.get("blog").detailPage().orElseThrow().parameter())
+		Assertions.assertThat(initialSnapshot).containsOnlyKeys("blog", "listing-only");
+		Assertions.assertThat(initialSnapshot.get("blog").detailPage().orElseThrow().parameter())
 				.isEqualTo("slug");
-		Assertions.assertThat(sharedCollections.get("blog").sourceSite()).contains("content-site");
-		Assertions.assertThat(sharedCollections.get("listing-only").sourceSite()).isEmpty();
+		Assertions.assertThat(initialSnapshot.get("blog").sourceSite()).contains("content-site");
+		Assertions.assertThat(initialSnapshot.get("listing-only").sourceSite()).isEmpty();
 
 		configuration.reload();
 
-		Assertions.assertThat(configuration.getCollections()).isSameAs(sharedCollections);
-		Assertions.assertThat(sharedCollections).containsOnlyKeys("products");
-		Assertions.assertThat(sharedCollections.get("products").detailPage().orElseThrow().route())
+		var updatedSnapshot = configuration.getCollections();
+		Assertions.assertThat(configuration.apiConfiguration()).isSameAs(apiConfiguration);
+		Assertions.assertThat(apiConfiguration.collections()).isSameAs(updatedSnapshot);
+		Assertions.assertThat(updatedSnapshot).isNotSameAs(initialSnapshot);
+		Assertions.assertThat(initialSnapshot).containsOnlyKeys("blog", "listing-only");
+		Assertions.assertThat(updatedSnapshot).containsOnlyKeys("products");
+		Assertions.assertThat(updatedSnapshot.get("products").detailPage().orElseThrow().route())
 				.isEqualTo("/products/{id}");
 		verify(eventBus).publish(new ConfigurationReloadEvent("collections"));
+	}
+
+	@Test
+	void keepsTheCompletePreviousSnapshotWhenOneDefinitionIsInvalid() {
+		var eventBus = mock(EventBus.class);
+		var source = mock(ConfigSource.class);
+		var initial = Map.<String, Object>of(
+				"blog", Map.of("detail", Map.of(
+						"route", "/blog/{id}",
+						"template", "collections/blog.html")));
+		var invalid = Map.<String, Object>of(
+				"products", Map.of("detail", Map.of(
+						"route", "/products/{id}",
+						"template", "collections/product.html")),
+				"broken", Map.of("detail", Map.of("route", "/broken/{id}")));
+		when(source.exists()).thenReturn(true);
+		when(source.reload()).thenReturn(false, true);
+		when(source.getMap("collections")).thenReturn(initial, invalid);
+
+		var configuration = CollectionConfiguration.builder(eventBus)
+				.id("collections")
+				.addSource(source)
+				.build();
+		var initialSnapshot = configuration.getCollections();
+
+		configuration.reload();
+
+		Assertions.assertThat(configuration.getCollections()).isSameAs(initialSnapshot);
+		Assertions.assertThat(configuration.getCollections()).containsOnlyKeys("blog");
+		verifyNoInteractions(eventBus);
 	}
 }

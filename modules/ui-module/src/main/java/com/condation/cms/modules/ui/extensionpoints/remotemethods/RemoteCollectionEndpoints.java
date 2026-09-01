@@ -26,12 +26,15 @@ import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.db.collection.CollectionItemId;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.ui.annotations.RemoteMethod;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.ui.rpc.RPCException;
+import com.condation.cms.api.utils.MapUtil;
+import com.condation.cms.content.utils.SlugUtil;
 import com.condation.cms.content.template.functions.LinkFunction;
 import com.condation.cms.core.content.io.ContentFileParser;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
@@ -46,7 +49,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
 /** Manager endpoints for listing and editing collection items. */
@@ -56,7 +59,6 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 
 	private static final long DEFAULT_PAGE_SIZE = 10;
 	private static final long MAX_PAGE_SIZE = 100;
-	private static final Pattern ITEM_ID = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_.-]*");
 
 	public record ItemDto(
 			String id,
@@ -115,7 +117,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	}
 
 	@RemoteMethod(name = "collections.item.save", permissions = {Permissions.CONTENT_EDIT})
-	public Object save(Map<String, Object> parameters) throws RPCException {
+	public synchronized Object save(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
 		var item = item(parameters);
 		ensureLocalCollection(db, item.collection());
@@ -126,6 +128,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 			var meta = new HashMap<>(parser.getHeader());
 			var rawMeta = typedMeta(parameters.get("meta"));
 			YamlHeaderUpdater.mergeFlatMapIntoNestedMap(meta, MetaConverter.convertMeta(rawMeta));
+			normalizeAndValidateSlug(db, item.collection(), item.id(), meta);
 			var content = parameters.containsKey(Parameters.CONTENT)
 					? FormHelper.getContent(parameters.get(Parameters.CONTENT))
 					: parser.getContent();
@@ -140,7 +143,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	}
 
 	@RemoteMethod(name = "collections.item.create", permissions = {Permissions.CONTENT_EDIT})
-	public Object create(Map<String, Object> parameters) throws RPCException {
+	public synchronized Object create(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
 		var collectionName = requiredString(parameters, Parameters.COLLECTION);
 		var id = requiredItemId(parameters);
@@ -155,6 +158,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 		YamlHeaderUpdater.mergeFlatMapIntoNestedMap(
 				meta,
 				MetaConverter.convertMeta(typedMeta(parameters.get("meta"))));
+		normalizeAndValidateSlug(db, collectionName, id, meta);
 		meta.putIfAbsent(Constants.MetaFields.TITLE, id);
 		meta.put("createdAt", Date.from(Instant.now()));
 		meta.put("createdBy", getUserName());
@@ -206,7 +210,7 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	private CollectionItem item(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
 		var collectionName = requiredString(parameters, Parameters.COLLECTION);
-		var id = requiredString(parameters, "id");
+		var id = requiredItemId(parameters);
 		ensureCollectionExists(db.getCollections().names(), collectionName);
 		try {
 			return db.getCollections().collection(collectionName).item(id)
@@ -257,6 +261,37 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 		}
 	}
 
+	private static void normalizeAndValidateSlug(
+			DB db,
+			String collectionName,
+			String itemId,
+			Map<String, Object> meta) throws RPCException {
+		var value = MapUtil.getValue(meta, "slug");
+		if (value == null) {
+			return;
+		}
+		if (!(value instanceof CharSequence)) {
+			throw new RPCException(400, "collection item slug must be text");
+		}
+
+		var slug = SlugUtil.slugify(value.toString());
+		if (slug.isBlank()) {
+			throw new RPCException(400, "collection item slug must not be blank");
+		}
+
+		var duplicate = db.getCollections().collection(collectionName).query().get().stream()
+				.filter(item -> !item.id().equals(itemId))
+				.map(item -> MapUtil.getValue(item.meta(), "slug"))
+				.filter(Objects::nonNull)
+				.map(Object::toString)
+				.map(SlugUtil::slugify)
+				.anyMatch(slug::equals);
+		if (duplicate) {
+			throw new RPCException(409, "collection item slug already exists: " + slug);
+		}
+		meta.put("slug", slug);
+	}
+
 	private static String requiredString(Map<String, Object> parameters, String name) throws RPCException {
 		var value = optionalString(parameters, name);
 		if (value.isBlank()) {
@@ -267,10 +302,11 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 
 	private static String requiredItemId(Map<String, Object> parameters) throws RPCException {
 		var id = requiredString(parameters, "id");
-		if (!ITEM_ID.matcher(id).matches()) {
-			throw new RPCException(400, "invalid collection item id");
+		try {
+			return CollectionItemId.requireValid(id);
+		} catch (IllegalArgumentException ex) {
+			throw new RPCException(400, ex.getMessage());
 		}
-		return id;
 	}
 
 	private static String optionalString(Map<String, Object> parameters, String name) {

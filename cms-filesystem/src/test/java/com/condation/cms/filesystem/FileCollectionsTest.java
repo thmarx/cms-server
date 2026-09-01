@@ -71,7 +71,7 @@ class FileCollectionsTest {
 						Assertions.assertThat(item.id()).isEqualTo("third");
 						Assertions.assertThat(item.collection()).isEqualTo("blog");
 						Assertions.assertThat(item.path()).isEqualTo("blog/third.md");
-						Assertions.assertThat(item.content()).isEqualTo("_Third_\r\n");
+						Assertions.assertThat(item.content()).isEqualTo("_Third_");
 						Assertions.assertThat(item.meta()).containsEntry("title", "Third");
 					});
 
@@ -96,7 +96,7 @@ class FileCollectionsTest {
 					.singleElement()
 					.satisfies(result -> {
 						Assertions.assertThat(result.meta()).containsEntry("title", "After");
-						Assertions.assertThat(result.content()).isEqualTo("After\r\n");
+						Assertions.assertThat(result.content()).isEqualTo("After");
 					});
 
 			Files.delete(item);
@@ -146,8 +146,47 @@ class FileCollectionsTest {
 					.get()
 					.satisfies(item -> {
 						Assertions.assertThat(item.meta()).containsEntry("title", "After");
-						Assertions.assertThat(item.content()).isEqualTo("After\r\n");
+						Assertions.assertThat(item.content()).isEqualTo("After");
 					});
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
+	void preservesMarkdownHorizontalRulesOutsideFrontMatter() throws Exception {
+		write(
+				"blog/item.md",
+				"title: Horizontal rules",
+				"Introduction\n\n---\n\nMiddle section\n\n---\n\nConclusion");
+		var collections = createCollections();
+		try {
+			Assertions.assertThat(collections.collection("blog").item("item"))
+					.isPresent()
+					.get()
+					.extracting(item -> item.content())
+					.isEqualTo("Introduction\n\n---\n\nMiddle section\n\n---\n\nConclusion");
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
+	void preservesHorizontalRulesInMarkdownWithoutFrontMatter() throws Exception {
+		var file = tempDirectory.resolve("collections/blog/item.md");
+		Files.createDirectories(file.getParent());
+		Files.writeString(file, "Introduction\n\n---\n\nConclusion\n");
+		var collections = createCollections();
+		try {
+			var previewContext = new RequestContext();
+			previewContext.add(IsPreviewFeature.class, new IsPreviewFeature(IsPreviewFeature.Mode.PREVIEW));
+			var optionalItem = ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, previewContext)
+					.call(() -> collections.collection("blog").item("item"));
+			Assertions.assertThat(optionalItem)
+					.isPresent()
+					.get()
+					.extracting(item -> item.content())
+					.isEqualTo("Introduction\n\n---\n\nConclusion\n");
 		} finally {
 			collections.close();
 		}
@@ -173,6 +212,23 @@ class FileCollectionsTest {
 		try {
 			Assertions.assertThatIllegalArgumentException()
 					.isThrownBy(() -> collections.collection("../content"));
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
+	void consistentlyRejectsInvalidItemIdsFromFilesAndDirectLookups() throws Exception {
+		write("blog/valid-item.md", "title: Valid", "Valid");
+		write("blog/invalid item.md", "title: Invalid", "Invalid");
+		var collections = createCollections();
+		try {
+			Assertions.assertThat(collections.collection("blog").query().get())
+					.extracting(item -> item.id())
+					.containsExactly("valid-item");
+			Assertions.assertThatIllegalArgumentException()
+					.isThrownBy(() -> collections.collection("blog").item("invalid item"))
+					.withMessage("invalid collection item id: invalid item");
 		} finally {
 			collections.close();
 		}

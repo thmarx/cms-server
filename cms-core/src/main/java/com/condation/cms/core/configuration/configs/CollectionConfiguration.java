@@ -30,11 +30,10 @@ import com.condation.cms.core.configuration.IConfiguration;
 import com.condation.cms.core.configuration.ReloadStrategy;
 import com.condation.cms.core.configuration.reload.NoReload;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -47,7 +46,8 @@ public class CollectionConfiguration extends AbstractConfiguration implements IC
 	private final ReloadStrategy reloadStrategy;
 	private final EventBus eventBus;
 	private final String id;
-	private final ConcurrentMap<String, CollectionDefinition> collections = new ConcurrentHashMap<>();
+	private final com.condation.cms.api.configuration.configs.CollectionConfiguration apiConfiguration =
+			new com.condation.cms.api.configuration.configs.CollectionConfiguration(Map.of());
 
 	private CollectionConfiguration(Builder builder) {
 		this.sources = builder.sources;
@@ -72,33 +72,41 @@ public class CollectionConfiguration extends AbstractConfiguration implements IC
 		return id;
 	}
 
-	public ConcurrentMap<String, CollectionDefinition> getCollections() {
-		return collections;
+	public Map<String, CollectionDefinition> getCollections() {
+		return apiConfiguration.collections();
+	}
+
+	public com.condation.cms.api.configuration.configs.CollectionConfiguration apiConfiguration() {
+		return apiConfiguration;
 	}
 
 	@Override
 	public void reload() {
 		var reloaded = false;
-		var updatedCollections = new ConcurrentHashMap<String, CollectionDefinition>();
-		for (var source : sources) {
-			reloaded |= source.reload();
-			if (!source.exists()) {
-				continue;
+		var updatedCollections = new HashMap<String, CollectionDefinition>();
+		try {
+			for (var source : sources) {
+				reloaded |= source.reload();
+				if (!source.exists()) {
+					continue;
+				}
+				for (var entry : source.getMap("collections").entrySet()) {
+					var definition = parse(entry.getKey(), entry.getValue());
+					updatedCollections.put(definition.name(), definition);
+				}
 			}
-			for (var entry : source.getMap("collections").entrySet()) {
-				parse(entry.getKey(), entry.getValue()).ifPresent(definition ->
-						updatedCollections.put(definition.name(), definition));
-			}
+		} catch (RuntimeException ex) {
+			log.error("could not reload collection configuration; keeping previous configuration", ex);
+			return;
 		}
 
-		collections.clear();
-		collections.putAll(updatedCollections);
+		apiConfiguration.replaceCollections(updatedCollections);
 		if (reloaded && eventBus != null) {
 			eventBus.publish(new ConfigurationReloadEvent(id));
 		}
 	}
 
-	private java.util.Optional<CollectionDefinition> parse(String name, Object value) {
+	private CollectionDefinition parse(String name, Object value) {
 		try {
 			if (!(value instanceof Map<?, ?> collection)) {
 				throw new IllegalArgumentException("collection definition must be a map");
@@ -107,7 +115,7 @@ public class CollectionConfiguration extends AbstractConfiguration implements IC
 			var site = optionalStringValue(collection.get("site"), "site");
 			var detailValue = collection.get("detail");
 			if (detailValue == null) {
-				return java.util.Optional.of(new CollectionDefinition(name, site, null));
+				return new CollectionDefinition(name, site, null);
 			}
 			if (!(detailValue instanceof Map<?, ?> detail)) {
 				throw new IllegalArgumentException("collection detail definition must be a map");
@@ -115,13 +123,12 @@ public class CollectionConfiguration extends AbstractConfiguration implements IC
 
 			var route = stringValue(detail.get("route"), "collection detail route");
 			var template = stringValue(detail.get("template"), "collection detail template");
-			return java.util.Optional.of(new CollectionDefinition(
+			return new CollectionDefinition(
 					name,
 					site,
-					new CollectionDetailConfiguration(route, template)));
+					new CollectionDetailConfiguration(route, template));
 		} catch (RuntimeException ex) {
-			log.error("invalid configuration for collection {}", name, ex);
-			return java.util.Optional.empty();
+			throw new IllegalArgumentException("invalid configuration for collection " + name, ex);
 		}
 	}
 
