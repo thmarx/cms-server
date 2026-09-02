@@ -25,6 +25,12 @@ export const listCollectionItems = async (options) => {
         parameters: options
     })).result;
 };
+export const listCollectionItemsCursor = async (options) => {
+    return (await executeRemoteCall({
+        method: 'collections.items.cursor',
+        parameters: options
+    })).result;
+};
 export const getCollectionItem = async (collection, id) => {
     return (await executeRemoteCall({
         method: 'collections.item.get',

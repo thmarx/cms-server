@@ -24,7 +24,7 @@ import { CollectionItemEditor, createCollectionItemEditor } from './edit-collect
 import { i18n } from '@cms/modules/localization.js';
 import { openModal } from '@cms/modules/modal.js';
 import { loadPreview } from '@cms/modules/preview.utils.js';
-import { CollectionItemSummary, deleteCollectionItem, listCollectionItems } from '@cms/modules/rpc/rpc-collection.js';
+import { CollectionItemSummary, deleteCollectionItem, listCollectionItemsCursor } from '@cms/modules/rpc/rpc-collection.js';
 import { showToast } from '@cms/modules/toast.js';
 
 const PAGE_SIZE = 10;
@@ -66,6 +66,7 @@ const renderItems = (items: CollectionItemSummary[]): string => {
 
 export const runAction = async (options: { collection: string }) => {
 	let currentPage = 1;
+	let cursorHistory = [''];
 	let currentQuery = '';
 	let requestVersion = 0;
 	let editorRequestVersion = 0;
@@ -146,6 +147,8 @@ export const runAction = async (options: { collection: string }) => {
 				collection: options.collection,
 				id,
 				onSaved: async () => {
+					currentPage = 1;
+					cursorHistory = [''];
 					await update();
 					closeEditor();
 				}
@@ -183,10 +186,10 @@ export const runAction = async (options: { collection: string }) => {
 		if (!root || !pagination) return;
 		root.innerHTML = `<div class="text-muted">${i18n.t('collection.items.loading', 'Loading collection items...')}</div>`;
 		try {
-			const page = await listCollectionItems({
+			const page = await listCollectionItemsCursor({
 				collection: options.collection,
 				query: currentQuery,
-				page: currentPage,
+				cursor: cursorHistory[currentPage - 1],
 				size: PAGE_SIZE
 			});
 			if (version !== requestVersion) return;
@@ -196,17 +199,17 @@ export const runAction = async (options: { collection: string }) => {
 				return;
 			}
 			root.innerHTML = renderItems(page.items);
-			pagination.innerHTML = page.totalPages > 1 ? `
+			pagination.innerHTML = currentPage > 1 || page.nextCursor ? `
 				<nav aria-label="Collection pagination">
 					<ul class="pagination justify-content-center mb-0">
-						<li class="page-item ${page.page <= 1 ? 'disabled' : ''}">
-							<button type="button" class="page-link" data-collection-page="${page.page - 1}">
+						<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+							<button type="button" class="page-link" data-collection-direction="previous">
 								${i18n.t('pagination.previous', 'Previous')}
 							</button>
 						</li>
-						<li class="page-item disabled"><span class="page-link">${page.page} / ${page.totalPages}</span></li>
-						<li class="page-item ${page.page >= page.totalPages ? 'disabled' : ''}">
-							<button type="button" class="page-link" data-collection-page="${page.page + 1}">
+						<li class="page-item disabled"><span class="page-link">${currentPage}</span></li>
+						<li class="page-item ${page.nextCursor ? '' : 'disabled'}">
+							<button type="button" class="page-link" data-collection-direction="next">
 								${i18n.t('pagination.next', 'Next')}
 							</button>
 						</li>
@@ -229,6 +232,8 @@ export const runAction = async (options: { collection: string }) => {
 					if (!window.confirm(prompt)) return;
 					try {
 						await deleteCollectionItem(options.collection, id);
+						currentPage = 1;
+						cursorHistory = [''];
 						showToast({
 							title: i18n.t('collection.items.deleteSuccess.title', 'Collection item deleted'),
 							message: i18n.t('collection.items.deleteSuccess.message', 'The collection item was deleted successfully.'),
@@ -246,9 +251,14 @@ export const runAction = async (options: { collection: string }) => {
 					}
 				});
 			});
-			pagination.querySelectorAll<HTMLElement>('[data-collection-page]').forEach(button => {
+			pagination.querySelectorAll<HTMLElement>('[data-collection-direction]').forEach(button => {
 				button.addEventListener('click', () => {
-					currentPage = Number(button.dataset.collectionPage ?? 1);
+					if (button.dataset.collectionDirection === 'next' && page.nextCursor) {
+						cursorHistory[currentPage] = page.nextCursor;
+						currentPage++;
+					} else if (button.dataset.collectionDirection === 'previous' && currentPage > 1) {
+						currentPage--;
+					}
 					update();
 				});
 			});
@@ -278,9 +288,10 @@ export const runAction = async (options: { collection: string }) => {
 			element.querySelector('[data-collection-create]')?.addEventListener('click', () => {
 				openCollectionItemCreator({
 					collection: options.collection,
-					onCreated: async () => {
-						currentQuery = '';
-						currentPage = 1;
+						onCreated: async () => {
+							currentQuery = '';
+							currentPage = 1;
+							cursorHistory = [''];
 						if (input) input.value = '';
 						await update();
 					}
@@ -294,6 +305,7 @@ export const runAction = async (options: { collection: string }) => {
 					if (value.length > 0 && value.length < MIN_SEARCH_LENGTH) return;
 					currentQuery = value;
 					currentPage = 1;
+					cursorHistory = [''];
 					update();
 				}, 300);
 			});

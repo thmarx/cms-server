@@ -23,6 +23,7 @@ package com.condation.cms.filesystem.metadata.persistent;
 
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.CursorPage;
 import com.condation.cms.filesystem.MetaData;
 import com.condation.cms.filesystem.metadata.query.ExcerptMapperFunction;
 import java.io.IOException;
@@ -30,11 +31,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -51,6 +55,7 @@ import org.h2.mvstore.MVStore;
 @Slf4j
 public class CollectionMetaData implements MetaData {
 
+	private static final String INDEX_SCHEMA_VERSION = "1";
 	public static final String FIELD_COLLECTION = "_collection";
 	public static final String FIELD_ID = "_id";
 
@@ -58,6 +63,9 @@ public class CollectionMetaData implements MetaData {
 	private LuceneIndex index;
 	private MVStore store;
 	private MVMap<String, ContentNode> nodes;
+	private MVMap<String, String> fileStamps;
+	private MVMap<String, String> settings;
+	private boolean batchMode;
 
 	public CollectionMetaData(Path hostPath) {
 		this.hostPath = hostPath;
@@ -69,11 +77,21 @@ public class CollectionMetaData implements MetaData {
 		Files.createDirectories(dataPath.resolve("store"));
 		Files.createDirectories(dataPath.resolve("index"));
 
-		index = new LuceneIndex();
-		index.open(dataPath.resolve("index"));
 		store = MVStore.open(dataPath.resolve("store/data.db").toString());
 		nodes = store.openMap("nodes");
-		nodes.clear();
+		fileStamps = store.openMap("file-stamps");
+		settings = store.openMap("settings");
+		var indexPath = dataPath.resolve("index");
+		var recreate = !INDEX_SCHEMA_VERSION.equals(settings.get("index-schema"))
+				|| !LuceneIndex.exists(indexPath);
+		index = new LuceneIndex();
+		index.open(indexPath, recreate);
+		if (recreate) {
+			nodes.clear();
+			fileStamps.clear();
+			settings.put("index-schema", INDEX_SCHEMA_VERSION);
+			store.commit();
+		}
 	}
 
 	@Override
@@ -91,6 +109,7 @@ public class CollectionMetaData implements MetaData {
 	}
 
 	public void startBatch() {
+		batchMode = true;
 		index.setBatchMode(true);
 	}
 
@@ -98,13 +117,24 @@ public class CollectionMetaData implements MetaData {
 		try {
 			index.setBatchMode(false);
 			index.commit();
+			store.commit();
 		} catch (IOException ex) {
 			log.error("error committing collection index", ex);
+		} finally {
+			batchMode = false;
 		}
 	}
 
 	@Override
 	public synchronized void addFile(String path, Map<String, Object> data, LocalDate lastModified) {
+		addFile(path, data, lastModified, null);
+	}
+
+	public synchronized void addFile(
+			String path,
+			Map<String, Object> data,
+			LocalDate lastModified,
+			String fileStamp) {
 		var normalizedPath = normalize(path);
 		var separator = normalizedPath.indexOf('/');
 		if (separator <= 0 || separator == normalizedPath.length() - 1) {
@@ -133,6 +163,10 @@ public class CollectionMetaData implements MetaData {
 		DocumentHelper.addAvailableFields(document);
 		try {
 			index.update(new Term("_uri", normalizedPath), document);
+			if (fileStamp != null) {
+				fileStamps.put(normalizedPath, fileStamp);
+			}
+			commitStoreIfNecessary();
 		} catch (IOException ex) {
 			log.error("error indexing collection item {}", normalizedPath, ex);
 		}
@@ -141,9 +175,11 @@ public class CollectionMetaData implements MetaData {
 	@Override
 	public synchronized void removeFile(String path) {
 		var normalizedPath = normalize(path);
-		nodes.remove(normalizedPath);
 		try {
 			index.delete(new TermQuery(new Term("_uri", normalizedPath)));
+			nodes.remove(normalizedPath);
+			fileStamps.remove(normalizedPath);
+			commitStoreIfNecessary();
 		} catch (IOException ex) {
 			log.error("error deleting collection item {}", normalizedPath, ex);
 		}
@@ -165,6 +201,8 @@ public class CollectionMetaData implements MetaData {
 		affectedPaths.forEach(nodes::remove);
 		try {
 			index.delete(new TermQuery(new Term(FIELD_COLLECTION, collection)));
+			affectedPaths.forEach(fileStamps::remove);
+			commitStoreIfNecessary();
 		} catch (IOException ex) {
 			log.error("error deleting collection {}", collection, ex);
 		}
@@ -221,10 +259,46 @@ public class CollectionMetaData implements MetaData {
 	@Override
 	public synchronized void clear() {
 		nodes.clear();
+		fileStamps.clear();
 		try {
 			index.delete(MatchAllDocsQuery.INSTANCE);
 		} catch (IOException ex) {
 			log.error("error clearing collection index", ex);
+		}
+	}
+
+	public Optional<String> fileStamp(String path) {
+		return Optional.ofNullable(fileStamps.get(normalize(path)));
+	}
+
+	public Set<String> paths(String collection) {
+		var result = new HashSet<String>();
+		var prefix = normalize(collection) + "/";
+		var cursor = nodes.cursor(prefix);
+		while (cursor.hasNext()) {
+			var path = cursor.next();
+			if (!path.startsWith(prefix)) {
+				break;
+			}
+			result.add(path);
+		}
+		return result;
+	}
+
+	public Set<String> collectionNames() {
+		var result = new HashSet<String>();
+		for (var path : nodes.keySet()) {
+			var separator = path.indexOf('/');
+			if (separator > 0) {
+				result.add(path.substring(0, separator));
+			}
+		}
+		return result;
+	}
+
+	private void commitStoreIfNecessary() {
+		if (!batchMode) {
+			store.commit();
 		}
 	}
 
@@ -248,7 +322,18 @@ public class CollectionMetaData implements MetaData {
 		return collectionQuery(collection, nodeMapper);
 	}
 
-	private <Q> ContentQuery<Q> collectionQuery(
+	public <Q> CursorPage<Q> cursorPage(
+			String collection,
+			BiFunction<ContentNode, Integer, Q> nodeMapper,
+			String cursor,
+			long size,
+			Consumer<ContentQuery<Q>> queryConfigurer) {
+		var query = collectionQuery(collection, nodeMapper);
+		queryConfigurer.accept(query);
+		return query.cursorPage(cursor, size);
+	}
+
+	private <Q> LuceneQuery<Q> collectionQuery(
 			String collection,
 			BiFunction<ContentNode, Integer, Q> nodeMapper) {
 		var scope = collection == null

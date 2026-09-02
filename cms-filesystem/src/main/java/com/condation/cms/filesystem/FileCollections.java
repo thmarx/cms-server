@@ -24,9 +24,12 @@ package com.condation.cms.filesystem;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.CursorPage;
 import com.condation.cms.api.db.NodeVisibility;
+import com.condation.cms.api.db.collection.CollectionCursorSupport;
 import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.db.collection.CollectionItemId;
+import com.condation.cms.api.db.collection.CollectionItemMetadata;
 import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.core.content.io.ContentFileParser;
@@ -35,6 +38,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -44,6 +48,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
  * Site-scoped, file-backed collections implementation.
  */
 @Slf4j
-public class FileCollections implements Collections, AutoCloseable {
+public class FileCollections implements Collections, CollectionCursorSupport, AutoCloseable {
 
 	private static final Pattern COLLECTION_NAME = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_-]*");
 	private static final Duration CHANGE_QUIET_PERIOD = Duration.ofMillis(200);
@@ -114,6 +119,21 @@ public class FileCollections implements Collections, AutoCloseable {
 	@Override
 	public Set<String> names() {
 		return Set.copyOf(collectionNames);
+	}
+
+	@Override
+	public CursorPage<CollectionItemMetadata> metadataCursorPage(
+			String collection,
+			String cursor,
+			long size,
+			Consumer<ContentQuery<CollectionItemMetadata>> queryConfigurer) {
+		validateCollectionName(collection);
+		return metaData.cursorPage(
+				collection,
+				this::mapMetadata,
+				cursor,
+				size,
+				queryConfigurer);
 	}
 
 	@Override
@@ -187,13 +207,16 @@ public class FileCollections implements Collections, AutoCloseable {
 	}
 
 	private void rebuild() throws IOException {
-		metaData.clear();
+		var staleCollections = metaData.collectionNames();
 		collectionNames.clear();
 		metaData.startBatch();
 		try (var collections = Files.list(collectionsBase)) {
-			for (var collection : collections.filter(Files::isDirectory).toList()) {
+			for (var iterator = collections.filter(Files::isDirectory).iterator(); iterator.hasNext();) {
+				var collection = iterator.next();
+				staleCollections.remove(collection.getFileName().toString());
 				scanCollection(collection);
 			}
+			staleCollections.forEach(metaData::removeDirectory);
 		} finally {
 			metaData.stopBatch();
 		}
@@ -206,21 +229,40 @@ public class FileCollections implements Collections, AutoCloseable {
 			return;
 		}
 		collectionNames.add(name);
-		metaData.removeDirectory(name);
+		var stalePaths = metaData.paths(name);
 		try (var files = Files.list(collection)) {
-			for (var file : files.filter(Files::isRegularFile).filter(FileCollections::isValidItemFile).toList()) {
-				index(file);
+			for (var iterator = files.filter(Files::isRegularFile)
+					.filter(FileCollections::isValidItemFile).iterator(); iterator.hasNext();) {
+				var file = iterator.next();
+				var path = PathUtil.toRelativeEntry(file, collectionsBase);
+				stalePaths.remove(path);
+				var stamp = fileStamp(file);
+				if (metaData.byPath(path).isEmpty()
+						|| !metaData.fileStamp(path).filter(stamp::equals).isPresent()) {
+					index(file, path, stamp);
+				}
 			}
 		}
+		stalePaths.forEach(metaData::removeFile);
 	}
 
 	private void index(Path file) throws IOException {
 		var path = PathUtil.toRelativeEntry(file, collectionsBase);
+		index(file, path, fileStamp(file));
+	}
+
+	private void index(Path file, String path, String stamp) throws IOException {
 		collectionNames.add(path.substring(0, path.indexOf('/')));
+		var attributes = Files.readAttributes(file, BasicFileAttributes.class);
 		var modified = LocalDate.ofInstant(
-				Files.getLastModifiedTime(file).toInstant(),
+				attributes.lastModifiedTime().toInstant(),
 				ZoneId.systemDefault());
-		metaData.addFile(path, metaParser.apply(file), modified);
+		metaData.addFile(path, metaParser.apply(file), modified, stamp);
+	}
+
+	private static String fileStamp(Path file) throws IOException {
+		var attributes = Files.readAttributes(file, BasicFileAttributes.class);
+		return attributes.lastModifiedTime().toMillis() + ":" + attributes.size();
 	}
 
 	private CollectionItem map(ContentNode node, int ignoredExcerptLength) {
@@ -235,6 +277,15 @@ public class FileCollections implements Collections, AutoCloseable {
 				path,
 				readMarkdownBody(collectionsBase.resolve(path)),
 				node.data());
+	}
+
+	private CollectionItemMetadata mapMetadata(ContentNode node, int ignoredExcerptLength) {
+		var path = node.path();
+		var separator = path.indexOf('/');
+		var collection = path.substring(0, separator);
+		var filename = path.substring(separator + 1);
+		var id = filename.substring(0, filename.length() - 3);
+		return new CollectionItemMetadata(id, collection, path, node.data());
 	}
 
 	private static String readMarkdownBody(Path file) {
@@ -304,6 +355,11 @@ public class FileCollections implements Collections, AutoCloseable {
 		@Override
 		public ContentQuery<CollectionItem> query() {
 			return metaData.query(name, FileCollections.this::map);
+		}
+
+		@Override
+		public ContentQuery<CollectionItemMetadata> metadataQuery() {
+			return metaData.query(name, FileCollections.this::mapMetadata);
 		}
 	}
 }

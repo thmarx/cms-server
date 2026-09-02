@@ -22,19 +22,19 @@ package com.condation.cms.api.db.collection;
  */
 
 import com.condation.cms.api.db.ContentQuery;
-import java.util.Optional;
+import com.condation.cms.api.db.CursorPage;
+import java.util.function.Consumer;
 
 /**
- * A named, file-backed collection.
+ * Internal capability for infrastructure that needs cursor-based collection
+ * traversal. It is deliberately separate from {@link Collection} and
+ * {@link ContentQuery}, which are exposed to templates.
  */
-public interface Collection {
+public interface CollectionCursorSupport {
 
-	String name();
-
-	Optional<CollectionItem> item(String id);
-
-	ContentQuery<CollectionItem> query();
-
-	/** Queries collection metadata without opening the Markdown body files. */
-	ContentQuery<CollectionItemMetadata> metadataQuery();
+	CursorPage<CollectionItemMetadata> metadataCursorPage(
+			String collection,
+			String cursor,
+			long size,
+			Consumer<ContentQuery<CollectionItemMetadata>> queryConfigurer);
 }

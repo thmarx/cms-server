@@ -33,6 +33,7 @@ import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.db.collection.CollectionItemMetadata;
 import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.feature.features.AuthFeature;
@@ -67,6 +68,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 class RemoteCollectionEndpointsTest {
@@ -91,6 +94,9 @@ class RemoteCollectionEndpointsTest {
 
 	@Mock
 	private ContentQuery<CollectionItem> collectionQuery;
+
+	@Mock
+	private ContentQuery<CollectionItemMetadata> metadataQuery;
 
 	@Mock
 	private EventBus eventBus;
@@ -118,7 +124,11 @@ class RemoteCollectionEndpointsTest {
 		lenient().when(collections.isLocal("blog")).thenReturn(true);
 		lenient().when(collections.collection("blog")).thenReturn(collection);
 		lenient().when(collection.query()).thenReturn(collectionQuery);
+		lenient().when(collection.metadataQuery()).thenReturn(metadataQuery);
 		lenient().when(collectionQuery.get()).thenReturn(List.of());
+		lenient().when(metadataQuery.where(anyString(), any())).thenReturn(metadataQuery);
+		lenient().when(metadataQuery.page(1, 2)).thenReturn(new com.condation.cms.api.db.Page<>(
+				0, 2, 0, 1, List.of()));
 		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsDirectory);
 	}
 
@@ -169,19 +179,20 @@ class RemoteCollectionEndpointsTest {
 				"blog/second.md",
 				"",
 				Map.of("slug", "second"));
-		var existingItem = new CollectionItem(
+		var existingItem = new CollectionItemMetadata(
 				"first",
 				"blog",
 				"blog/first.md",
-				"",
-				Map.of("slug", "Über uns"));
+				Map.of("slug", "ueber-uns"));
 		var collectionsBase = mock(ReadOnlyFile.class);
 		var sourceFile = mock(ReadOnlyFile.class);
 		when(collection.item("second")).thenReturn(Optional.of(editedItem));
 		when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
 		when(collectionsBase.resolve("blog/second.md")).thenReturn(sourceFile);
 		when(sourceFile.getContent()).thenReturn("---\nslug: second\n---\n\nBody\n");
-		when(collectionQuery.get()).thenReturn(List.of(existingItem, editedItem));
+		when(metadataQuery.where("slug", "ueber-uns")).thenReturn(metadataQuery);
+		when(metadataQuery.page(1, 2)).thenReturn(new com.condation.cms.api.db.Page<>(
+				1, 2, 1, 1, List.of(existingItem)));
 
 		assertThatThrownBy(() -> endpoints.save(Map.of(
 				"collection", "blog",

@@ -47,10 +47,22 @@ export interface CollectionItemsPage {
 	items: CollectionItemSummary[];
 }
 
+export interface CollectionItemsCursorPage {
+	items: CollectionItemSummary[];
+	nextCursor?: string | null;
+}
+
 export interface ListCollectionItemsOptions {
 	collection: string;
 	query?: string;
 	page?: number;
+	size?: number;
+}
+
+export interface ListCollectionItemsCursorOptions {
+	collection: string;
+	query?: string;
+	cursor?: string;
 	size?: number;
 }
 
@@ -61,6 +73,15 @@ export const listCollectionItems = async (
 		method: 'collections.items',
 		parameters: options
 	})).result as CollectionItemsPage;
+};
+
+export const listCollectionItemsCursor = async (
+	options: ListCollectionItemsCursorOptions
+): Promise<CollectionItemsCursorPage> => {
+	return (await executeRemoteCall({
+		method: 'collections.items.cursor',
+		parameters: options
+	})).result as CollectionItemsCursorPage;
 };
 
 export const getCollectionItem = async (

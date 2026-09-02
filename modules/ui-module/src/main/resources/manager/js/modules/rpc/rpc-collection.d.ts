@@ -40,13 +40,24 @@ export interface CollectionItemsPage {
     page: number;
     items: CollectionItemSummary[];
 }
+export interface CollectionItemsCursorPage {
+    items: CollectionItemSummary[];
+    nextCursor?: string | null;
+}
 export interface ListCollectionItemsOptions {
     collection: string;
     query?: string;
     page?: number;
     size?: number;
 }
+export interface ListCollectionItemsCursorOptions {
+    collection: string;
+    query?: string;
+    cursor?: string;
+    size?: number;
+}
 export declare const listCollectionItems: (options: ListCollectionItemsOptions) => Promise<CollectionItemsPage>;
+export declare const listCollectionItemsCursor: (options: ListCollectionItemsCursorOptions) => Promise<CollectionItemsCursorPage>;
 export declare const getCollectionItem: (collection: string, id: string) => Promise<EditableCollectionItem>;
 export declare const saveCollectionItem: (options: {
     collection: string;

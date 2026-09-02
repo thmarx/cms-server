@@ -26,10 +26,8 @@ import com.condation.cms.api.configuration.configs.CollectionDefinition;
 import com.condation.cms.api.configuration.configs.CollectionDetailConfiguration;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.collection.CollectionItem;
-import com.condation.cms.api.utils.MapUtil;
 import com.condation.cms.content.utils.SlugUtil;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -86,29 +84,14 @@ public class CollectionRouteResolver {
 			return Optional.empty();
 		}
 
-		var exactMatches = collection.query()
+		var exactMatches = collection.metadataQuery()
 				.where(parameter, slug)
 				.page(1, 2)
 				.getItems();
 		if (exactMatches.size() == 1) {
-			return Optional.of(exactMatches.getFirst());
+			return collection.item(exactMatches.getFirst().id());
 		}
-		if (exactMatches.size() > 1) {
-			return Optional.empty();
-		}
-
-		// Compatibility for collection files whose route value has not yet been
-		// normalized by the manager (for example "Über uns").
-		List<CollectionItem> slugMatches = collection.query().get().stream()
-				.filter(item -> {
-					var value = MapUtil.getValue(item.meta(), parameter);
-					return value != null && slug.equals(SlugUtil.slugify(value.toString()));
-				})
-				.limit(2)
-				.toList();
-		return slugMatches.size() == 1
-				? Optional.of(slugMatches.getFirst())
-				: Optional.empty();
+		return Optional.empty();
 	}
 
 	private static Optional<CollectionItem> findById(

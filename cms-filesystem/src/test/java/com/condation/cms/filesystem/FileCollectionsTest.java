@@ -23,6 +23,7 @@ package com.condation.cms.filesystem;
 
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.collection.CollectionCursorSupport;
 import com.condation.cms.api.feature.features.IsPreviewFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.request.RequestContext;
@@ -34,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -128,6 +130,111 @@ class FileCollectionsTest {
 			Assertions.assertThat(page.getItems())
 					.extracting(item -> item.id())
 					.containsExactly("second");
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
+	void queriesMetadataWithoutReturningMarkdownBodies() throws Exception {
+		write("blog/first.md", "title: First", "Large body");
+		var collections = createCollections();
+		try {
+			var result = collections.collection("blog").metadataQuery().page(1, 10);
+
+			Assertions.assertThat(result.getItems())
+					.singleElement()
+					.satisfies(item -> {
+						Assertions.assertThat(item.id()).isEqualTo("first");
+						Assertions.assertThat(item.meta()).containsEntry("title", "First");
+					});
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
+	void reusesPersistedCollectionIndexWhenFilesAreUnchanged() throws Exception {
+		write("blog/first.md", "title: First", "First");
+		write("blog/second.md", "title: Second", "Second");
+		var parseCount = new AtomicInteger();
+		var parser = (java.util.function.Function<Path, Map<String, Object>>) path -> {
+			parseCount.incrementAndGet();
+			return parseMeta(path);
+		};
+
+		var first = new FileCollections("test-site", tempDirectory, parser);
+		first.init();
+		first.close();
+		Assertions.assertThat(parseCount).hasValue(2);
+
+		var second = new FileCollections("test-site", tempDirectory, parser);
+		try {
+			second.init();
+			Assertions.assertThat(parseCount).hasValue(2);
+			Assertions.assertThat(second.collection("blog").metadataQuery().page(1, 10).getTotalItems())
+					.isEqualTo(2);
+		} finally {
+			second.close();
+		}
+	}
+
+	@Test
+	void pagesCollectionsWithAnOpaqueCursorAndExpiresItAfterIndexChanges() throws Exception {
+		write("blog/first.md", "title: A", "First");
+		write("blog/second.md", "title: B", "Second");
+		write("blog/third.md", "title: C", "Third");
+		var collections = createCollections();
+		try {
+			var cursorSupport = (CollectionCursorSupport) collections;
+			var firstPage = cursorSupport.metadataCursorPage(
+					"blog", null, 2, query -> query.orderby("title").asc());
+			var secondPage = cursorSupport.metadataCursorPage(
+					"blog", firstPage.nextCursor(), 2, query -> query.orderby("title").asc());
+
+			Assertions.assertThat(firstPage.items()).extracting(item -> item.id())
+					.containsExactly("first", "second");
+			Assertions.assertThat(firstPage.hasNext()).isTrue();
+			Assertions.assertThat(secondPage.items()).extracting(item -> item.id())
+					.containsExactly("third");
+			Assertions.assertThat(secondPage.hasNext()).isFalse();
+
+			write("blog/third.md", "title: D", "Changed");
+			collections.refresh("blog", "third");
+			Assertions.assertThatIllegalArgumentException().isThrownBy(() ->
+					cursorSupport.metadataCursorPage(
+							"blog",
+							firstPage.nextCursor(),
+							2,
+							query -> query.orderby("title").asc()))
+					.withMessageContaining("cursor has expired");
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
+	void regularPageUsesServerSideSeekingWithoutAnExternalCursor() throws Exception {
+		write("blog/first.md", "title: A", "First");
+		write("blog/second.md", "title: B", "Second");
+		write("blog/third.md", "title: C", "Third");
+		write("blog/fourth.md", "title: D", "Fourth");
+		write("blog/fifth.md", "title: E", "Fifth");
+		var collections = createCollections();
+		try {
+			var query = collections.collection("blog").metadataQuery();
+			var page = query
+					.orderby("title").asc()
+					.page(2, 2);
+
+			Assertions.assertThat(page.getTotalItems()).isEqualTo(5);
+			Assertions.assertThat(page.getTotalPages()).isEqualTo(3);
+			Assertions.assertThat(page.getPage()).isEqualTo(2);
+			Assertions.assertThat(page.getItems()).extracting(item -> item.id())
+					.containsExactly("third", "fourth");
+			Assertions.assertThat(query.getClass().getMethods())
+					.noneMatch(method -> method.getName().equals("cursorPage")
+							|| method.getName().equals("seekPage"));
 		} finally {
 			collections.close();
 		}

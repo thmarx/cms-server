@@ -23,6 +23,7 @@ package com.condation.cms.filesystem.metadata.persistent;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
+import com.condation.cms.api.db.CursorPage;
 import com.condation.cms.api.db.DistanceUnit;
 import com.condation.cms.api.db.NodeVisibility;
 import com.condation.cms.api.db.Page;
@@ -194,6 +195,43 @@ public class LuceneQuery<T> extends ExtendableQuery<T> implements ContentQuery.S
         return result.nodes;
     }
 
+	CursorPage<T> cursorPage(String cursor, long size) {
+		if (size < 1 || size > 10_000) {
+			throw new IllegalArgumentException("cursor page size must be between 1 and 10000");
+		}
+		if (!extensionOperations.isEmpty()) {
+			throw new UnsupportedOperationException(
+					"cursor paging is not available with in-memory query extensions");
+		}
+		try {
+			var structuralQuery = structuralVisibilityQuery(buildBaseQuery());
+			var completeQuery = completeVisibilityQuery(structuralQuery)
+					.orElseThrow(() -> new UnsupportedOperationException(
+							"cursor paging requires an indexable workflow visibility filter"));
+			org.apache.lucene.search.Sort sort = null;
+			if (orderByField.isPresent()) {
+				sort = index.resolveSort(orderByField.get(), Order.DESC.equals(sortOrder))
+						.orElseThrow(() -> new UnsupportedOperationException(
+								"cursor paging requires an indexed sort field: " + orderByField.get()));
+			}
+			// Visibility schedule bounds contain the current millisecond and therefore
+			// are intentionally excluded from the stable cursor identity.
+			var cursorKey = structuralQuery.toString()
+					+ "|preview=" + hasPreview()
+					+ "|workflow=" + statusProvider().getClass().getName();
+			var result = index.cursorPage(
+					completeQuery, sort, Math.toIntExact(size), cursor, cursorKey);
+			var nodes = result.uris().stream()
+					.map(metaData::byPath)
+					.flatMap(Optional::stream)
+					.toList();
+			return new CursorPage<>(mapContentNodes(nodes).nodes, result.nextCursor());
+		} catch (IOException ex) {
+			log.error("error cursor-paging lucene query", ex);
+			return new CursorPage<>(List.of(), null);
+		}
+	}
+
 	private List<ContentNode> queryContentNodes() {
 		try {
 			var contentNodes = new ArrayList<ContentNode>();
@@ -217,26 +255,16 @@ public class LuceneQuery<T> extends ExtendableQuery<T> implements ContentQuery.S
 			long page,
 			long size,
 			long offset) throws IOException {
-		long totalItems = index.count(query);
-		if (offset >= totalItems) {
-			return new Page<>(totalItems, size, totalPages(totalItems, size), (int) page, List.of());
-		}
-
-		var nodes = new ArrayList<ContentNode>((int) Math.min(size, Integer.MAX_VALUE));
-		var hitIndex = new long[]{0};
-		index.scanUris(query, sort, batchSize(size), uri -> {
-			long currentIndex = hitIndex[0]++;
-			if (currentIndex < offset) {
-				return true;
-			}
-			metaData.byPath(uri).ifPresent(nodes::add);
-			return nodes.size() < size;
-		});
+		var result = index.seekPage(query, sort, offset, Math.toIntExact(size));
+		var nodes = result.uris().stream()
+				.map(metaData::byPath)
+				.flatMap(Optional::stream)
+				.toList();
 
 		return new Page<>(
-				totalItems,
+				result.totalItems(),
 				size,
-				totalPages(totalItems, size),
+				totalPages(result.totalItems(), size),
 				(int) page,
 				mapContentNodes(nodes).nodes);
 	}

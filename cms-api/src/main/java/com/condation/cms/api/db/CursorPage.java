@@ -1,4 +1,4 @@
-package com.condation.cms.api.db.collection;
+package com.condation.cms.api.db;
 
 /*-
  * #%L
@@ -10,31 +10,30 @@ package com.condation.cms.api.db.collection;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
-import com.condation.cms.api.db.ContentQuery;
-import java.util.Optional;
+import java.util.List;
 
 /**
- * A named, file-backed collection.
+ * One forward-only cursor page. The cursor is opaque and expires when the
+ * underlying index changes.
  */
-public interface Collection {
+public record CursorPage<T>(List<T> items, String nextCursor) {
 
-	String name();
+	public CursorPage {
+		items = List.copyOf(items);
+	}
 
-	Optional<CollectionItem> item(String id);
-
-	ContentQuery<CollectionItem> query();
-
-	/** Queries collection metadata without opening the Markdown body files. */
-	ContentQuery<CollectionItemMetadata> metadataQuery();
+	public boolean hasNext() {
+		return nextCursor != null && !nextCursor.isBlank();
+	}
 }

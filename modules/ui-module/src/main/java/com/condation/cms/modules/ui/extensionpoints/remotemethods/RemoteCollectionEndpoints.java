@@ -24,9 +24,12 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.db.CursorPage;
 import com.condation.cms.api.db.Page;
+import com.condation.cms.api.db.collection.CollectionCursorSupport;
 import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.db.collection.CollectionItemId;
+import com.condation.cms.api.db.collection.CollectionItemMetadata;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
@@ -48,8 +51,8 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
 /** Manager endpoints for listing and editing collection items. */
@@ -77,6 +80,9 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 			Map<String, Object> meta) {
 	}
 
+	public record CursorItemsDto(List<ItemDto> items, String nextCursor) {
+	}
+
 	@RemoteMethod(name = "collections.items", permissions = {Permissions.CONTENT_EDIT})
 	public Object items(Map<String, Object> parameters) throws RPCException {
 		var db = getDB(parameters);
@@ -90,18 +96,46 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 				MAX_PAGE_SIZE);
 		var title = optionalString(parameters, "query");
 
-		var query = db.getCollections().collection(collectionName).query();
+		var query = db.getCollections().collection(collectionName).metadataQuery();
 		if (!title.isBlank()) {
 			query.searchByTitle(title);
 		}
 		query.orderby(Constants.MetaFields.TITLE).asc();
-		Page<CollectionItem> result = query.page(page, size);
+		Page<CollectionItemMetadata> result = query.page(page, size);
 		return new Page<>(
 				result.getTotalItems(),
 				result.getPageSize(),
 				result.getTotalPages(),
 				result.getPage(),
 				result.getItems().stream().map(this::itemDto).toList());
+	}
+
+	@RemoteMethod(name = "collections.items.cursor", permissions = {Permissions.CONTENT_EDIT})
+	public Object cursorItems(Map<String, Object> parameters) throws RPCException {
+		var db = getDB(parameters);
+		var collectionName = requiredString(parameters, Parameters.COLLECTION);
+		ensureCollectionExists(db.getCollections().names(), collectionName);
+		long size = Math.clamp(
+				NumberUtils.toLong(parameters.getOrDefault("size", DEFAULT_PAGE_SIZE)),
+				1,
+				MAX_PAGE_SIZE);
+		if (!(db.getCollections() instanceof CollectionCursorSupport cursorSupport)) {
+			throw new RPCException(501, "collection storage does not support cursor paging");
+		}
+		var title = optionalString(parameters, "query");
+		CursorPage<CollectionItemMetadata> result = cursorSupport.metadataCursorPage(
+				collectionName,
+				optionalString(parameters, "cursor"),
+				size,
+				query -> {
+					if (!title.isBlank()) {
+						query.searchByTitle(title);
+					}
+					query.orderby(Constants.MetaFields.TITLE).asc();
+				});
+		return new CursorItemsDto(
+				result.items().stream().map(this::itemDto).toList(),
+				result.nextCursor());
 	}
 
 
@@ -221,14 +255,26 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 	}
 
 	private ItemDto itemDto(CollectionItem item) {
-		var title = item.meta().get(Constants.MetaFields.TITLE);
+		return itemDto(item.id(), item.collection(), item.path(), item.meta());
+	}
+
+	private ItemDto itemDto(CollectionItemMetadata item) {
+		return itemDto(item.id(), item.collection(), item.path(), item.meta());
+	}
+
+	private ItemDto itemDto(
+			String id,
+			String collection,
+			String path,
+			Map<String, Object> meta) {
+		var title = meta.get(Constants.MetaFields.TITLE);
 		return new ItemDto(
-				item.id(),
-				item.collection(),
-				item.path(),
-				title == null || title.toString().isBlank() ? item.id() : title.toString(),
-				detailUrl(item),
-				item.meta());
+				id,
+				collection,
+				path,
+				title == null || title.toString().isBlank() ? id : title.toString(),
+				detailUrl(new CollectionItem(id, collection, path, "", meta)),
+				meta);
 	}
 
 	private String detailUrl(CollectionItem item) {
@@ -279,13 +325,13 @@ public class RemoteCollectionEndpoints extends AbstractRemoteMethodeExtension {
 			throw new RPCException(400, "collection item slug must not be blank");
 		}
 
-		var duplicate = db.getCollections().collection(collectionName).query().get().stream()
+		var duplicate = db.getCollections().collection(collectionName).metadataQuery()
+				.where("slug", slug)
+				.page(1, 2)
+				.getItems().stream()
 				.filter(item -> !item.id().equals(itemId))
-				.map(item -> MapUtil.getValue(item.meta(), "slug"))
-				.filter(Objects::nonNull)
-				.map(Object::toString)
-				.map(SlugUtil::slugify)
-				.anyMatch(slug::equals);
+				.findAny()
+				.isPresent();
 		if (duplicate) {
 			throw new RPCException(409, "collection item slug already exists: " + slug);
 		}

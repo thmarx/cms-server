@@ -26,6 +26,7 @@ import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.db.collection.CollectionItemMetadata;
 import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
@@ -201,18 +202,21 @@ class RemoteContentEndpointsExtensionTest {
 		var nonExistingPath = mock(ReadOnlyFile.class);
 		var authorCollection = mock(Collection.class);
 		@SuppressWarnings("unchecked")
-		var query = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
+		var query = (ContentQuery<CollectionItemMetadata>) mock(ContentQuery.class);
 		var item = new CollectionItem(
 				"author-1", "authors", "authors/author-1.md", "", Map.of("slug", "jane-doe"));
+		var metadata = new CollectionItemMetadata(
+				item.id(), item.collection(), item.path(), item.meta());
 
 		when(db.getContent()).thenReturn(content);
 		when(content.byUrl("/people/jane-doe")).thenReturn(Optional.empty());
 		when(contentBase.resolve("people/jane-doe")).thenReturn(nonExistingPath);
 		when(contentBase.resolve("people/jane-doe.md")).thenReturn(nonExistingPath);
 		when(collections.collection("authors")).thenReturn(authorCollection);
-		when(authorCollection.query()).thenReturn(query);
+		when(authorCollection.metadataQuery()).thenReturn(query);
 		when(query.where("slug", "jane-doe")).thenReturn(query);
-		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(item)));
+		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(metadata)));
+		when(authorCollection.item("author-1")).thenReturn(Optional.of(item));
 
 		var configuration = new Configuration();
 		configuration.add(CollectionConfiguration.class, new CollectionConfiguration(

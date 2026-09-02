@@ -40,6 +40,7 @@ import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.db.collection.CollectionItem;
+import com.condation.cms.api.db.collection.CollectionItemMetadata;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
@@ -132,10 +133,12 @@ class CollectionResolverTest {
 	void resolvesAConfiguredFrontMatterField() throws Exception {
 		define(definition("/blog/{slug}"));
 		@SuppressWarnings("unchecked")
-		var query = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
-		when(collection.query()).thenReturn(query);
+		var query = (ContentQuery<CollectionItemMetadata>) mock(ContentQuery.class);
+		when(collection.metadataQuery()).thenReturn(query);
 		when(query.where("slug", "first-post")).thenReturn(query);
-		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(item)));
+		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(
+				new CollectionItemMetadata("first", "blog", "blog/first.md", item.meta()))));
+		when(collection.item("first")).thenReturn(Optional.of(item));
 		var resolver = new CollectionResolver(renderer, db, configuration);
 
 		var response = resolver.getContent(context("/blog/first-post/"));
@@ -145,34 +148,19 @@ class CollectionResolverTest {
 	}
 
 	@Test
-	void resolvesLegacyFrontMatterByItsSlugifiedValue() throws Exception {
+	void doesNotScanTheCollectionForLegacyUnnormalizedRouteValues() throws Exception {
 		define(definition("/blog/{slug}"));
-		var legacyItem = new CollectionItem(
-				"about",
-				"blog",
-				"blog/about.md",
-				"# About",
-				Map.of("title", "About", "slug", "Über uns"));
 		@SuppressWarnings("unchecked")
-		var exactQuery = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
-		@SuppressWarnings("unchecked")
-		var fallbackQuery = (ContentQuery<CollectionItem>) mock(ContentQuery.class);
-		when(collection.query()).thenReturn(exactQuery, fallbackQuery);
+		var exactQuery = (ContentQuery<CollectionItemMetadata>) mock(ContentQuery.class);
+		when(collection.metadataQuery()).thenReturn(exactQuery);
 		when(exactQuery.where("slug", "ueber-uns")).thenReturn(exactQuery);
 		when(exactQuery.page(1, 2)).thenReturn(new Page<>(0, 2, 0, 1, List.of()));
-		when(fallbackQuery.get()).thenReturn(List.of(legacyItem));
-		when(collectionsBase.resolve("blog/about.md")).thenReturn(itemFile);
-		when(renderer.renderCollection(
-				eq(itemFile),
-				any(),
-				eq(legacyItem),
-				anyString(),
-				any())).thenReturn("<h1>About</h1>");
 
 		var response = new CollectionResolver(renderer, db, configuration)
 				.getContent(context("/blog/ueber-uns"));
 
-		Assertions.assertThat(response).isPresent();
+		Assertions.assertThat(response).isEmpty();
+		verify(collection).metadataQuery();
 	}
 
 	@Test
