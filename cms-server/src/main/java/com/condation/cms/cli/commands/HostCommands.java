@@ -24,7 +24,6 @@ package com.condation.cms.cli.commands;
 
 import com.condation.cms.cli.commands.host.ReloadHost;
 import com.condation.cms.cli.commands.host.ReIndexHost;
-import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 /**
@@ -41,11 +40,13 @@ import picocli.CommandLine;
 			ReloadHost.class,
 			ReIndexHost.class
 		})
-@Slf4j
 public class HostCommands implements Runnable {
+
+	@CommandLine.Spec
+	private CommandLine.Model.CommandSpec commandSpec;
 
 	@Override
 	public void run() {
-		System.out.println("Subcommand needed: 'reload' or 'reindex'");
+		commandSpec.commandLine().getOut().println("Subcommand needed: 'reload' or 'reindex'");
 	}
 }

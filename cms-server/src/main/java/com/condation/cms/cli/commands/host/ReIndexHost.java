@@ -36,6 +36,9 @@ import picocli.CommandLine;
 )
 public class ReIndexHost implements Callable<Integer> {
 
+	@CommandLine.Spec
+	private CommandLine.Model.CommandSpec commandSpec;
+
 	@CommandLine.Parameters(
 			paramLabel = "<site>",
 			index = "0",
@@ -46,7 +49,7 @@ public class ReIndexHost implements Callable<Integer> {
 	@Override
 	public Integer call() throws Exception {
 		if (CLIServerUtils.getCMSProcess().isEmpty()) {
-			System.err.println("server not running");
+			commandSpec.commandLine().getErr().println("server not running");
 			return 1;
 		}
 
@@ -54,7 +57,7 @@ public class ReIndexHost implements Callable<Integer> {
 				ConfigurationFactory.serverConfiguration());
 		var ipcClient = new IPCClient(properties.ipc());
 		ipcClient.send(new Command("reindex_host").setHeader("host", site));
-		System.out.printf("reindex of site '%s' triggered%n", site);
+		commandSpec.commandLine().getOut().printf("reindex of site '%s' triggered%n", site);
 		return 0;
 	}
 }

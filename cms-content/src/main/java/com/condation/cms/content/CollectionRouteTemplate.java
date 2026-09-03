@@ -106,16 +106,13 @@ public final class CollectionRouteTemplate {
 
 	private static String formatDate(Object value, String pattern, String field) {
 		var formatter = DateTimeFormatter.ofPattern(pattern);
-		TemporalAccessor temporal;
-		if (value instanceof Date date) {
-			temporal = date.toInstant().atZone(ZoneId.systemDefault());
-		} else if (value instanceof TemporalAccessor accessor) {
-			temporal = accessor;
-		} else if (value instanceof CharSequence text) {
-			temporal = parseIsoDate(text.toString(), field);
-		} else {
-			throw new IllegalArgumentException("collection item route value is not a date: " + field);
-		}
+		TemporalAccessor temporal = switch (value) {
+			case Date date -> date.toInstant().atZone(ZoneId.systemDefault());
+			case TemporalAccessor accessor -> accessor;
+			case CharSequence text -> parseIsoDate(text.toString(), field);
+			default -> throw new IllegalArgumentException(
+					"collection item route value is not a date: " + field);
+		};
 		try {
 			return formatter.format(temporal);
 		} catch (RuntimeException ex) {

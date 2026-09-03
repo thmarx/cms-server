@@ -21,6 +21,8 @@ package com.condation.cms.filesystem;
  * #L%
  */
 
+import static org.mockito.Mockito.mock;
+
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.eventbus.EventBus;
@@ -53,7 +55,7 @@ public class FileSystemIncrementalEventTest {
 		writePage(oldDirectory.resolve("nested/child.md"), "/stable-child");
 		writePage(content.resolve("unaffected/page.md"), "/unaffected");
 
-		var fileSystem = new FileSystem("test-site", tempDirectory, Mockito.mock(EventBus.class), file -> {
+		var fileSystem = new FileSystem("test-site", tempDirectory, mock(EventBus.class), file -> {
 			try {
 				return new Yaml().load(Files.readString(file));
 			} catch (Exception ex) {
@@ -151,7 +153,7 @@ public class FileSystemIncrementalEventTest {
 				  longitude: 7.2162
 				""");
 		var parseCount = new AtomicInteger();
-		var fileSystem = new FileSystem("test-site", tempDirectory, Mockito.mock(EventBus.class), file -> {
+		var fileSystem = new FileSystem("test-site", tempDirectory, mock(EventBus.class), file -> {
 			parseCount.incrementAndGet();
 			try {
 				return new Yaml().load(Files.readString(file));
