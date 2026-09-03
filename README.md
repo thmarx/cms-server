@@ -97,6 +97,15 @@ http://localhost:2020/manager/login
 
 Sign in with the Manager user created in the previous step.
 
+### Rebuild a site's metadata indexes
+
+With the server running, rebuild the content and collection metadata indexes
+for a site after changing its index configuration:
+
+```bash
+./server.sh host reindex <site-id>
+```
+
 ## Documentation
 
 Detailed information about installing, configuring, using, and extending CondationCMS is available in the official [CondationCMS documentation](https://condation.com/documentation).

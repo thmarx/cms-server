@@ -89,7 +89,7 @@ public class FileCollections implements Collections, CollectionCursorSupport, Au
 		changeCoordinator = new ContentChangeCoordinator(
 				CHANGE_QUIET_PERIOD,
 				this::processChanges);
-		rebuild();
+		rebuild(false);
 
 		watcher = new MultiRootRecursiveWatcher(siteId, List.of(collectionsBase));
 		var publisher = Objects.requireNonNull(
@@ -164,10 +164,15 @@ public class FileCollections implements Collections, CollectionCursorSupport, Au
 		changeCoordinator.flushNow();
 	}
 
+	public void reindex() {
+		changeCoordinator.requestFullResync();
+		changeCoordinator.flushNow();
+	}
+
 	private void processChanges(boolean fullResync, Set<Path> paths) {
 		try {
 			if (fullResync) {
-				rebuild();
+				rebuild(true);
 				return;
 			}
 			for (var path : paths) {
@@ -206,15 +211,20 @@ public class FileCollections implements Collections, CollectionCursorSupport, Au
 		}
 	}
 
-	private void rebuild() throws IOException {
-		var staleCollections = metaData.collectionNames();
-		collectionNames.clear();
+	private void rebuild(boolean force) throws IOException {
 		metaData.startBatch();
-		try (var collections = Files.list(collectionsBase)) {
-			for (var iterator = collections.filter(Files::isDirectory).iterator(); iterator.hasNext();) {
-				var collection = iterator.next();
-				staleCollections.remove(collection.getFileName().toString());
-				scanCollection(collection);
+		try {
+			if (force) {
+				metaData.clear();
+			}
+			var staleCollections = metaData.collectionNames();
+			collectionNames.clear();
+			try (var collections = Files.list(collectionsBase)) {
+				for (var iterator = collections.filter(Files::isDirectory).iterator(); iterator.hasNext();) {
+					var collection = iterator.next();
+					staleCollections.remove(collection.getFileName().toString());
+					scanCollection(collection);
+				}
 			}
 			staleCollections.forEach(metaData::removeDirectory);
 		} finally {

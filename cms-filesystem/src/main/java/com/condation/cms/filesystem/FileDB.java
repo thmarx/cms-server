@@ -94,6 +94,12 @@ public class FileDB implements DB {
 						Map.Entry::getValue));
 	}
 
+	public void reindex() {
+		var siteProperties = configuration.get(SiteConfiguration.class).siteProperties();
+		fileSystem.reindex(indexFields(siteProperties.get("index.fields")));
+		localCollections.reindex();
+	}
+
 	@Deprecated
 	@Override
 	public ReadOnlyFileSystem getReadOnlyFileSystem() {

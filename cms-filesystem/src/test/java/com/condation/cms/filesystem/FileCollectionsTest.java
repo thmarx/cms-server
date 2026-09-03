@@ -180,6 +180,29 @@ class FileCollectionsTest {
 	}
 
 	@Test
+	void explicitReindexReparsesUnchangedCollectionItems() throws Exception {
+		write("blog/first.md", "title: First", "First");
+		write("blog/second.md", "title: Second", "Second");
+		var parseCount = new AtomicInteger();
+		var collections = new FileCollections("test-site", tempDirectory, path -> {
+			parseCount.incrementAndGet();
+			return parseMeta(path);
+		});
+
+		try {
+			collections.init();
+			collections.reindex();
+
+			Assertions.assertThat(parseCount).hasValue(4);
+			Assertions.assertThat(collections.collection("blog").metadataQuery().get())
+					.extracting(item -> item.id())
+					.containsExactlyInAnyOrder("first", "second");
+		} finally {
+			collections.close();
+		}
+	}
+
+	@Test
 	void pagesCollectionsWithAnOpaqueCursorAndExpiresItAfterIndexChanges() throws Exception {
 		write("blog/first.md", "title: A", "First");
 		write("blog/second.md", "title: B", "Second");

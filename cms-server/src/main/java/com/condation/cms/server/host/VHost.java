@@ -169,6 +169,16 @@ public class VHost {
         }
     }
 
+    public void reindex() {
+        try {
+            injector.getInstance(ConfigManagement.class).reload();
+            injector.getInstance(FileDB.class).reindex();
+            log.info("reindex of host {} completed", id());
+        } catch (Exception e) {
+            log.error("reindex of host {} failed", id(), e);
+        }
+    }
+
     public List<String> hostnames() {
         return injector.getInstance(SiteProperties.class).hostnames();
     }

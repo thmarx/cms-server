@@ -10,42 +10,29 @@ package com.condation.cms.cli.commands;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
-
-import com.condation.cms.cli.commands.host.ReloadHost;
-import com.condation.cms.cli.commands.host.ReIndexHost;
-import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
-/**
- *
- * @author t.marx
- */
-@CommandLine.Command(
-		name = "host",
-		description = {
-			"Host/site related commands"
-		},
-		mixinStandardHelpOptions = true,
-		subcommands = {
-			ReloadHost.class,
-			ReIndexHost.class
-		})
-@Slf4j
-public class HostCommands implements Runnable {
+class HostCommandsTest {
 
-	@Override
-	public void run() {
-		System.out.println("Subcommand needed: 'reload' or 'reindex'");
+	@Test
+	void exposesReindexSubcommand() {
+		var commandLine = new CommandLine(new HostCommands());
+		var parsed = commandLine.parseArgs("reindex", "demo");
+
+		Assertions.assertThat(commandLine.getSubcommands()).containsKey("reindex");
+		Assertions.assertThat(parsed.subcommand().commandSpec().name()).isEqualTo("reindex");
 	}
 }

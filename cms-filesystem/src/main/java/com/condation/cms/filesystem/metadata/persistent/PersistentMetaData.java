@@ -57,7 +57,7 @@ import org.h2.mvstore.MVStore;
 public class PersistentMetaData extends AbstractMetaData implements AutoCloseable {
 
 	private final Path hostPath;
-	private final Map<String, IndexFieldDefinition> indexFieldDefinitions;
+	private volatile Map<String, IndexFieldDefinition> indexFieldDefinitions;
 
 	private LuceneIndex index;
 	private MVStore store;
@@ -71,6 +71,10 @@ public class PersistentMetaData extends AbstractMetaData implements AutoCloseabl
 
 	public PersistentMetaData(Path hostPath, Map<String, ?> indexFields) {
 		this.hostPath = hostPath;
+		this.indexFieldDefinitions = IndexFieldConfiguration.parse(indexFields);
+	}
+
+	public synchronized void configureIndexFields(Map<String, ?> indexFields) {
 		this.indexFieldDefinitions = IndexFieldConfiguration.parse(indexFields);
 	}
 
