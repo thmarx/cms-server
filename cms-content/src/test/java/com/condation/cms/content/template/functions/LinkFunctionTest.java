@@ -34,6 +34,7 @@ import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.request.RequestContext;
 import java.util.Map;
+import java.time.LocalDate;
 import java.util.concurrent.ConcurrentHashMap;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -120,6 +121,28 @@ class LinkFunctionTest {
 		Assertions.assertThatIllegalArgumentException()
 				.isThrownBy(() -> new LinkFunction(context).collectionUrl(itemWithoutSlug))
 				.withMessageContaining("slug");
+	}
+
+	@Test
+	void createsUrlFromMultipleFormattedAndMappedMetadataValues() {
+		definitions.put("blog", new CollectionDefinition(
+				"blog",
+				new CollectionDetailConfiguration(
+						"/events/{date:yyyy}-{date:MM}-{date:dd}/{location.country}/{location.city}",
+						"collections/detail.html",
+						Map.of("location.country", Map.of("de", "germany")))));
+		collectionConfiguration.replaceCollections(definitions);
+		var event = new CollectionItem(
+				"event_1",
+				"blog",
+				"blog/event_1.md",
+				"",
+				Map.of(
+						"date", LocalDate.of(2026, 9, 3),
+						"location", Map.of("country", "de", "city", "München")));
+
+		Assertions.assertThat(new LinkFunction(context).collectionUrl(event))
+				.isEqualTo("/docs/events/2026-09-03/germany/muenchen");
 	}
 
 	private static CollectionDefinition definition(String route) {

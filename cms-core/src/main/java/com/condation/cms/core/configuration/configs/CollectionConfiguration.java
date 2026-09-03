@@ -123,13 +123,48 @@ public class CollectionConfiguration extends AbstractConfiguration implements IC
 
 			var route = stringValue(detail.get("route"), "collection detail route");
 			var template = stringValue(detail.get("template"), "collection detail template");
+			if (detail.containsKey("formats")) {
+				throw new IllegalArgumentException(
+						"collection detail formats must be declared in the route, for example {date:yyyy}");
+			}
+			var mappings = nestedStringMap(detail.get("mappings"), "collection detail mappings");
 			return new CollectionDefinition(
 					name,
 					site,
-					new CollectionDetailConfiguration(route, template));
+					new CollectionDetailConfiguration(route, template, mappings));
 		} catch (RuntimeException ex) {
 			throw new IllegalArgumentException("invalid configuration for collection " + name, ex);
 		}
+	}
+
+	private static Map<String, String> stringMap(Object value, String field) {
+		if (value == null) {
+			return Map.of();
+		}
+		if (!(value instanceof Map<?, ?> source)) {
+			throw new IllegalArgumentException(field + " must be a map");
+		}
+		var result = new HashMap<String, String>();
+		for (var entry : source.entrySet()) {
+			result.put(stringValue(entry.getKey(), field + " key"),
+					stringValue(entry.getValue(), field + " value"));
+		}
+		return result;
+	}
+
+	private static Map<String, Map<String, String>> nestedStringMap(Object value, String field) {
+		if (value == null) {
+			return Map.of();
+		}
+		if (!(value instanceof Map<?, ?> source)) {
+			throw new IllegalArgumentException(field + " must be a map");
+		}
+		var result = new HashMap<String, Map<String, String>>();
+		for (var entry : source.entrySet()) {
+			result.put(stringValue(entry.getKey(), field + " key"),
+					stringMap(entry.getValue(), field + " values"));
+		}
+		return result;
 	}
 
 	private static String stringValue(Object value, String field) {

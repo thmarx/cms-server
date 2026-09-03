@@ -50,6 +50,7 @@ import com.condation.cms.core.serivce.impl.SiteDBService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDate;
 import java.util.concurrent.ConcurrentHashMap;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -161,6 +162,32 @@ class CollectionResolverTest {
 
 		Assertions.assertThat(response).isEmpty();
 		verify(collection).metadataQuery();
+	}
+
+	@Test
+	void resolvesAComplexRouteAgainstIndexedMetadata() {
+		var detail = new CollectionDetailConfiguration(
+				"/events/{date:yyyy}/{date:MM}/{date:dd}/{location.country}/{location.city}",
+				"collections/detail.html",
+				Map.of("location.country", Map.of("de", "germany")));
+		define(new CollectionDefinition("blog", detail));
+		var metadata = Map.<String, Object>of(
+				"date", LocalDate.of(2026, 9, 3),
+				"location", Map.of("country", "de", "city", "München"));
+		var event = new CollectionItem(
+				"first", "blog", "blog/first.md", "# Event", metadata);
+		@SuppressWarnings("unchecked")
+		var query = (ContentQuery<CollectionItemMetadata>) mock(ContentQuery.class);
+		when(collection.metadataQuery()).thenReturn(query);
+		when(query.get()).thenReturn(List.of(
+				new CollectionItemMetadata("first", "blog", "blog/first.md", metadata)));
+		when(collection.item("first")).thenReturn(Optional.of(event));
+
+		var route = new CollectionRouteResolver(db, collectionConfiguration)
+				.resolve("/events/2026/09/03/germany/muenchen/");
+
+		Assertions.assertThat(route).isPresent();
+		Assertions.assertThat(route.orElseThrow().item()).isEqualTo(event);
 	}
 
 	@Test

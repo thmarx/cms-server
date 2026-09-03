@@ -29,7 +29,6 @@ import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.content.utils.SlugUtil;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 
 /** Resolves configured collection detail routes without rendering them. */
@@ -60,19 +59,44 @@ public class CollectionRouteResolver {
 		if (detail.isEmpty()) {
 			return Optional.empty();
 		}
-		var routeValue = match(detail.get(), uri);
-		if (routeValue.isEmpty()) {
+		var template = new CollectionRouteTemplate(detail.get());
+		if (!template.matchesShape(uri)) {
 			return Optional.empty();
 		}
 
 		var collection = db.getCollections().collection(definition.name());
 		Optional<CollectionItem> item;
-		if ("id".equals(detail.get().parameter())) {
-			item = findById(collection, routeValue.get());
+		if (isSimpleParameter(detail.get())) {
+			var routeValue = simpleRouteValue(detail.get(), uri);
+			if ("id".equals(detail.get().parameter())) {
+				item = findById(collection, routeValue);
+			} else {
+				item = findByRouteValue(collection, detail.get().parameter(), routeValue);
+			}
 		} else {
-			item = findByRouteValue(collection, detail.get().parameter(), routeValue.get());
+			var matches = collection.metadataQuery().get().stream()
+					.filter(candidate -> template.matches(uri, candidate.id(), candidate.meta()))
+					.limit(2)
+					.toList();
+			item = matches.size() == 1 ? collection.item(matches.getFirst().id()) : Optional.empty();
 		}
 		return item.map(value -> new ResolvedRoute(definition, detail.get(), value, uri));
+	}
+
+	private static boolean isSimpleParameter(CollectionDetailConfiguration detail) {
+		return detail.parameters().size() == 1
+				&& detail.parameterOccurrences() == 1
+				&& !detail.hasFormats()
+				&& detail.mappings().isEmpty();
+	}
+
+	private static String simpleRouteValue(CollectionDetailConfiguration detail, String uri) {
+		var token = "{" + detail.parameter() + "}";
+		var tokenStart = detail.route().indexOf(token);
+		var prefix = detail.route().substring(0, tokenStart);
+		var suffix = detail.route().substring(tokenStart + token.length());
+		var end = uri.length() - suffix.length();
+		return uri.substring(prefix.length(), end);
 	}
 
 	private static Optional<CollectionItem> findByRouteValue(
@@ -104,23 +128,8 @@ public class CollectionRouteResolver {
 		}
 	}
 
-	private static Optional<String> match(CollectionDetailConfiguration detail, String uri) {
-		var token = "{" + detail.parameter() + "}";
-		var tokenStart = detail.route().indexOf(token);
-		var prefix = detail.route().substring(0, tokenStart);
-		var suffix = detail.route().substring(tokenStart + token.length());
-		var routePattern = Pattern.compile(
-				"^" + Pattern.quote(prefix) + "([^/]+)" + Pattern.quote(suffix) + "/?$");
-		var matcher = routePattern.matcher(uri);
-		return matcher.matches() ? Optional.of(matcher.group(1)) : Optional.empty();
-	}
-
 	private static String normalizeUri(String uri) {
-		var normalized = uri == null ? "" : uri.trim();
-		if (!normalized.startsWith("/")) {
-			normalized = "/" + normalized;
-		}
-		return normalized;
+		return CollectionRouteTemplate.normalizeUri(uri);
 	}
 
 	public record ResolvedRoute(

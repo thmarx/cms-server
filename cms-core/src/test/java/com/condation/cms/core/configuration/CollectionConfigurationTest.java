@@ -111,4 +111,30 @@ class CollectionConfigurationTest {
 		Assertions.assertThat(configuration.getCollections()).containsOnlyKeys("blog");
 		verifyNoInteractions(eventBus);
 	}
+
+	@Test
+	void readsRouteFormatsAndMappings() {
+		var source = mock(ConfigSource.class);
+		when(source.exists()).thenReturn(true);
+		when(source.getMap("collections")).thenReturn(Map.of(
+				"events", Map.of("detail", Map.of(
+						"route", "/events/{date:yyyy}/{date:MM}/{date:dd}/{location.country}/{location.city}",
+						"template", "collections/event.html",
+						"mappings", Map.of("location.country", Map.of("de", "germany"))))));
+
+		var detail = CollectionConfiguration.builder(null)
+				.addSource(source)
+				.build()
+				.getCollections()
+				.get("events")
+				.detailPage()
+				.orElseThrow();
+
+		Assertions.assertThat(detail.parameters())
+				.containsExactly("date", "location.country", "location.city");
+		Assertions.assertThat(detail.parameterOccurrences()).isEqualTo(5);
+		Assertions.assertThat(detail.hasFormats()).isTrue();
+		Assertions.assertThat(detail.mappings().get("location.country"))
+				.containsEntry("de", "germany");
+	}
 }
