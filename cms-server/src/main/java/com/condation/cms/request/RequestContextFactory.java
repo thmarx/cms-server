@@ -87,6 +87,18 @@ public class RequestContextFactory {
 
 	private final Injector injector;
 
+	/** Loads the same typed editor schemas as the manager, without requiring an HTTP request. */
+	public com.condation.cms.api.ui.elements.ContentTypes contentTypes() {
+		var properties = injector.getInstance(Configuration.class).get(SiteConfiguration.class).siteProperties();
+		try (var context = create(properties.contextPath(), "/", Map.of())) {
+			return ScopedValue.where(com.condation.cms.api.request.RequestContextScope.REQUEST_CONTEXT, context)
+					.call(() -> com.condation.cms.api.ui.elements.ContentTypeProvider.load(
+							context.get(HookSystemFeature.class).hookSystem()));
+		} catch (Exception ex) {
+			throw new IllegalStateException("Cannot load content types for " + properties.id(), ex);
+		}
+	}
+
 	public RequestContext createContext () {
 		var requestContext = new RequestContext();
 		
