@@ -52,7 +52,8 @@ No templates are evaluated to discover `cms.links.createUrl` calls.
 Media URLs under `/assets/` and `/media/`, including format/preview query parameters,
 resolve to the original asset. Fragment-only links and non-HTTP schemes are ignored.
 Content custom URLs, aliases and configured collection detail routes resolve to file paths.
-Collection routes are matched against raw metadata, so unpublished targets are included.
+Collection routes are calculated from raw metadata and indexed as exact route fields, so
+unpublished targets are included without loading all collection items into memory.
 Relative URLs in collection items without a configured detail route remain unresolved;
 their eventual embedding page cannot be inferred statically.
 
@@ -64,16 +65,19 @@ example for an explicitly targeted reference or shared collection, but the index
 or aggregates another site's store. Such a target's existence status remains `UNRESOLVED`
 inside this index.
 One Lucene document per source stores its extracted references, resolved usages, last known
-targets, metadata and coverage problems. The inverted target fields support reverse lookup.
+targets, metadata and coverage problems. Inverted target, alias and collection-route fields
+support reverse and public-route lookup.
 Updates to both reference directions become visible together after a durable commit.
 
-When the site-scoped instance is created, stored sources and usages are restored. When its host becomes ready, the index
+When the site-scoped instance is created, stored usages are immediately queryable directly
+from Lucene. No complete in-memory copy is restored. When its host becomes ready, the index
 compares filesystem stamps (modification time, size and file key) and a canonical fingerprint
 of the Content Types. Only new/changed files or changed schemas require extraction. Deleted
 sources are removed. This detects changes made while the server was stopped; deliberately
 preserving all file-stamp attributes while changing bytes requires an explicit rebuild.
-Stored references are resolved again against current routing configuration, but unchanged
-Lucene documents are not rewritten. The index format and extraction algorithm are versioned.
+Stored sources are streamed from a Lucene reader snapshot and their references are resolved
+again against the current indexed route catalog. Unchanged Lucene documents are not rewritten.
+The index format and extraction algorithm are versioned.
 
 Content changes are processed after the
 content metadata index; `CollectionChangedEvent` likewise runs after collection metadata

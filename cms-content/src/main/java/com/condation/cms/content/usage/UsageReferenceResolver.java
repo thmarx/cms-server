@@ -23,27 +23,23 @@ package com.condation.cms.content.usage;
 
 import com.condation.cms.api.usage.Usage;
 import com.condation.cms.api.usage.UsageResource;
-import com.condation.cms.content.CollectionRouteTemplate;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Collection;
 
 /** Resolves public URLs using host/context routing, and typed fields using their site-local contract. */
 final class UsageReferenceResolver {
     private final UsageSite site;
-    private final Collection<UsageDocument> documents;
-    private final Map<String, UsageResource> publicTargets = new java.util.HashMap<>();
+    private final PublicTargetLookup targets;
 
-    UsageReferenceResolver(UsageSite site, Collection<UsageDocument> documents) {
+    UsageReferenceResolver(UsageSite site, PublicTargetLookup targets) {
         this.site = site;
-        this.documents = documents;
+        this.targets = targets;
     }
 
-    Optional<UsageResource> resolve(UsageDocument source, UsageReference ref) {
+    Optional<UsageResource> resolve(UsageDocument source, UsageReference ref) throws IOException {
         String value = ref.value().trim();
         if (value.isEmpty() || value.startsWith("#")) return Optional.empty();
         URI uri = URI.create(value.replace(" ", "%20"));
@@ -90,11 +86,11 @@ final class UsageReferenceResolver {
         return Optional.of(new UsageResource(siteId, ref.kind(), path));
     }
 
-    private UsageResource publicTarget(String path) {
-        return publicTargets.computeIfAbsent(path, this::findPublicTarget);
+    private UsageResource publicTarget(String path) throws IOException {
+        return findPublicTarget(path);
     }
 
-    private UsageResource findPublicTarget(String path) {
+    private UsageResource findPublicTarget(String path) throws IOException {
         String normalized = normalize(path);
         for (var prefix : new String[]{"media/", "assets/"}) {
             if (normalized.startsWith(prefix)) {
@@ -104,30 +100,10 @@ final class UsageReferenceResolver {
         var node = site.db().getContent().byUrl(path);
         if (node.isPresent()) return new UsageResource(site.id(), UsageResource.Kind.CONTENT, node.get().path());
         String url = com.condation.cms.api.utils.PathUtil.normalizeURL(path);
-        var aliases = documents.stream().filter(document -> document.resource().site().equals(site.id())
-                && document.resource().kind() == UsageResource.Kind.CONTENT)
-                .filter(document -> document.metadata().get("aliases") instanceof Collection<?> values && values.contains(url))
-                .toList();
-        if (aliases.size() == 1) return aliases.getFirst().resource();
-        // Public collection APIs filter unpublished items. Use the same route template against raw
-        // indexed metadata so drafts and scheduled items remain part of the usage graph.
-        if (site.collections() != null) {
-            for (var definition : site.collections().collections().values().stream()
-                    .sorted(Comparator.comparing(def -> def.name())).toList()) {
-                if (definition.detailPage().isEmpty()) continue;
-                var template = new CollectionRouteTemplate(definition.detailPage().get());
-                if (!template.matchesShape(path)) continue;
-                var matches = documents.stream().filter(document ->
-                        document.resource().site().equals(site.collectionSite(definition.name()))
-                        && document.resource().kind() == UsageResource.Kind.COLLECTION_ITEM
-                        && document.resource().path().startsWith(definition.name() + "/"))
-                        .filter(document -> {
-                            String file = document.resource().path().substring(definition.name().length() + 1);
-                            return template.matches(path, file.substring(0, file.length() - 3), document.metadata());
-                        }).limit(2).toList();
-                if (matches.size() == 1) return matches.getFirst().resource();
-            }
-        }
+        var alias = targets.aliasTarget(url);
+        if (alias.isPresent()) return alias.get();
+        var collection = targets.collectionTarget(url);
+        if (collection.isPresent()) return collection.get();
         return new UsageResource(site.id(), UsageResource.Kind.UNRESOLVED_URL, path);
     }
 
@@ -176,5 +152,10 @@ final class UsageReferenceResolver {
                 .normalize().toString().replace('\\', '/');
         if (result.equals("..") || result.startsWith("../")) throw new IllegalArgumentException("path escapes site root");
         return result.equals(".") ? "" : result;
+    }
+
+    interface PublicTargetLookup {
+        Optional<UsageResource> aliasTarget(String path) throws IOException;
+        Optional<UsageResource> collectionTarget(String path) throws IOException;
     }
 }

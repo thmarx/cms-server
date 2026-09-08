@@ -103,7 +103,6 @@ public class RequestContextFactory {
 		var requestContext = new RequestContext();
 		
 		var theme = injector.getInstance(Theme.class);
-//		var siteProperties = injector.getInstance(SiteProperties.class);
 		var siteMediaService = injector.getInstance(MediaService.class);
 
 		requestContext.add(InjectorFeature.class, new InjectorFeature(injector));

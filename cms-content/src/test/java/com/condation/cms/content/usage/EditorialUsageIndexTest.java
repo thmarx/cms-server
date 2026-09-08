@@ -367,6 +367,23 @@ class EditorialUsageIndexTest {
         }
     }
 
+    @Test void failedReconciliationKeepsTheCommittedLuceneGraph() throws Exception {
+        var types = pageTypes(new MediaField("hero", "Hero"));
+        write("en/content/index.md", "template: page.html\nhero: persistent.svg", "");
+        var site = site("en", "/", types, Map.of());
+        index.rebuild();
+        index.close();
+
+        var unavailableTypes = new UsageSite(site.id(), site.root(), site.db(), site.configuration(), () -> {
+            throw new IllegalStateException("Content Types unavailable");
+        });
+        try (var reopened = new EditorialUsageIndex(unavailableTypes)) {
+            reopened.synchronize();
+            assertThat(reopened.incoming(key("en", UsageResource.Kind.MEDIA, "persistent.svg"))).hasSize(1);
+            assertThat(reopened.problems()).anyMatch(problem -> problem.message().contains("Content Types unavailable"));
+        }
+    }
+
     private long generation(Path root) throws Exception {
         try (var directory = org.apache.lucene.store.FSDirectory.open(root.resolve("data/usage/index"));
                 var reader = org.apache.lucene.index.DirectoryReader.open(directory)) {

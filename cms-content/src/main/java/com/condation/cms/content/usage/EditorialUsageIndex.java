@@ -20,7 +20,6 @@ package com.condation.cms.content.usage;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 import com.condation.cms.api.usage.*;
 import com.condation.cms.api.ui.elements.ContentTypes;
 import com.condation.cms.api.utils.PathUtil;
@@ -37,142 +36,202 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-/** Persistent usage index for exactly one site. */
+/**
+ * Persistent usage index for exactly one site.
+ */
 public final class EditorialUsageIndex implements UsageIndex, AutoCloseable {
+
     private final UsageSite site;
-    private final LuceneUsageStore store;
-    // Raw extractions are cached for route resolution; incoming/outgoing queries run against Lucene.
-    private final Map<UsageResource, UsageDocument> documents = new LinkedHashMap<>();
-    private final Map<UsageResource, PersistedUsageSource> persisted = new LinkedHashMap<>();
-    private final Map<UsageResource, SourceStamp> stamps = new HashMap<>();
-    private final List<UsageProblem> extractionProblems = new ArrayList<>();
-    private volatile List<UsageProblem> currentProblems = List.of();
-    private record SourceStamp(String file, String schema) {}
+    private LuceneUsageStore store;
+    private volatile boolean reconciliationPending = true;
+    private volatile UsageProblem operationalProblem;
 
     public EditorialUsageIndex(UsageSite site) {
         this.site = Objects.requireNonNull(site);
         try {
             store = new LuceneUsageStore(site.root());
-            try {
-                for (var source : store.sources()) {
-                    var resource = source.document().resource();
-                    if (!resource.site().equals(site.id())) {
-                        store.delete(resource);
-                        continue;
-                    }
-                    persisted.put(resource, source);
-                    documents.put(resource, source.document());
-                    stamps.put(resource, new SourceStamp(source.fileStamp(), source.schema()));
-                    extractionProblems.addAll(source.extractionProblems());
+            store.visitSources(source -> {
+                var resource = source.document().resource();
+                if (!resource.site().equals(site.id())) {
+                    store.delete(resource);
                 }
-                var siteProblems = store.siteProblems().stream().filter(problem -> problem.site().equals(site.id())).toList();
-                extractionProblems.addAll(siteProblems);
-                store.commit(siteProblems);
-            } catch (Exception ex) {
-                store.close();
-                throw ex;
-            }
-            extractionProblems.add(new UsageProblem(site.id(), "", "Startup reconciliation pending"));
-            currentProblems = java.util.stream.Stream.concat(extractionProblems.stream(),
-                    persisted.values().stream().flatMap(source -> source.problems().stream())).distinct().toList();
+            });
+            var siteProblems = store.siteProblems().stream().filter(problem -> problem.site().equals(site.id())).toList();
+            store.commit(siteProblems);
+
         } catch (IOException ex) {
+            if (this.store != null) {
+                try {
+                    store.close();
+                } catch (IOException ex1) {
+                    throw new UncheckedIOException("Cannot closing usage index for " + site.id(), ex);
+                }
+            }
             throw new UncheckedIOException("Cannot open usage index for " + site.id(), ex);
         }
     }
 
-    /** Startup/configuration reconciliation: unchanged files and schemas reuse stored extractions. */
+    /**
+     * Startup/configuration reconciliation: unchanged files and schemas reuse
+     * stored extractions.
+     */
     public synchronized void synchronize() {
-        readSite(false);
-        publish();
+        reconcile(false);
     }
 
     @Override
     public synchronized void rebuild() {
-        readSite(true);
-        publish();
+        reconcile(true);
     }
 
-    /** Called after the primary metadata index has processed a file or directory change. */
+    /**
+     * Called after the primary metadata index has processed a file or directory
+     * change.
+     */
     public synchronized void refresh(Path changed) {
         Path file = changed.toAbsolutePath().normalize();
         var root = sourceRoot(site, file);
-        if (root == null) return;
-        if (!file.toString().endsWith(".md")) {
-            readSite(false);
-        } else {
-            var resource = resource(site, root, file);
-            extractionProblems.removeIf(problem -> problem.path().equals(resource.path()));
-            if (!Files.exists(file)) {
-                documents.remove(resource);
-                stamps.remove(resource);
-            } else {
-                try {
-                    var types = site.contentTypes().get();
-                    readFile(site, types, schema(types), root, file, documents);
-                } catch (Exception ex) { problem(site, resource.path(), ex); }
-            }
+        if (root == null) {
+            return;
         }
-        // Target routes may have changed too. Re-resolve stored extractions, only write changed Lucene documents.
-        publish();
+        try {
+            if (!file.toString().endsWith(".md")) {
+                updateSite(false);
+            } else {
+                updateFile(root, file);
+            }
+            operationalProblem = null;
+        } catch (IOException ex) {
+            operationalProblem = problem(site, "", "Usage index update failed", ex);
+        }
     }
 
-    private void readSite(boolean force) {
-        var oldProblems = extractionProblems.stream().filter(problem -> problem.site().equals(site.id())).toList();
-        var replacement = new LinkedHashMap<UsageResource, UsageDocument>();
+    private void reconcile(boolean force) {
+        try {
+            updateSite(force);
+            reconciliationPending = false;
+            operationalProblem = null;
+        } catch (IOException ex) {
+            operationalProblem = problem(site, "", "Usage index reconciliation failed", ex);
+        }
+    }
+
+    private void updateSite(boolean force) throws IOException {
+        var siteProblems = new ArrayList<UsageProblem>();
+        var seen = new HashSet<UsageResource>();
+        boolean scanCompleted = false;
         try {
             ContentTypes types = site.contentTypes().get();
             String schema = schema(types);
-            extractionProblems.removeIf(problem -> problem.site().equals(site.id()));
             for (String folder : List.of("content", "collections")) {
                 Path root = site.root().resolve(folder);
-                if (!Files.isDirectory(root)) continue;
+                if (!Files.isDirectory(root)) {
+                    continue;
+                }
                 try (var files = Files.walk(root)) {
                     for (var file : files.filter(Files::isRegularFile).filter(PathUtil::isContentFile).sorted().toList()) {
                         var resource = resource(site, root, file);
-                        if (!localSource(site, resource)) continue;
+                        if (!localSource(site, resource)) {
+                            continue;
+                        }
+                        seen.add(resource);
+                        var old = store.source(resource);
+                        var extractionProblems = new ArrayList<UsageProblem>();
                         try {
-                            var stamp = new SourceStamp(fileStamp(file), schema);
-                            if (!force && stamp.equals(stamps.get(resource)) && documents.containsKey(resource)) {
-                                replacement.put(resource, documents.get(resource));
-                                oldProblems.stream().filter(problem -> problem.path().equals(resource.path())).forEach(extractionProblems::add);
+                            String stamp = fileStamp(file);
+                            if (!force && old.isPresent() && stamp.equals(old.get().fileStamp())
+                                    && schema.equals(old.get().schema())) {
+                                updateRoute(old.get());
                             } else {
-                                readFile(site, types, schema, root, file, replacement);
+                                store.update(readFile(types, schema, root, file, old, extractionProblems));
                             }
                         } catch (Exception ex) {
-                            problem(site, resource.path(), ex);
-                            // Keep the last good stamp as well, so failed files are retried after restart.
-                            if (documents.containsKey(resource)) replacement.put(resource, documents.get(resource));
+                            extractionProblems.add(problem(site, resource.path(), "Extraction failed", ex));
+                            retainLastGood(old, extractionProblems, siteProblems);
                         }
                     }
                 }
             }
-            documents.keySet().removeIf(source -> source.site().equals(site.id()));
-            documents.putAll(replacement);
-            stamps.keySet().removeIf(source -> source.site().equals(site.id()) && !replacement.containsKey(source));
-        } catch (Exception ex) { problem(site, "", ex); }
+            scanCompleted = true;
+        } catch (Exception ex) {
+            siteProblems.add(problem(site, "", "Extraction failed", ex));
+        }
+        if (scanCompleted) {
+            store.visitSources(source -> {
+                var resource = source.document().resource();
+                if (resource.site().equals(site.id()) && !seen.contains(resource)) {
+                    store.delete(resource);
+                }
+            });
+        }
+        publishCommittedSources(siteProblems);
     }
 
-    private void readFile(UsageSite site, ContentTypes types, String schema, Path root, Path file,
-            Map<UsageResource, UsageDocument> destination) throws IOException {
-        if (!file.toRealPath().startsWith(root.toRealPath())) throw new IOException("Source is outside its site root");
+    private void updateFile(Path root, Path file) throws IOException {
         var resource = resource(site, root, file);
-        if (!localSource(site, resource)) {
-            destination.remove(resource);
-            stamps.remove(resource);
-            return;
+        var siteProblems = new ArrayList<>(store.siteProblems());
+        siteProblems.removeIf(problem -> problem.site().equals(site.id()) && problem.path().equals(resource.path()));
+        var old = store.source(resource);
+        if (!Files.exists(file) || !localSource(site, resource)) {
+            store.delete(resource);
+        } else {
+            var extractionProblems = new ArrayList<UsageProblem>();
+            try {
+                var types = site.contentTypes().get();
+                store.update(readFile(types, schema(types), root, file, old, extractionProblems));
+            } catch (Exception ex) {
+                extractionProblems.add(problem(site, resource.path(), "Extraction failed", ex));
+                retainLastGood(old, extractionProblems, siteProblems);
+            }
         }
+        publishCommittedSources(siteProblems);
+    }
+
+    private PersistedUsageSource readFile(ContentTypes types, String schema, Path root, Path file,
+            Optional<PersistedUsageSource> old, List<UsageProblem> extractionProblems) throws IOException {
+        if (!file.toRealPath().startsWith(root.toRealPath())) {
+            throw new IOException("Source is outside its site root");
+        }
+        var resource = resource(site, root, file);
         String before = fileStamp(file);
         var parser = new ContentFileParser(file.toString());
         var metadata = parser.getHeader();
         String publicPath = publicPath(site, resource, metadata);
         var references = new UsageExtractor(types, site, extractionProblems).extract(resource, metadata, parser.getContent());
-        if (!before.equals(fileStamp(file))) throw new IOException("Source changed during extraction; retry required");
-        destination.put(resource, new UsageDocument(resource, publicPath, metadata, references));
-        stamps.put(resource, new SourceStamp(before, schema));
+        if (!before.equals(fileStamp(file))) {
+            throw new IOException("Source changed during extraction; retry required");
+        }
+        var document = new UsageDocument(resource, publicPath, metadata, references);
+        var previousUsages = old.map(PersistedUsageSource::usages).orElseGet(List::of);
+        var problems = List.copyOf(extractionProblems);
+        return new PersistedUsageSource(document, before, schema, previousUsages, problems, problems);
+    }
+
+    private void updateRoute(PersistedUsageSource source) throws IOException {
+        var current = currentDocument(source.document());
+        if (!current.equals(source.document())) {
+            store.update(new PersistedUsageSource(current, source.fileStamp(), source.schema(), source.usages(),
+                    source.extractionProblems(), source.problems()));
+        }
+    }
+
+    private void retainLastGood(Optional<PersistedUsageSource> old, List<UsageProblem> extractionProblems,
+            List<UsageProblem> siteProblems) throws IOException {
+        if (old.isEmpty()) {
+            siteProblems.addAll(extractionProblems);
+            return;
+        }
+        var source = old.get();
+        var document = currentDocument(source.document());
+        var problems = List.copyOf(extractionProblems);
+        store.update(new PersistedUsageSource(document, source.fileStamp(), source.schema(), source.usages(),
+                problems, problems));
     }
 
     private static boolean localSource(UsageSite site, UsageResource resource) {
-        if (resource.kind() != UsageResource.Kind.COLLECTION_ITEM) return true;
+        if (resource.kind() != UsageResource.Kind.COLLECTION_ITEM) {
+            return true;
+        }
         String[] parts = resource.path().split("/");
         return parts.length == 2 && site.collectionSite(parts[0]).equals(site.id());
     }
@@ -194,14 +253,16 @@ public final class EditorialUsageIndex implements UsageIndex, AutoCloseable {
             String serialized = canonical(new Gson().toJsonTree(types)).toString();
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                     .digest(("usage-extractor-1\n" + serialized).getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException ex) { throw new IllegalStateException(ex); }
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     private static JsonElement canonical(JsonElement element) {
         if (element.isJsonObject()) {
             var result = new JsonObject();
-            element.getAsJsonObject().keySet().stream().sorted().forEach(key ->
-                    result.add(key, canonical(element.getAsJsonObject().get(key))));
+            element.getAsJsonObject().keySet().stream().sorted().forEach(key
+                    -> result.add(key, canonical(element.getAsJsonObject().get(key))));
             return result;
         }
         if (element.isJsonArray()) {
@@ -221,32 +282,39 @@ public final class EditorialUsageIndex implements UsageIndex, AutoCloseable {
             }
             return site.db().getContent().byPath(path).map(node -> node.url()).orElse(PathUtil.toURL(path));
         }
-        if (site.collections() == null) return null;
+        if (site.collections() == null) {
+            return null;
+        }
         String[] parts = resource.path().split("/", 2);
         return site.collections().collection(parts[0]).flatMap(definition -> definition.detailPage()).map(detail -> {
-            try { return new CollectionRouteTemplate(detail).render(parts[1].substring(0, parts[1].length() - 3), metadata); }
-            catch (IllegalArgumentException ex) { return null; }
+            try {
+                return new CollectionRouteTemplate(detail).render(parts[1].substring(0, parts[1].length() - 3), metadata);
+            } catch (IllegalArgumentException ex) {
+                return null;
+            }
         }).orElse(null);
     }
 
-    private void publish() {
-        var resolver = new UsageReferenceResolver(site, documents.values());
-        var next = new LinkedHashMap<UsageResource, PersistedUsageSource>();
-        var problems = new ArrayList<>(extractionProblems);
-        for (var document : documents.values()) {
+    private void publishCommittedSources(List<UsageProblem> siteProblems) throws IOException {
+        // Publish source facts first so route lookup sees the new route catalog. Edge fields still
+        // contain their previous batch until the second commit replaces them atomically per source.
+        store.commit(siteProblems);
+        var resolver = resolver();
+        store.visitSources(source -> {
+            var document = source.document();
             var usages = new ArrayList<Usage>();
-            var current = new UsageDocument(document.resource(), publicPath(site, document.resource(), document.metadata()),
-                    document.metadata(), document.references());
-            var old = persisted.get(document.resource());
-            var previousUsages = old == null ? List.<Usage>of() : old.usages();
+            var problems = new ArrayList<>(source.extractionProblems());
+            var current = currentDocument(document);
             for (var ref : document.references()) {
                 try {
                     var target = resolver.resolve(current, ref);
-                    if (target.isEmpty()) continue;
+                    if (target.isEmpty()) {
+                        continue;
+                    }
                     UsageResource resource = target.get();
                     Usage.TargetStatus status = resolver.status(resource);
                     if (resource.kind() == UsageResource.Kind.UNRESOLVED_URL || status == Usage.TargetStatus.MISSING) {
-                        var previous = previousUsages.stream()
+                        var previous = source.usages().stream()
                                 .filter(usage -> usage.location().equals(ref.location()) && usage.originalReference().equals(ref.value()))
                                 .filter(usage -> usage.target().kind() != UsageResource.Kind.UNRESOLVED_URL).findFirst();
                         if (previous.isPresent()) {
@@ -261,76 +329,98 @@ public final class EditorialUsageIndex implements UsageIndex, AutoCloseable {
                             "Cannot resolve " + ref.location() + ": " + ref.value() + " (" + ex.getMessage() + ")"));
                 }
             }
-            var stamp = stamps.get(document.resource());
-            var sourceProblems = problems.stream().filter(problem -> problem.site().equals(site.id())
-                    && problem.path().equals(document.resource().path())).toList();
-            var sourceExtractionProblems = extractionProblems.stream().filter(problem -> problem.site().equals(site.id())
-                    && problem.path().equals(document.resource().path())).toList();
-            next.put(document.resource(), new PersistedUsageSource(current, stamp.file(), stamp.schema(),
-                    List.copyOf(usages), sourceExtractionProblems, sourceProblems));
-        }
-        try {
-            for (var old : persisted.keySet()) {
-                if (!next.containsKey(old)) store.delete(old);
+            var next = new PersistedUsageSource(current, source.fileStamp(), source.schema(), List.copyOf(usages),
+                    source.extractionProblems(), List.copyOf(problems));
+            if (!next.equals(source)) {
+                store.update(next);
             }
-            for (var source : next.values()) {
-                if (!source.equals(persisted.get(source.document().resource()))) store.update(source);
+        });
+        store.commit(siteProblems);
+    }
+
+    private UsageDocument currentDocument(UsageDocument document) {
+        return new UsageDocument(document.resource(), publicPath(site, document.resource(), document.metadata()),
+                document.metadata(), document.references());
+    }
+
+    private UsageReferenceResolver resolver() {
+        return new UsageReferenceResolver(site, new UsageReferenceResolver.PublicTargetLookup() {
+            @Override
+            public Optional<UsageResource> aliasTarget(String path) throws IOException {
+                return store.aliasTarget(path);
             }
-            var siteProblems = problems.stream().filter(problem -> problem.path().isEmpty()
-                    || next.keySet().stream().noneMatch(key -> key.path().equals(problem.path()))).toList();
-            store.commit(siteProblems);
-            persisted.clear();
-            persisted.putAll(next);
-        } catch (IOException ex) {
-            problems.add(new UsageProblem(site.id(), "", "Usage index commit failed: " + ex.getMessage()));
-        }
-        currentProblems = List.copyOf(problems);
+
+            @Override
+            public Optional<UsageResource> collectionTarget(String path) throws IOException {
+                return store.collectionTarget(path);
+            }
+        });
     }
 
     private static Path sourceRoot(UsageSite site, Path file) {
         for (String folder : List.of("content", "collections")) {
             Path root = site.root().resolve(folder);
-            if (file.startsWith(root)) return root;
+            if (file.startsWith(root)) {
+                return root;
+            }
         }
         return null;
     }
 
-    private void problem(UsageSite site, String path, Exception ex) {
-        extractionProblems.add(new UsageProblem(site.id(), path, "Extraction failed: " + ex.getMessage()));
+    private static UsageProblem problem(UsageSite site, String path, String message, Exception ex) {
+        return new UsageProblem(site.id(), path, message + ": " + ex.getMessage());
     }
 
     @Override
-    public synchronized List<Usage> incoming(UsageResource target) {
+    public List<Usage> incoming(UsageResource target) {
         try {
             return withLiveMediaStatus(store.incoming(target));
-        } catch (IOException ex) { throw new UncheckedIOException(ex); }
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     @Override
-    public synchronized List<Usage> outgoing(UsageResource source) {
-        if (!source.site().equals(site.id())) return List.of();
-        try { return withLiveMediaStatus(store.outgoing(source)); }
-        catch (IOException ex) { throw new UncheckedIOException(ex); }
+    public List<Usage> outgoing(UsageResource source) {
+        if (!source.site().equals(site.id())) {
+            return List.of();
+        }
+        try {
+            return withLiveMediaStatus(store.outgoing(source));
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     private List<Usage> withLiveMediaStatus(List<Usage> usages) {
-        var resolver = new UsageReferenceResolver(site, documents.values());
-        return usages.stream().map(usage -> usage.target().kind() != UsageResource.Kind.MEDIA ? usage :
-                new Usage(usage.source(), usage.target(), usage.location(), usage.origin(), usage.originalReference(),
+        var resolver = resolver();
+        return usages.stream().map(usage -> usage.target().kind() != UsageResource.Kind.MEDIA ? usage
+                : new Usage(usage.source(), usage.target(), usage.location(), usage.origin(), usage.originalReference(),
                         usage.sourceTitle(), usage.sourceStatus(), resolver.status(usage.target()))).toList();
     }
 
     @Override
-    public List<UsageProblem> problems() { return currentProblems; }
+    public synchronized List<UsageProblem> problems() {
+        try {
+            var problems = new ArrayList<>(store.problems());
+            if (reconciliationPending) {
+                problems.add(new UsageProblem(site.id(), "", "Startup reconciliation pending"));
+            }
+            if (operationalProblem != null) {
+                problems.add(operationalProblem);
+            }
+            return problems.stream().distinct().toList();
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
 
     @Override
     public synchronized void close() {
-        try { store.close(); }
-        catch (IOException ex) { throw new UncheckedIOException(ex); }
-        documents.clear();
-        persisted.clear();
-        stamps.clear();
-        extractionProblems.clear();
-        currentProblems = List.of();
+        try {
+            store.close();
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 }
