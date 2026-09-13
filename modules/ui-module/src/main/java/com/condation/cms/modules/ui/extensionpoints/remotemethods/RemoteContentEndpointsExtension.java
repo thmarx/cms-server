@@ -31,12 +31,14 @@ import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
+import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.PathUtil;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.core.content.io.ContentFileParser;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
 import com.condation.modules.api.annotation.Extension;
@@ -52,7 +54,6 @@ import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.utils.SectionUtil;
 import com.condation.cms.content.SectionEntry;
 import com.condation.cms.content.ConfigurableVariantSelector;
-import com.condation.cms.content.VariantResolver;
 import com.condation.cms.content.CollectionRouteResolver;
 import com.condation.cms.modules.ui.utils.FormHelper;
 import com.condation.cms.modules.ui.utils.MarkdownHelper;
@@ -389,7 +390,9 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		if (selectedNode != null
 				&& !variantId.isBlank()
 				&& !ConfigurableVariantSelector.CANONICAL_VARIANT_ID.equalsIgnoreCase(variantId)) {
-			var selectedVariant = new VariantResolver(db).loadVariant(selectedNode, variantId);
+			var selectedVariant = getContext().get(InjectorFeature.class)
+					.injector().getInstance(ContentRepository.class)
+					.variant(selectedNode, variantId);
 			if (selectedVariant.isPresent()) {
 				selectedNode = selectedVariant.get().node();
 				activeVariantId = selectedVariant.get().id();

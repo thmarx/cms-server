@@ -25,13 +25,12 @@ import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.ContentNodeMapperFeature;
-import com.condation.cms.api.feature.features.ContentParserFeature;
 import com.condation.cms.api.feature.features.HookSystemFeature;
-import com.condation.cms.api.feature.features.MarkdownRendererFeature;
 import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.hooks.Hooks;
 import com.condation.cms.api.model.NavNode;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.utils.NodeUtil;
 import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.api.utils.HTTPUtil;
@@ -57,12 +56,12 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private final HookSystem hookSystem;
 
-	public NavigationFunction(DB db, ReadOnlyFile currentNode, RequestContext context) {
+	public NavigationFunction(DB db, ContentRepository contentRepository,
+			ReadOnlyFile currentNode, RequestContext context) {
 		super(
 				db,
 				currentNode,
-				context.get(ContentParserFeature.class).contentParser(),
-				context.get(MarkdownRendererFeature.class).markdownRenderer(),
+				contentRepository,
 				context.get(ContentNodeMapperFeature.class).contentNodeMapper(),
 				context);
 		hookSystem = context.get(HookSystemFeature.class).hookSystem();
@@ -84,7 +83,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		var node = currentNode;
 		while (node != null) {
 			var uri = PathUtil.toRelativeFile(node, contentBase);
-			final Optional<ContentNode> contentNode = db.getContent().byPath(uri);
+			final Optional<ContentNode> contentNode = contentRepository.get(uri);
 			if (contentNode.isPresent()) {
 				var metaNode = contentNode.get();
 				var nodeName = NodeUtil.getName(metaNode);
@@ -170,7 +169,7 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 		}
 		try {
 			final List<ContentNode> navNodes = new ArrayList(
-					db.getContent().listContent(base, start)
+					contentRepository.children(repositoryPath(base, start))
 							.stream()
 							.filter(NodeUtil::getMenuVisibility)
 							.filter(NodeUtil.contentTypeFiler(contentType))

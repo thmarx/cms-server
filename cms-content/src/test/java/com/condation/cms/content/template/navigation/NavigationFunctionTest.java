@@ -34,6 +34,7 @@ import com.condation.cms.api.feature.features.MarkdownRendererFeature;
 import com.condation.cms.api.hooks.FilterContext;
 import com.condation.cms.api.hooks.HookSystem;
 import com.condation.cms.api.mapper.ContentNodeMapper;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.model.NavNode;
 import com.condation.cms.api.request.RequestContext;
@@ -73,6 +74,8 @@ public class NavigationFunctionTest {
 	MarkdownRenderer markdownRenderer;
 	@Mock
 	ContentNodeMapper contentNodeMapper;
+	@Mock
+	ContentRepository contentRepository;
 	
 	NavigationFunction sut;
 	
@@ -96,7 +99,7 @@ public class NavigationFunctionTest {
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(markdownRenderer));
 		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(contentNodeMapper));
 		
-		sut = new NavigationFunction(db, 
+		sut = new NavigationFunction(db, contentRepository,
 				new NIOReadOnlyFile(Path.of("content/current/"), Path.of("content/"))
 				, requestContext);
 	}

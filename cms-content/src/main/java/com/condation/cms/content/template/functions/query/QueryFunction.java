@@ -25,10 +25,9 @@ import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.ContentNodeMapperFeature;
-import com.condation.cms.api.feature.features.ContentParserFeature;
-import com.condation.cms.api.feature.features.MarkdownRendererFeature;
 import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.filesystem.metadata.query.ExtendableQuery;
 import com.condation.cms.content.template.functions.AbstractCurrentNodeFunction;
 import com.google.common.base.Strings;
@@ -50,19 +49,22 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 	@Setter
 	private String contentType;
 
-	public QueryFunction(DB db, ReadOnlyFile currentNode, RequestContext context) {
+	public QueryFunction(DB db, ContentRepository contentRepository,
+			ReadOnlyFile currentNode, RequestContext context) {
 		this(
-				db, 
+				db,
+				contentRepository,
 				currentNode,
 				context, Map.of());
 	}
 	
-	public QueryFunction(DB db, ReadOnlyFile currentNode, RequestContext context, final Map<String, BiPredicate<Object, Object>> queryOperations) {
+	public QueryFunction(DB db, ContentRepository contentRepository,
+			ReadOnlyFile currentNode, RequestContext context,
+			final Map<String, BiPredicate<Object, Object>> queryOperations) {
 		super(
-				db, 
-				currentNode, 
-				context.get(ContentParserFeature.class).contentParser(), 
-				context.get(MarkdownRendererFeature.class).markdownRenderer(), 
+				db,
+				currentNode,
+				contentRepository,
 				context.get(ContentNodeMapperFeature.class).contentNodeMapper(),
 				context);
 		this.extendedQueryOperations = queryOperations;
@@ -80,7 +82,7 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 
 	public ContentQuery create() {
 		
-		var query = db.getContent().query(nodeMapper());
+		var query = contentRepository.query(nodeMapper());
 		((ExtendableQuery)query).addAllCustomOperators(extendedQueryOperations);
 		
 		if (!Strings.isNullOrEmpty(contentType)) {
@@ -90,7 +92,7 @@ public class QueryFunction extends AbstractCurrentNodeFunction {
 	}
 
 	public ContentQuery create(final String startUri) {
-		var query = db.getContent().query(startUri, nodeMapper());
+		var query = contentRepository.query(startUri, nodeMapper());
 		
 		((ExtendableQuery)query).addAllCustomOperators(extendedQueryOperations);
 		

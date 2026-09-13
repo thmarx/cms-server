@@ -25,7 +25,9 @@ import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.extensions.http.HttpHandler;
 import com.condation.cms.api.model.NavNode;
+import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.utils.HTTPUtil;
 import com.condation.cms.api.utils.RequestUtil;
 import com.condation.cms.content.template.functions.navigation.NavigationFunction;
@@ -75,7 +77,10 @@ public class NavigationHandler implements HttpHandler {
 			return true;
 		}
 		
-		NavigationFunction navFN = new NavigationFunction(db, startNode, requestContext);
+		var contentRepository = requestContext.get(InjectorFeature.class)
+				.injector().getInstance(ContentRepository.class);
+		NavigationFunction navFN = new NavigationFunction(
+				db, contentRepository, startNode, requestContext);
 		
 		var navNodes = navFN.contentType(contentType).list(start, depth);
 		

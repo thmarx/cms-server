@@ -33,27 +33,36 @@ import org.jspecify.annotations.NonNull;
  * @author thmar
  */
 public interface Content {
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	boolean isVisible (String uri);
 	
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	boolean isVisible (ContentNode node);
 	
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	List<ContentNode>  listSectionEntries(final ReadOnlyFile contentFile);
 	
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	List<ContentNode> listContent(final ReadOnlyFile base, final String start);
 	
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	List<ContentNode> listDirectories(final ReadOnlyFile base, final String start);
 	
 	@Deprecated(since = "8.3.0")
 	Optional<ContentNode> byUri (final String uri);
 
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	Optional<ContentNode> byPath (final String path);
 
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	Optional<ContentNode> byUrl (final String url);
 
 	Optional<Map<String,Object>> getMeta(final String path);
 	
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	public <T> ContentQuery<T> query(final BiFunction<ContentNode, Integer, T> nodeMapper);
 
+	@Deprecated(since = "8.3.0", forRemoval = false)
 	public <T> ContentQuery<T> query(final String startURI, final BiFunction<ContentNode, Integer, T> nodeMapper);
 	
 	default List<ContentNode> searchByTitle (@NonNull String input) {

@@ -22,13 +22,12 @@ package com.condation.cms.content.views;
  */
 
 import com.condation.cms.api.Constants;
-import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
-import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.content.views.model.View;
 import com.condation.cms.content.template.functions.list.NodeListFunctionBuilder;
 import com.condation.cms.content.template.functions.query.QueryFunction;
@@ -47,15 +46,15 @@ import com.condation.cms.api.db.cms.ReadOnlyFile;
 @RequiredArgsConstructor
 public class NodeResolver {
 	final DB db;
+	final ContentRepository contentRepository;
 	final ReadOnlyFile currentNode;
-	final ContentParser contentParser;
-	final MarkdownRenderer markdownRenderer;
 	final Context context;
 	final Map<String, List<String>> queryParams;
 	
 	public Page<ListNode> nodelist (View view, RequestContext requestContext) {
 		NodeListFunctionBuilder nodelistBuilder = new NodeListFunctionBuilder(
-				db, 
+				db,
+				contentRepository,
 				currentNode, 
 				requestContext
 		);
@@ -75,7 +74,8 @@ public class NodeResolver {
 	}
 	
 	public Page<ListNode> query (View view, RequestContext requestContext) {
-		QueryFunction queryFunction = new QueryFunction(db, currentNode, requestContext);
+		QueryFunction queryFunction = new QueryFunction(
+				db, contentRepository, currentNode, requestContext);
 		
 		context.getBindings("js").putMember("queryParams", queryParams);
 		

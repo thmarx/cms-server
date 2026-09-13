@@ -29,6 +29,8 @@ import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.DBFileSystem;
+import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.variants.VariantContext;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -52,13 +54,13 @@ class VariantSelectorConfigurationRepositoryTest {
 	void setUp() {
 		var db = mock(DB.class);
 		var fileSystem = mock(DBFileSystem.class);
-		var resolver = mock(VariantResolver.class);
+		var contentRepository = mock(ContentRepository.class);
 		when(db.getFileSystem()).thenReturn(fileSystem);
 		when(fileSystem.resolve(Constants.Folders.CONTENT)).thenReturn(contentBase);
-		when(resolver.resolveContext(canonical)).thenReturn(
-				new VariantResolver.VariantContext(canonical, Optional.empty(), List.of())
+		when(contentRepository.variantContext(canonical)).thenReturn(
+				new VariantContext(canonical, Optional.empty(), List.of())
 		);
-		repository = new VariantSelectorConfigurationRepository(db, resolver);
+		repository = new VariantSelectorConfigurationRepository(db, contentRepository);
 	}
 
 	@Test

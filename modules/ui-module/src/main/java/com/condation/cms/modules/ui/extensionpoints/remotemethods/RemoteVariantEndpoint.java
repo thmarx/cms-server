@@ -29,12 +29,12 @@ import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.ui.annotations.RemoteMethod;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.variants.Variant;
 import com.condation.cms.api.utils.PathUtil;
-import com.condation.cms.content.VariantResolver;
 import com.condation.cms.content.ConfigurableVariantSelector;
 import com.condation.cms.content.VariantSelectorConfigurationRepository;
 import com.condation.cms.core.content.io.ContentFileParser;
@@ -123,7 +123,7 @@ public class RemoteVariantEndpoint extends AbstractRemoteMethodeExtension {
 
 		var db = getDB(parameters);
 		var requestedNode = findContentNode(db, uri);
-		var canonicalNode = getVariantResolver(db).resolveContext(requestedNode).canonical();
+		var canonicalNode = getContentRepository().variantContext(requestedNode).canonical();
 		var selectedTemplate = copyContent
 				? canonicalNode.getMetaValue(Constants.MetaFields.TEMPLATE, "")
 				: template;
@@ -233,7 +233,7 @@ public class RemoteVariantEndpoint extends AbstractRemoteMethodeExtension {
 
 		var db = getDB(parameters);
 		var requestedNode = findContentNode(db, uri);
-		var variantContext = getVariantResolver(db).resolveContext(requestedNode);
+		var variantContext = getContentRepository().variantContext(requestedNode);
 		var variant = variantContext.variants().stream()
 				.filter(candidate -> candidate.id().equals(variantId))
 				.findFirst()
@@ -279,7 +279,7 @@ public class RemoteVariantEndpoint extends AbstractRemoteMethodeExtension {
 
 		var db = getDB(parameters);
 		var contentNode = findContentNode(db, uri);
-		var variantContext = getVariantResolver(db).resolveContext(contentNode);
+		var variantContext = getContentRepository().variantContext(contentNode);
 		var variants = variantContext.variants()
 				.stream()
 				.sorted(Comparator.comparing(Variant::id))
@@ -316,8 +316,8 @@ public class RemoteVariantEndpoint extends AbstractRemoteMethodeExtension {
 				));
 	}
 
-	protected VariantResolver getVariantResolver(DB db) {
-		return getContext().get(InjectorFeature.class).injector().getInstance(VariantResolver.class);
+	protected ContentRepository getContentRepository() {
+		return getContext().get(InjectorFeature.class).injector().getInstance(ContentRepository.class);
 	}
 
 	protected ConfigurableVariantSelector getConfigurableVariantSelector() {

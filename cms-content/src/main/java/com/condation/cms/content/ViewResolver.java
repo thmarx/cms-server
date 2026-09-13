@@ -24,27 +24,35 @@ import com.condation.cms.api.content.ContentResponse;
 import com.condation.cms.api.content.DefaultContentResponse;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
-import com.condation.cms.api.feature.features.ContentParserFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.content.views.ViewParser;
 import com.condation.cms.extensions.request.RequestExtensions;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
-@RequiredArgsConstructor
 @Slf4j
 public class ViewResolver {
 
 	private final ContentRenderer contentRenderer;
 
 	private final DB db;
+	private final ContentRepository contentRepository;
+
+	public ViewResolver(
+			ContentRenderer contentRenderer,
+			DB db,
+			ContentRepository contentRepository) {
+		this.contentRenderer = contentRenderer;
+		this.db = db;
+		this.contentRepository = contentRepository;
+	}
 
 	public Optional<ContentResponse> getViewContent(final RequestContext context) {
 		return getViewContent(context, true);
@@ -52,37 +60,37 @@ public class ViewResolver {
 
 	public Optional<ContentResponse> getViewContent(final RequestContext context, final boolean checkVisibility) {
 		var requestUrl = context.get(RequestFeature.class).uri();
-		var contentNodeOpt = db.getContent().byUrl(requestUrl);
+		var contentNodeOpt = contentRepository.findByUrl(requestUrl);
 		if (contentNodeOpt.isEmpty()) {
 			return Optional.empty();
 		}
 
 		final ContentNode contentNode = contentNodeOpt.get();
-		if (checkVisibility && !db.getContent().isVisible(contentNode)) {
+		if (checkVisibility && !contentRepository.isVisible(contentNode)) {
 			return Optional.empty();
 		}
 		if (!contentNode.isView()) {
 			return Optional.empty();
 		}
 
-		var contentFile = db.getFileSystem().contentBase().resolve(contentNode.path());
-		if (!contentFile.exists()) {
-			return Optional.empty();
-		}
 		context.add(CurrentNodeFeature.class, new CurrentNodeFeature(contentNode));
 
 		try {
-			var view = ViewParser.parse(contentFile);
+			var document = contentRepository.load(contentNode);
+			if (document.isEmpty()) {
+				return Optional.empty();
+			}
+			var view = ViewParser.parse(document.get().content());
+			var contentFile = db.getFileSystem().contentBase().resolve(contentNode.path());
 			
 			var page = view.getNodes(
-				db, 
-				contentFile, 
-				context.get(ContentParserFeature.class).contentParser(), 
-				context.get(RenderContext.class).markdownRenderer(), 
+				db,
+				contentRepository,
+				contentFile,
 				context.get(RequestExtensions.class).getContext(), 
 				context.get(RequestFeature.class).queryParameters(), context);
 			
-			var content = contentRenderer.renderView(contentFile, view, contentNode, context, page);
+			var content = contentRenderer.renderView(document.get(), view, context, page);
 			return Optional.of(new DefaultContentResponse(content, contentNode));
 		} catch (Exception ex) {
 			log.error(null, ex);

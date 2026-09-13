@@ -32,10 +32,13 @@ import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.mapper.ContentNodeMapper;
 import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.model.NavNode;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.content.DefaultContentParser;
 import com.condation.cms.content.template.functions.navigation.NavigationFunction;
 import com.condation.cms.core.eventbus.DefaultEventBus;
 import com.condation.cms.filesystem.FileDB;
+import com.condation.cms.filesystem.FileSystemContentRepository;
+import com.condation.cms.filesystem.FileSystemContentStore;
 import com.condation.cms.filesystem.NIOReadOnlyFile;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -55,6 +58,7 @@ public class NavigationFunctionNGTest {
 
 	static NavigationFunction navigationFunction;
 	private static FileDB db;
+	private static ContentRepository contentRepository;
 	static MarkdownRenderer markdownRenderer = TestHelper.getRenderer();
 	static Path hostBase = Path.of("hosts/test/");
 
@@ -80,8 +84,11 @@ public class NavigationFunctionNGTest {
 			}
 		}, config);
 		db.init();
+		contentRepository = new FileSystemContentRepository(
+				db.getContent(), db.getFileSystem(),
+				new FileSystemContentStore(db.getFileSystem()), contentParser);
 		defaultContentParser = new DefaultContentParser();
-		navigationFunction = new NavigationFunction(db, 
+		navigationFunction = new NavigationFunction(db, contentRepository,
 				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 	}
@@ -128,7 +135,7 @@ public class NavigationFunctionNGTest {
 	@Test
 	public void test_path() throws Exception {
 
-		var sut = new NavigationFunction(db, 
+		var sut = new NavigationFunction(db, contentRepository,
 				db.getReadOnlyFileSystem().contentBase().resolve("nav3/folder1/index.md")
 				, 
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
@@ -143,7 +150,7 @@ public class NavigationFunctionNGTest {
 	
 	@Test
 	public void test_json () throws IOException {
-		var navigationFunction = new NavigationFunction(db, 
+		var navigationFunction = new NavigationFunction(db, contentRepository,
 				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
 		

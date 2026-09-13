@@ -52,6 +52,8 @@ import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.media.MediaService;
 import com.condation.cms.api.messages.MessageSource;
 import com.condation.cms.api.messaging.Messaging;
+import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.ContentStore;
 import com.condation.cms.api.scheduler.CronJobContext;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.theme.Theme;
@@ -67,7 +69,6 @@ import com.condation.cms.content.DefaultContentRenderer;
 import com.condation.cms.content.DefaultVariantSelector;
 import com.condation.cms.content.ConfigurableVariantSelector;
 import com.condation.cms.content.TaxonomyResolver;
-import com.condation.cms.content.VariantResolver;
 import com.condation.cms.api.variants.VariantSelector;
 import com.condation.cms.content.VariantSelectorConfigurationRepository;
 import com.condation.cms.content.ViewResolver;
@@ -87,6 +88,8 @@ import com.condation.cms.core.scheduler.SiteCronJobScheduler;
 import com.condation.cms.core.theme.DefaultTheme;
 import com.condation.cms.extensions.ExtensionManager;
 import com.condation.cms.filesystem.FileDB;
+import com.condation.cms.filesystem.FileSystemContentRepository;
+import com.condation.cms.filesystem.FileSystemContentStore;
 import com.condation.cms.filesystem.MetaData;
 import com.condation.cms.filesystem.NIOReadOnlyFile;
 import com.condation.cms.media.FileMediaService;
@@ -304,7 +307,7 @@ public class SiteModule extends AbstractModule {
 	@Provides
 	@Singleton
 	@Eager
-    public DB fileDb(SiteProperties site, DefaultContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
+	public DB fileDb(SiteProperties site, DefaultContentParser contentParser, Configuration configuration, EventBus eventBus) throws IOException {
 		var db = new FileDB(hostBase, eventBus, (file) -> {
 			try {
 				ReadOnlyFile cmsFile = new NIOReadOnlyFile(file, hostBase.resolve(Constants.Folders.CONTENT));
@@ -316,6 +319,25 @@ public class SiteModule extends AbstractModule {
 		}, configuration);
 		db.init();
 		return db;
+	}
+
+	@Provides
+	@Singleton
+	public ContentStore contentStore(DB db) {
+		return new FileSystemContentStore(db.getFileSystem());
+	}
+
+	@Provides
+	@Singleton
+	public ContentRepository contentRepository(
+			DB db,
+			ContentStore contentStore,
+			ContentParser contentParser) {
+		return new FileSystemContentRepository(
+				db.getContent(),
+				db.getFileSystem(),
+				contentStore,
+				contentParser);
 	}
 
 	@Provides
@@ -360,21 +382,22 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public ContentRenderer contentRenderer(ContentParser contentParser, Injector injector, FileDB db,
-			SiteProperties siteProperties, ModuleManager moduleManager) {
+	public ContentRenderer contentRenderer(Injector injector, FileDB db,
+			SiteProperties siteProperties, ModuleManager moduleManager,
+			ContentRepository contentRepository) {
 		return new DefaultContentRenderer(
-				contentParser,
 				() -> injector.getInstance(TemplateEngine.class),
 				db,
 				siteProperties,
-				moduleManager);
+				moduleManager,
+				contentRepository);
 	}
 
 	@Provides
 	@Singleton
 	public ContentResolver contentResolver(ContentRenderer contentRenderer,
-			FileDB db, VariantResolver variantResolver, VariantSelector variantSelector) {
-		return new ContentResolver(contentRenderer, db, variantResolver, variantSelector);
+			ContentRepository contentRepository, VariantSelector variantSelector) {
+		return new ContentResolver(contentRenderer, contentRepository, variantSelector);
 	}
 
 	@Provides
@@ -388,17 +411,11 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public VariantResolver variantResolver(FileDB db) {
-		return new VariantResolver(db);
-	}
-
-	@Provides
-	@Singleton
 	public VariantSelectorConfigurationRepository variantSelectorConfigurationRepository(
 			FileDB db,
-			VariantResolver variantResolver
+			ContentRepository contentRepository
 	) {
-		return new VariantSelectorConfigurationRepository(db, variantResolver);
+		return new VariantSelectorConfigurationRepository(db, contentRepository);
 	}
 
 	@Provides
@@ -423,8 +440,8 @@ public class SiteModule extends AbstractModule {
 	@Provides
 	@Singleton
 	public ViewResolver viewResolver(ContentRenderer contentRenderer,
-			FileDB db) {
-		return new ViewResolver(contentRenderer, db);
+			FileDB db, ContentRepository contentRepository) {
+		return new ViewResolver(contentRenderer, db, contentRepository);
 	}
 	
 	@Provides

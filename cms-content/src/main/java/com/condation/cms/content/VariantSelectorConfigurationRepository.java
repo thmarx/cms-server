@@ -24,12 +24,12 @@ package com.condation.cms.content;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -39,7 +39,6 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
  * Loads and stores the selector configured for a canonical page.
  */
 @Slf4j
-@RequiredArgsConstructor
 public class VariantSelectorConfigurationRepository {
 
 	public static final String DEFAULT_SELECTOR_ID = "date-range";
@@ -47,7 +46,12 @@ public class VariantSelectorConfigurationRepository {
 	private static final String SELECTOR_PROPERTY = "selector";
 
 	private final DB db;
-	private final VariantResolver variantResolver;
+	private final ContentRepository contentRepository;
+
+	public VariantSelectorConfigurationRepository(DB db, ContentRepository contentRepository) {
+		this.db = db;
+		this.contentRepository = contentRepository;
+	}
 
 	public String getSelectorId(ContentNode node) {
 		var configurationFile = configurationFile(node);
@@ -82,7 +86,7 @@ public class VariantSelectorConfigurationRepository {
 	}
 
 	public Path configurationFile(ContentNode node) {
-		var canonical = variantResolver.resolveContext(node).canonical();
+		var canonical = contentRepository.variantContext(node).canonical();
 		var contentBase = db.getFileSystem().resolve(Constants.Folders.CONTENT);
 		var canonicalFile = contentBase.resolve(canonical.path());
 		var fileName = canonicalFile.getFileName().toString();

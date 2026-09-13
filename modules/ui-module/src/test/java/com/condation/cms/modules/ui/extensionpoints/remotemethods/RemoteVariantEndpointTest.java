@@ -30,10 +30,11 @@ import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.module.SiteModuleContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.variants.Variant;
+import com.condation.cms.api.variants.VariantContext;
 import com.condation.cms.content.ConfigurableVariantSelector;
-import com.condation.cms.content.VariantResolver;
 import com.condation.cms.content.VariantSelectorConfigurationRepository;
 import com.condation.cms.modules.ui.extensionpoints.remotemethods.dto.VariantDto;
 import java.util.List;
@@ -73,7 +74,7 @@ class RemoteVariantEndpointTest {
 	private EventBus eventBus;
 
 	@Mock
-	private VariantResolver variantResolver;
+	private ContentRepository contentRepository;
 
 	@Mock
 	private ConfigurableVariantSelector configurableVariantSelector;
@@ -90,8 +91,8 @@ class RemoteVariantEndpointTest {
 	void setUp() {
 		endpoint = new RemoteVariantEndpoint() {
 			@Override
-			protected VariantResolver getVariantResolver(DB db) {
-				return variantResolver;
+			protected ContentRepository getContentRepository() {
+				return contentRepository;
 			}
 
 			@Override
@@ -133,8 +134,8 @@ class RemoteVariantEndpointTest {
 				new Variant("summer", summerNode),
 				new Variant("campaign", campaignNode)
 		);
-		when(variantResolver.resolveContext(node)).thenReturn(
-				new VariantResolver.VariantContext(node, Optional.empty(), variants)
+		when(contentRepository.variantContext(node)).thenReturn(
+				new VariantContext(node, Optional.empty(), variants)
 		);
 
 		@SuppressWarnings("unchecked")
@@ -165,8 +166,8 @@ class RemoteVariantEndpointTest {
 		);
 		var variants = List.of(new Variant("summer", summer));
 		when(content.byPath(summer.path())).thenReturn(Optional.of(summer));
-		when(variantResolver.resolveContext(summer)).thenReturn(
-				new VariantResolver.VariantContext(canonical, Optional.of("summer"), variants)
+		when(contentRepository.variantContext(summer)).thenReturn(
+				new VariantContext(canonical, Optional.of("summer"), variants)
 		);
 
 		@SuppressWarnings("unchecked")
@@ -183,8 +184,8 @@ class RemoteVariantEndpointTest {
 	void getReturnsEmptyListWhenNodeHasNoVariants() throws RPCException {
 		var node = node("about.md", "/about", Map.of());
 		when(content.byPath("about.md")).thenReturn(Optional.of(node));
-		when(variantResolver.resolveContext(node)).thenReturn(
-				new VariantResolver.VariantContext(node, Optional.empty(), List.of())
+		when(contentRepository.variantContext(node)).thenReturn(
+				new VariantContext(node, Optional.empty(), List.of())
 		);
 
 		@SuppressWarnings("unchecked")
@@ -262,8 +263,8 @@ class RemoteVariantEndpointTest {
 		var configuration = tempDir.resolve(".variants/about/variants.yaml");
 		Files.writeString(configuration, "selector: date-range");
 		when(content.byPath(canonical.path())).thenReturn(Optional.of(canonical));
-		when(variantResolver.resolveContext(canonical)).thenReturn(
-				new VariantResolver.VariantContext(
+		when(contentRepository.variantContext(canonical)).thenReturn(
+				new VariantContext(
 						canonical,
 						Optional.empty(),
 						List.of(new Variant("summer", summer))
@@ -288,8 +289,8 @@ class RemoteVariantEndpointTest {
 	void deleteRejectsUnknownVariant() {
 		var canonical = node("about.md", "/about", Map.of());
 		when(content.byPath(canonical.path())).thenReturn(Optional.of(canonical));
-		when(variantResolver.resolveContext(canonical)).thenReturn(
-				new VariantResolver.VariantContext(canonical, Optional.empty(), List.of())
+		when(contentRepository.variantContext(canonical)).thenReturn(
+				new VariantContext(canonical, Optional.empty(), List.of())
 		);
 
 		assertThatThrownBy(() -> endpoint.delete(Map.of(

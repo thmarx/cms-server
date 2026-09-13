@@ -27,10 +27,9 @@ import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.ContentNodeMapperFeature;
-import com.condation.cms.api.feature.features.ContentParserFeature;
-import com.condation.cms.api.feature.features.MarkdownRendererFeature;
 import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.content.template.functions.AbstractCurrentNodeFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,18 +57,19 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		return true;
 	};
 
-	public NodeListFunction(DB db, ReadOnlyFile currentNode, RequestContext context) {
+	public NodeListFunction(DB db, ContentRepository contentRepository,
+			ReadOnlyFile currentNode, RequestContext context) {
 		super(
 				db,
 				currentNode,
-				context.get(ContentParserFeature.class).contentParser(),
-				context.get(MarkdownRendererFeature.class).markdownRenderer(),
+				contentRepository,
 				context.get(ContentNodeMapperFeature.class).contentNodeMapper(),
 				context);
 	}
 
-	public NodeListFunction(DB db, ReadOnlyFile currentNode, RequestContext context, boolean excludeIndexMd) {
-		this(db, currentNode, context);
+	public NodeListFunction(DB db, ContentRepository contentRepository,
+			ReadOnlyFile currentNode, RequestContext context, boolean excludeIndexMd) {
+		this(db, contentRepository, currentNode, context);
 		this.excludeIndexMd = excludeIndexMd;
 	}
 
@@ -116,13 +116,12 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		blog\/*\/*
 		 */
 		if (path.contains("*")) {
-			final ReadOnlyFile contentBase = db.getFileSystem().contentBase();
 			List<ContentNode> relevantPaths = getPaths(baseNode, path);
 
 			List<ContentNode> allContentNodes = new ArrayList<>();
 			relevantPaths.forEach((metaNode) -> {
 
-				List<ContentNode> children = db.getContent().listContent(contentBase, metaNode.uri());
+				List<ContentNode> children = contentRepository.children(metaNode.uri());
 				allContentNodes.addAll(children);
 			});
 
@@ -159,9 +158,9 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 		var part = parts[0];
 		List<ContentNode> nodes;
 		if ("*".equals(part)) {
-			nodes = db.getContent().listDirectories(base, "");
+			nodes = contentRepository.directories(repositoryPath(base, ""));
 		} else {
-			nodes = db.getContent().listDirectories(base, part);
+			nodes = contentRepository.directories(repositoryPath(base, part));
 		}
 		if (parts.length > 1) {
 			nodes.forEach((node) -> {
@@ -181,11 +180,10 @@ class NodeListFunction extends AbstractCurrentNodeFunction {
 			final Comparator<ContentNode> comparator, final Predicate<ContentNode> nodeFilter) {
 		try {
 			List<ListNode> nodes = new ArrayList<>();
-			final List<ContentNode> navNodes = db.getContent()
-					.listContent(base, start)
+			final List<ContentNode> navNodes = contentRepository
+					.children(repositoryPath(base, start))
 					.stream().filter(nodeFilter)
 					.toList();
-			final ReadOnlyFile contentBase = db.getFileSystem().contentBase();
 			long total = navNodes.stream().filter(nodeNameFilter).count();
 			int skipCount = (page - 1) * pageSize;
 

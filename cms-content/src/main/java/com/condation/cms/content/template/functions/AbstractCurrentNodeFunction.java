@@ -20,31 +20,26 @@ package com.condation.cms.content.template.functions;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.IsPreviewFeature;
 import com.condation.cms.api.mapper.ContentNodeMapper;
-import com.condation.cms.api.markdown.MarkdownRenderer;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.request.RequestContextScope;
-import java.io.IOException;
-import java.util.Optional;
+import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.utils.PathUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author t.marx
  */
 @RequiredArgsConstructor
-@Slf4j
 public abstract class AbstractCurrentNodeFunction {
 
 	protected final DB db;
 	protected final ReadOnlyFile currentNode;
-	protected final ContentParser contentParser;
-	protected final MarkdownRenderer markdownRenderer;
+	protected final ContentRepository contentRepository;
 	protected final ContentNodeMapper contentNodeMapper;
 	protected final RequestContext context;
 
@@ -65,18 +60,19 @@ public abstract class AbstractCurrentNodeFunction {
 		return IsPreviewFeature.Mode.PREVIEW.getValue();
 	}
 
-	protected Optional<ContentParser.Content> parse(ReadOnlyFile node) {
-		try {
-			//Path rel = contentBase.relativize(node);
-			if (node.isDirectory()) {
-				node = node.resolve("index.md");
-			}
-			var md = contentParser.parse(node);
-
-			return Optional.of(md);
-		} catch (IOException ex) {
-			log.error(null, ex);
+	protected String repositoryPath(ReadOnlyFile base, String path) {
+		var basePath = PathUtil.toRelativePath(base, db.getFileSystem().contentBase())
+				.replace('\\', '/');
+		var childPath = path.replace('\\', '/');
+		while (childPath.startsWith("./")) {
+			childPath = childPath.substring(2);
 		}
-		return Optional.empty();
+		while (childPath.startsWith("/")) {
+			childPath = childPath.substring(1);
+		}
+		if (childPath.isEmpty()) {
+			return basePath;
+		}
+		return basePath.isEmpty() ? childPath : basePath + "/" + childPath;
 	}
 }

@@ -126,10 +126,20 @@ public record ContentNode(String uri, String url, String name, Map<String, Objec
         return SectionUtil.isSectionEntry(name);
     }
 
+    /**
+     * @deprecated use {@code ContentRepository.variantContext(ContentNode)};
+     * this method depends on the filesystem path convention
+     */
+    @Deprecated(since = "8.3.0", forRemoval = false)
     public boolean isVariant() {
         return variantPathSegment() >= 0;
     }
 
+    /**
+     * @deprecated use {@code ContentRepository.variantContext(ContentNode)};
+     * this method depends on the filesystem path convention
+     */
+    @Deprecated(since = "8.3.0", forRemoval = false)
     public Optional<String> variantId() {
         var pathParts = normalizedPathParts();
         var variantSegment = variantPathSegment(pathParts);
@@ -143,6 +153,7 @@ public record ContentNode(String uri, String url, String name, Map<String, Objec
      * Returns the indexed path of the canonical page represented by this
      * variant.
      */
+    @Deprecated(since = "8.3.0", forRemoval = false)
     public Optional<String> originalUri() {
         var pathParts = normalizedPathParts();
         var variantSegment = variantPathSegment(pathParts);
