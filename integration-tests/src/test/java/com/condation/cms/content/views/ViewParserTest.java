@@ -30,6 +30,7 @@ import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.SiteConfiguration;
 import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.db.Page;
+import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.mapper.ContentNodeMapper;
 import com.condation.cms.api.markdown.MarkdownRenderer;
@@ -71,7 +72,7 @@ public class ViewParserTest {
 	
 	@BeforeEach
 	void setup_test () throws IOException {
-		requestContext = TestHelper.requestContext("", parser, markdownRenderer, new ContentNodeMapper(db, parser));
+		requestContext = TestHelper.requestContext("", parser, markdownRenderer, new ContentNodeMapper(contentRepository));
 	}
 	
 	@BeforeAll
@@ -125,7 +126,9 @@ public class ViewParserTest {
 				long before = System.currentTimeMillis();
 				
 				var page = view.getNodes(
-						db, contentRepository, currentNode, context, queryParams, requestContext);
+						contentRepository,
+						new ContentNode("query/view.yaml", "/query/view", "view.yaml", Map.of()),
+						context, queryParams, requestContext);
 				
 				System.out.println("took %d ms".formatted((System.currentTimeMillis() - before)));
 				
@@ -155,7 +158,9 @@ public class ViewParserTest {
 					.engine(engine).build()) {
 				Map<String, List<String>> queryParams = new HashMap<>(Map.of("page", List.of("1")));
 				var page = view.getNodes(
-						db, contentRepository, currentNode, context, queryParams, requestContext);
+						contentRepository,
+						new ContentNode("view/view.yaml", "/view/view", "view.yaml", Map.of()),
+						context, queryParams, requestContext);
 				
 				Assertions.assertThat(page)
 						.isNotNull()

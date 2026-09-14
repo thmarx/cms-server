@@ -29,17 +29,29 @@ import com.condation.cms.api.content.ContentParser;
 import com.condation.cms.api.repository.ContentDocument;
 import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.repository.ContentStore;
+import com.condation.cms.api.repository.MutableContentRepository;
 import com.condation.cms.api.repository.Section;
 import com.condation.cms.api.utils.SectionUtil;
 import com.condation.cms.api.variants.Variant;
 import com.condation.cms.api.variants.VariantContext;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import com.condation.cms.api.Constants;
+import com.condation.cms.api.utils.FileUtils;
+import com.condation.cms.api.utils.PathUtil;
+import com.condation.cms.core.content.io.YamlHeaderUpdater;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -48,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author thmar
  */
 @Slf4j
-public final class FileSystemContentRepository implements ContentRepository {
+public final class FileSystemContentRepository implements MutableContentRepository {
 
 	private final Content content;
 	private final DBFileSystem fileSystem;
@@ -85,6 +97,68 @@ public final class FileSystemContentRepository implements ContentRepository {
 		}
 		var parsedContent = contentParser.parse(resource.get());
 		return Optional.of(new ContentDocument(node, parsedContent.content()));
+	}
+
+	@Override
+	public void save(String path, java.util.Map<String, Object> metadata, String rawContent)
+			throws IOException {
+		var target = writablePath(path);
+		Files.createDirectories(target.getParent());
+		YamlHeaderUpdater.saveMarkdownFileWithHeader(target, metadata, rawContent);
+		fileSystem.flushContentChanges();
+	}
+
+	@Override
+	public void createDirectory(String path) throws IOException {
+		Files.createDirectories(writablePath(path));
+		fileSystem.flushContentChanges();
+	}
+
+	@Override
+	public void delete(String path) throws IOException {
+		Files.deleteIfExists(writablePath(path));
+		fileSystem.flushContentChanges();
+	}
+
+	@Override
+	public void deleteRecursively(String path) throws IOException {
+		var target = writablePath(path);
+		if (Files.isDirectory(target)) {
+			FileUtils.deleteFolder(target);
+		} else {
+			Files.deleteIfExists(target);
+		}
+		fileSystem.flushContentChanges();
+	}
+
+	@Override
+	public void move(String sourcePath, String targetPath) throws IOException {
+		var source = writablePath(sourcePath);
+		var target = writablePath(targetPath);
+		if (Files.exists(target)) {
+			throw new java.nio.file.FileAlreadyExistsException(targetPath);
+		}
+		Files.createDirectories(target.getParent());
+		try {
+			Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+		} catch (AtomicMoveNotSupportedException exception) {
+			Files.move(source, target);
+		}
+		fileSystem.flushContentChanges();
+	}
+
+	@Override
+	public boolean resourceExists(String path) {
+		return contentStore.exists(normalize(path));
+	}
+
+	private Path writablePath(String path) {
+		var root = fileSystem.resolve(Constants.Folders.CONTENT).toAbsolutePath().normalize();
+		var target = root.resolve(normalize(path)).normalize();
+		if (!target.startsWith(root) || target.equals(root)) {
+			throw new IllegalArgumentException("invalid content path: " + path);
+		}
+		return target;
 	}
 
 	@Override
@@ -182,6 +256,44 @@ public final class FileSystemContentRepository implements ContentRepository {
 				.filter(value -> !canonical.equals(node))
 				.map(VariantLocation::variantId);
 		return new VariantContext(canonical, activeVariantId, variants(canonical));
+	}
+
+	@Override
+	public Optional<String> variantSelectorId(ContentNode node) {
+		var path = variantConfigurationPath(node);
+		try {
+			var resource = contentStore.get(path);
+			if (resource.isEmpty()) {
+				return Optional.empty();
+			}
+			var data = new Yaml(new SafeConstructor(new LoaderOptions()))
+					.load(resource.get().content());
+			if (data instanceof java.util.Map<?, ?> map
+					&& map.get("selector") instanceof String selector
+					&& !selector.isBlank()) {
+				return Optional.of(selector.trim());
+			}
+		} catch (Exception ex) {
+			log.error("could not load variant selector for {}", node.path(), ex);
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public void setVariantSelectorId(ContentNode node, String selectorId) throws IOException {
+		if (selectorId == null || selectorId.isBlank()) {
+			throw new IllegalArgumentException("selectorId must not be blank");
+		}
+		var target = writablePath(variantConfigurationPath(node));
+		Files.createDirectories(target.getParent());
+		YamlHeaderUpdater.saveMetaData(target, java.util.Map.of("selector", selectorId.trim()));
+		fileSystem.flushContentChanges();
+	}
+
+	private String variantConfigurationPath(ContentNode node) {
+		var canonical = canonicalNode(node);
+		var parent = parentPath(canonical.path());
+		return join(parent, ".variants/" + removeMarkdown(canonical.name()) + "/variants.yaml");
 	}
 
 	private ContentNode canonicalNode(ContentNode node) {

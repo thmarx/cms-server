@@ -53,6 +53,7 @@ import com.condation.cms.api.media.MediaService;
 import com.condation.cms.api.messages.MessageSource;
 import com.condation.cms.api.messaging.Messaging;
 import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.MutableContentRepository;
 import com.condation.cms.api.repository.ContentStore;
 import com.condation.cms.api.scheduler.CronJobContext;
 import com.condation.cms.api.template.TemplateEngine;
@@ -163,8 +164,8 @@ public class SiteModule extends AbstractModule {
 	
 	@Provides
 	@Singleton
-	public ContentNodeMapper contentNodeMapper (DB db, ContentParser contentParser) {
-		return new ContentNodeMapper(db, contentParser);
+	public ContentNodeMapper contentNodeMapper (ContentRepository contentRepository) {
+		return new ContentNodeMapper(contentRepository);
 	}
 	
     @Provides
@@ -329,7 +330,7 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	public ContentRepository contentRepository(
+	public MutableContentRepository mutableContentRepository(
 			DB db,
 			ContentStore contentStore,
 			ContentParser contentParser) {
@@ -338,6 +339,12 @@ public class SiteModule extends AbstractModule {
 				db.getFileSystem(),
 				contentStore,
 				contentParser);
+	}
+
+	@Provides
+	@Singleton
+	public ContentRepository contentRepository(MutableContentRepository repository) {
+		return repository;
 	}
 
 	@Provides
@@ -412,10 +419,10 @@ public class SiteModule extends AbstractModule {
 	@Provides
 	@Singleton
 	public VariantSelectorConfigurationRepository variantSelectorConfigurationRepository(
-			FileDB db,
-			ContentRepository contentRepository
+			ContentRepository contentRepository,
+			MutableContentRepository mutableContentRepository
 	) {
-		return new VariantSelectorConfigurationRepository(db, contentRepository);
+		return new VariantSelectorConfigurationRepository(contentRepository, mutableContentRepository);
 	}
 
 	@Provides
@@ -440,8 +447,8 @@ public class SiteModule extends AbstractModule {
 	@Provides
 	@Singleton
 	public ViewResolver viewResolver(ContentRenderer contentRenderer,
-			FileDB db, ContentRepository contentRepository) {
-		return new ViewResolver(contentRenderer, db, contentRepository);
+			ContentRepository contentRepository) {
+		return new ViewResolver(contentRenderer, contentRepository);
 	}
 	
 	@Provides

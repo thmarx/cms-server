@@ -45,6 +45,8 @@ import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.ui.rpc.RPCException;
+import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.MutableContentRepository;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -87,11 +89,24 @@ class RemoteContentEndpointsExtensionTest {
 	@Mock
 	private Collections collections;
 
+	@Mock
+	private MutableContentRepository contentRepository;
+
 	private RemoteContentEndpointsExtension endpoints;
 
 	@BeforeEach
 	void setUp() {
-		endpoints = new RemoteContentEndpointsExtension();
+		endpoints = new RemoteContentEndpointsExtension() {
+			@Override
+			protected ContentRepository getContentRepository(Map<String, Object> parameters) {
+				return contentRepository;
+			}
+
+			@Override
+			protected MutableContentRepository getMutableContentRepository(Map<String, Object> parameters) {
+				return contentRepository;
+			}
+		};
 		endpoints.setContext(moduleContext);
 		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
 		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
@@ -102,9 +117,9 @@ class RemoteContentEndpointsExtensionTest {
 
 	@Test
 	void getContent_throwsRPCException_whenParsingFails() throws IOException {
-		when(contentBase.resolve("broken.md")).thenReturn(contentFile);
-		when(contentFile.exists()).thenReturn(true);
-		when(contentFile.getContent()).thenThrow(new IOException("disk error"));
+		var node = new ContentNode("broken.md", "/broken", "broken.md", Map.of());
+		when(contentRepository.get("broken.md")).thenReturn(Optional.of(node));
+		when(contentRepository.load(node)).thenThrow(new IOException("disk error"));
 
 		Map<String, Object> params = Map.of("uri", "broken.md");
 
@@ -115,9 +130,9 @@ class RemoteContentEndpointsExtensionTest {
 
 	@Test
 	void setContent_throwsRPCException_whenParsingFails() throws IOException {
-		when(contentBase.resolve("broken.md")).thenReturn(contentFile);
-		when(contentFile.exists()).thenReturn(true);
-		when(contentFile.getContent()).thenThrow(new IOException("disk error"));
+		var node = new ContentNode("broken.md", "/broken", "broken.md", Map.of());
+		when(contentRepository.get("broken.md")).thenReturn(Optional.of(node));
+		when(contentRepository.load(node)).thenThrow(new IOException("disk error"));
 
 		Map<String, Object> params = Map.of("uri", "broken.md", "content", "hello");
 
@@ -134,9 +149,9 @@ class RemoteContentEndpointsExtensionTest {
 				CurrentNodeFeature.class,
 				new CurrentNodeFeature(new ContentNode(uri, "/about", "about.md", Map.of()))
 		);
-		when(contentBase.resolve(uri)).thenReturn(contentFile);
-		when(contentFile.exists()).thenReturn(true);
-		when(contentFile.getContent()).thenThrow(new IOException("variant selected"));
+		var node = new ContentNode(uri, "/about", "about.md", Map.of());
+		when(contentRepository.get(uri)).thenReturn(Optional.of(node));
+		when(contentRepository.load(node)).thenThrow(new IOException("variant selected"));
 
 		assertThatThrownBy(() -> ScopedValue.where(
 				RequestContextScope.REQUEST_CONTEXT,
@@ -170,10 +185,8 @@ class RemoteContentEndpointsExtensionTest {
 				"other.md",
 				Map.of()
 		);
-		when(db.getContent()).thenReturn(content);
-		when(content.byUrl("/total-other-page")).thenReturn(Optional.of(node));
-		when(contentBase.resolve("pages/other.md")).thenReturn(contentFile);
-		when(content.listSectionEntries(contentFile)).thenReturn(List.of());
+		when(contentRepository.findByUrl("/total-other-page")).thenReturn(Optional.of(node));
+		when(contentRepository.sections(node)).thenReturn(List.of());
 
 		var requestContext = new RequestContext();
 		requestContext.add(
@@ -194,7 +207,7 @@ class RemoteContentEndpointsExtensionTest {
 				.containsEntry("canonicalUri", "pages/other.md")
 				.containsEntry("contentKind", "content")
 				.containsEntry("supportsVariants", true);
-		verify(content).byUrl("/total-other-page");
+		verify(contentRepository).findByUrl("/total-other-page");
 	}
 
 	@Test
@@ -208,10 +221,7 @@ class RemoteContentEndpointsExtensionTest {
 		var metadata = new CollectionItemMetadata(
 				item.id(), item.collection(), item.path(), item.meta());
 
-		when(db.getContent()).thenReturn(content);
-		when(content.byUrl("/people/jane-doe")).thenReturn(Optional.empty());
-		when(contentBase.resolve("people/jane-doe")).thenReturn(nonExistingPath);
-		when(contentBase.resolve("people/jane-doe.md")).thenReturn(nonExistingPath);
+		when(contentRepository.findByUrl("/people/jane-doe")).thenReturn(Optional.empty());
 		when(collections.collection("authors")).thenReturn(authorCollection);
 		when(authorCollection.metadataQuery()).thenReturn(query);
 		when(query.where("slug", "jane-doe")).thenReturn(query);

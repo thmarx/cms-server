@@ -23,6 +23,7 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.DB;
+import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
@@ -38,6 +39,7 @@ import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.PathUtil;
+import com.condation.cms.api.utils.MapUtil;
 import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.core.content.io.ContentFileParser;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
@@ -70,7 +72,7 @@ import java.nio.file.Path;
  */
 @Slf4j
 @Extension(UIRemoteMethodExtensionPoint.class)
-public class RemoteContentEndpointsExtension extends AbstractExtensionPoint implements UIRemoteMethodExtensionPoint {
+public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtension {
 
 	@RemoteMethod(name = "content.get", permissions = {Permissions.CONTENT_EDIT})
 	public Object getContent(Map<String, Object> parameters) throws RPCException {
@@ -79,18 +81,14 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", target.uri());
-		if (target.file().exists()) {
-			try {
-				ContentFileParser parser = new ContentFileParser(target.file());
-				result.put(Parameters.CONTENT, parser.getContent());
-				result.put("meta", parser.getHeader());
-			} catch (IOException ex) {
-				log.error("", ex);
-				throw new RPCException(0, ex.getMessage());
-			}
-		} else {
-            throw new RPCException(404, "content not found");
-        }
+		try {
+			var document = loadTarget(target, parameters);
+			result.put(Parameters.CONTENT, document.content());
+			result.put("meta", document.metadata());
+		} catch (IOException ex) {
+			log.error("", ex);
+			throw new RPCException(0, ex.getMessage());
+		}
 
 		return result;
 	}
@@ -103,18 +101,13 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", target.uri());
-		if (target.file().exists()) {
-			try {
-				ContentFileParser parser = new ContentFileParser(target.file());
-
-				Map<String, Object> meta = parser.getHeader();
-				YamlHeaderUpdater.saveMarkdownFileWithHeader(target.writableFile(db), meta, updatedContent);
-				refresh(target, db);
-				log.debug(LOG_PATTERN, target.uri());
-			} catch (IOException ex) {
-				log.error("", ex);
-				throw new RPCException(0, ex.getMessage());
-			}
+		try {
+			var document = loadTarget(target, parameters);
+			saveTarget(target, parameters, db, document.metadata(), updatedContent);
+			log.debug(LOG_PATTERN, target.uri());
+		} catch (IOException ex) {
+			log.error("", ex);
+			throw new RPCException(0, ex.getMessage());
 		}
 
 		return result;
@@ -123,8 +116,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 	
 	@RemoteMethod(name = "content.replace", permissions = {Permissions.CONTENT_EDIT})
 	public Object replaceContent(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
-		var contentBase = db.getFileSystem().contentBase();
+		var repository = getMutableContentRepository(parameters);
 
 		var replacement = (String)parameters.get(Parameters.CONTENT);
 		int start = NumberUtils.toInt(parameters.getOrDefault("start", -1l));
@@ -138,21 +130,17 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 			throw new RPCException("replacement must not be null");
 		}
 		
-		var contentFile = contentBase.resolve(uri);
-		
-		if (contentFile != null) {
+		var node = repository.get(uri);
+		if (node.isPresent()) {
 			try {
-				ContentFileParser parser = new ContentFileParser(contentFile);
-
-				var content = parser.getContent();
+				var document = repository.load(node.get()).orElseThrow();
+				var content = document.content();
 				
                 var contextPath = getContext().get(SitePropertiesFeature.class).siteProperties().contextPath();
                 
 				var updatedContent = MarkdownHelper.replaceImage(contextPath, content, start, end, replacement);
 
-				var filePath = db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(uri);
-
-				YamlHeaderUpdater.saveMarkdownFileWithHeader(filePath, parser.getHeader(), updatedContent);
+				repository.save(uri, node.get().data(), updatedContent);
 				log.debug(LOG_PATTERN, uri);
 			} catch (IOException ex) {
 				log.error("", ex);
@@ -172,20 +160,15 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", target.uri());
-		if (target.file().exists()) {
-			try {
-				ContentFileParser parser = new ContentFileParser(target.file());
-
-				Map<String, Object> meta = parser.getHeader();
+		try {
+				var document = loadTarget(target, parameters);
+				Map<String, Object> meta = new HashMap<>(document.metadata());
 				YamlHeaderUpdater.mergeFlatMapIntoNestedMap(meta, update);
-
-				YamlHeaderUpdater.saveMarkdownFileWithHeader(target.writableFile(db), meta, parser.getContent());
-				refresh(target, db);
+				saveTarget(target, parameters, db, meta, document.content());
 				log.debug(LOG_PATTERN, target.uri());
-			} catch (IOException ex) {
+		} catch (IOException ex) {
 				log.error("", ex);
 				throw new RPCException(0, ex.getMessage());
-			}
 		}
 
 		return result;
@@ -195,8 +178,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 	@RemoteMethod(name = "meta.set.batch", permissions = {Permissions.CONTENT_EDIT})
 	public Object setMetaBatch(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
-		var contentBase = db.getFileSystem().contentBase();
+		var repository = getMutableContentRepository(parameters);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("endpoint", "meta.set.batch");
@@ -211,19 +193,15 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 		try {
 			updates.forEach(update -> {
-				var contentFile = contentBase.resolve(update.uri);
-
-				if (contentFile != null) {
+				var node = repository.get(update.uri);
+				if (node.isPresent()) {
 					try {
-						ContentFileParser parser = new ContentFileParser(contentFile);
-
-						Map<String, Object> fileMeta = parser.getHeader();
+						var document = repository.load(node.get()).orElseThrow();
+						Map<String, Object> fileMeta = new HashMap<>(node.get().data());
 						var metaUpdated = MetaConverter.convertMeta(update.meta);
 						YamlHeaderUpdater.mergeFlatMapIntoNestedMap(fileMeta, metaUpdated);
 
-						var filePath = db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(update.uri);
-
-						YamlHeaderUpdater.saveMarkdownFileWithHeader(filePath, fileMeta, parser.getContent());
+						repository.save(update.uri, fileMeta, document.content());
 						log.debug(LOG_PATTERN, update.uri);
 
 						getContext().get(EventBusFeature.class).eventBus().publish(new ReIndexContentMetaDataEvent(update.uri));
@@ -242,21 +220,14 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 	@RemoteMethod(name = "content.sectionEntry.delete", permissions = {Permissions.CONTENT_EDIT})
 	public Object deleteSectionEntry(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
+		var repository = getMutableContentRepository(parameters);
 		var uri = (String) parameters.get("uri");
-		final Path contentBase = db.getFileSystem().resolve(Constants.Folders.CONTENT);
-
-		var contentFile = contentBase.resolve(uri);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", uri);
-		if (contentFile != null
-				&& PathUtil.isChild(contentBase, contentFile)
-				&& Files.exists(contentFile)
-				&& !Files.isDirectory(contentFile)
-				) {
+		if (repository.resourceExists(uri)) {
 			try {
-				Files.delete(contentFile);
+				repository.delete(uri);
 				getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
 			} catch (Exception ex) {
 				log.error("", ex);
@@ -269,8 +240,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 
 	@RemoteMethod(name = "content.sectionEntry.add", permissions = {Permissions.CONTENT_EDIT})
 	public Object addSectionEntry(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
-		var contentBase = db.getFileSystem().resolve(Constants.Folders.CONTENT);
+		var repository = getMutableContentRepository(parameters);
 
 		var content = (String) parameters.getOrDefault(Parameters.CONTENT, "");
 		var parentUri = contentUri(parameters, "parentUri");
@@ -283,12 +253,9 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		
 		var uri = UIFileNameUtil.createSectionEntryFileName(parentUri, section, sectionEntryName);
 		
-		var contentFile = contentBase.resolve(uri);
-		
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", uri);
-		if (contentFile != null) {
-			try {
+		try {
 				Map<String, Object> meta = Map.of(
 						"template", template,
 						"title", title,
@@ -296,18 +263,13 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 								"order", 1000)
 				);
 
-				var filePath = db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(uri);
-
-				YamlHeaderUpdater.saveMarkdownFileWithHeader(filePath, meta, content);
+				repository.save(uri, meta, content);
 				log.debug(LOG_PATTERN, uri);
 
 				getContext().get(EventBusFeature.class).eventBus().publish(new ReIndexContentMetaDataEvent(uri));
-			} catch (IOException ex) {
+		} catch (IOException ex) {
 				log.error("", ex);
 				throw new RPCException(0, ex.getMessage());
-			}
-		} else {
-			throw new RPCException(0, "invalid uri");
 		}
 
 		return result;
@@ -316,7 +278,7 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 	@RemoteMethod(name = "content.node", permissions = {Permissions.CONTENT_EDIT})
 	public Object getContentNode (Map<String, Object> parameters) {
 		final DB db = getContext().get(DBFeature.class).db();
-		var contentBase = db.getFileSystem().contentBase();
+		var repository = getContentRepository(parameters);
 		
 		var url = (String) parameters.get("url");
 
@@ -332,35 +294,12 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 			path = "/" + path;
 		}
 
-		var selectedNode = db.getContent().byUrl(path).orElse(null);
-		ReadOnlyFile contentFile = null;
-		String canonicalUri = null;
-		if (selectedNode != null) {
-			canonicalUri = selectedNode.path();
-			contentFile = contentBase.resolve(canonicalUri);
-		} else {
-			var filePath = path.substring(1);
-			var contentPath = contentBase.resolve(filePath);
-			if (contentPath.exists() && contentPath.isDirectory()) {
-				var indexFile = contentPath.resolve("index.md");
-				if (indexFile.exists()) {
-					contentFile = indexFile;
-				}
-			} else {
-				var markdownFile = contentBase.resolve(filePath + ".md");
-				if (markdownFile.exists()) {
-					contentFile = markdownFile;
-				}
-			}
-			if (contentFile != null) {
-				canonicalUri = PathUtil.toRelativeFile(contentFile, contentBase);
-				selectedNode = db.getContent().byPath(canonicalUri).orElse(null);
-			}
-		}
+		var selectedNode = repository.findByUrl(path).orElse(null);
+		String canonicalUri = selectedNode == null ? null : selectedNode.path();
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("url", url);
-		if (contentFile == null || canonicalUri == null) {
+		if (selectedNode == null || canonicalUri == null) {
 			var collectionConfiguration = getContext().get(ConfigurationFeature.class)
 					.configuration().get(CollectionConfiguration.class);
 			var collectionRoute = new CollectionRouteResolver(db, collectionConfiguration).resolve(path);
@@ -390,16 +329,13 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		if (selectedNode != null
 				&& !variantId.isBlank()
 				&& !ConfigurableVariantSelector.CANONICAL_VARIANT_ID.equalsIgnoreCase(variantId)) {
-			var selectedVariant = getContext().get(InjectorFeature.class)
-					.injector().getInstance(ContentRepository.class)
-					.variant(selectedNode, variantId);
+			var selectedVariant = repository.variant(selectedNode, variantId);
 			if (selectedVariant.isPresent()) {
 				selectedNode = selectedVariant.get().node();
 				activeVariantId = selectedVariant.get().id();
 			}
 		}
 		if (selectedNode != null) {
-			contentFile = contentBase.resolve(selectedNode.path());
 			result.put("uri", selectedNode.path());
 		} else {
 			result.put("uri", canonicalUri);
@@ -407,15 +343,17 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		result.put("canonicalUri", canonicalUri);
 		result.put("variantId", activeVariantId);
 
-		var sectionEntries = db.getContent().listSectionEntries(contentFile);
+		var sectionEntries = selectedNode == null
+				? java.util.List.<com.condation.cms.api.repository.Section>of()
+				: loadSections(repository, selectedNode);
 		Map<String, List<SectionEntry>> sectionMap = new HashMap<>();
 		sectionEntries.forEach(sectionEntry -> {
-			String uri = sectionEntry.uri();
-			String name = SectionUtil.getSectionName(sectionEntry.name());
-			var index = sectionEntry.getMetaValue(Constants.MetaFields.LAYOUT_ORDER, Constants.DEFAULT_SECTION_ENTRY_LAYOUT_ORDER);
+			String uri = sectionEntry.id();
+			String name = sectionEntry.name();
+			var index = MapUtil.getValue(sectionEntry.data(), Constants.MetaFields.LAYOUT_ORDER, Constants.DEFAULT_SECTION_ENTRY_LAYOUT_ORDER);
 
 			sectionMap.computeIfAbsent(name, k -> new ArrayList<>())
-					.add(new SectionEntry(sectionEntry.name(), index, "", sectionEntry.data(), uri));
+					.add(new SectionEntry(fileName(uri), index, "", sectionEntry.data(), uri));
 		});
 		result.put("sections", sectionMap);
 
@@ -453,9 +391,53 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 		var uri = contentUri(parameters);
 		return new EditableTarget(
 				uri,
-				db.getFileSystem().contentBase().resolve(uri),
+				null,
 				null,
 				null);
+	}
+
+	private EditableDocument loadTarget(EditableTarget target, Map<String, Object> parameters)
+			throws IOException, RPCException {
+		if (target.collectionName() != null) {
+			if (!target.file().exists()) {
+				throw new RPCException(404, "content not found");
+			}
+			var parser = new ContentFileParser(target.file());
+			return new EditableDocument(parser.getHeader(), parser.getContent());
+		}
+		var repository = getContentRepository(parameters);
+		var node = repository.get(target.uri())
+				.orElseThrow(() -> new RPCException(404, "content not found"));
+		var document = repository.load(node)
+				.orElseThrow(() -> new RPCException(404, "content not found"));
+		return new EditableDocument(new HashMap<>(node.data()), document.content());
+	}
+
+	private void saveTarget(EditableTarget target, Map<String, Object> parameters, DB db,
+			Map<String, Object> metadata, String content) throws IOException {
+		if (target.collectionName() != null) {
+			YamlHeaderUpdater.saveMarkdownFileWithHeader(target.writableFile(db), metadata, content);
+			refresh(target, db);
+		} else {
+			getMutableContentRepository(parameters).save(target.uri(), metadata, content);
+			getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
+		}
+	}
+
+	private List<com.condation.cms.api.repository.Section> loadSections(
+			ContentRepository repository, ContentNode node) {
+		try {
+			return repository.sections(node);
+		} catch (IOException ex) {
+			log.error("could not load sections for {}", node.path(), ex);
+			return List.of();
+		}
+	}
+
+	private static String fileName(String path) {
+		var normalized = path.replace('\\', '/');
+		var separator = normalized.lastIndexOf('/');
+		return separator < 0 ? normalized : normalized.substring(separator + 1);
 	}
 
 	private void refresh(EditableTarget target, DB db) {
@@ -481,5 +463,8 @@ public class RemoteContentEndpointsExtension extends AbstractExtensionPoint impl
 					: Constants.Folders.COLLECTIONS;
 			return db.getFileSystem().resolve(folder).resolve(uri);
 		}
+	}
+
+	private record EditableDocument(Map<String, Object> metadata, String content) {
 	}
 }

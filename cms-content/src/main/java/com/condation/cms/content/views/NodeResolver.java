@@ -23,7 +23,7 @@ package com.condation.cms.content.views;
 
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentQuery;
-import com.condation.cms.api.db.DB;
+import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
@@ -37,7 +37,6 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.graalvm.polyglot.Context;
 import org.yaml.snakeyaml.Yaml;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 
 /**
  *
@@ -45,15 +44,13 @@ import com.condation.cms.api.db.cms.ReadOnlyFile;
  */
 @RequiredArgsConstructor
 public class NodeResolver {
-	final DB db;
 	final ContentRepository contentRepository;
-	final ReadOnlyFile currentNode;
+	final ContentNode currentNode;
 	final Context context;
 	final Map<String, List<String>> queryParams;
 	
 	public Page<ListNode> nodelist (View view, RequestContext requestContext) {
 		NodeListFunctionBuilder nodelistBuilder = new NodeListFunctionBuilder(
-				db,
 				contentRepository,
 				currentNode, 
 				requestContext
@@ -75,7 +72,7 @@ public class NodeResolver {
 	
 	public Page<ListNode> query (View view, RequestContext requestContext) {
 		QueryFunction queryFunction = new QueryFunction(
-				db, contentRepository, currentNode, requestContext);
+				contentRepository, currentNode, requestContext);
 		
 		context.getBindings("js").putMember("queryParams", queryParams);
 		

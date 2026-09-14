@@ -29,9 +29,13 @@ import com.condation.cms.api.extensions.AbstractExtensionPoint;
 import com.condation.cms.api.feature.features.AuthFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.HookSystemFeature;
+import com.condation.cms.api.feature.features.InjectorFeature;
+import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.MutableContentRepository;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.core.serivce.ServiceRegistry;
 import com.condation.cms.core.serivce.impl.SiteDBService;
+import com.condation.cms.core.serivce.impl.SiteContentRepositoryService;
 import com.condation.cms.modules.ui.utils.UIHooks;
 import java.nio.file.Path;
 import java.util.Map;
@@ -64,6 +68,24 @@ public abstract class AbstractRemoteMethodeExtension extends AbstractExtensionPo
 		} else {
 			return getContext().get(DBFeature.class).db();
 		}
+	}
+
+	protected ContentRepository getContentRepository(Map<String, Object> parameters) {
+		if (parameters.containsKey(SITE_ID)) {
+			return ServiceRegistry.getInstance().get((String) parameters.get(SITE_ID),
+					SiteContentRepositoryService.class).orElseThrow().repository();
+		}
+		return getContext().get(InjectorFeature.class).injector()
+				.getInstance(ContentRepository.class);
+	}
+
+	protected MutableContentRepository getMutableContentRepository(Map<String, Object> parameters) {
+		if (parameters.containsKey(SITE_ID)) {
+			return ServiceRegistry.getInstance().get((String) parameters.get(SITE_ID),
+					SiteContentRepositoryService.class).orElseThrow().mutableRepository();
+		}
+		return getContext().get(InjectorFeature.class).injector()
+				.getInstance(MutableContentRepository.class);
 	}
 	
     

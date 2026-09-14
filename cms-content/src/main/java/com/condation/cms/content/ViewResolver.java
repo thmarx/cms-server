@@ -23,7 +23,6 @@ package com.condation.cms.content;
 import com.condation.cms.api.content.ContentResponse;
 import com.condation.cms.api.content.DefaultContentResponse;
 import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
@@ -42,15 +41,12 @@ public class ViewResolver {
 
 	private final ContentRenderer contentRenderer;
 
-	private final DB db;
 	private final ContentRepository contentRepository;
 
 	public ViewResolver(
 			ContentRenderer contentRenderer,
-			DB db,
 			ContentRepository contentRepository) {
 		this.contentRenderer = contentRenderer;
-		this.db = db;
 		this.contentRepository = contentRepository;
 	}
 
@@ -81,12 +77,9 @@ public class ViewResolver {
 				return Optional.empty();
 			}
 			var view = ViewParser.parse(document.get().content());
-			var contentFile = db.getFileSystem().contentBase().resolve(contentNode.path());
-			
 			var page = view.getNodes(
-				db,
 				contentRepository,
-				contentFile,
+				contentNode,
 				context.get(RequestExtensions.class).getContext(), 
 				context.get(RequestFeature.class).queryParameters(), context);
 			

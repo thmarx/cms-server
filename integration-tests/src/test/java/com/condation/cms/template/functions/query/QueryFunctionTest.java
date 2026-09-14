@@ -87,9 +87,9 @@ public class QueryFunctionTest {
 				db.getContent(), db.getFileSystem(),
 				new FileSystemContentStore(db.getFileSystem()), contentParser);
 		defaultContentParser = new DefaultContentParser();
-		query = new QueryFunction(db, contentRepository,
-				new NIOReadOnlyFile(Path.of("hosts/test/content/nav/index.md"), hostBase), 
-				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
+		query = new QueryFunction(contentRepository,
+				contentRepository.get("nav/index.md").orElseThrow(),
+				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(contentRepository)));
 	}
 	protected static DefaultContentParser defaultContentParser;
 

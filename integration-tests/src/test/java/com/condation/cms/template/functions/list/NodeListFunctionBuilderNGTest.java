@@ -91,9 +91,9 @@ public class NodeListFunctionBuilderNGTest {
 				db.getContent(), db.getFileSystem(),
 				new FileSystemContentStore(db.getFileSystem()), parser);
 		
-		nodeList = new NodeListFunctionBuilder(db, contentRepository,
-				new NIOReadOnlyFile(db.getFileSystem().resolve("content/").resolve("index.md"), hostBase), 
-				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
+		nodeList = new NodeListFunctionBuilder(contentRepository,
+				contentRepository.get("index.md").orElseThrow(),
+				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(contentRepository)));
 	}
 	@AfterAll
 	static void close () throws Exception {
@@ -180,9 +180,9 @@ public class NodeListFunctionBuilderNGTest {
 	
 	@Test
 	void test_from_subfolder () throws IOException {
-		var nodeList = new NodeListFunctionBuilder(db, contentRepository,
-				new NIOReadOnlyFile(db.getFileSystem().resolve("content/nodelist2/index.md"), hostBase), 
-				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
+		var nodeList = new NodeListFunctionBuilder(contentRepository,
+				contentRepository.get("nodelist2/index.md").orElseThrow(),
+				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(contentRepository)));
 		Page<ListNode> page = nodeList.from("./sub_folder/*").page(1).size(10).list();
 		var nodeUris = page.getItems().stream().map(ListNode::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
@@ -196,9 +196,9 @@ public class NodeListFunctionBuilderNGTest {
 	
 	@Test
 	void test_json () throws IOException {
-		var nodeList = new NodeListFunctionBuilder(db, contentRepository,
-				new NIOReadOnlyFile(db.getFileSystem().resolve("content/index.md"), hostBase), 
-				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(db, parser)));
+		var nodeList = new NodeListFunctionBuilder(contentRepository,
+				contentRepository.get("index.md").orElseThrow(),
+				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(contentRepository)));
 		Page<ListNode> page = nodeList.from("./json").page(1).size(10).list();
 		Assertions.assertThat(page.getItems()).hasSize(1);
 		Assertions.assertThat(page.getItems().getFirst().name()).isEqualTo("HTML");

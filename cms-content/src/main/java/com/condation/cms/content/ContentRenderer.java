@@ -24,7 +24,6 @@ package com.condation.cms.content;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.collection.CollectionItem;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.taxonomy.Taxonomy;
 import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
@@ -50,7 +49,6 @@ public interface ContentRenderer {
 			final RequestContext context) throws IOException;
 
 	String renderCollection(
-			final ReadOnlyFile collectionFile,
 			final ContentNode collectionNode,
 			final CollectionItem item,
 			final String template,

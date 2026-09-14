@@ -63,6 +63,10 @@ public interface ContentRepository {
 
 	VariantContext variantContext(ContentNode node);
 
+	default Optional<String> variantSelectorId(ContentNode node) {
+		return Optional.empty();
+	}
+
 	ContentQuery<ContentNode> query();
 
 	ContentQuery<ContentNode> query(String startPath);

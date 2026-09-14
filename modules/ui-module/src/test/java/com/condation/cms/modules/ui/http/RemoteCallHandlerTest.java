@@ -31,11 +31,14 @@ import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.DBFeature;
+import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.ui.rpc.RPCError;
 import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.ui.rpc.RPCResult;
 import com.condation.cms.modules.ui.services.RemoteMethodService;
+import com.google.inject.Injector;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
@@ -94,8 +97,8 @@ class RemoteCallHandlerTest {
 	@Test
 	void contentUriHeaderAddsCurrentNodeFeature() throws Exception {
 		var context = new RequestContext();
-		var db = mock(DB.class);
-		var content = mock(Content.class);
+		var injector = mock(Injector.class);
+		var content = mock(ContentRepository.class);
 		var request = mock(Request.class);
 		var headers = mock(HttpFields.class);
 		var node = new ContentNode(
@@ -104,13 +107,14 @@ class RemoteCallHandlerTest {
 				"about.md",
 				Map.of()
 		);
-		when(moduleContext.has(DBFeature.class)).thenReturn(true);
-		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		when(db.getContent()).thenReturn(content);
+		when(moduleContext.has(InjectorFeature.class)).thenReturn(true);
+		when(moduleContext.get(InjectorFeature.class)).thenReturn(new InjectorFeature(injector));
+		when(injector.getInstance(ContentRepository.class)).thenReturn(content);
 		when(request.getHeaders()).thenReturn(headers);
 		when(headers.get(RemoteCallHandler.COLLECTION_HEADER)).thenReturn(null);
 		when(headers.get(RemoteCallHandler.CONTENT_URI_HEADER)).thenReturn(node.uri());
-		when(content.byUri(node.uri())).thenReturn(Optional.of(node));
+		when(content.findByUrl(node.uri())).thenReturn(Optional.empty());
+		when(content.get(node.uri())).thenReturn(Optional.of(node));
 
 		var handler = new RemoteCallHandler(remoteMethodService, moduleContext, context);
 		var method = RemoteCallHandler.class.getDeclaredMethod("setCurrentContentNode", Request.class);
@@ -123,18 +127,18 @@ class RemoteCallHandlerTest {
 	@Test
 	void unknownContentUriHeaderDoesNotAddCurrentNodeFeature() throws Exception {
 		var context = new RequestContext();
-		var db = mock(DB.class);
-		var content = mock(Content.class);
+		var injector = mock(Injector.class);
+		var content = mock(ContentRepository.class);
 		var request = mock(Request.class);
 		var headers = mock(HttpFields.class);
-		when(moduleContext.has(DBFeature.class)).thenReturn(true);
-		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		when(db.getContent()).thenReturn(content);
+		when(moduleContext.has(InjectorFeature.class)).thenReturn(true);
+		when(moduleContext.get(InjectorFeature.class)).thenReturn(new InjectorFeature(injector));
+		when(injector.getInstance(ContentRepository.class)).thenReturn(content);
 		when(request.getHeaders()).thenReturn(headers);
 		when(headers.get(RemoteCallHandler.COLLECTION_HEADER)).thenReturn(null);
 		when(headers.get(RemoteCallHandler.CONTENT_URI_HEADER)).thenReturn("unknown.md");
-		when(content.byUri("unknown.md")).thenReturn(Optional.empty());
-		when(content.byPath("unknown.md")).thenReturn(Optional.empty());
+		when(content.findByUrl("unknown.md")).thenReturn(Optional.empty());
+		when(content.get("unknown.md")).thenReturn(Optional.empty());
 
 		var handler = new RemoteCallHandler(remoteMethodService, moduleContext, context);
 		var method = RemoteCallHandler.class.getDeclaredMethod("setCurrentContentNode", Request.class);

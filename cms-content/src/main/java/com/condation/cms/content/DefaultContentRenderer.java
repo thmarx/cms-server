@@ -27,7 +27,6 @@ import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.collection.CollectionItem;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.taxonomy.Taxonomy;
 import com.condation.cms.api.extensions.ContentQueryOperatorExtensionPoint;
 import com.condation.cms.api.extensions.TemplateModelExtendingExtensionPoint;
@@ -115,9 +114,8 @@ public class DefaultContentRenderer implements ContentRenderer {
 			ContentDocument document,
 			RequestContext context,
 			Map<String, List<SectionEntry>> sectionEntries) throws IOException {
-		var contentFile = db.getFileSystem().contentBase().resolve(document.node().path());
 		return renderResolved(
-				contentFile,
+				document.node(),
 				context,
 				new ResolvedRenderInput(
 						document.node().path(),
@@ -140,10 +138,9 @@ public class DefaultContentRenderer implements ContentRenderer {
 		Map<String, List<SectionEntry>> renderedSections = new HashMap<>();
 		for (var section : sections) {
 			try {
-				var sectionFile = db.getFileSystem().contentBase().resolve(section.id());
 				var sectionNode = contentRepository.get(section.id());
 				var renderedContent = renderResolved(
-						sectionFile,
+						sectionNode.orElse(null),
 						context,
 						new ResolvedRenderInput(
 								section.id(),
@@ -177,15 +174,10 @@ public class DefaultContentRenderer implements ContentRenderer {
 			Map<String, Object> meta,
 			Page<ListNode> page,
 			Map<String, List<SectionEntry>> sectionEntries) throws IOException {
-		var contentFile = document
-				.map(ContentDocument::node)
-				.map(ContentNode::path)
-				.map(path -> db.getFileSystem().contentBase().resolve(path))
-				.orElseGet(() -> db.getFileSystem().contentBase().resolve("index.md"));
 		var rawContent = document.map(ContentDocument::content).orElse("");
 		var node = document.map(ContentDocument::node);
 		return renderResolved(
-				contentFile,
+				node.orElse(null),
 				context,
 				new ResolvedRenderInput(
 						node.map(ContentNode::path).orElse("index.md"),
@@ -213,9 +205,8 @@ public class DefaultContentRenderer implements ContentRenderer {
 			View view,
 			RequestContext requestContext,
 			Page<ListNode> page) throws IOException {
-		var viewFile = db.getFileSystem().contentBase().resolve(document.node().path());
 		return renderResolved(
-				viewFile,
+				document.node(),
 				requestContext,
 				new ResolvedRenderInput(
 						document.node().path(),
@@ -234,7 +225,6 @@ public class DefaultContentRenderer implements ContentRenderer {
 
 	@Override
 	public String renderCollection(
-			ReadOnlyFile collectionFile,
 			ContentNode collectionNode,
 			CollectionItem item,
 			String template,
@@ -242,7 +232,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 		var meta = new HashMap<>(item.meta());
 		meta.put("template", template);
 		return renderResolved(
-				collectionFile,
+				collectionNode,
 				context,
 				new ResolvedRenderInput(
 						collectionNode.url(),
@@ -257,7 +247,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 	}
 
 	private String renderResolved(
-			ReadOnlyFile contentFile,
+			ContentNode currentNode,
 			RequestContext context,
 			ResolvedRenderInput input,
 			Consumer<TemplateEngine.Model> modelExtending) throws IOException {
@@ -267,8 +257,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 		var rawContent = input.rawContent();
 		var contentNode = input.contentNode();
 		TemplateEngine.Model model = new TemplateEngine.Model(
-				contentFile, 
-				contentNode.orElse(null),
+				contentNode.orElse(currentNode),
 				context);
 
 		modelExtending.accept(model);
@@ -283,13 +272,13 @@ public class DefaultContentRenderer implements ContentRenderer {
 		
 		namespace.add(Constants.TemplateNamespaces.NODE, "properties", new MapAccess((NodeProperties.createNodeProperties(contentNode.orElse(null), siteProperties))));
 		
-		NavigationFunction navigationFunction = createNavigationFunction(contentFile, context);
+		NavigationFunction navigationFunction = createNavigationFunction(currentNode, context);
 		namespace.add(Constants.TemplateNamespaces.CMS, "navigation", navigationFunction);
 		
-		NodeListFunctionBuilder nodeListFunction = createNodeListFunction(contentFile, context);
+		NodeListFunctionBuilder nodeListFunction = createNodeListFunction(currentNode, context);
 		namespace.add(Constants.TemplateNamespaces.CMS, "nodeList", nodeListFunction);
 		
-		QueryFunction queryFunction = createQueryFunction(contentFile, context);
+		QueryFunction queryFunction = createQueryFunction(currentNode, context);
 		namespace.add(Constants.TemplateNamespaces.CMS, "query", queryFunction);
 		namespace.add(Constants.TemplateNamespaces.CMS, "geo", new GeoFunction());
 		
@@ -348,7 +337,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 		return new MarkdownFunction(context.get(MarkdownRendererFeature.class).markdownRenderer());
 	}
 
-	protected QueryFunction createQueryFunction(final ReadOnlyFile contentFile, final RequestContext context) {
+	protected QueryFunction createQueryFunction(final ContentNode currentNode, final RequestContext context) {
 
 		Map<String, BiPredicate<Object, Object>> customOperators = new HashMap<>();
 
@@ -359,19 +348,19 @@ public class DefaultContentRenderer implements ContentRenderer {
 				.forEach(extension -> customOperators.put(extension.getOperator(), extension.getPredicate()));
 
 		var queryFn = new QueryFunction(
-				db, contentRepository, contentFile, context, customOperators);
+				contentRepository, currentNode, context, customOperators);
 		queryFn.setContentType(siteProperties.defaultContentType());
 		return queryFn;
 	}
 
-	protected NodeListFunctionBuilder createNodeListFunction(final ReadOnlyFile contentFile, final RequestContext context) {
-		var nlFn = new NodeListFunctionBuilder(db, contentRepository, contentFile, context);
+	protected NodeListFunctionBuilder createNodeListFunction(final ContentNode currentNode, final RequestContext context) {
+		var nlFn = new NodeListFunctionBuilder(contentRepository, currentNode, context);
 		nlFn.contentType(siteProperties.defaultContentType());
 		return nlFn;
 	}
 
-	protected NavigationFunction createNavigationFunction(final ReadOnlyFile contentFile, final RequestContext context) {
-		var navFn = new NavigationFunction(db, contentRepository, contentFile, context);
+	protected NavigationFunction createNavigationFunction(final ContentNode currentNode, final RequestContext context) {
+		var navFn = new NavigationFunction(contentRepository, currentNode, context);
 		navFn.contentType(siteProperties.defaultContentType());
 		return navFn;
 	}

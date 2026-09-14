@@ -25,6 +25,8 @@ import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.feature.features.DBFeature;
+import com.condation.cms.api.feature.features.InjectorFeature;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.ui.rpc.RPCError;
 import com.condation.cms.api.ui.rpc.RPCException;
@@ -104,12 +106,13 @@ public class RemoteCallHandler extends JettyHandler {
 		if (uri == null || uri.isBlank()) {
 			return;
 		}
-		if (!moduleContext.has(DBFeature.class)) {
+		if (!moduleContext.has(InjectorFeature.class)) {
 			return;
 		}
-		var content = moduleContext.get(DBFeature.class).db().getContent();
-		content.byUri(uri.trim())
-				.or(() -> content.byPath(uri.trim()))
+		var content = moduleContext.get(InjectorFeature.class).injector()
+				.getInstance(ContentRepository.class);
+		content.findByUrl(uri.trim())
+				.or(() -> content.get(uri.trim()))
 				.ifPresent(node -> requestContext.add(
 						CurrentNodeFeature.class,
 						new CurrentNodeFeature(node)

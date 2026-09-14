@@ -113,7 +113,7 @@ public class NavigationFunctionITest {
 		requestContext.add(ConfigurationFeature.class, configFeature);
 		requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 		requestContext.add(ContentParserFeature.class, new ContentParserFeature(contentParser));
-		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(new ContentNodeMapper(db, contentParser)));
+		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(new ContentNodeMapper(contentRepository)));
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(new CMSMarkdownRenderer()));
 		requestContext.add(HookSystemFeature.class, new HookSystemFeature(new CMSHookSystem()));
 
@@ -128,9 +128,9 @@ public class NavigationFunctionITest {
 	@Test
 	void test_root() {
 		ScopedValue.where(RequestContextScope.REQUEST_CONTEXT, requestContext).run(() -> {
-			var currentNode = db.getFileSystem().contentBase();
+			var currentNode = contentRepository.get("index.md").orElseThrow();
 			NavigationFunction fn = new NavigationFunction(
-					db, contentRepository, currentNode, requestContext);
+					contentRepository, currentNode, requestContext);
 
 			var nodes = fn.json().list(".");
 

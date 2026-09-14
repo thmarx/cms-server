@@ -39,6 +39,7 @@ import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.ui.rpc.RPCException;
+import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.workflow.WFStatusProvider;
 import com.condation.cms.api.workflow.WFStatusQueryProvider;
 import com.condation.cms.api.workflow.Workflow;
@@ -93,13 +94,21 @@ class RemoteWorkflowEndpointsExtensionTest {
 	@Mock
 	private Collections collections;
 
+	@Mock
+	private ContentRepository contentRepository;
+
 	private RemoteWorkflowEndpointsExtension endpoints;
 
 	@BeforeEach
 	void setUp() {
-		endpoints = new RemoteWorkflowEndpointsExtension();
+		endpoints = new RemoteWorkflowEndpointsExtension() {
+			@Override
+			protected ContentRepository getContentRepository(Map<String, Object> parameters) {
+				return contentRepository;
+			}
+		};
 		endpoints.setContext(moduleContext);
-		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
+		lenient().when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
 		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
 		lenient().when(db.getCollections()).thenReturn(collections);
 		lenient().when(collections.isLocal("blog")).thenReturn(true);
@@ -190,15 +199,13 @@ class RemoteWorkflowEndpointsExtensionTest {
 
 	@Test
 	void unpublishedPages_delegatesFilteringAndPaginationToWorkflowProvider() throws RPCException {
-		Content content = mock(Content.class);
 		@SuppressWarnings("unchecked")
 		ContentQuery<ContentNode> query = mock(ContentQuery.class);
 		WFStatusQueryProvider statusProvider = mock(WFStatusQueryProvider.class);
 		Workflow workflow = mock(Workflow.class);
 		Page<ContentNode> emptyPage = new Page<>(0, 5, 0, 1, List.of());
 
-		when(db.getContent()).thenReturn(content);
-		doReturn(query).when(content).query(any());
+		doReturn(query).when(contentRepository).query();
 		when(query.variants(VariantSearchMode.ORIGINAL)).thenReturn(query);
 		when(statusProvider.unpublished(query)).thenReturn(query);
 		when(query.page(1, 5)).thenReturn(emptyPage);

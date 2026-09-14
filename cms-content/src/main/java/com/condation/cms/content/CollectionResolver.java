@@ -80,13 +80,7 @@ public class CollectionResolver {
 				CurrentCollectionItemFeature.class,
 				new CurrentCollectionItemFeature(collectionItem));
 
-		var sourceDB = sourceDB(route.definition());
-		var collectionFile = sourceDB.getFileSystem().collectionsBase().resolve(collectionItem.path());
-		if (!collectionFile.exists()) {
-			return Optional.empty();
-		}
 		var content = contentRenderer.renderCollection(
-				collectionFile,
 				node,
 				collectionItem,
 				route.detail().template(),
@@ -94,19 +88,4 @@ public class CollectionResolver {
 		return Optional.of(new DefaultContentResponse(content, Constants.DEFAULT_CONTENT_TYPE, node));
 	}
 
-	private DB sourceDB(CollectionDefinition definition) {
-		var sourceSite = definition.sourceSite();
-		if (sourceSite.isEmpty()) {
-			return db;
-		}
-		var siteConfiguration = configuration.get(SiteConfiguration.class);
-		if (siteConfiguration != null
-				&& siteConfiguration.siteProperties().id().equals(sourceSite.get())) {
-			return db;
-		}
-		return ServiceRegistry.getInstance().get(sourceSite.get(), SiteDBService.class)
-				.orElseThrow(() -> new IllegalStateException(
-						"collection source site is not available: " + sourceSite.get()))
-				.db();
-	}
 }

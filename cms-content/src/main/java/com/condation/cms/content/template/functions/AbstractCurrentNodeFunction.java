@@ -20,14 +20,11 @@ package com.condation.cms.content.template.functions;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import com.condation.cms.api.db.DB;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
+import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.feature.features.IsPreviewFeature;
-import com.condation.cms.api.mapper.ContentNodeMapper;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.repository.ContentRepository;
-import com.condation.cms.api.utils.PathUtil;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -37,10 +34,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public abstract class AbstractCurrentNodeFunction {
 
-	protected final DB db;
-	protected final ReadOnlyFile currentNode;
+	protected final ContentNode currentNode;
 	protected final ContentRepository contentRepository;
-	protected final ContentNodeMapper contentNodeMapper;
 	protected final RequestContext context;
 
 	protected boolean isPreview() {
@@ -60,9 +55,8 @@ public abstract class AbstractCurrentNodeFunction {
 		return IsPreviewFeature.Mode.PREVIEW.getValue();
 	}
 
-	protected String repositoryPath(ReadOnlyFile base, String path) {
-		var basePath = PathUtil.toRelativePath(base, db.getFileSystem().contentBase())
-				.replace('\\', '/');
+	protected String repositoryPath(String basePath, String path) {
+		basePath = normalize(basePath);
 		var childPath = path.replace('\\', '/');
 		while (childPath.startsWith("./")) {
 			childPath = childPath.substring(2);
@@ -70,9 +64,35 @@ public abstract class AbstractCurrentNodeFunction {
 		while (childPath.startsWith("/")) {
 			childPath = childPath.substring(1);
 		}
+		if (".".equals(childPath)) {
+			childPath = "";
+		}
 		if (childPath.isEmpty()) {
 			return basePath;
 		}
 		return basePath.isEmpty() ? childPath : basePath + "/" + childPath;
+	}
+
+	protected String currentDirectory() {
+		if (currentNode == null) {
+			return "";
+		}
+		var path = normalize(currentNode.path());
+		if (currentNode.isDirectory()) {
+			return path;
+		}
+		var separator = path.lastIndexOf('/');
+		return separator < 0 ? "" : path.substring(0, separator);
+	}
+
+	protected static String normalize(String path) {
+		var normalized = path == null ? "" : path.replace('\\', '/');
+		while (normalized.startsWith("/")) {
+			normalized = normalized.substring(1);
+		}
+		while (normalized.endsWith("/") && !normalized.isEmpty()) {
+			normalized = normalized.substring(0, normalized.length() - 1);
+		}
+		return normalized;
 	}
 }

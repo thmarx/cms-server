@@ -36,6 +36,8 @@ import com.condation.cms.api.repository.ContentResource;
 import com.condation.cms.api.repository.ContentStore;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +46,12 @@ import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class FileSystemContentRepositoryTest {
+
+	@TempDir
+	Path contentBase;
 
 	private Content content;
 	private DBFileSystem fileSystem;
@@ -62,6 +68,8 @@ public class FileSystemContentRepositoryTest {
 		contentParser = mock(ContentParser.class);
 		contentStore = mock(ContentStore.class);
 		when(fileSystem.contentBase()).thenReturn(contentRoot);
+		when(fileSystem.resolve(com.condation.cms.api.Constants.Folders.CONTENT))
+				.thenReturn(contentBase);
 		repository = new FileSystemContentRepository(content, fileSystem, contentStore, contentParser);
 	}
 
@@ -160,6 +168,29 @@ public class FileSystemContentRepositoryTest {
 		Assertions.assertThat(repository.query()).isSameAs(allContentQuery);
 		Assertions.assertThat(repository.query("articles")).isSameAs(scopedQuery);
 		verify(content).query(org.mockito.ArgumentMatchers.eq("articles"), any());
+	}
+
+	@Test
+	void writesMovesAndDeletesContentBehindTheMutableRepositoryBoundary() throws Exception {
+		repository.save("drafts/page.md", Map.of("title", "Draft"), "body");
+		var source = contentBase.resolve("drafts/page.md");
+		Assertions.assertThat(Files.readString(source))
+				.contains("title: Draft", "body");
+
+		repository.move("drafts/page.md", "published/page.md");
+		var target = contentBase.resolve("published/page.md");
+		Assertions.assertThat(source).doesNotExist();
+		Assertions.assertThat(target).exists();
+
+		repository.deleteRecursively("published");
+		Assertions.assertThat(contentBase.resolve("published")).doesNotExist();
+		verify(fileSystem, org.mockito.Mockito.times(3)).flushContentChanges();
+	}
+
+	@Test
+	void rejectsWritesOutsideTheContentRoot() {
+		Assertions.assertThatThrownBy(() -> repository.save("../outside.md", Map.of(), ""))
+				.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	private static ContentNode node(String path) {

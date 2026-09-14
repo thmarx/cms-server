@@ -55,8 +55,6 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
 	@RemoteMethod(name = "files.list", permissions = {Permissions.CONTENT_EDIT})
 	public Object list(Map<String, Object> parameters) throws RPCException {
-		final DB db = getDB(parameters);
-		
 		var uri = (String) parameters.getOrDefault("uri", "");
 		if (uri == null) {
 			uri = "";
@@ -65,6 +63,10 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			uri = uri.substring(1);
 		}
 		var type = (String) parameters.get("type");
+		if ("content".equals(type)) {
+			return listContent(parameters, uri);
+		}
+		final DB db = getDB(parameters);
 		var contentBase = getBase(db.getFileSystem(), type);
 
 		var contentFile = contentBase.resolve(uri);
@@ -82,7 +84,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 				contentFile.children().stream()
 						.filter(child -> !SectionUtil.isSectionEntry(child.getFileName()))
 						.filter(child -> !".variants".equals(child.getFileName()))
-						.map(child -> map(db, type, child))
+						.map(this::map)
 						.forEach(files::add);
 			} catch (IOException ex) {
 				log.error("", ex);
@@ -106,14 +108,24 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
 	@RemoteMethod(name = "files.delete", permissions = {Permissions.CONTENT_EDIT})
 	public Object delete(Map<String, Object> parameters) throws RPCException {
-		final DB db = getDB(parameters);
-
 		Map<String, Object> result = new HashMap<>();
 
 		try {
 			var uri = (String) parameters.getOrDefault("uri", "");
 			var name = (String) parameters.getOrDefault("name", "");
 			var type = (String) parameters.get("type");
+			if ("content".equals(type)) {
+				var repository = getMutableContentRepository(parameters);
+				var path = join(uri, name);
+				var node = repository.get(path);
+				var sections = node.isPresent() ? repository.sections(node.get()) : List.<com.condation.cms.api.repository.Section>of();
+				repository.deleteRecursively(path);
+				for (var section : sections) {
+					repository.deleteRecursively(section.id());
+				}
+				return result;
+			}
+			final DB db = getDB(parameters);
 			var contentBase = getBase(db.getFileSystem(), type);
 
 			var contentFile = contentBase.resolve(uri).resolve(name);
@@ -125,17 +137,6 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 				FileUtils.deleteFolder(writableBase.resolve(uri).resolve(name));
 			} else if ("assets".equals(type)) {
 				Files.deleteIfExists(writableBase.resolve(uri).resolve(name));
-			} else {
-				var sections = db.getContent().listSectionEntries(contentFile);
-				Files.deleteIfExists(writableBase.resolve(uri).resolve(name));
-				sections.forEach(node -> {
-					try {
-						log.debug("deleting section {}", node.uri());
-						FileUtils.deleteFolder(writableBase.resolve(node.uri()));
-					} catch (IOException ioe) {
-						log.error("error deleting file {}", node.uri(), ioe);
-					}
-				});
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -147,7 +148,6 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
 	@RemoteMethod(name = "files.rename", permissions = {Permissions.CONTENT_EDIT})
 	public Object renameFile(Map<String, Object> parameters) throws RPCException {
-		final DB db = getDB(parameters);
 		Map<String, Object> result = new HashMap<>();
 
 		try {
@@ -159,7 +159,28 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			if (newName == null || newName.isBlank()) {
 				throw new IllegalArgumentException("newName must not be null or blank");
 			}
+			if ("content".equals(type)) {
+				var repository = getMutableContentRepository(parameters);
+				var source = join(uri, name);
+				if (name.endsWith(".md")) {
+					var node = repository.get(source).orElseThrow(
+							() -> new RPCException("Source content not found: " + source));
+					var document = repository.load(node).orElseThrow();
+					var metadata = new HashMap<>(node.data());
+					metadata.put(Constants.MetaFields.TITLE, newName.trim());
+					repository.save(source, metadata, document.content());
+					result.put("success", true);
+					result.put("newName", name);
+					result.put("title", newName.trim());
+				} else {
+					repository.move(source, join(uri, newName));
+					result.put("success", true);
+					result.put("newName", newName);
+				}
+				return result;
+			}
 
+			final DB db = getDB(parameters);
 			var contentBase = getBase(db.getFileSystem(), type);
 			
 			// check if both paths are in host directory
@@ -215,14 +236,17 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
 	@RemoteMethod(name = "folders.create", permissions = {Permissions.CONTENT_EDIT})
 	public Object createFolder(Map<String, Object> parameters) throws RPCException {
-		final DB db = getDB(parameters);
-
 		Map<String, Object> result = new HashMap<>();
 
 		try {
 			var name = (String) parameters.getOrDefault("name", "");
 			var uri = (String) parameters.getOrDefault("uri", "");
 			var type = (String) parameters.get("type");
+			if ("content".equals(type)) {
+				getMutableContentRepository(parameters).createDirectory(join(uri, UIPathUtil.slugify(name)));
+				return result;
+			}
+			final DB db = getDB(parameters);
 			var contentBase = getWritableBase(db.getFileSystem(), type);
 
 			name = UIPathUtil.slugify(name);
@@ -246,14 +270,18 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
 	@RemoteMethod(name = "files.create", permissions = {Permissions.CONTENT_EDIT})
 	public Object createFile(Map<String, Object> parameters) throws RPCException {
-		final DB db = getDB(parameters);
-
 		Map<String, Object> result = new HashMap<>();
 
 		try {
 			var uri = (String) parameters.getOrDefault("uri", "");
 			var name = (String) parameters.getOrDefault("name", "");
 			var type = (String) parameters.get("type");
+			if ("content".equals(type)) {
+				var path = join(uri, UIPathUtil.slugify(name));
+				getMutableContentRepository(parameters).save(path, Map.of(), "");
+				return result;
+			}
+			final DB db = getDB(parameters);
 			var contentBase = getWritableBase(db.getFileSystem(), type);
 
 			name = UIPathUtil.slugify(name);
@@ -286,8 +314,40 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 				|| name.endsWith(".svg")
 				|| name.endsWith(".gif");
 	}
+
+	private Object listContent(Map<String, Object> parameters, String uri) {
+		var repository = getContentRepository(parameters);
+		List<File> files = repository.children(uri).stream()
+				.filter(node -> !node.isSectionEntry())
+				.filter(node -> !".variants".equals(node.name()))
+				.map(node -> (File) (node.isDirectory()
+						? new Directory(node.name(), node.path())
+						: new Content(node.name(), node.path(), node.url(),
+								node.getMetaValue(Constants.MetaFields.TITLE, node.name()))))
+				.collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+		var parent = parentPath(uri);
+		if (!uri.isBlank()) {
+			files.add(new Directory("..", parent));
+		}
+		files.sort((first, second) -> {
+			if (first.directory() != second.directory()) {
+				return first.directory() ? -1 : 1;
+			}
+			return first.displayName().compareToIgnoreCase(second.displayName());
+		});
+		return Map.of("uri", uri, "files", files);
+	}
+
+	private static String join(String parent, String child) {
+		return parent == null || parent.isBlank() ? child : parent + "/" + child;
+	}
+
+	private static String parentPath(String path) {
+		var separator = path.lastIndexOf('/');
+		return separator < 0 ? "" : path.substring(0, separator);
+	}
 	
-	private File map (DB db, String type, ReadOnlyFile readOnlyFile) {
+	private File map(ReadOnlyFile readOnlyFile) {
 		if (readOnlyFile.isDirectory()) {
 			return new Directory(
 						readOnlyFile.getFileName(),
@@ -299,19 +359,11 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 					readOnlyFile.uri()
 			);
 		} else {
-			var title = "assets".equals(type)
-					? readOnlyFile.getFileName()
-					: db.getContent().byPath(readOnlyFile.relativePath())
-							.map(node -> node.data().get(Constants.MetaFields.TITLE))
-							.filter(String.class::isInstance)
-							.map(String.class::cast)
-							.filter(value -> !value.isBlank())
-							.orElse(readOnlyFile.getFileName());
 			return new Content(
 					readOnlyFile.getFileName(),
 					readOnlyFile.uri(),
 					readOnlyFile.uri(),
-					title
+					readOnlyFile.getFileName()
 			);
 		}
 	}

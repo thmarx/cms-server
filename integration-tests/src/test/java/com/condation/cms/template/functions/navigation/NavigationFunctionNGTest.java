@@ -88,9 +88,9 @@ public class NavigationFunctionNGTest {
 				db.getContent(), db.getFileSystem(),
 				new FileSystemContentStore(db.getFileSystem()), contentParser);
 		defaultContentParser = new DefaultContentParser();
-		navigationFunction = new NavigationFunction(db, contentRepository,
-				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
-				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
+		navigationFunction = new NavigationFunction(contentRepository,
+				contentRepository.get("nav/index.md").orElseThrow(),
+				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(contentRepository)));
 	}
 	protected static DefaultContentParser defaultContentParser;
 
@@ -135,10 +135,9 @@ public class NavigationFunctionNGTest {
 	@Test
 	public void test_path() throws Exception {
 
-		var sut = new NavigationFunction(db, contentRepository,
-				db.getReadOnlyFileSystem().contentBase().resolve("nav3/folder1/index.md")
-				, 
-				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
+		var sut = new NavigationFunction(contentRepository,
+				contentRepository.get("nav3/folder1/index.md").orElseThrow(),
+				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(contentRepository)));
 		
 		List<NavNode> path = sut.path();
 
@@ -150,9 +149,9 @@ public class NavigationFunctionNGTest {
 	
 	@Test
 	public void test_json () throws IOException {
-		var navigationFunction = new NavigationFunction(db, contentRepository,
-				db.getReadOnlyFileSystem().contentBase().resolve("nav/index.md"),
-				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(db, defaultContentParser)));
+		var navigationFunction = new NavigationFunction(contentRepository,
+				contentRepository.get("nav/index.md").orElseThrow(),
+				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(contentRepository)));
 		
 		List<NavNode> list = navigationFunction.json().list("/json");
 		Assertions.assertThat(list).hasSize(1);

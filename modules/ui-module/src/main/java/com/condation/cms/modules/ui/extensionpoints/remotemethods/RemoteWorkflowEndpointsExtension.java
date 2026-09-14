@@ -74,33 +74,16 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 	private static final String TRANSITIONS = "transitions";
 	private static final String STATUS = "status";
 	
-	private Optional<WorkflowTarget> getContentTarget(String uri) {
-		final DB db = getContext().get(DBFeature.class).db();
-		var contentBase = db.getFileSystem().contentBase();
-		var contentFile = contentBase.resolve(uri);
-
-		if (!contentFile.exists()) {
-			return Optional.empty();
-		}
-
-		var node_uri = PathUtil.toRelativeFile(contentFile, contentBase);
-
-		var node = db.getContent().byPath(node_uri);
+	private Optional<WorkflowTarget> getContentTarget(Map<String, Object> parameters, String uri) {
+		var node = getContentRepository(parameters).get(uri);
 		if (node.isEmpty()) {
 			return Optional.empty();
 		}
 
 		return Optional.of(new WorkflowTarget(
-				new ContentNode(
-						node.get().uri(),
-                        node.get().url(),
-						node.get().name(),
-						node.get().data(),
-						node.get().directory(),
-						node.get().children(),
-						node.get().lastmodified()),
-				contentFile,
-				db.getFileSystem().resolve(Constants.Folders.CONTENT).resolve(uri),
+				node.get(),
+				null,
+				null,
 				false,
 				null,
 				null));
@@ -127,7 +110,7 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 					item.collection(),
 					item.id()));
 		}
-		return getContentTarget(contentUri(parameters));
+		return getContentTarget(parameters, contentUri(parameters));
 	}
 
 	private record WorkflowTarget(
@@ -179,11 +162,10 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 
 	@RemoteMethod(name = "workflow.pages.unpublished", permissions = {Permissions.CONTENT_EDIT})
 	public Object unpublishedPages(Map<String, Object> parameters) throws RPCException {
-		DB db = getDB(parameters);
 		long requestedPage = Math.max(1, NumberUtils.toLong(parameters.getOrDefault("page", 1L)));
 		long requestedSize = Math.clamp(NumberUtils.toLong(parameters.getOrDefault("size", 10L)), 1, 100);
 		Workflow workflow = getContext().get(WorkflowFeature.class).workflow();
-		var query = db.getContent().query((node, length) -> node)
+		var query = getContentRepository(parameters).query()
 				.variants(VariantSearchMode.ORIGINAL);
 		Page<ContentNode> page;
 
@@ -199,7 +181,7 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 			page = inMemoryPage(unpublished, requestedPage, requestedSize);
 		}
 
-		return mapPage(db, page);
+		return mapPage(page);
 	}
 
 	@RemoteMethod(name = "workflow.transit", permissions = {Permissions.WORKFLOW_EXECUTE})
@@ -225,15 +207,15 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 			ensureAllowed(transition);
 			workflow.transit(transitionId, contentNode);
 
-			ContentFileParser parser = new ContentFileParser(target.get().file());
-			YamlHeaderUpdater.saveMarkdownFileWithHeader(
-					target.get().writableFile(), contentNode.data(), parser.getContent());
 			if (target.get().collection()) {
+				ContentFileParser parser = new ContentFileParser(target.get().file());
+				YamlHeaderUpdater.saveMarkdownFileWithHeader(
+						target.get().writableFile(), contentNode.data(), parser.getContent());
 				db.getCollections().refresh(target.get().collectionName(), target.get().itemId());
 			} else {
-				getContext().get(EventBusFeature.class).eventBus()
-						.publish(new ReIndexContentMetaDataEvent(contentNode.uri()));
-				db.getFileSystem().flushContentChanges();
+				var repository = getMutableContentRepository(parameters);
+				var document = repository.load(contentNode).orElseThrow();
+				repository.save(contentNode.path(), contentNode.data(), document.content());
 			}
 			getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
 
@@ -270,11 +252,9 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 		return new Page<>(totalItems, requestedSize, totalPages, pageNumber, nodes.subList(from, to));
 	}
 
-	private Page<NodeDTO> mapPage(DB db, Page<ContentNode> page) {
-		var contentBase = db.getFileSystem().contentBase();
+	private Page<NodeDTO> mapPage(Page<ContentNode> page) {
 		List<NodeDTO> items = page.getItems().stream().map(node -> {
-			String url = PathUtil.toURL(contentBase.resolve(node.uri()), contentBase);
-			return new NodeDTO(HTTPUtil.modifyUrl(url, getContext()), node.data());
+			return new NodeDTO(HTTPUtil.modifyUrl(node.url(), getContext()), node.data());
 		}).toList();
 		return new Page<>(page.getTotalItems(), page.getPageSize(), page.getTotalPages(), page.getPage(), items);
 	}
