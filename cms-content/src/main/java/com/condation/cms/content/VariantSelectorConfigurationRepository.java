@@ -21,16 +21,11 @@ package com.condation.cms.content;
  * #L%
  */
 
-import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.api.repository.MutableContentRepository;
 import java.io.IOException;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /**
  * Loads and stores the selector configured for a canonical page.

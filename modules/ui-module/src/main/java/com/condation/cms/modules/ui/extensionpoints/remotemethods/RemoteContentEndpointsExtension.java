@@ -69,6 +69,8 @@ import java.nio.file.Files;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtension {
 
+	private static final String CONTENT_NOT_FOUND = "content not found";
+
 	@RemoteMethod(name = "content.get", permissions = {Permissions.CONTENT_EDIT})
 	public Object getContent(Map<String, Object> parameters) throws RPCException {
 		var target = editableTarget(parameters);
@@ -391,14 +393,14 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 		if (target.collectionName() != null) {
 			var item = getCollectionRepository(parameters)
 					.get(target.collectionName(), target.itemId())
-					.orElseThrow(() -> new RPCException(404, "content not found"));
+					.orElseThrow(() -> new RPCException(404, CONTENT_NOT_FOUND));
 			return new EditableDocument(new HashMap<>(item.meta()), item.content());
 		}
 		var repository = getContentRepository(parameters);
 		var node = repository.get(target.uri())
-				.orElseThrow(() -> new RPCException(404, "content not found"));
+				.orElseThrow(() -> new RPCException(404, CONTENT_NOT_FOUND));
 		var document = repository.load(node)
-				.orElseThrow(() -> new RPCException(404, "content not found"));
+				.orElseThrow(() -> new RPCException(404, CONTENT_NOT_FOUND));
 		return new EditableDocument(new HashMap<>(node.data()), document.content());
 	}
 

@@ -30,7 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class FileSystemContentStoreTest {
+class FileSystemContentStoreTest {
 
 	@TempDir
 	Path tempDirectory;

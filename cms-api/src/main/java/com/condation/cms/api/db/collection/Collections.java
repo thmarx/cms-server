@@ -30,7 +30,7 @@ import java.util.Set;
  * {@link com.condation.cms.api.repository.CollectionRepository}. This type
  * remains as the compatibility boundary for the filesystem implementation.
  */
-@Deprecated(forRemoval = false)
+@Deprecated(since = "8.4.0", forRemoval = false)
 public interface Collections {
 
 	Collection collection(String name);

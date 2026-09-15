@@ -141,7 +141,7 @@ public final class FileSystemContentRepository implements MutableContentReposito
 		Files.createDirectories(target.getParent());
 		try {
 			Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
-		} catch (AtomicMoveNotSupportedException exception) {
+		} catch (AtomicMoveNotSupportedException _) {
 			Files.move(source, target);
 		}
 		fileSystem.flushContentChanges();
@@ -321,7 +321,8 @@ public final class FileSystemContentRepository implements MutableContentReposito
 
 			var canonicalPath = index == 0
 					? fileName
-					: String.join("/", java.util.Arrays.copyOf(pathParts, index)) + "/" + fileName;
+					: String.join(Constants.PATH_SEPARATOR, java.util.Arrays.copyOf(pathParts, index))
+							+ Constants.PATH_SEPARATOR + fileName;
 			return Optional.of(new VariantLocation(canonicalPath, variantId));
 		}
 		return Optional.empty();

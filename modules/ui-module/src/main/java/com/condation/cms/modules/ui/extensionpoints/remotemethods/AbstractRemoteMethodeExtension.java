@@ -52,7 +52,7 @@ public abstract class AbstractRemoteMethodeExtension extends AbstractExtensionPo
 	
 	private static final String SITE_ID = "siteId";
 	private static final String ASSETS = "assets";
-	private static final String CONTENT = "content";
+	protected static final String CONTENT = "content";
 	
 	protected String getUserName() {
 		if (getRequestContext().has(AuthFeature.class)) {

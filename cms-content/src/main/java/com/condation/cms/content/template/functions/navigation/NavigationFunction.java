@@ -46,6 +46,8 @@ import lombok.extern.slf4j.Slf4j;
 public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private static final int DEFAULT_DEPTH = 1;
+	private static final String INDEX_MD = "index.md";
+	private static final String SLASH_INDEX_MD = "/" + INDEX_MD;
 
 	private String contentType = Constants.DEFAULT_CONTENT_TYPE;
 
@@ -194,24 +196,24 @@ public class NavigationFunction extends AbstractCurrentNodeFunction {
 
 	private String childBase(ContentNode node) {
 		var path = normalize(node.path());
-		return path.endsWith("index.md")
-				? path.substring(0, path.length() - "index.md".length())
+		return path.endsWith(INDEX_MD)
+				? path.substring(0, path.length() - INDEX_MD.length())
 				: path;
 	}
 
 	private Optional<ContentNode> parentNode(ContentNode node) {
 		var path = normalize(node.path());
 		var directory = node.isDirectory() ? path : parentPath(path);
-		if (path.endsWith("/index.md")) {
-			directory = parentPath(path.substring(0, path.length() - "/index.md".length()));
-		} else if ("index.md".equals(path)) {
+		if (path.endsWith(SLASH_INDEX_MD)) {
+			directory = parentPath(path.substring(0, path.length() - SLASH_INDEX_MD.length()));
+		} else if (INDEX_MD.equals(path)) {
 			return Optional.empty();
 		}
 		if (directory.isEmpty()) {
-			return contentRepository.get("index.md").filter(parent -> !parent.equals(node));
+			return contentRepository.get(INDEX_MD).filter(parent -> !parent.equals(node));
 		}
 		var parentDirectory = directory;
-		return contentRepository.get(parentDirectory + "/index.md")
+		return contentRepository.get(parentDirectory + SLASH_INDEX_MD)
 				.or(() -> contentRepository.get(parentDirectory))
 				.filter(parent -> !parent.equals(node));
 	}

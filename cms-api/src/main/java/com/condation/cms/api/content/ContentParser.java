@@ -44,13 +44,13 @@ public interface ContentParser {
 	/**
 	 * @deprecated use {@link #parse(ContentResource)} instead
 	 */
-	@Deprecated(since = "8.3.0", forRemoval = false)
+	@Deprecated(since = "8.4.0", forRemoval = false)
 	Content parse(final ReadOnlyFile contentFile) throws IOException;
 	
 	/**
 	 * @deprecated use {@link #parseMeta(ContentResource)} instead
 	 */
-	@Deprecated(since = "8.3.0", forRemoval = false)
+	@Deprecated(since = "8.4.0", forRemoval = false)
 	Map<String, Object> parseMeta(final ReadOnlyFile contentFile) throws IOException;
 	
 	record ContentRecord(String content, String meta) implements Serializable {}

@@ -71,8 +71,11 @@ public class DefaultContentParser implements ContentParser {
 		return _parseMeta(readContent(contentResource.content()));
 	}
 
+	/**
+	 * @deprecated use {@link #parse(ContentResource)} instead
+	 */
 	@Override
-	@Deprecated(since = "8.3.0", forRemoval = false)
+	@Deprecated(since = "8.4.0", forRemoval = false)
 	public Content parse(final ReadOnlyFile contentFile) throws IOException {
 		if (contentCache != null && contentCache.contains(contentFile.relativePath())) {
 			return contentCache.get(contentFile.relativePath());
@@ -111,8 +114,11 @@ public class DefaultContentParser implements ContentParser {
 		}
 	}
 
+	/**
+	 * @deprecated use {@link #parseMeta(ContentResource)} instead
+	 */
 	@Override
-	@Deprecated(since = "8.3.0", forRemoval = false)
+	@Deprecated(since = "8.4.0", forRemoval = false)
 	public Map<String, Object> parseMeta(final ReadOnlyFile contentFile) throws IOException {
 		ContentRecord readContent = readContent(contentFile.getAllLines());
 

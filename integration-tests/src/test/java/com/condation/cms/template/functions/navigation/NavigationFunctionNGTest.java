@@ -149,15 +149,15 @@ public class NavigationFunctionNGTest {
 	
 	@Test
 	public void test_json () throws IOException {
-		var navigationFunction = new NavigationFunction(contentRepository,
+		var navFunction = new NavigationFunction(contentRepository,
 				contentRepository.get("nav/index.md").orElseThrow(),
 				TestHelper.requestContext("/", defaultContentParser, markdownRenderer, new ContentNodeMapper(contentRepository)));
-		
-		List<NavNode> list = navigationFunction.json().list("/json");
+
+		List<NavNode> list = navFunction.json().list("/json");
 		Assertions.assertThat(list).hasSize(1);
 		Assertions.assertThat(list.get(0).name()).isEqualTo("JSON");
-		
-		list = navigationFunction.html().list("/json");
+
+		list = navFunction.html().list("/json");
 		Assertions.assertThat(list).hasSize(1);
 		Assertions.assertThat(list.get(0).name()).isEqualTo("HTML");
 	}

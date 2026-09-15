@@ -40,7 +40,9 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FileSystemContentRepositoryIntegrationTest {
 
@@ -54,10 +56,10 @@ class FileSystemContentRepositoryIntegrationTest {
 
 		var contentParser = new DefaultContentParser();
 		var configuration = new Configuration();
-		var siteConfiguration = Mockito.mock(SiteConfiguration.class);
-		var siteProperties = Mockito.mock(SiteProperties.class);
-		Mockito.when(siteProperties.id()).thenReturn("repository-test-site");
-		Mockito.when(siteConfiguration.siteProperties()).thenReturn(siteProperties);
+		var siteConfiguration = mock(SiteConfiguration.class);
+		var siteProperties = mock(SiteProperties.class);
+		when(siteProperties.id()).thenReturn("repository-test-site");
+		when(siteConfiguration.siteProperties()).thenReturn(siteProperties);
 		configuration.add(SiteConfiguration.class, siteConfiguration);
 
 		db = new FileDB(hostBase, new DefaultEventBus(), file -> {

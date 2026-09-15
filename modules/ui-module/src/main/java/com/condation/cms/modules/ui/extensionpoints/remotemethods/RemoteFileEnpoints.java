@@ -53,6 +53,8 @@ import java.nio.file.Path;
 @Extension(UIRemoteMethodExtensionPoint.class)
 public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
+	private static final String SUCCESS = "success";
+
 	@RemoteMethod(name = "files.list", permissions = {Permissions.CONTENT_EDIT})
 	public Object list(Map<String, Object> parameters) throws RPCException {
 		var uri = (String) parameters.getOrDefault("uri", "");
@@ -63,7 +65,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			uri = uri.substring(1);
 		}
 		var type = (String) parameters.get("type");
-		if ("content".equals(type)) {
+		if (CONTENT.equals(type)) {
 			return listContent(parameters, uri);
 		}
 		final DB db = getDB(parameters);
@@ -114,7 +116,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			var uri = (String) parameters.getOrDefault("uri", "");
 			var name = (String) parameters.getOrDefault("name", "");
 			var type = (String) parameters.get("type");
-			if ("content".equals(type)) {
+			if (CONTENT.equals(type)) {
 				var repository = getMutableContentRepository(parameters);
 				var path = join(uri, name);
 				var node = repository.get(path);
@@ -159,7 +161,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			if (newName == null || newName.isBlank()) {
 				throw new IllegalArgumentException("newName must not be null or blank");
 			}
-			if ("content".equals(type)) {
+			if (CONTENT.equals(type)) {
 				var repository = getMutableContentRepository(parameters);
 				var source = join(uri, name);
 				if (name.endsWith(".md")) {
@@ -169,12 +171,12 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 					var metadata = new HashMap<>(node.data());
 					metadata.put(Constants.MetaFields.TITLE, newName.trim());
 					repository.save(source, metadata, document.content());
-					result.put("success", true);
+					result.put(SUCCESS, true);
 					result.put("newName", name);
 					result.put("title", newName.trim());
 				} else {
 					repository.move(source, join(uri, newName));
-					result.put("success", true);
+					result.put(SUCCESS, true);
 					result.put("newName", newName);
 				}
 				return result;
@@ -210,7 +212,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 						new ReIndexContentMetaDataEvent(PathUtil.toRelativeFile(sourcePath, writableBase))
 				);
 				db.getFileSystem().flushContentChanges();
-				result.put("success", true);
+				result.put(SUCCESS, true);
 				result.put("newName", name);
 				result.put("title", newName.trim());
 				return result;
@@ -223,7 +225,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 
 			Files.move(sourcePath, targetPath);
 
-			result.put("success", true);
+			result.put(SUCCESS, true);
 			result.put("newName", newName);
 
 		} catch (Exception e) {
@@ -242,7 +244,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			var name = (String) parameters.getOrDefault("name", "");
 			var uri = (String) parameters.getOrDefault("uri", "");
 			var type = (String) parameters.get("type");
-			if ("content".equals(type)) {
+			if (CONTENT.equals(type)) {
 				getMutableContentRepository(parameters).createDirectory(join(uri, UIPathUtil.slugify(name)));
 				return result;
 			}
@@ -276,7 +278,7 @@ public class RemoteFileEnpoints extends AbstractRemoteMethodeExtension {
 			var uri = (String) parameters.getOrDefault("uri", "");
 			var name = (String) parameters.getOrDefault("name", "");
 			var type = (String) parameters.get("type");
-			if ("content".equals(type)) {
+			if (CONTENT.equals(type)) {
 				var path = join(uri, UIPathUtil.slugify(name));
 				getMutableContentRepository(parameters).save(path, Map.of(), "");
 				return result;

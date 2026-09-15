@@ -56,6 +56,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.Mockito.mock;
+
 /**
  *
  * @author t.marx
@@ -102,7 +104,7 @@ public class NavigationFunctionTest {
 		requestContext.add(ContentParserFeature.class, new ContentParserFeature(contentParser));
 		requestContext.add(MarkdownRendererFeature.class, new MarkdownRendererFeature(markdownRenderer));
 		requestContext.add(ContentNodeMapperFeature.class, new ContentNodeMapperFeature(contentNodeMapper));
-		var siteProperties = Mockito.mock(SiteProperties.class);
+		var siteProperties = mock(SiteProperties.class);
 		Mockito.lenient().when(siteProperties.contextPath()).thenReturn("/");
 		requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 		

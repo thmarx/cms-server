@@ -22,6 +22,7 @@ package com.condation.cms.filesystem;
  */
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,7 +31,6 @@ import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.repository.CollectionAccess;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +74,7 @@ class FileSystemCollectionRepositoryTest {
 
 		repository.delete("blog", "entry");
 		Assertions.assertThat(item).doesNotExist();
-		verify(collections, org.mockito.Mockito.times(3)).refresh("blog", "entry");
+		verify(collections, times(3)).refresh("blog", "entry");
 	}
 
 	@Test

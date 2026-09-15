@@ -180,10 +180,10 @@ public class NodeListFunctionBuilderNGTest {
 	
 	@Test
 	void test_from_subfolder () throws IOException {
-		var nodeList = new NodeListFunctionBuilder(contentRepository,
+		var builder = new NodeListFunctionBuilder(contentRepository,
 				contentRepository.get("nodelist2/index.md").orElseThrow(),
 				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(contentRepository)));
-		Page<ListNode> page = nodeList.from("./sub_folder/*").page(1).size(10).list();
+		Page<ListNode> page = builder.from("./sub_folder/*").page(1).size(10).list();
 		var nodeUris = page.getItems().stream().map(ListNode::path).collect(Collectors.toList());
 		Assertions.assertThat(nodeUris)
 				.containsExactlyInAnyOrder(
@@ -196,14 +196,14 @@ public class NodeListFunctionBuilderNGTest {
 	
 	@Test
 	void test_json () throws IOException {
-		var nodeList = new NodeListFunctionBuilder(contentRepository,
+		var builder = new NodeListFunctionBuilder(contentRepository,
 				contentRepository.get("index.md").orElseThrow(),
 				TestHelper.requestContext("/", parser, markdownRenderer, new ContentNodeMapper(contentRepository)));
-		Page<ListNode> page = nodeList.from("./json").page(1).size(10).list();
+		Page<ListNode> page = builder.from("./json").page(1).size(10).list();
 		Assertions.assertThat(page.getItems()).hasSize(1);
 		Assertions.assertThat(page.getItems().getFirst().name()).isEqualTo("HTML");
-		
-		page = nodeList.from("./json").page(1).size(10).json().list();
+
+		page = builder.from("./json").page(1).size(10).json().list();
 		
 		Assertions.assertThat(page.getItems()).hasSize(1);
 		Assertions.assertThat(page.getItems().getFirst().name()).isEqualTo("JSON");

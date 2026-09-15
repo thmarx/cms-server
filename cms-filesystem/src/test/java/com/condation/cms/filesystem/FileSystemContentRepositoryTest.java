@@ -23,6 +23,8 @@ package com.condation.cms.filesystem;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +50,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class FileSystemContentRepositoryTest {
+class FileSystemContentRepositoryTest {
 
 	@TempDir
 	Path contentBase;
@@ -126,7 +128,7 @@ public class FileSystemContentRepositoryTest {
 		Assertions.assertThat(repository.sections(owner, "hero"))
 				.extracting(section -> section.id())
 				.containsExactly(hero.path(), secondHero.path());
-		verify(contentParser, org.mockito.Mockito.never()).parse(sidebarResource);
+		verify(contentParser, never()).parse(sidebarResource);
 	}
 
 	@Test
@@ -184,7 +186,7 @@ public class FileSystemContentRepositoryTest {
 
 		repository.deleteRecursively("published");
 		Assertions.assertThat(contentBase.resolve("published")).doesNotExist();
-		verify(fileSystem, org.mockito.Mockito.times(3)).flushContentChanges();
+		verify(fileSystem, times(3)).flushContentChanges();
 	}
 
 	@Test

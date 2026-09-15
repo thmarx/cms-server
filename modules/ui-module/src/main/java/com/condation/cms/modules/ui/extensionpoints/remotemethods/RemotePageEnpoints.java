@@ -61,7 +61,7 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 	}
 
 	@RemoteMethod(name = "pages.search", permissions = {Permissions.CONTENT_EDIT})
-    public Object searchPages (Map<String, Object> parameters) throws RPCException {
+    public Object searchPages (Map<String, Object> parameters) {
 		String query = "";
 
 		if (parameters.get("query") instanceof String stringValue) {
@@ -161,7 +161,7 @@ public class RemotePageEnpoints extends AbstractRemoteMethodeExtension {
 				throw new RPCException(0, "filename can not be null");
 			}
 			
-				var path = uri.isBlank() ? name : uri + "/" + name;
+				var path = uri.isBlank() ? name : uri + Constants.PATH_SEPARATOR + name;
 				log.debug("deleting content {}", path);
 				var node = repository.get(path);
 				var sections = node.isPresent() ? repository.sections(node.get()) : java.util.List.<com.condation.cms.api.repository.Section>of();
