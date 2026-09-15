@@ -21,31 +21,25 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  * #L%
  */
 
-import com.condation.cms.api.Constants;
-import com.condation.cms.api.db.DB;
-import com.condation.cms.api.db.DBFileSystem;
-import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.VariantSearchMode;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.CollectionItem;
-import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
-import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.CollectionAccess;
+import com.condation.cms.api.repository.CollectionRepository;
 import com.condation.cms.api.workflow.WFStatusProvider;
 import com.condation.cms.api.workflow.WFStatusQueryProvider;
 import com.condation.cms.api.workflow.Workflow;
 import java.util.List;
 import java.util.Map;
-import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,34 +62,10 @@ class RemoteWorkflowEndpointsExtensionTest {
 	private SiteModuleContext moduleContext;
 
 	@Mock
-	private DB db;
-
-	@Mock
-	private DBFileSystem fileSystem;
-
-	@Mock
-	private ReadOnlyFile contentBase;
-
-	@Mock
-	private ReadOnlyFile contentFile;
-
-	@Mock
-	private ReadOnlyFile collectionsBase;
-
-	@Mock
-	private ReadOnlyFile collectionFile;
-
-	@Mock
-	private Path collectionsWritableBase;
-
-	@Mock
-	private Path collectionWritableFile;
-
-	@Mock
-	private Collections collections;
-
-	@Mock
 	private ContentRepository contentRepository;
+
+	@Mock
+	private CollectionRepository collectionRepository;
 
 	private RemoteWorkflowEndpointsExtension endpoints;
 
@@ -106,19 +76,14 @@ class RemoteWorkflowEndpointsExtensionTest {
 			protected ContentRepository getContentRepository(Map<String, Object> parameters) {
 				return contentRepository;
 			}
+
+			@Override
+			protected CollectionRepository getCollectionRepository(Map<String, Object> parameters) {
+				return collectionRepository;
+			}
 		};
 		endpoints.setContext(moduleContext);
-		lenient().when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
-		lenient().when(db.getCollections()).thenReturn(collections);
-		lenient().when(collections.isLocal("blog")).thenReturn(true);
-		lenient().when(fileSystem.contentBase()).thenReturn(contentBase);
-		lenient().when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
-		lenient().when(collectionsBase.resolve("blog/first.md")).thenReturn(collectionFile);
-		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsWritableBase);
-		lenient().when(collectionsWritableBase.resolve("blog/first.md")).thenReturn(collectionWritableFile);
-		lenient().when(contentBase.resolve("missing.md")).thenReturn(contentFile);
-		lenient().when(contentFile.exists()).thenReturn(false);
+		lenient().when(collectionRepository.access("blog")).thenReturn(CollectionAccess.READ_WRITE);
 	}
 
 	@Test
@@ -182,7 +147,7 @@ class RemoteWorkflowEndpointsExtensionTest {
 
 	@Test
 	void nodeStatus_ignoresReferencedCollectionItems() throws Exception {
-		when(collections.isLocal("blog")).thenReturn(false);
+		when(collectionRepository.access("blog")).thenReturn(CollectionAccess.READ_ONLY);
 		var requestContext = new RequestContext();
 		requestContext.add(
 				CurrentCollectionItemFeature.class,

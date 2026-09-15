@@ -21,13 +21,8 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  * #L%
  */
 
-import com.condation.cms.api.Constants;
-import com.condation.cms.api.db.Content;
 import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.DB;
-import com.condation.cms.api.db.DBFileSystem;
 import com.condation.cms.api.eventbus.EventBus;
-import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.module.SiteModuleContext;
 import com.condation.cms.api.repository.ContentRepository;
@@ -41,12 +36,9 @@ import com.condation.cms.modules.ui.extensionpoints.remotemethods.dto.VariantDto
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -63,15 +55,6 @@ class RemoteVariantEndpointTest {
 	private SiteModuleContext moduleContext;
 
 	@Mock
-	private DB db;
-
-	@Mock
-	private Content content;
-
-	@Mock
-	private DBFileSystem fileSystem;
-
-	@Mock
 	private EventBus eventBus;
 
 	@Mock
@@ -84,9 +67,6 @@ class RemoteVariantEndpointTest {
 	private VariantSelectorConfigurationRepository selectorConfigurationRepository;
 
 	private RemoteVariantEndpoint endpoint;
-
-	@TempDir
-	private Path tempDir;
 
 	@BeforeEach
 	void setUp() {
@@ -112,11 +92,7 @@ class RemoteVariantEndpointTest {
 			}
 		};
 		endpoint.setContext(moduleContext);
-		lenient().when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
 		lenient().when(moduleContext.get(EventBusFeature.class)).thenReturn(new EventBusFeature(eventBus));
-		lenient().when(db.getContent()).thenReturn(content);
-		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
-		lenient().when(fileSystem.resolve(Constants.Folders.CONTENT)).thenReturn(tempDir);
 	}
 
 	@Test

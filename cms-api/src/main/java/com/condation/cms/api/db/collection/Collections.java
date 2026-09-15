@@ -24,8 +24,13 @@ package com.condation.cms.api.db.collection;
 import java.util.Set;
 
 /**
- * Site-scoped access to collections.
+ * Low-level collection index used by storage adapters.
+ *
+ * @deprecated Application code should depend on
+ * {@link com.condation.cms.api.repository.CollectionRepository}. This type
+ * remains as the compatibility boundary for the filesystem implementation.
  */
+@Deprecated(forRemoval = false)
 public interface Collections {
 
 	Collection collection(String name);

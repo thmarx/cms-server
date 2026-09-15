@@ -1,4 +1,4 @@
-package com.condation.cms.api.db.collection;
+package com.condation.cms.api.repository;
 
 /*-
  * #%L
@@ -21,18 +21,18 @@ package com.condation.cms.api.db.collection;
  * #L%
  */
 
-import com.condation.cms.api.db.ContentQuery;
-import java.util.Optional;
+import com.condation.cms.api.db.collection.CollectionItem;
+import java.io.IOException;
+import java.util.Map;
 
-/** A named collection, independent of its persistence backend. */
-public interface Collection {
+/** Backend-neutral mutations for collections owned by a site. */
+public interface MutableCollectionRepository extends CollectionRepository {
 
-	String name();
+	CollectionItem create(String collection, String id, Map<String, Object> metadata, String content)
+			throws IOException;
 
-	Optional<CollectionItem> item(String id);
+	void save(String collection, String id, Map<String, Object> metadata, String content)
+			throws IOException;
 
-	ContentQuery<CollectionItem> query();
-
-	/** Queries collection metadata without opening the Markdown body files. */
-	ContentQuery<CollectionItemMetadata> metadataQuery();
+	void delete(String collection, String id) throws IOException;
 }

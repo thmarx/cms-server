@@ -23,10 +23,8 @@ package com.condation.cms.templates.functions.impl;
 
 import com.condation.cms.api.content.MapAccess;
 import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.feature.features.InjectorFeature;
+import com.condation.cms.api.feature.features.RepositoryFeature;
 import com.condation.cms.api.request.RequestContext;
-import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.templates.functions.TemplateFunction;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,8 +51,7 @@ public abstract class AbstractNodeFunction implements TemplateFunction {
 		if (!(params[0] instanceof String)) {
 			return null;
 		}
-		var repository = requestContext.get(InjectorFeature.class).injector()
-				.getInstance(ContentRepository.class);
+		var repository = requestContext.get(RepositoryFeature.class).contentRepository();
 		var contentNode = repository.findByUrl((String) params[0])
 				.or(() -> repository.get(normalize((String) params[0])));
 		if (contentNode.isPresent()) {

@@ -29,13 +29,11 @@ import com.condation.cms.api.configuration.configs.SiteConfiguration;
 import com.condation.cms.api.content.ContentResponse;
 import com.condation.cms.api.content.DefaultContentResponse;
 import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
-import com.condation.cms.core.serivce.ServiceRegistry;
-import com.condation.cms.core.serivce.impl.SiteDBService;
+import com.condation.cms.api.repository.CollectionRepository;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
@@ -48,7 +46,7 @@ import lombok.RequiredArgsConstructor;
 public class CollectionResolver {
 
 	private final ContentRenderer contentRenderer;
-	private final DB db;
+	private final CollectionRepository collectionRepository;
 	private final Configuration configuration;
 
 	public Optional<ContentResponse> getContent(RequestContext context) throws IOException {
@@ -56,7 +54,7 @@ public class CollectionResolver {
 		if (collectionConfiguration == null) {
 			return Optional.empty();
 		}
-		var route = new CollectionRouteResolver(db, collectionConfiguration)
+		var route = new CollectionRouteResolver(collectionRepository, collectionConfiguration)
 				.resolve(context.get(RequestFeature.class).uri());
 		if (route.isEmpty()) {
 			return Optional.empty();

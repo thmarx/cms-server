@@ -37,6 +37,7 @@ import com.condation.cms.content.SectionEntry;
 import com.condation.cms.core.eventbus.DefaultEventBus;
 import com.condation.cms.filesystem.FileDB;
 import com.condation.cms.filesystem.FileSystemContentRepository;
+import com.condation.cms.filesystem.FileSystemCollectionRepository;
 import com.condation.cms.filesystem.FileSystemContentStore;
 import com.condation.cms.filesystem.NIOReadOnlyFile;
 import com.condation.cms.template.TemplateEngineTest;
@@ -95,7 +96,8 @@ public class SectionEntriesTest extends TemplateEngineTest {
 				db,
 				new TestSiteProperties(Map.of()),
 				new MockModuleManager(),
-				contentRepository
+				contentRepository,
+				new FileSystemCollectionRepository(db.getCollections(), db.getFileSystem())
 		);
 	}
 

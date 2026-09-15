@@ -28,8 +28,10 @@ import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.db.collection.CollectionCursorSupport;
 import com.condation.cms.api.db.collection.CollectionItemMetadata;
 import com.condation.cms.api.db.collection.Collections;
+import com.condation.cms.api.repository.CollectionAccess;
+import com.condation.cms.api.repository.CollectionRepository;
 import com.condation.cms.core.serivce.ServiceRegistry;
-import com.condation.cms.core.serivce.impl.SiteDBService;
+import com.condation.cms.core.serivce.impl.SiteCollectionRepositoryService;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -56,7 +58,10 @@ final class ReferencedCollections implements Collections, CollectionCursorSuppor
 
 	@Override
 	public Collection collection(String name) {
-		return targetCollections(name).collection(name);
+		var sourceSite = sourceSite(name);
+		return sourceSite == null
+				? localCollections.collection(name)
+				: sourceRepository(sourceSite, name).collection(name);
 	}
 
 	@Override
@@ -65,8 +70,12 @@ final class ReferencedCollections implements Collections, CollectionCursorSuppor
 			String cursor,
 			long size,
 			Consumer<ContentQuery<CollectionItemMetadata>> queryConfigurer) {
-		var target = targetCollections(collection);
-		if (!(target instanceof CollectionCursorSupport cursorSupport)) {
+		var sourceSite = sourceSite(collection);
+		if (sourceSite != null) {
+			return sourceRepository(sourceSite, collection).metadataCursorPage(
+					collection, cursor, size, queryConfigurer);
+		}
+		if (!(localCollections instanceof CollectionCursorSupport cursorSupport)) {
 			throw new UnsupportedOperationException("collection storage does not support cursor paging");
 		}
 		return cursorSupport.metadataCursorPage(collection, cursor, size, queryConfigurer);
@@ -105,16 +114,13 @@ final class ReferencedCollections implements Collections, CollectionCursorSuppor
 				.orElse(null);
 	}
 
-	private Collections targetCollections(String collection) {
-		var sourceSite = sourceSite(collection);
-		if (sourceSite == null) {
-			return localCollections;
-		}
-		var source = ServiceRegistry.getInstance().get(sourceSite, SiteDBService.class)
+	private CollectionRepository sourceRepository(
+			String sourceSite, String collection) {
+		var source = ServiceRegistry.getInstance().get(sourceSite, SiteCollectionRepositoryService.class)
 				.orElseThrow(() -> new IllegalStateException(
 						"collection source site is not available: " + sourceSite));
-		var sourceCollections = source.db().getCollections();
-		if (!sourceCollections.isLocal(collection)) {
+		var sourceCollections = source.repository();
+		if (sourceCollections.access(collection) != CollectionAccess.READ_WRITE) {
 			throw new IllegalStateException(
 					"referenced collections must point to a local collection: "
 					+ sourceSite + "/" + collection);

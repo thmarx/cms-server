@@ -21,13 +21,8 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  * #L%
  */
 
-import com.condation.cms.api.db.Content;
-import com.condation.cms.api.db.DB;
-import com.condation.cms.api.db.DBFileSystem;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.db.collection.CollectionItemMetadata;
-import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.configuration.configs.CollectionDefinition;
@@ -36,7 +31,6 @@ import com.condation.cms.api.db.ContentQuery;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
-import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
@@ -46,6 +40,9 @@ import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.CollectionAccess;
+import com.condation.cms.api.repository.CollectionRepository;
+import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.api.repository.MutableContentRepository;
 import java.io.IOException;
 import java.util.List;
@@ -72,25 +69,10 @@ class RemoteContentEndpointsExtensionTest {
 	private SiteModuleContext moduleContext;
 
 	@Mock
-	private DB db;
-
-	@Mock
-	private Content content;
-
-	@Mock
-	private DBFileSystem fileSystem;
-
-	@Mock
-	private ReadOnlyFile contentBase;
-
-	@Mock
-	private ReadOnlyFile contentFile;
-
-	@Mock
-	private Collections collections;
-
-	@Mock
 	private MutableContentRepository contentRepository;
+
+	@Mock
+	private MutableCollectionRepository collectionRepository;
 
 	private RemoteContentEndpointsExtension endpoints;
 
@@ -106,13 +88,19 @@ class RemoteContentEndpointsExtensionTest {
 			protected MutableContentRepository getMutableContentRepository(Map<String, Object> parameters) {
 				return contentRepository;
 			}
+
+			@Override
+			protected CollectionRepository getCollectionRepository(Map<String, Object> parameters) {
+				return collectionRepository;
+			}
+
+			@Override
+			protected MutableCollectionRepository getMutableCollectionRepository(Map<String, Object> parameters) {
+				return collectionRepository;
+			}
 		};
 		endpoints.setContext(moduleContext);
-		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
-		lenient().when(fileSystem.contentBase()).thenReturn(contentBase);
-		lenient().when(db.getCollections()).thenReturn(collections);
-		lenient().when(collections.isLocal("blog")).thenReturn(true);
+		lenient().when(collectionRepository.access("blog")).thenReturn(CollectionAccess.READ_WRITE);
 	}
 
 	@Test
@@ -163,7 +151,7 @@ class RemoteContentEndpointsExtensionTest {
 
 	@Test
 	void rejectsEditingAReferencedCollectionItem() {
-		when(collections.isLocal("blog")).thenReturn(false);
+		when(collectionRepository.access("blog")).thenReturn(CollectionAccess.READ_ONLY);
 		var requestContext = new RequestContext();
 		requestContext.add(
 				CurrentCollectionItemFeature.class,
@@ -212,7 +200,6 @@ class RemoteContentEndpointsExtensionTest {
 
 	@Test
 	void getContentNodeKeepsPublicCollectionRouteAndDisablesVariants() throws Exception {
-		var nonExistingPath = mock(ReadOnlyFile.class);
 		var authorCollection = mock(Collection.class);
 		@SuppressWarnings("unchecked")
 		var query = (ContentQuery<CollectionItemMetadata>) mock(ContentQuery.class);
@@ -222,7 +209,7 @@ class RemoteContentEndpointsExtensionTest {
 				item.id(), item.collection(), item.path(), item.meta());
 
 		when(contentRepository.findByUrl("/people/jane-doe")).thenReturn(Optional.empty());
-		when(collections.collection("authors")).thenReturn(authorCollection);
+		when(collectionRepository.collection("authors")).thenReturn(authorCollection);
 		when(authorCollection.metadataQuery()).thenReturn(query);
 		when(query.where("slug", "jane-doe")).thenReturn(query);
 		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(metadata)));

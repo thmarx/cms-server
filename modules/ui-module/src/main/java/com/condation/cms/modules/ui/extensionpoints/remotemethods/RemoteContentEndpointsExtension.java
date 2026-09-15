@@ -22,13 +22,10 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  */
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.condation.cms.api.extensions.AbstractExtensionPoint;
-import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
@@ -38,10 +35,9 @@ import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
-import com.condation.cms.api.utils.PathUtil;
 import com.condation.cms.api.utils.MapUtil;
 import com.condation.cms.api.repository.ContentRepository;
-import com.condation.cms.core.content.io.ContentFileParser;
+import com.condation.cms.api.repository.CollectionAccess;
 import com.condation.cms.core.content.io.YamlHeaderUpdater;
 import com.condation.modules.api.annotation.Extension;
 import java.io.IOException;
@@ -64,7 +60,6 @@ import com.condation.cms.modules.ui.utils.NumberUtils;
 import com.condation.cms.modules.ui.utils.UIFileNameUtil;
 import com.condation.cms.modules.ui.utils.UIPathUtil;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
  *
@@ -76,8 +71,7 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 
 	@RemoteMethod(name = "content.get", permissions = {Permissions.CONTENT_EDIT})
 	public Object getContent(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
-		var target = editableTarget(parameters, db);
+		var target = editableTarget(parameters);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", target.uri());
@@ -95,15 +89,14 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 
 	@RemoteMethod(name = "content.set", permissions = {Permissions.CONTENT_EDIT})
 	public Object setContent(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
 		var updatedContent = FormHelper.getContent(parameters.get(Parameters.CONTENT));
-		var target = editableTarget(parameters, db);
+		var target = editableTarget(parameters);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", target.uri());
 		try {
 			var document = loadTarget(target, parameters);
-			saveTarget(target, parameters, db, document.metadata(), updatedContent);
+			saveTarget(target, parameters, document.metadata(), updatedContent);
 			log.debug(LOG_PATTERN, target.uri());
 		} catch (IOException ex) {
 			log.error("", ex);
@@ -153,10 +146,9 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 
 	@RemoteMethod(name = "meta.set", permissions = {Permissions.CONTENT_EDIT})
 	public Object setMeta(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
 		var updateParam = (Map<String, Map<String, Object>>) parameters.get("meta");
 		var update = MetaConverter.convertMeta(updateParam);
-		var target = editableTarget(parameters, db);
+		var target = editableTarget(parameters);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("uri", target.uri());
@@ -164,7 +156,7 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 				var document = loadTarget(target, parameters);
 				Map<String, Object> meta = new HashMap<>(document.metadata());
 				YamlHeaderUpdater.mergeFlatMapIntoNestedMap(meta, update);
-				saveTarget(target, parameters, db, meta, document.content());
+				saveTarget(target, parameters, meta, document.content());
 				log.debug(LOG_PATTERN, target.uri());
 		} catch (IOException ex) {
 				log.error("", ex);
@@ -277,7 +269,6 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 
 	@RemoteMethod(name = "content.node", permissions = {Permissions.CONTENT_EDIT})
 	public Object getContentNode (Map<String, Object> parameters) {
-		final DB db = getContext().get(DBFeature.class).db();
 		var repository = getContentRepository(parameters);
 		
 		var url = (String) parameters.get("url");
@@ -302,7 +293,8 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 		if (selectedNode == null || canonicalUri == null) {
 			var collectionConfiguration = getContext().get(ConfigurationFeature.class)
 					.configuration().get(CollectionConfiguration.class);
-			var collectionRoute = new CollectionRouteResolver(db, collectionConfiguration).resolve(path);
+			var collectionRoute = new CollectionRouteResolver(
+					getCollectionRepository(parameters), collectionConfiguration).resolve(path);
 			if (collectionRoute.isEmpty()) {
 				return result;
 			}
@@ -375,16 +367,15 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 		throw new RPCException(400, parameterName + " must not be blank");
 	}
 
-	private EditableTarget editableTarget(Map<String, Object> parameters, DB db) throws RPCException {
+	private EditableTarget editableTarget(Map<String, Object> parameters) throws RPCException {
 		if (!parameters.containsKey("uri")
 				&& getRequestContext().has(CurrentCollectionItemFeature.class)) {
 			var item = getRequestContext().get(CurrentCollectionItemFeature.class).item();
-			if (!db.getCollections().isLocal(item.collection())) {
+			if (getCollectionRepository(parameters).access(item.collection()) != CollectionAccess.READ_WRITE) {
 				throw new RPCException(403, "referenced collection is read-only: " + item.collection());
 			}
 			return new EditableTarget(
 					item.path(),
-					db.getFileSystem().collectionsBase().resolve(item.path()),
 					item.collection(),
 					item.id());
 		}
@@ -392,18 +383,16 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 		return new EditableTarget(
 				uri,
 				null,
-				null,
 				null);
 	}
 
 	private EditableDocument loadTarget(EditableTarget target, Map<String, Object> parameters)
 			throws IOException, RPCException {
 		if (target.collectionName() != null) {
-			if (!target.file().exists()) {
-				throw new RPCException(404, "content not found");
-			}
-			var parser = new ContentFileParser(target.file());
-			return new EditableDocument(parser.getHeader(), parser.getContent());
+			var item = getCollectionRepository(parameters)
+					.get(target.collectionName(), target.itemId())
+					.orElseThrow(() -> new RPCException(404, "content not found"));
+			return new EditableDocument(new HashMap<>(item.meta()), item.content());
 		}
 		var repository = getContentRepository(parameters);
 		var node = repository.get(target.uri())
@@ -413,11 +402,12 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 		return new EditableDocument(new HashMap<>(node.data()), document.content());
 	}
 
-	private void saveTarget(EditableTarget target, Map<String, Object> parameters, DB db,
+	private void saveTarget(EditableTarget target, Map<String, Object> parameters,
 			Map<String, Object> metadata, String content) throws IOException {
 		if (target.collectionName() != null) {
-			YamlHeaderUpdater.saveMarkdownFileWithHeader(target.writableFile(db), metadata, content);
-			refresh(target, db);
+			getMutableCollectionRepository(parameters).save(
+					target.collectionName(), target.itemId(), metadata, content);
+			getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
 		} else {
 			getMutableContentRepository(parameters).save(target.uri(), metadata, content);
 			getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
@@ -440,29 +430,10 @@ public class RemoteContentEndpointsExtension extends AbstractRemoteMethodeExtens
 		return separator < 0 ? normalized : normalized.substring(separator + 1);
 	}
 
-	private void refresh(EditableTarget target, DB db) {
-		if (target.collectionName() != null) {
-			db.getCollections().refresh(target.collectionName(), target.itemId());
-		} else {
-			getContext().get(EventBusFeature.class).eventBus()
-					.publish(new ReIndexContentMetaDataEvent(target.uri()));
-			db.getFileSystem().flushContentChanges();
-		}
-		getContext().get(EventBusFeature.class).eventBus().publish(new InvalidateContentCacheEvent());
-	}
-
 	private record EditableTarget(
 			String uri,
-			ReadOnlyFile file,
 			String collectionName,
 			String itemId) {
-
-		private Path writableFile(DB db) {
-			var folder = collectionName == null
-					? Constants.Folders.CONTENT
-					: Constants.Folders.COLLECTIONS;
-			return db.getFileSystem().resolve(folder).resolve(uri);
-		}
 	}
 
 	private record EditableDocument(Map<String, Object> metadata, String content) {

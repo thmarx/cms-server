@@ -34,7 +34,6 @@ import com.condation.cms.api.configuration.configs.CollectionDefinition;
 import com.condation.cms.api.configuration.configs.CollectionDetailConfiguration;
 import com.condation.cms.api.content.DefaultContentResponse;
 import com.condation.cms.api.db.ContentQuery;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.db.collection.CollectionItem;
@@ -43,6 +42,7 @@ import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.RequestFeature;
 import com.condation.cms.api.request.RequestContext;
+import com.condation.cms.api.repository.CollectionRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,9 +57,7 @@ import org.mockito.ArgumentCaptor;
 class CollectionResolverTest {
 
 	private final ContentRenderer renderer = mock(ContentRenderer.class);
-	private final DB db = mock(DB.class);
-	private final com.condation.cms.api.db.collection.Collections collections =
-			mock(com.condation.cms.api.db.collection.Collections.class);
+	private final CollectionRepository collections = mock(CollectionRepository.class);
 	private final Collection collection = mock(Collection.class);
 	private final ConcurrentHashMap<String, CollectionDefinition> definitions = new ConcurrentHashMap<>();
 	private final Configuration configuration = new Configuration();
@@ -75,7 +73,6 @@ class CollectionResolverTest {
 	void setUp() throws Exception {
 		collectionConfiguration = new CollectionConfiguration(definitions);
 		configuration.add(CollectionConfiguration.class, collectionConfiguration);
-		when(db.getCollections()).thenReturn(collections);
 		when(collections.collection("blog")).thenReturn(collection);
 		when(renderer.renderCollection(
 				any(),
@@ -88,7 +85,7 @@ class CollectionResolverTest {
 	void resolvesAnIdRouteAndUsesReloadedDefinitions() throws Exception {
 		define(definition("/old/{id}"));
 		when(collection.item("first")).thenReturn(Optional.of(item));
-		var resolver = new CollectionResolver(renderer, db, configuration);
+		var resolver = new CollectionResolver(renderer, collections, configuration);
 		var context = context("/blog/first");
 
 		Assertions.assertThat(resolver.getContent(context)).isEmpty();
@@ -122,7 +119,7 @@ class CollectionResolverTest {
 		when(query.page(1, 2)).thenReturn(new Page<>(1, 2, 1, 1, List.of(
 				new CollectionItemMetadata("first", "blog", "blog/first.md", item.meta()))));
 		when(collection.item("first")).thenReturn(Optional.of(item));
-		var resolver = new CollectionResolver(renderer, db, configuration);
+		var resolver = new CollectionResolver(renderer, collections, configuration);
 
 		var response = resolver.getContent(context("/blog/first-post/"));
 
@@ -139,7 +136,7 @@ class CollectionResolverTest {
 		when(exactQuery.where("slug", "ueber-uns")).thenReturn(exactQuery);
 		when(exactQuery.page(1, 2)).thenReturn(new Page<>(0, 2, 0, 1, List.of()));
 
-		var response = new CollectionResolver(renderer, db, configuration)
+		var response = new CollectionResolver(renderer, collections, configuration)
 				.getContent(context("/blog/ueber-uns"));
 
 		Assertions.assertThat(response).isEmpty();
@@ -165,7 +162,7 @@ class CollectionResolverTest {
 				new CollectionItemMetadata("first", "blog", "blog/first.md", metadata)));
 		when(collection.item("first")).thenReturn(Optional.of(event));
 
-		var route = new CollectionRouteResolver(db, collectionConfiguration)
+		var route = new CollectionRouteResolver(collections, collectionConfiguration)
 				.resolve("/events/2026/09/03/germany/muenchen/");
 
 		Assertions.assertThat(route).isPresent();
@@ -187,7 +184,7 @@ class CollectionResolverTest {
 				eq(item),
 				anyString(),
 				any())).thenReturn("<h1>Shared</h1>");
-		var response = new CollectionResolver(renderer, db, configuration)
+		var response = new CollectionResolver(renderer, collections, configuration)
 				.getContent(context("/shared/first"));
 
 		Assertions.assertThat(response).isPresent();

@@ -24,7 +24,6 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.InjectorFeature;

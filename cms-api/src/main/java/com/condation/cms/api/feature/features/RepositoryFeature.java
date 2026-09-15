@@ -23,30 +23,12 @@ package com.condation.cms.api.feature.features;
 
 import com.condation.cms.api.annotations.FeatureScope;
 import com.condation.cms.api.feature.Feature;
-import com.condation.cms.api.theme.Theme;
-import lombok.AllArgsConstructor;
+import com.condation.cms.api.repository.CollectionRepository;
+import com.condation.cms.api.repository.ContentRepository;
 
-
-/**
- *
- * @author t.marx
- */
-@AllArgsConstructor
+/** Read-only repositories available in site, module and request contexts. */
 @FeatureScope({FeatureScope.Scope.SITE, FeatureScope.Scope.MODULE, FeatureScope.Scope.REQUEST})
-public class ThemeFeature implements Feature {
-
-	private Theme theme;
-	
-	public Theme theme () {
-		return theme;
-	}
-	
-	/**
-	 * This method is used for the ThemeFeature in the ModuleContext, because that feature is created once and not per request
-	 * 
-	 * @param theme 
-	 */
-	public void updateTheme (Theme theme) {
-		this.theme = theme;
-	}
+public record RepositoryFeature(
+		ContentRepository contentRepository,
+		CollectionRepository collectionRepository) implements Feature {
 }

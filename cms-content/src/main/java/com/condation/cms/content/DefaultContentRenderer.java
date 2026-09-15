@@ -44,6 +44,7 @@ import com.condation.cms.api.model.ListNode;
 import com.condation.cms.api.request.RequestContext;
 import com.condation.cms.api.repository.ContentDocument;
 import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.CollectionRepository;
 import com.condation.cms.api.repository.Section;
 import com.condation.cms.api.template.TemplateEngine;
 import com.condation.cms.api.utils.MapUtil;
@@ -87,18 +88,21 @@ public class DefaultContentRenderer implements ContentRenderer {
 	private final SiteProperties siteProperties;
 	private final ModuleManager moduleManager;
 	private final ContentRepository contentRepository;
+	private final CollectionRepository collectionRepository;
 
 	public DefaultContentRenderer(
 			Supplier<TemplateEngine> templates,
 			DB db,
 			SiteProperties siteProperties,
 			ModuleManager moduleManager,
-			ContentRepository contentRepository) {
+			ContentRepository contentRepository,
+			CollectionRepository collectionRepository) {
 		this.templates = templates;
 		this.db = db;
 		this.siteProperties = siteProperties;
 		this.moduleManager = moduleManager;
 		this.contentRepository = contentRepository;
+		this.collectionRepository = collectionRepository;
 	}
 
 	private record ResolvedRenderInput(
@@ -242,7 +246,7 @@ public class DefaultContentRenderer implements ContentRenderer {
 						Optional.of(collectionNode)),
 				model -> {
 					model.values.put("collection_item", item);
-					model.values.put("collection", db.getCollections().collection(item.collection()));
+					model.values.put("collection", collectionRepository.collection(item.collection()));
 				});
 	}
 

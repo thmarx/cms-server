@@ -35,6 +35,8 @@ import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.db.collection.CollectionItem;
 import com.condation.cms.api.db.collection.CollectionItemMetadata;
 import com.condation.cms.api.db.collection.Collections;
+import com.condation.cms.api.repository.CollectionRepository;
+import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.feature.features.AuthFeature;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
@@ -48,6 +50,7 @@ import com.condation.cms.api.request.RequestContextScope;
 import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.workflow.WFStatusProvider;
 import com.condation.cms.api.workflow.Workflow;
+import com.condation.cms.filesystem.FileSystemCollectionRepository;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -108,18 +111,28 @@ class RemoteCollectionEndpointsTest {
 	private WFStatusProvider statusProvider;
 
 	private RemoteCollectionEndpoints endpoints;
+	private MutableCollectionRepository repository;
 	private Path collectionsDirectory;
 
 	@BeforeEach
 	void setUp() throws Exception {
 		collectionsDirectory = tempDirectory.resolve(Constants.Folders.COLLECTIONS);
 		Files.createDirectories(collectionsDirectory.resolve("blog"));
-		endpoints = new RemoteCollectionEndpoints();
+		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsDirectory);
+		repository = new FileSystemCollectionRepository(collections, fileSystem);
+		endpoints = new RemoteCollectionEndpoints() {
+			@Override
+			protected CollectionRepository getCollectionRepository(Map<String, Object> parameters) {
+				return repository;
+			}
+
+			@Override
+			protected MutableCollectionRepository getMutableCollectionRepository(Map<String, Object> parameters) {
+				return repository;
+			}
+		};
 		endpoints.setContext(moduleContext);
 
-		when(moduleContext.get(DBFeature.class)).thenReturn(new DBFeature(db));
-		lenient().when(db.getFileSystem()).thenReturn(fileSystem);
-		lenient().when(db.getCollections()).thenReturn(collections);
 		lenient().when(collections.names()).thenReturn(Set.of("blog"));
 		lenient().when(collections.isLocal("blog")).thenReturn(true);
 		lenient().when(collections.collection("blog")).thenReturn(collection);
@@ -129,7 +142,6 @@ class RemoteCollectionEndpointsTest {
 		lenient().when(metadataQuery.where(anyString(), any())).thenReturn(metadataQuery);
 		lenient().when(metadataQuery.page(1, 2)).thenReturn(new com.condation.cms.api.db.Page<>(
 				0, 2, 0, 1, List.of()));
-		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsDirectory);
 	}
 
 	@Test
@@ -184,12 +196,7 @@ class RemoteCollectionEndpointsTest {
 				"blog",
 				"blog/first.md",
 				Map.of("slug", "ueber-uns"));
-		var collectionsBase = mock(ReadOnlyFile.class);
-		var sourceFile = mock(ReadOnlyFile.class);
 		when(collection.item("second")).thenReturn(Optional.of(editedItem));
-		when(fileSystem.collectionsBase()).thenReturn(collectionsBase);
-		when(collectionsBase.resolve("blog/second.md")).thenReturn(sourceFile);
-		when(sourceFile.getContent()).thenReturn("---\nslug: second\n---\n\nBody\n");
 		when(metadataQuery.where("slug", "ueber-uns")).thenReturn(metadataQuery);
 		when(metadataQuery.page(1, 2)).thenReturn(new com.condation.cms.api.db.Page<>(
 				1, 2, 1, 1, List.of(existingItem)));
@@ -206,6 +213,8 @@ class RemoteCollectionEndpointsTest {
 	@Test
 	void rejectsDuplicateAndInvalidCollectionItemIds() throws Exception {
 		Files.writeString(collectionsDirectory.resolve("blog/existing.md"), "existing");
+		when(collection.item("existing")).thenReturn(Optional.of(new CollectionItem(
+				"existing", "blog", "blog/existing.md", "existing", Map.of())));
 
 		assertThatThrownBy(() -> endpoints.create(Map.of("collection", "blog", "id", "existing")))
 				.isInstanceOfSatisfying(
@@ -234,6 +243,8 @@ class RemoteCollectionEndpointsTest {
 		when(moduleContext.get(EventBusFeature.class)).thenReturn(new EventBusFeature(eventBus));
 		var item = collectionsDirectory.resolve("blog/obsolete.md");
 		Files.writeString(item, "obsolete");
+		when(collection.item("obsolete")).thenReturn(Optional.of(new CollectionItem(
+				"obsolete", "blog", "blog/obsolete.md", "obsolete", Map.of())));
 
 		endpoints.delete(Map.of("collection", "blog", "id", "obsolete"));
 

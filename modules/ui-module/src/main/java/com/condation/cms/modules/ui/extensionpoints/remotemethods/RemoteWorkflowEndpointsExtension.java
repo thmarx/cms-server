@@ -20,26 +20,21 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
 import com.condation.cms.api.db.ContentNode;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.VariantSearchMode;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
 import com.condation.cms.api.feature.features.InjectorFeature;
-import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.CurrentNodeFeature;
 import com.condation.cms.api.feature.features.CurrentCollectionItemFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.eventbus.events.InvalidateContentCacheEvent;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
+import com.condation.cms.api.repository.CollectionAccess;
 import com.condation.cms.api.ui.rpc.RPCException;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.api.utils.HTTPUtil;
-import com.condation.cms.api.utils.PathUtil;
-import com.condation.cms.core.content.io.YamlHeaderUpdater;
 import com.condation.modules.api.annotation.Extension;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,13 +50,11 @@ import com.condation.cms.auth.services.RoleService;
 import com.condation.cms.auth.services.User;
 import com.condation.cms.auth.services.UserService;
 import com.condation.cms.auth.services.WorkflowAuthorizationService;
-import com.condation.cms.core.content.io.ContentFileParser;
 import com.condation.cms.modules.ui.model.NodeDTO;
 import com.condation.cms.modules.ui.utils.NumberUtils;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.List;
-import java.nio.file.Path;
 
 /**
  *
@@ -82,19 +75,16 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 
 		return Optional.of(new WorkflowTarget(
 				node.get(),
-				null,
-				null,
 				false,
 				null,
 				null));
 	}
 
 	private Optional<WorkflowTarget> getWorkflowTarget(Map<String, Object> parameters) throws RPCException {
-		final DB db = getContext().get(DBFeature.class).db();
 		if (!parameters.containsKey("uri")
 				&& getRequestContext().has(CurrentCollectionItemFeature.class)) {
 			var item = getRequestContext().get(CurrentCollectionItemFeature.class).item();
-			if (!db.getCollections().isLocal(item.collection())) {
+			if (getCollectionRepository(parameters).access(item.collection()) != CollectionAccess.READ_WRITE) {
 				return Optional.empty();
 			}
 			var node = new ContentNode(
@@ -104,8 +94,6 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 					new HashMap<>(item.meta()));
 			return Optional.of(new WorkflowTarget(
 					node,
-					db.getFileSystem().collectionsBase().resolve(item.path()),
-					db.getFileSystem().resolve(Constants.Folders.COLLECTIONS).resolve(item.path()),
 					true,
 					item.collection(),
 					item.id()));
@@ -115,8 +103,6 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 
 	private record WorkflowTarget(
 			ContentNode node,
-			ReadOnlyFile file,
-			Path writableFile,
 			boolean collection,
 			String collectionName,
 			String itemId) {
@@ -190,8 +176,6 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 		try {
 			var transitionId = requiredTransitionId(parameters);
 
-			final DB db = getContext().get(DBFeature.class).db();
-
 			var target = getWorkflowTarget(parameters);
 			if (target.isEmpty()) {
 				throw new RPCException(404, "content node not found");
@@ -208,10 +192,14 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 			workflow.transit(transitionId, contentNode);
 
 			if (target.get().collection()) {
-				ContentFileParser parser = new ContentFileParser(target.get().file());
-				YamlHeaderUpdater.saveMarkdownFileWithHeader(
-						target.get().writableFile(), contentNode.data(), parser.getContent());
-				db.getCollections().refresh(target.get().collectionName(), target.get().itemId());
+				var repository = getMutableCollectionRepository(parameters);
+				var item = repository.get(target.get().collectionName(), target.get().itemId())
+						.orElseThrow(() -> new RPCException(404, "collection item not found"));
+				repository.save(
+						target.get().collectionName(),
+						target.get().itemId(),
+						contentNode.data(),
+						item.content());
 			} else {
 				var repository = getMutableContentRepository(parameters);
 				var document = repository.load(contentNode).orElseThrow();

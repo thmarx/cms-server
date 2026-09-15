@@ -22,11 +22,9 @@ package com.condation.cms.modules.ui.extensionpoints.remotemethods;
  */
 import com.condation.cms.api.Constants;
 import com.condation.cms.api.auth.Permissions;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.Page;
 import com.condation.cms.api.db.VariantSearchMode;
 import com.condation.cms.api.eventbus.events.ReIndexContentMetaDataEvent;
-import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;

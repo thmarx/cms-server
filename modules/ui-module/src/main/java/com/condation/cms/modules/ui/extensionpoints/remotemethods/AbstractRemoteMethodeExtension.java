@@ -29,13 +29,17 @@ import com.condation.cms.api.extensions.AbstractExtensionPoint;
 import com.condation.cms.api.feature.features.AuthFeature;
 import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.HookSystemFeature;
-import com.condation.cms.api.feature.features.InjectorFeature;
+import com.condation.cms.api.feature.features.MutableRepositoryFeature;
+import com.condation.cms.api.feature.features.RepositoryFeature;
 import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.CollectionRepository;
+import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.api.repository.MutableContentRepository;
 import com.condation.cms.api.ui.extensions.UIRemoteMethodExtensionPoint;
 import com.condation.cms.core.serivce.ServiceRegistry;
-import com.condation.cms.core.serivce.impl.SiteDBService;
+import com.condation.cms.core.serivce.impl.SiteCollectionRepositoryService;
 import com.condation.cms.core.serivce.impl.SiteContentRepositoryService;
+import com.condation.cms.core.serivce.impl.SiteDBService;
 import com.condation.cms.modules.ui.utils.UIHooks;
 import java.nio.file.Path;
 import java.util.Map;
@@ -72,20 +76,44 @@ public abstract class AbstractRemoteMethodeExtension extends AbstractExtensionPo
 
 	protected ContentRepository getContentRepository(Map<String, Object> parameters) {
 		if (parameters.containsKey(SITE_ID)) {
-			return ServiceRegistry.getInstance().get((String) parameters.get(SITE_ID),
-					SiteContentRepositoryService.class).orElseThrow().repository();
+			return siteContentRepositoryService(parameters).repository();
 		}
-		return getContext().get(InjectorFeature.class).injector()
-				.getInstance(ContentRepository.class);
+		return getContext().get(RepositoryFeature.class).contentRepository();
 	}
 
 	protected MutableContentRepository getMutableContentRepository(Map<String, Object> parameters) {
 		if (parameters.containsKey(SITE_ID)) {
-			return ServiceRegistry.getInstance().get((String) parameters.get(SITE_ID),
-					SiteContentRepositoryService.class).orElseThrow().mutableRepository();
+			return siteContentRepositoryService(parameters).mutableRepository();
 		}
-		return getContext().get(InjectorFeature.class).injector()
-				.getInstance(MutableContentRepository.class);
+		return getContext().get(MutableRepositoryFeature.class).contentRepository();
+	}
+
+	protected CollectionRepository getCollectionRepository(Map<String, Object> parameters) {
+		if (parameters.containsKey(SITE_ID)) {
+			return siteCollectionRepositoryService(parameters).repository();
+		}
+		return getContext().get(RepositoryFeature.class).collectionRepository();
+	}
+
+	protected MutableCollectionRepository getMutableCollectionRepository(Map<String, Object> parameters) {
+		if (parameters.containsKey(SITE_ID)) {
+			return siteCollectionRepositoryService(parameters).mutableRepository();
+		}
+		return getContext().get(MutableRepositoryFeature.class).collectionRepository();
+	}
+
+	private SiteContentRepositoryService siteContentRepositoryService(Map<String, Object> parameters) {
+		return ServiceRegistry.getInstance()
+				.get((String) parameters.get(SITE_ID), SiteContentRepositoryService.class)
+				.orElseThrow(() -> new IllegalArgumentException(
+						"unknown site: " + parameters.get(SITE_ID)));
+	}
+
+	private SiteCollectionRepositoryService siteCollectionRepositoryService(Map<String, Object> parameters) {
+		return ServiceRegistry.getInstance()
+				.get((String) parameters.get(SITE_ID), SiteCollectionRepositoryService.class)
+				.orElseThrow(() -> new IllegalArgumentException(
+						"unknown site: " + parameters.get(SITE_ID)));
 	}
 	
     

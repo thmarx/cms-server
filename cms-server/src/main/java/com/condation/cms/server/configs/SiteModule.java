@@ -53,6 +53,8 @@ import com.condation.cms.api.media.MediaService;
 import com.condation.cms.api.messages.MessageSource;
 import com.condation.cms.api.messaging.Messaging;
 import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.CollectionRepository;
+import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.api.repository.MutableContentRepository;
 import com.condation.cms.api.repository.ContentStore;
 import com.condation.cms.api.scheduler.CronJobContext;
@@ -90,6 +92,7 @@ import com.condation.cms.core.theme.DefaultTheme;
 import com.condation.cms.extensions.ExtensionManager;
 import com.condation.cms.filesystem.FileDB;
 import com.condation.cms.filesystem.FileSystemContentRepository;
+import com.condation.cms.filesystem.FileSystemCollectionRepository;
 import com.condation.cms.filesystem.FileSystemContentStore;
 import com.condation.cms.filesystem.MetaData;
 import com.condation.cms.filesystem.NIOReadOnlyFile;
@@ -349,6 +352,18 @@ public class SiteModule extends AbstractModule {
 
 	@Provides
 	@Singleton
+	public MutableCollectionRepository mutableCollectionRepository(DB db) {
+		return new FileSystemCollectionRepository(db.getCollections(), db.getFileSystem());
+	}
+
+	@Provides
+	@Singleton
+	public CollectionRepository collectionRepository(MutableCollectionRepository repository) {
+		return repository;
+	}
+
+	@Provides
+	@Singleton
 	public ExtensionManager extensionManager(DB db, Configuration configuration, Engine engine) throws IOException {
 		var extensionManager = new ExtensionManager(
 				db, 
@@ -391,13 +406,15 @@ public class SiteModule extends AbstractModule {
 	@Singleton
 	public ContentRenderer contentRenderer(Injector injector, FileDB db,
 			SiteProperties siteProperties, ModuleManager moduleManager,
-			ContentRepository contentRepository) {
+			ContentRepository contentRepository,
+			CollectionRepository collectionRepository) {
 		return new DefaultContentRenderer(
 				() -> injector.getInstance(TemplateEngine.class),
 				db,
 				siteProperties,
 				moduleManager,
-				contentRepository);
+				contentRepository,
+				collectionRepository);
 	}
 
 	@Provides
@@ -411,9 +428,9 @@ public class SiteModule extends AbstractModule {
 	@Singleton
 	public CollectionResolver collectionResolver(
 			ContentRenderer contentRenderer,
-			FileDB db,
+			CollectionRepository collectionRepository,
 			Configuration configuration) {
-		return new CollectionResolver(contentRenderer, db, configuration);
+		return new CollectionResolver(contentRenderer, collectionRepository, configuration);
 	}
 
 	@Provides

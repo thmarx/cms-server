@@ -1,8 +1,8 @@
-package com.condation.cms.api.db.collection;
+package com.condation.cms.core.serivce.impl;
 
 /*-
  * #%L
- * CMS Api
+ * CMS Core
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -21,18 +21,12 @@ package com.condation.cms.api.db.collection;
  * #L%
  */
 
-import com.condation.cms.api.db.ContentQuery;
-import java.util.Optional;
+import com.condation.cms.api.repository.CollectionRepository;
+import com.condation.cms.api.repository.MutableCollectionRepository;
+import com.condation.cms.core.serivce.Service;
 
-/** A named collection, independent of its persistence backend. */
-public interface Collection {
-
-	String name();
-
-	Optional<CollectionItem> item(String id);
-
-	ContentQuery<CollectionItem> query();
-
-	/** Queries collection metadata without opening the Markdown body files. */
-	ContentQuery<CollectionItemMetadata> metadataQuery();
+/** Exposes a site's collection boundary to cross-site callers (e.g. remote UI calls made with a siteId). */
+public record SiteCollectionRepositoryService(
+		CollectionRepository repository,
+		MutableCollectionRepository mutableRepository) implements Service {
 }

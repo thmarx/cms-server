@@ -27,8 +27,11 @@ import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.core.serivce.ServiceRegistry;
 import com.condation.cms.core.serivce.impl.NodeTranslationService;
 import com.condation.cms.core.serivce.impl.SiteDBService;
+import com.condation.cms.core.serivce.impl.SiteCollectionRepositoryService;
 import com.condation.cms.core.serivce.impl.SiteContentRepositoryService;
+import com.condation.cms.api.repository.CollectionRepository;
 import com.condation.cms.api.repository.ContentRepository;
+import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.api.repository.MutableContentRepository;
 import com.condation.cms.core.serivce.impl.SiteLinkService;
 import com.condation.cms.core.serivce.impl.SitePropertiesService;
@@ -48,11 +51,15 @@ public class Initializer {
 	void initServices () {
 		var db = host.injector.getInstance(DB.class);
 		ServiceRegistry.getInstance().register(host.id(), SiteDBService.class, new SiteDBService(db));
+		ServiceRegistry.getInstance().register(host.id(), SiteCollectionRepositoryService.class,
+				new SiteCollectionRepositoryService(
+						host.injector.getInstance(CollectionRepository.class),
+						host.injector.getInstance(MutableCollectionRepository.class)));
 		ServiceRegistry.getInstance().register(host.id(), SiteContentRepositoryService.class,
 				new SiteContentRepositoryService(
 						host.injector.getInstance(ContentRepository.class),
 						host.injector.getInstance(MutableContentRepository.class)));
-		
+
 		var config = host.injector.getInstance(Configuration.class);
 		ServiceRegistry.getInstance().register(host.id(), SiteLinkService.class, new SiteLinkService(config));
 		

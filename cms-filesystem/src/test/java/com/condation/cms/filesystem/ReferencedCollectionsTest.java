@@ -27,11 +27,12 @@ import static org.mockito.Mockito.when;
 
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.configuration.configs.CollectionDefinition;
-import com.condation.cms.api.db.DB;
 import com.condation.cms.api.db.collection.Collection;
 import com.condation.cms.api.db.collection.Collections;
+import com.condation.cms.api.repository.CollectionAccess;
+import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.core.serivce.ServiceRegistry;
-import com.condation.cms.core.serivce.impl.SiteDBService;
+import com.condation.cms.core.serivce.impl.SiteCollectionRepositoryService;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.assertj.core.api.Assertions;
@@ -49,16 +50,14 @@ class ReferencedCollectionsTest {
 	void resolvesReferencedCollectionsThroughTheSourceSite() {
 		var local = mock(Collections.class);
 		when(local.names()).thenReturn(Set.of("local"));
-		var sourceCollections = mock(Collections.class);
+		var sourceCollections = mock(MutableCollectionRepository.class);
 		var sourceCollection = mock(Collection.class);
-		when(sourceCollections.isLocal("shared")).thenReturn(true);
+		when(sourceCollections.access("shared")).thenReturn(CollectionAccess.READ_WRITE);
 		when(sourceCollections.collection("shared")).thenReturn(sourceCollection);
-		var sourceDB = mock(DB.class);
-		when(sourceDB.getCollections()).thenReturn(sourceCollections);
 		ServiceRegistry.getInstance().register(
 				"content-site",
-				SiteDBService.class,
-				new SiteDBService(sourceDB));
+				SiteCollectionRepositoryService.class,
+				new SiteCollectionRepositoryService(sourceCollections, sourceCollections));
 		var definitions = new ConcurrentHashMap<String, CollectionDefinition>();
 		definitions.put("shared", new CollectionDefinition("shared", "content-site", null));
 		var collections = new ReferencedCollections(

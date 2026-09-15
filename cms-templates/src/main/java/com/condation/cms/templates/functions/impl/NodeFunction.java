@@ -23,8 +23,8 @@ package com.condation.cms.templates.functions.impl;
 
 import com.condation.cms.api.db.ContentNode;
 import com.condation.cms.api.feature.features.InjectorFeature;
+import com.condation.cms.api.feature.features.RepositoryFeature;
 import com.condation.cms.api.request.RequestContext;
-import com.condation.cms.api.repository.ContentRepository;
 import com.condation.cms.content.ContentRenderer;
 import java.io.IOException;
 import java.util.Map;
@@ -46,8 +46,7 @@ public class NodeFunction extends AbstractNodeFunction {
 	@Override
 	protected void extendMap(Map<String, Object> node, ContentNode contentNode) {
 		try {
-			var contentRepository = requestContext.get(InjectorFeature.class)
-					.injector().getInstance(ContentRepository.class);
+			var contentRepository = requestContext.get(RepositoryFeature.class).contentRepository();
 			var contentRenderer = requestContext.get(InjectorFeature.class).injector().getInstance(ContentRenderer.class);
 			var sectionEntries = contentRenderer.renderSections(
 					contentRepository.sections(contentNode), requestContext);
