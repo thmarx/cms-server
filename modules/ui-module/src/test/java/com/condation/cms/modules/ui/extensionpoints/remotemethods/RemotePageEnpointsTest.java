@@ -169,7 +169,7 @@ public class RemotePageEnpointsTest {
     }
 
     @Test
-    public void testSearchPages_returnsRewrittenUriAndTitle() throws RPCException {
+    public void testSearchPages_returnsRewrittenUriAndTitle() {
         // Arrange
         when(moduleContext.get(SitePropertiesFeature.class)).thenReturn(new SitePropertiesFeature(siteProperties));
 		when(siteProperties.contextPath()).thenReturn("/cms");
@@ -203,7 +203,7 @@ public class RemotePageEnpointsTest {
     }
 
     @Test
-    public void testSearchPages_missingTitle_fallsBackToEmptyString() throws RPCException {
+    public void testSearchPages_missingTitle_fallsBackToEmptyString() {
         // Arrange
         when(moduleContext.get(SitePropertiesFeature.class)).thenReturn(new SitePropertiesFeature(siteProperties));
 		when(siteProperties.contextPath()).thenReturn("/");
