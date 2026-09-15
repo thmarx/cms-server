@@ -33,7 +33,6 @@ import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.feature.features.AuthFeature;
 import com.condation.cms.api.feature.features.ConfigurationFeature;
-import com.condation.cms.api.feature.features.DBFeature;
 import com.condation.cms.api.feature.features.EventBusFeature;
 import com.condation.cms.api.feature.features.SitePropertiesFeature;
 import com.condation.cms.api.feature.features.WorkflowFeature;
