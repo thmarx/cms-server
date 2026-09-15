@@ -43,7 +43,6 @@ import com.condation.cms.api.repository.CollectionRepository;
 import com.condation.cms.core.content.io.ContentFileParser;
 import com.condation.cms.core.eventbus.DefaultEventBus;
 import com.condation.cms.filesystem.FileDB;
-import com.condation.cms.filesystem.FileSystemCollectionRepository;
 import com.condation.cms.hooksystem.CMSHookSystem;
 import com.condation.cms.hooksystem.extensions.TemplateHooks;
 import com.condation.cms.modules.system.templates.CollectionTemplateFunctionExtensions;
@@ -91,7 +90,7 @@ class CollectionFunctionsIntegrationTest {
 		var extension = new CollectionTemplateFunctionExtensions();
 		var moduleContext = new SiteModuleContext();
 		moduleContext.add(DBFeature.class, new DBFeature(db));
-		moduleContext.add(RepositoryFeature.class, new RepositoryFeature(null, new FileSystemCollectionRepository(db.getCollections(), db.getFileSystem())));
+		moduleContext.add(RepositoryFeature.class, new RepositoryFeature(null, db.getCollectionRepository()));
 		extension.setContext(moduleContext);
 
 		collection = (Collection) extension.collection(new Parameter(Map.of("value", COLLECTION_NAME)));

@@ -21,20 +21,13 @@ package com.condation.cms.filesystem;
  * #L%
  */
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.condation.cms.api.Constants;
-import com.condation.cms.api.db.DBFileSystem;
-import com.condation.cms.api.db.collection.Collections;
 import com.condation.cms.api.repository.CollectionAccess;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Set;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -44,19 +37,19 @@ class FileSystemCollectionRepositoryTest {
 	@TempDir
 	Path tempDirectory;
 
-	private Collections collections;
 	private FileSystemCollectionRepository repository;
 
 	@BeforeEach
-	void setUp() {
-		collections = mock(Collections.class);
-		var fileSystem = mock(DBFileSystem.class);
-		when(collections.names()).thenReturn(Set.of("blog", "shared"));
-		when(collections.isLocal("blog")).thenReturn(true);
-		when(collections.isLocal("shared")).thenReturn(false);
-		when(fileSystem.resolve(Constants.Folders.COLLECTIONS))
-				.thenReturn(tempDirectory.resolve("collections"));
-		repository = new FileSystemCollectionRepository(collections, fileSystem);
+	void setUp() throws Exception {
+		Files.createDirectories(tempDirectory.resolve("collections/blog"));
+		repository = new FileSystemCollectionRepository(
+				"test-site", tempDirectory, _ -> Map.of("status", "published"));
+		repository.init();
+	}
+
+	@AfterEach
+	void tearDown() throws Exception {
+		repository.close();
 	}
 
 	@Test
@@ -67,18 +60,22 @@ class FileSystemCollectionRepositoryTest {
 				.exists()
 				.content()
 				.contains("title: First", "First body");
-		verify(collections).refresh("blog", "entry");
+		Assertions.assertThat(repository.get("blog", "entry"))
+				.isPresent()
+				.get()
+				.extracting(result -> result.content())
+				.isEqualTo("First body");
 
 		repository.save("blog", "entry", Map.of("title", "Changed"), "Changed body");
 		Assertions.assertThat(item).content().contains("title: Changed", "Changed body");
 
 		repository.delete("blog", "entry");
 		Assertions.assertThat(item).doesNotExist();
-		verify(collections, times(3)).refresh("blog", "entry");
+		Assertions.assertThat(repository.get("blog", "entry")).isEmpty();
 	}
 
 	@Test
-	void rejectsOverwritesTraversalAndWritesToReferencedCollections() throws Exception {
+	void rejectsOverwritesTraversalAndUnknownCollections() throws Exception {
 		repository.create("blog", "entry", Map.of(), "body");
 
 		Assertions.assertThatThrownBy(
@@ -88,10 +85,9 @@ class FileSystemCollectionRepositoryTest {
 				() -> repository.save("blog", "../entry", Map.of(), "other"))
 				.isInstanceOf(IllegalArgumentException.class);
 		Assertions.assertThatThrownBy(
-				() -> repository.save("shared", "entry", Map.of(), "other"))
-				.isInstanceOf(UnsupportedOperationException.class)
-				.hasMessageContaining("read-only");
+				() -> repository.save("missing", "entry", Map.of(), "other"))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("not found");
 		Assertions.assertThat(repository.access("blog")).isEqualTo(CollectionAccess.READ_WRITE);
-		Assertions.assertThat(repository.access("shared")).isEqualTo(CollectionAccess.READ_ONLY);
 	}
 }

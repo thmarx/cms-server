@@ -92,7 +92,6 @@ import com.condation.cms.core.theme.DefaultTheme;
 import com.condation.cms.extensions.ExtensionManager;
 import com.condation.cms.filesystem.FileDB;
 import com.condation.cms.filesystem.FileSystemContentRepository;
-import com.condation.cms.filesystem.FileSystemCollectionRepository;
 import com.condation.cms.filesystem.FileSystemContentStore;
 import com.condation.cms.filesystem.MetaData;
 import com.condation.cms.filesystem.NIOReadOnlyFile;
@@ -353,7 +352,7 @@ public class SiteModule extends AbstractModule {
 	@Provides
 	@Singleton
 	public MutableCollectionRepository mutableCollectionRepository(DB db) {
-		return new FileSystemCollectionRepository(db.getCollections(), db.getFileSystem());
+		return db.getCollectionRepository();
 	}
 
 	@Provides

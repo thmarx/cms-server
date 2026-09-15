@@ -27,14 +27,7 @@ import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.configuration.configs.CollectionConfiguration;
 import com.condation.cms.api.configuration.configs.CollectionDefinition;
 import com.condation.cms.api.configuration.configs.CollectionDetailConfiguration;
-import com.condation.cms.api.db.DB;
-import com.condation.cms.api.db.DBFileSystem;
-import com.condation.cms.api.db.ContentQuery;
-import com.condation.cms.api.db.cms.ReadOnlyFile;
-import com.condation.cms.api.db.collection.Collection;
-import com.condation.cms.api.db.collection.CollectionItem;
-import com.condation.cms.api.db.collection.CollectionItemMetadata;
-import com.condation.cms.api.db.collection.Collections;
+import com.condation.cms.api.repository.CollectionAccess;
 import com.condation.cms.api.repository.CollectionRepository;
 import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.api.eventbus.EventBus;
@@ -53,26 +46,22 @@ import com.condation.cms.api.workflow.Workflow;
 import com.condation.cms.filesystem.FileSystemCollectionRepository;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.yaml.snakeyaml.Yaml;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 class RemoteCollectionEndpointsTest {
@@ -82,24 +71,6 @@ class RemoteCollectionEndpointsTest {
 
 	@Mock
 	private SiteModuleContext moduleContext;
-
-	@Mock
-	private DB db;
-
-	@Mock
-	private DBFileSystem fileSystem;
-
-	@Mock
-	private Collections collections;
-
-	@Mock
-	private Collection collection;
-
-	@Mock
-	private ContentQuery<CollectionItem> collectionQuery;
-
-	@Mock
-	private ContentQuery<CollectionItemMetadata> metadataQuery;
 
 	@Mock
 	private EventBus eventBus;
@@ -112,14 +83,17 @@ class RemoteCollectionEndpointsTest {
 
 	private RemoteCollectionEndpoints endpoints;
 	private MutableCollectionRepository repository;
+	private FileSystemCollectionRepository fileRepository;
 	private Path collectionsDirectory;
 
 	@BeforeEach
 	void setUp() throws Exception {
 		collectionsDirectory = tempDirectory.resolve(Constants.Folders.COLLECTIONS);
 		Files.createDirectories(collectionsDirectory.resolve("blog"));
-		lenient().when(fileSystem.resolve(Constants.Folders.COLLECTIONS)).thenReturn(collectionsDirectory);
-		repository = new FileSystemCollectionRepository(collections, fileSystem);
+		fileRepository = new FileSystemCollectionRepository(
+				"test-site", tempDirectory, RemoteCollectionEndpointsTest::parseMeta);
+		fileRepository.init();
+		repository = fileRepository;
 		endpoints = new RemoteCollectionEndpoints() {
 			@Override
 			protected CollectionRepository getCollectionRepository(Map<String, Object> parameters) {
@@ -132,16 +106,11 @@ class RemoteCollectionEndpointsTest {
 			}
 		};
 		endpoints.setContext(moduleContext);
+	}
 
-		lenient().when(collections.names()).thenReturn(Set.of("blog"));
-		lenient().when(collections.isLocal("blog")).thenReturn(true);
-		lenient().when(collections.collection("blog")).thenReturn(collection);
-		lenient().when(collection.query()).thenReturn(collectionQuery);
-		lenient().when(collection.metadataQuery()).thenReturn(metadataQuery);
-		lenient().when(collectionQuery.get()).thenReturn(List.of());
-		lenient().when(metadataQuery.where(anyString(), any())).thenReturn(metadataQuery);
-		lenient().when(metadataQuery.page(1, 2)).thenReturn(new com.condation.cms.api.db.Page<>(
-				0, 2, 0, 1, List.of()));
+	@AfterEach
+	void tearDown() throws Exception {
+		fileRepository.close();
 	}
 
 	@Test
@@ -180,26 +149,14 @@ class RemoteCollectionEndpointsTest {
 						"status: draft",
 						"createdBy: editor",
 						"# Body");
-		verify(collections).refresh("blog", "first-item");
 	}
 
 	@Test
 	void rejectsDuplicateSlugsAfterNormalizationWhenSaving() throws Exception {
-		var editedItem = new CollectionItem(
-				"second",
-				"blog",
-				"blog/second.md",
-				"",
-				Map.of("slug", "second"));
-		var existingItem = new CollectionItemMetadata(
-				"first",
-				"blog",
-				"blog/first.md",
-				Map.of("slug", "ueber-uns"));
-		when(collection.item("second")).thenReturn(Optional.of(editedItem));
-		when(metadataQuery.where("slug", "ueber-uns")).thenReturn(metadataQuery);
-		when(metadataQuery.page(1, 2)).thenReturn(new com.condation.cms.api.db.Page<>(
-				1, 2, 1, 1, List.of(existingItem)));
+		repository.create(
+				"blog", "first", Map.of("slug", "ueber-uns", "status", "published"), "");
+		repository.create(
+				"blog", "second", Map.of("slug", "second", "status", "published"), "");
 
 		assertThatThrownBy(() -> endpoints.save(Map.of(
 				"collection", "blog",
@@ -212,9 +169,7 @@ class RemoteCollectionEndpointsTest {
 
 	@Test
 	void rejectsDuplicateAndInvalidCollectionItemIds() throws Exception {
-		Files.writeString(collectionsDirectory.resolve("blog/existing.md"), "existing");
-		when(collection.item("existing")).thenReturn(Optional.of(new CollectionItem(
-				"existing", "blog", "blog/existing.md", "existing", Map.of())));
+		repository.create("blog", "existing", Map.of("status", "published"), "existing");
 
 		assertThatThrownBy(() -> endpoints.create(Map.of("collection", "blog", "id", "existing")))
 				.isInstanceOfSatisfying(
@@ -242,19 +197,19 @@ class RemoteCollectionEndpointsTest {
 	void deletesCollectionItemAndRefreshesIndex() throws Exception {
 		when(moduleContext.get(EventBusFeature.class)).thenReturn(new EventBusFeature(eventBus));
 		var item = collectionsDirectory.resolve("blog/obsolete.md");
-		Files.writeString(item, "obsolete");
-		when(collection.item("obsolete")).thenReturn(Optional.of(new CollectionItem(
-				"obsolete", "blog", "blog/obsolete.md", "obsolete", Map.of())));
+		repository.create("blog", "obsolete", Map.of("status", "published"), "obsolete");
 
 		endpoints.delete(Map.of("collection", "blog", "id", "obsolete"));
 
 		assertThat(item).doesNotExist();
-		verify(collections).refresh("blog", "obsolete");
+		assertThat(repository.get("blog", "obsolete")).isEmpty();
 	}
 
 	@Test
 	void rejectsWritesToReferencedCollections() {
-		when(collections.isLocal("blog")).thenReturn(false);
+		repository = mock(MutableCollectionRepository.class);
+		when(repository.names()).thenReturn(Set.of("blog"));
+		when(repository.access("blog")).thenReturn(CollectionAccess.READ_ONLY);
 
 		assertThatThrownBy(() -> endpoints.create(Map.of("collection", "blog", "id", "new-item")))
 				.isInstanceOfSatisfying(
@@ -276,5 +231,15 @@ class RemoteCollectionEndpointsTest {
 		requestContext.add(ConfigurationFeature.class, new ConfigurationFeature(configuration));
 		requestContext.add(SitePropertiesFeature.class, new SitePropertiesFeature(siteProperties));
 		return requestContext;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Map<String, Object> parseMeta(Path file) {
+		try {
+			var parts = Files.readString(file).split("---", 3);
+			return parts.length == 3 ? new Yaml().load(parts[1]) : Map.of();
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 }
