@@ -127,7 +127,8 @@ public record ContentNode(String uri, String url, String name, Map<String, Objec
     }
 
     /**
-     * @deprecated use {@code ContentRepository.variantContext(ContentNode)};
+     * @deprecated use
+     * {@code ContentRepository.variantContext(node).isVariant()};
      * this method depends on the filesystem path convention
      */
     @Deprecated(since = "8.4.0", forRemoval = false)
@@ -136,7 +137,8 @@ public record ContentNode(String uri, String url, String name, Map<String, Objec
     }
 
     /**
-     * @deprecated use {@code ContentRepository.variantContext(ContentNode)};
+     * @deprecated use
+     * {@code ContentRepository.variantContext(node).activeVariantId()};
      * this method depends on the filesystem path convention
      */
     @Deprecated(since = "8.4.0", forRemoval = false)
@@ -153,7 +155,8 @@ public record ContentNode(String uri, String url, String name, Map<String, Objec
      * Returns the indexed path of the canonical page represented by this
      * variant.
      *
-     * @deprecated use {@code ContentRepository.variantContext(ContentNode)};
+     * @deprecated use
+     * {@code ContentRepository.variantContext(node).canonical().uri()};
      * this method depends on the filesystem path convention
      */
     @Deprecated(since = "8.4.0", forRemoval = false)

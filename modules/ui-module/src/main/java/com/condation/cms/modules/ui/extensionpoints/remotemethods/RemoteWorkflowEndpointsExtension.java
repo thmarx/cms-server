@@ -151,7 +151,8 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 		long requestedPage = Math.max(1, NumberUtils.toLong(parameters.getOrDefault("page", 1L)));
 		long requestedSize = Math.clamp(NumberUtils.toLong(parameters.getOrDefault("size", 10L)), 1, 100);
 		Workflow workflow = getContext().get(WorkflowFeature.class).workflow();
-		var query = getContentRepository(parameters).query()
+		var repository = getContentRepository(parameters);
+		var query = repository.query()
 				.variants(VariantSearchMode.ORIGINAL);
 		Page<ContentNode> page;
 
@@ -161,7 +162,7 @@ public class RemoteWorkflowEndpointsExtension extends AbstractRemoteMethodeExten
 			log.warn("Workflow '{}' status provider does not implement WFStatusQueryProvider; "
 					+ "falling back to in-memory unpublished-page filtering", workflow.getId());
 			List<ContentNode> unpublished = query.get().stream()
-					.filter(node -> !node.isVariant())
+					.filter(node -> !repository.variantContext(node).isVariant())
 					.filter(node -> !workflow.getStatusProvider().isPublished(node))
 					.toList();
 			page = inMemoryPage(unpublished, requestedPage, requestedSize);

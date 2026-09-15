@@ -154,6 +154,7 @@ class FileSystemContentRepositoryTest {
 				resource("articles/.variants/page/red", true, "")));
 		var context = repository.variantContext(blue);
 		Assertions.assertThat(context.canonical()).isEqualTo(canonical);
+		Assertions.assertThat(context.isVariant()).isTrue();
 		Assertions.assertThat(context.activeVariantId()).contains("blue");
 		Assertions.assertThat(context.variants()).hasSize(2);
 	}

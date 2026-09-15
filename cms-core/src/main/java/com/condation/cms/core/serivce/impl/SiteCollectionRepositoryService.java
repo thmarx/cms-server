@@ -25,7 +25,7 @@ import com.condation.cms.api.repository.CollectionRepository;
 import com.condation.cms.api.repository.MutableCollectionRepository;
 import com.condation.cms.core.serivce.Service;
 
-/** Exposes a site's collection boundary to cross-site callers (e.g. remote UI calls made with a siteId). */
+/** Exposes a site's collection boundary exclusively to cross-site callers. */
 public record SiteCollectionRepositoryService(
 		CollectionRepository repository,
 		MutableCollectionRepository mutableRepository) implements Service {

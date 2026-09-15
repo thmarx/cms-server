@@ -32,4 +32,8 @@ public record VariantContext(
 		ContentNode canonical,
 		Optional<String> activeVariantId,
 		List<Variant> variants) {
+
+	public boolean isVariant() {
+		return activeVariantId.isPresent();
+	}
 }
