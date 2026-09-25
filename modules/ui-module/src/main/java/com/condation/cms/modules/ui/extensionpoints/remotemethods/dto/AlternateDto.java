@@ -1,8 +1,8 @@
-package com.condation.cms.api;
+package com.condation.cms.modules.ui.extensionpoints.remotemethods.dto;
 
 /*-
  * #%L
- * CMS Api
+ * UI Module
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -21,18 +21,4 @@ package com.condation.cms.api;
  * #L%
  */
 
-import java.util.List;
-
-/**
- *
- * @author thorstenmarx
- */
-public interface TranslationProperties {
-	boolean isEnabled();
-	
-	List<String> getLanguages();
-	
-	List<Mapping> getMapping ();
-	
-	public static record Mapping (String site, String language){};
-}
+public record AlternateDto(String site, String locale, String url, String managerDeepLink) {}

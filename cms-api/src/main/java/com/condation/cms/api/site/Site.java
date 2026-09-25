@@ -30,6 +30,10 @@ import java.util.List;
  */
 public record Site(Injector injector) {
 
+	public SiteDescriptor descriptor() {
+		return SiteDescriptor.from(injector.getInstance(SiteProperties.class));
+	}
+
 	public String id() {
 		return injector.getInstance(SiteProperties.class).id();
 	}
@@ -47,21 +51,7 @@ public record Site(Injector injector) {
 	}
 
 	public String realUrl() {
-		var baseUrl = baseurl();
-		var contextPath = injector.getInstance(SiteProperties.class).contextPath();
-
-		// Normalize baseUrl: remove trailing slashes
-		String normalizedBase = baseUrl.replaceAll("/+$", "");
-
-		// Normalize contextPath: ensure it starts with a slash (except if it's just "/")
-		String normalizedContext = contextPath.equals("/") ? "" : contextPath.replaceAll("^/+", "");
-
-		// Combine
-		if (normalizedContext.isEmpty()) {
-			return normalizedBase + "/";
-		} else {
-			return normalizedBase + "/" + normalizedContext + "/";
-		}
+		return descriptor().realUrl();
 	}
 
 }

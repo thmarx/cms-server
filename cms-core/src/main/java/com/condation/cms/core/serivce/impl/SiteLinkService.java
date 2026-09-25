@@ -58,4 +58,13 @@ public class SiteLinkService implements Service {
 		var siteProperties = configuration.get(SiteConfiguration.class).siteProperties();
 		return HTTPUtil.prependContext(url, siteProperties);
 	}
+
+	public String absoluteLink(String url) {
+		var siteProperties = configuration.get(SiteConfiguration.class).siteProperties();
+		var baseUrl = siteProperties.baseUrl();
+		while (baseUrl.endsWith("/")) {
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+		}
+		return baseUrl + HTTPUtil.prependContext(url, siteProperties);
+	}
 }

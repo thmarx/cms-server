@@ -1,8 +1,8 @@
-package com.condation.cms.content.template.functions.translation;
+package com.condation.cms.api;
 
 /*-
  * #%L
- * CMS Content
+ * CMS Api
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -21,32 +21,26 @@ package com.condation.cms.content.template.functions.translation;
  * #L%
  */
 
-import com.condation.cms.api.SiteProperties;
-import java.util.List;
+import java.util.Map;
 
 /**
+ * Configuration that associates a site with a multisite group.
  *
- * @author thorstenmarx
+ * @param group the group identifier, or an empty string for an independent site
+ * @param attributes optional dimensions such as market or brand
  */
-public class SiteTranslations {
-	
-	private final SiteProperties siteProperties;
+public record MultisiteProperties(String group, Map<String, Object> attributes) {
 
-	public SiteTranslations(SiteProperties siteProperties) {
-		this.siteProperties = siteProperties;
+	public MultisiteProperties {
+		group = group == null ? "" : group;
+		attributes = attributes == null ? Map.of() : Map.copyOf(attributes);
 	}
-	
-	public boolean enabled () {
-		return siteProperties.translation().isEnabled();
+
+	public static MultisiteProperties empty() {
+		return new MultisiteProperties("", Map.of());
 	}
-	
-	public List<LanguageDto> languages () {
-		return siteProperties.translation().getMapping().stream().map(mapping -> {
-			return new LanguageDto(mapping.language(), mapping.language().equals(siteProperties.language()));
-		}).toList();
-	}
-	
-	public static record LanguageDto (String lang, boolean current) {
-		
+
+	public boolean grouped() {
+		return !group.isBlank();
 	}
 }

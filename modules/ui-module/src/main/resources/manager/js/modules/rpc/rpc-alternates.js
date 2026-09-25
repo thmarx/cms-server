@@ -19,25 +19,13 @@
  * #L%
  */
 import { executeRemoteCall } from '@cms/modules/rpc/rpc.js';
-const getTranslations = async (options) => {
-    var data = {
-        method: "translations.get",
-        parameters: options
-    };
-    return (await executeRemoteCall(data)).result;
+const getAlternates = async (options) => {
+    return (await executeRemoteCall({ method: 'alternates.get', parameters: options })).result;
 };
-const addTranslation = async (options) => {
-    var data = {
-        method: "translations.add",
-        parameters: options
-    };
-    return (await executeRemoteCall(data)).result;
+const addAlternate = async (options) => {
+    return (await executeRemoteCall({ method: 'alternates.add', parameters: options })).result;
 };
-const removeTranslation = async (options) => {
-    var data = {
-        method: "translations.add",
-        parameters: options
-    };
-    return (await executeRemoteCall(data)).result;
+const removeAlternate = async (options) => {
+    return (await executeRemoteCall({ method: 'alternates.remove', parameters: options })).result;
 };
-export { getTranslations, addTranslation, removeTranslation };
+export { getAlternates, addAlternate, removeAlternate };

@@ -1,8 +1,6 @@
-package com.condation.cms.core.configuration.properties;
-
 /*-
  * #%L
- * CMS Core
+ * UI Module
  * %%
  * Copyright (C) 2023 - 2026 CondationCMS
  * %%
@@ -20,35 +18,6 @@ package com.condation.cms.core.configuration.properties;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-import com.condation.cms.api.TranslationProperties;
-import java.util.List;
-
-/**
- *
- * @author t.marx
- */
-public class ExtendedTranslationProperties implements TranslationProperties {
-
-	
-	private boolean enabled = false;
-	
-	private List<Mapping> mapping;
-
-	private List<String> languages;
-
-	@Override
-	public List<String> getLanguages() {
-		return languages;
-	}
-	
-	@Override
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	@Override
-	public List<Mapping> getMapping() {
-		return mapping;
-	}
-}
+import { ActivePreviewContent } from '@cms/modules/preview-context.js';
+export declare const alternatesSupported: (content?: ActivePreviewContent | null) => boolean;
+export declare const ensureAlternatesSupported: (content?: ActivePreviewContent | null) => boolean;

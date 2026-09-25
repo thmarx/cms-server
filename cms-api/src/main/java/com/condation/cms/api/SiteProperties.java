@@ -70,5 +70,12 @@ public interface SiteProperties {
 	
 	public UIProperties ui();
 	
-	public TranslationProperties translation ();
+	/**
+	 * Multisite metadata for this site. Independent sites return an empty
+	 * configuration by default so existing SiteProperties implementations remain
+	 * compatible.
+	 */
+	public default MultisiteProperties multisite() {
+		return MultisiteProperties.empty();
+	}
 }
