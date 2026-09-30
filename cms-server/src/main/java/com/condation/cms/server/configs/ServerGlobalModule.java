@@ -20,12 +20,14 @@ package com.condation.cms.server.configs;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.ServerProperties;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.feature.features.InjectorFeature;
 import com.condation.cms.api.feature.features.ModuleManagerFeature;
 import com.condation.cms.api.feature.features.ServerHookSystemFeature;
 import com.condation.cms.api.hooks.HookSystem;
+import com.condation.cms.api.injector.Injector;
 import com.condation.cms.api.messaging.Messaging;
 import com.condation.cms.api.module.ServerModuleContext;
 import com.condation.cms.api.scheduler.CronJobScheduler;
@@ -43,11 +45,7 @@ import com.condation.cms.hooksystem.CMSHookSystem;
 import com.condation.modules.api.ModuleManager;
 import com.condation.modules.manager.ModuleAPIClassLoader;
 import com.condation.modules.manager.ModuleManagerImpl;
-import com.google.inject.Binder;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
+import static com.condation.cms.server.configs.ProviderSupport.provide;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
@@ -72,15 +70,29 @@ import org.quartz.simpl.SimpleThreadPool;
  * @author t.marx
  */
 @Slf4j
-public class ServerGlobalModule implements com.google.inject.Module {
+public class ServerGlobalModule implements com.condation.cms.api.injector.Module {
 
     @Override
-    public void configure(Binder binder) {
-
+    public void register(Injector injector) {
+        injector.register(MeterRegistry.class, _ -> metricRegisry()).singleton();
+        injector.register(Scheduler.class, _ -> scheduler()).singleton();
+        injector.register(Constants.DiScopes.SERVER, Messaging.class, _ -> serverMessaging()).singleton();
+        injector.register(Constants.DiScopes.SERVER, EventBus.class, this::serverEventBus).singleton();
+        injector.register(Constants.DiScopes.SERVER, CronJobScheduler.class,
+                i -> serverCronJobScheudler(i.getInstance(Scheduler.class))).singleton();
+        injector.register(ServerProperties.class, _ -> provide(this::serverProperties));
+        injector.register(Engine.class, _ -> provide(this::engine)).singleton();
+        injector.register(UserService.class, _ -> userService()).singleton();
+        injector.register(RoleService.class, _ -> roleService()).singleton();
+        injector.register(SiteService.class, _ -> siteService()).singleton();
+        injector.register(Constants.DiScopes.SERVER, HookSystem.class, _ -> hookSystem()).singleton();
+        injector.register(ServerModuleContext.class,
+                i -> serverModuleContext(i, i.getInstance(Constants.DiScopes.SERVER, HookSystem.class))).singleton();
+        injector.register(Constants.DiScopes.SERVER, ModuleManager.class,
+                i -> serverModuleManager( i.getInstance(ServerModuleContext.class))).singleton();
     }
 
-    @Provides
-    @Singleton
+
     public MeterRegistry metricRegisry() {
         MeterRegistry registry = new JmxMeterRegistry(
                 JmxConfig.DEFAULT,
@@ -96,8 +108,6 @@ public class ServerGlobalModule implements com.google.inject.Module {
         return registry;
     }
 
-    @Provides
-    @Singleton
     public Scheduler scheduler() {
         try {
 
@@ -117,68 +127,45 @@ public class ServerGlobalModule implements com.google.inject.Module {
         }
     }
 
-    @Provides
-    @Singleton
-    @Named("server")
     public Messaging serverMessaging() {
         return new DefaultMessaging("server");
     }
 
-    @Provides
-    @Singleton
-    @Named("server")
-    public EventBus serverEventBus(@Named("server") Messaging messaging) {
-        return new MessagingEventBus(messaging);
+    public EventBus serverEventBus(Injector injector) {
+        return new MessagingEventBus(injector.getInstance(Constants.DiScopes.SERVER, Messaging.class));
     }
 
-    @Provides
-    @Singleton
-    @Named("server")
     public CronJobScheduler serverCronJobScheudler(Scheduler scheduler) {
         return new ServerCronJobScheduler(scheduler);
     }
 
-    @Provides
     public ServerProperties serverProperties() throws IOException {
         return new ExtendedServerProperties(ConfigurationFactory.serverConfiguration());
     }
 
-    @Provides
-    @Singleton
     public Engine engine() throws IOException {
         return Engine.newBuilder("js")
                 .option("engine.WarnInterpreterOnly", "false")
                 .build();
     }
 
-    @Provides
-    @Singleton
     public UserService userService() {
         return new UserService(ServerUtil.getHome());
     }
 
-	@Provides
-	@Singleton
 	public RoleService roleService() {
 		return new RoleService(ServerUtil.getHome());
 	}
 
-    @Provides
-    @Singleton
     public SiteService siteService() {
         return new DefaultSiteService();
     }
 
-    @Provides
-    @Singleton
-    @Named("server")
     public HookSystem hookSystem() {
         return new CMSHookSystem();
     }
 
-    @Provides
-    @Singleton
-    public ServerModuleContext serverModuleContext(Injector injector, @Named("server") HookSystem hookSystem) {
+    public ServerModuleContext serverModuleContext(Injector injector, HookSystem hookSystem) {
         var context = new ServerModuleContext();
 
         context.add(InjectorFeature.class, new InjectorFeature(injector));
@@ -187,10 +174,7 @@ public class ServerGlobalModule implements com.google.inject.Module {
         return context;
     }
 
-    @Provides
-    @Singleton
-    @Named("server")
-    public ModuleManager serverModuleManager(Injector injector, ServerModuleContext context) {
+    public ModuleManager serverModuleManager(ServerModuleContext context) {
         var classLoader = new ModuleAPIClassLoader(ClassLoader.getSystemClassLoader(),
                 List.of(
                         "org.slf4j",
@@ -208,7 +192,6 @@ public class ServerGlobalModule implements com.google.inject.Module {
         var homePath = ServerUtil.getHome();
         var moduleManager = ModuleManagerImpl.builder()
                 .setClassLoader(classLoader)
-                .setInjector((instance) -> injector.injectMembers(instance))
                 .setModulesDataPath(homePath.resolve("modules_data").toFile())
                 .setModulesPath(homePath.resolve("modules").toFile())
                 .setContext(context)
@@ -218,4 +201,6 @@ public class ServerGlobalModule implements com.google.inject.Module {
 
         return moduleManager;
     }
+
+
 }
