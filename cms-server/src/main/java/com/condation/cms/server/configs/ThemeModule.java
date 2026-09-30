@@ -20,26 +20,23 @@ package com.condation.cms.server.configs;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import com.condation.cms.api.Constants;
 import com.condation.cms.api.ServerProperties;
 import com.condation.cms.api.configuration.Configuration;
 import com.condation.cms.api.db.DB;
 import com.condation.cms.api.eventbus.EventBus;
 import com.condation.cms.api.eventbus.events.ConfigurationReloadEvent;
+import com.condation.cms.api.injector.Injector;
 import com.condation.cms.api.theme.Theme;
 import com.condation.cms.media.ThemeMediaManager;
 import com.condation.cms.server.handler.media.JettyMediaHandler;
 import com.condation.cms.server.FileFolderPathResource;
 import com.condation.cms.server.handler.StaticFileHandler;
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
+import static com.condation.cms.server.configs.ProviderSupport.provide;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import lombok.RequiredArgsConstructor;
+import java.util.List;import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.ResourceFactory;
 
@@ -48,26 +45,31 @@ import org.eclipse.jetty.util.resource.ResourceFactory;
  * @author t.marx
  */
 @RequiredArgsConstructor
-public class ThemeModule extends AbstractModule {
+public class ThemeModule implements com.condation.cms.api.injector.Module {
 
-    @Provides
-    @Singleton
+    @Override
+    public void register(Injector injector) {
+        injector.register(ThemeMediaManager.class,
+                i -> provide(() -> themeMediaManager(i.getInstance(Theme.class), i.getInstance(Configuration.class),
+                        i.getInstance(DB.class), i.getInstance(EventBus.class)))).singleton();
+        injector.register(Constants.DiScopes.THEME_MEDIA, JettyMediaHandler.class,
+                i -> provide(() -> themeMediaHandler(i.getInstance(ThemeMediaManager.class)))).singleton();
+        injector.register(Constants.DiScopes.THEME_ASSETS, ResourceHandler.class,
+                i -> themeAssetsHandler(i.getInstance(Theme.class), i.getInstance(ServerProperties.class))).singleton();
+        injector.register(Constants.DiScopes.THEME_PUBLIC, StaticFileHandler.class,
+                i -> themePublicHandler(i.getInstance(Theme.class))).singleton();
+    }
+
     public ThemeMediaManager themeMediaManager(Theme theme, Configuration configuration, DB db, EventBus eventBus) throws IOException {
         var mediaManager = new ThemeMediaManager(db.getFileSystem().resolve("temp"), theme, configuration);
         eventBus.register(ConfigurationReloadEvent.class, mediaManager);
         return mediaManager;
     }
 
-    @Provides
-    @Singleton
-    @Named("theme.media")
     public JettyMediaHandler themeMediaHandler(ThemeMediaManager mediaManager) throws IOException {
         return new JettyMediaHandler(mediaManager);
     }
 
-    @Provides
-    @Singleton
-    @Named("theme.assets")
     public ResourceHandler themeAssetsHandler(Theme theme, ServerProperties serverProperties) {
         ResourceHandler assetsHandler = new ResourceHandler();
         assetsHandler.setDirAllowed(false);
@@ -92,10 +94,7 @@ public class ThemeModule extends AbstractModule {
         return assetsHandler;
     }
 
-    @Provides
-    @Singleton
-    @Named("theme.public")
-    public StaticFileHandler themePublicHandler(Theme theme, ServerProperties serverProperties) {
+    public StaticFileHandler themePublicHandler(Theme theme) {
         List<Path> paths = new ArrayList<>();
         paths.add(theme.publicPath());
         

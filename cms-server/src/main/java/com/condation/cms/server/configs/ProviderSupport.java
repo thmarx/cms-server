@@ -1,4 +1,4 @@
-package com.condation.cms.server.host;
+package com.condation.cms.server.configs;
 
 /*-
  * #%L
@@ -21,15 +21,28 @@ package com.condation.cms.server.host;
  * #L%
  */
 
-import com.condation.cms.api.injector.Injector;
+/** Adapts providers that can throw checked exceptions to injector factories. */
+final class ProviderSupport {
 
-/** Creates eager bindings before the first request. */
-final class EagerInitializer {
-
-    private EagerInitializer() {
+    private ProviderSupport() {
     }
 
-    static void initialize(Injector injector) {
-        injector.initializeEager();
+    @FunctionalInterface
+    interface Factory<T> {
+        T create() throws Exception;
+    }
+
+    static <T> T provide(Factory<T> factory) {
+        try {
+            return factory.create();
+        } catch (Exception exception) {
+            throw new ProviderSupportException("Unable to create injector binding", exception);
+        }
+    }
+    
+    public static class ProviderSupportException extends RuntimeException {
+        public ProviderSupportException (String message, Throwable throwable) {
+            super(message, throwable);
+        }
     }
 }
