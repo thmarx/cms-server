@@ -42,6 +42,8 @@ import lombok.RequiredArgsConstructor;
 @Extension(TemplateModelExtendingExtensionPoint.class)
 public class UiTemplateModelExtension extends TemplateModelExtendingExtensionPoint {
 
+	private static final String COLLECTION = "collection";
+	
 	@Override
 	public Map<String, Object> getModel() {
 		return Map.of("ui", new UIHelper(getRequestContext(), getContext()));	
@@ -110,6 +112,17 @@ public class UiTemplateModelExtension extends TemplateModelExtendingExtensionPoi
 			return collectionToolbar(item, actions, Map.of());
 		}
 
+		public String collectionToolbar(String collection, String[] actions) {
+			if (!requestContext.has(IsPreviewFeature.class)) {
+				return "";
+			}
+			var collections = siteContext.get(RepositoryFeature.class).collectionRepository();
+			if (collections.access(collection) != CollectionAccess.READ_WRITE) {
+				return "";
+			}
+			return toolbar(collection, COLLECTION, actions, Map.of(COLLECTION, collection));
+		}
+
 		public String collectionToolbar(
 				CollectionItem item,
 				String[] actions,
@@ -125,7 +138,7 @@ public class UiTemplateModelExtension extends TemplateModelExtendingExtensionPoi
 				return "";
 			}
 			var options = new HashMap<>(additional);
-			options.put("collection", item.collection());
+			options.put(COLLECTION, item.collection());
 			options.put("itemId", item.id());
 			return toolbar(item.collection() + "-" + item.id(), "collectionItem", actions, options);
 		}

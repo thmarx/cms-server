@@ -154,7 +154,18 @@ const initMessageHandlers = () => {
 				collection: payload.collection,
 				id: payload.id
 			}
-		});
+		}).catch(error => console.error('Could not open collection item editor:', error));
+	});
+
+	frameMessenger.on('create-collection-item', (payload: any) => {
+		executeScriptAction({
+			module: window.manager.baseUrl + '/actions/collection/create-collection-item',
+			function: 'runAction',
+			parameters: {
+				collection: payload.collection,
+				reloadAfterCreate: true
+			}
+		}).catch(error => console.error('Could not open collection item creator:', error));
 	});
 
     frameMessenger.on('add-sectionEntry', (payload: any) => {
